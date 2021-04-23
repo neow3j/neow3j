@@ -13,11 +13,11 @@ public class ExecutionEngine {
      * Gets the container that triggered the execution of the current contract.
      * <p>
      * The container of an contract-invoking script is usually a {@link Transaction}. In that case,
-     * the return value can be cast to a <tt>Transaction</tt>. E.g.:
+     * the return value can be cast to a {@code Transaction}. E.g.:
      * <p>
-     * <tt>
+     * {@code 
      * Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();
-     * </tt>
+     * }
      *
      * @return the script container.
      */

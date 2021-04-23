@@ -9,7 +9,7 @@ import io.neow3j.devpack.annotations.Instruction;
 public class Map<K, V> {
 
     /**
-     * Constructs a new <tt>Map</tt>.
+     * Constructs a new {@code Map}.
      */
     @Instruction(opcode = OpCode.NEWMAP)
     public Map() {
@@ -57,8 +57,8 @@ public class Map<K, V> {
      * Checks if this map contains the given key.
      *
      * @param key The key to check.
-     * @return <tt>true</tt>, if this map contains a mapping for the specified key.
-     * <tt>False</tt>, otherwise.
+     * @return {@code true}, if this map contains a mapping for the specified key.
+     * {@code False}, otherwise.
      */
     @Instruction(opcode = OpCode.HASKEY)
     public native boolean containsKey(K key);

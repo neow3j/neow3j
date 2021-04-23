@@ -11,7 +11,7 @@ public class StorageMap {
     private final byte[] prefix;
 
     /**
-     * Constructs a new <tt>StorageMep</tt> from entries with the given prefix in the given {@link
+     * Constructs a new {@code StorageMep} from entries with the given prefix in the given {@link
      * StorageContext}.
      *
      * @param context The storage to look for the entries.
@@ -83,7 +83,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -94,7 +94,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -105,7 +105,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -116,7 +116,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -127,7 +127,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -139,7 +139,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -150,7 +150,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -161,7 +161,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -172,7 +172,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -183,7 +183,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -195,7 +195,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -206,7 +206,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
