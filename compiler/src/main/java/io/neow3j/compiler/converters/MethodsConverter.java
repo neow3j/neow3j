@@ -99,7 +99,7 @@ public class MethodsConverter implements Converter {
     private static final String ADDRESS_TO_SCRIPTHASH_METHOD_NAME = "addressToScriptHash";
     private static final String HEX_TO_BYTES_METHOD_NAME = "hexToBytes";
     private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
-    private static final String EQUALS_METHOD_NAME = "hashCode";
+    private static final String EQUALS_METHOD_NAME = "equals";
     private static final String LENGTH_METHOD_NAME = "length";
     private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
 
@@ -285,7 +285,7 @@ public class MethodsConverter implements Converter {
         // Before the call to `hashCode()` there the opcodes ICONST_M1, ISTORE,
         // and ALOAD occured. The compiler already converted them and added them to the
         // `NeoMethod` at this point. But they are not needed when converting the switch to
-        // NeoVM code. Thus, they must to be removed again.
+        // NeoVM code. Thus, they must be removed again.
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
