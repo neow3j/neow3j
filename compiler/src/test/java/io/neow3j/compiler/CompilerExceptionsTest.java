@@ -165,6 +165,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
     }
 
+    @Test
+    public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("compareTo",
+                String.class.getName(), "was not compiled with debugging information")));
+        new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -298,5 +306,17 @@ public class CompilerExceptionsTest {
         }
     }
 
+    static class MethodOfClassMissingDebugInformation {
+
+        public static int compareTo(String s1, String s2) {
+            return s1.compareTo(s2);
+        }
+    }
+
+    static class MethodOfClassMissingDebugInformationButHasNoLocalVariables {
+        public static int hashCode(Object o1) {
+            return o1.hashCode();
+        }
+    }
 }
 
