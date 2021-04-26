@@ -71,4 +71,14 @@ public class Map<K, V> {
     @Instruction(opcode = OpCode.REMOVE)
     public native void remove(K key);
 
+    /**
+     * Compares this map to the given object. The comparison happens by reference only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same map. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
+
 }

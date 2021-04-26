@@ -1,5 +1,7 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_STORAGE_ASREADONLY;
@@ -65,4 +67,13 @@ public class StorageContext implements InteropInterface {
         return new StorageMap(this, toByteArray(prefix));
     }
 
+    /**
+     * Compares this context to the given object. The comparison happens by reference only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same storage context. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 }

@@ -1,5 +1,7 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_CREATE;
@@ -61,6 +63,16 @@ public class Iterator<V> implements InteropInterface {
      */
     @Syscall(SYSTEM_ITERATOR_VALUE)
     public native V get();
+
+    /**
+     * Compares this iterator to the given object. The comparison happens by reference only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same iterator. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 
     /**
      * Represents a two element struct that the neo-vm uses when iterating over a map.

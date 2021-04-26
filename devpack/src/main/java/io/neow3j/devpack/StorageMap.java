@@ -1,5 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
+
 import static io.neow3j.devpack.Helper.concat;
 
 /**
@@ -215,4 +218,15 @@ public class StorageMap {
     public void put(String key, ByteString value) {
         Storage.put(this.context, concat(this.prefix, key), value);
     }
+
+    /**
+     * Compares this {@code StorageMap} to the given object. The comparison happens by reference
+     * only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same storage map. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 }

@@ -89,4 +89,16 @@ public class Hash256 {
     @Instruction
     public native ByteString asByteString();
 
+    /**
+     * Compares this hash to the given object. The comparison happens first by reference and then by
+     * value. I.e., two {@code Hash256} are compared byte by byte.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same object or have the same value.
+     * False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
+
 }

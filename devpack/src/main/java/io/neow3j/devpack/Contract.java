@@ -1,5 +1,7 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
@@ -66,5 +68,18 @@ public class Contract {
      */
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
+
+    /**
+     * Compares this contract to the given object. The comparison happens by reference only. I.e.,
+     * if you retrieve the same contract twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then
+     * comparing the two will return false.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same contract. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 
 }
