@@ -5,6 +5,7 @@ import static java.util.Arrays.asList;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
@@ -14,6 +15,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import io.neow3j.utils.ClassUtils;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -165,6 +168,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
     }
 
+    @Test
+    public void failIfInstanceOfIsUsedOnUnsupportedType() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                Hash160.class.getName(), "is not supported for the instanceof operation.")));
+        new Compiler().compile(InstanceOfContract.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -295,6 +306,13 @@ public class CompilerExceptionsTest {
 
         public static int method() {
             return number;
+        }
+    }
+
+    static class InstanceOfContract {
+
+        public static boolean method(Object obj) {
+            return obj instanceof Hash160;
         }
     }
 

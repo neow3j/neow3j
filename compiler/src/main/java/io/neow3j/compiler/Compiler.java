@@ -119,8 +119,8 @@ public class Compiler {
         if (typeName.equals(Hash256.class.getTypeName())) {
             return ContractParameterType.HASH256;
         }
-        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())
+                || typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
             return ContractParameterType.ARRAY;
         }
         try {
@@ -187,6 +187,14 @@ public class Compiler {
         if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
             // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.ARRAY;
+        }
+        if (typeName.equals(InteropInterface.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.INTEROP_INTERFACE;
+        }
+        if (typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.STRUCT;
         }
         try {
             typeName = type.getDescriptor().replace("/", ".");
