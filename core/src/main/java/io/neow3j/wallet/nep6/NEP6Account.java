@@ -1,5 +1,6 @@
 package io.neow3j.wallet.nep6;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
@@ -13,6 +14,7 @@ public class NEP6Account {
     private String label;
 
     @JsonProperty("isDefault")
+    @JsonAlias("isdefault")
     private Boolean isDefault;
 
     @JsonProperty("lock")
@@ -30,7 +32,8 @@ public class NEP6Account {
     public NEP6Account() {
     }
 
-    public NEP6Account(String address, String label, Boolean isDefault, Boolean lock, String key, NEP6Contract contract, Object extra) {
+    public NEP6Account(String address, String label, Boolean isDefault, Boolean lock, String key,
+            NEP6Contract contract, Object extra) {
         this.address = address;
         this.label = label;
         this.isDefault = isDefault;
@@ -80,7 +83,8 @@ public class NEP6Account {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAddress(), getLabel(), isDefault, getLock(), getKey(), getContract(), getExtra());
+        return Objects.hash(getAddress(), getLabel(), isDefault, getLock(), getKey(),
+                getContract(), getExtra());
     }
 
     @Override
