@@ -28,7 +28,7 @@
     {
       "address": "NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy",
       "label": "Account2",
-      "isDefault": false,
+      "isdefault": false,
       "lock": false,
       "key": "6PYSQWBqZE5oEFdMGCJ3xR7bz6ezz814oKE7GqwB9i5uhtUzkshe9B6YGB",
       "contract": {
