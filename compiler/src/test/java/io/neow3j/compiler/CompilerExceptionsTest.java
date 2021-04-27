@@ -10,12 +10,15 @@ import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.events.Event1Arg;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -100,7 +103,7 @@ public class CompilerExceptionsTest {
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                OpCode.PUSHDATA1.name(),"needs an operand prefix of size", "1", "2")));
+                OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
         Compiler.addInstructionsFromAnnotation(method, neoMethod);
     }
 
@@ -165,6 +168,8 @@ public class CompilerExceptionsTest {
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
     }
 
+    // If this test fails for you, make sure that you are using Java 8's JDK and not anything
+    // higher.
     @Test
     public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
         exceptionRule.expect(CompilerException.class);
@@ -243,7 +248,7 @@ public class CompilerExceptionsTest {
 
         }
     }
-    
+
     static class InstructionAnnotationWithWrongSizeOperandContract {
 
         @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
@@ -308,15 +313,10 @@ public class CompilerExceptionsTest {
 
     static class MethodOfClassMissingDebugInformation {
 
-        public static int compareTo(String s1, String s2) {
+        public static int stringCompareTo(String s1, String s2) {
             return s1.compareTo(s2);
         }
     }
 
-    static class MethodOfClassMissingDebugInformationButHasNoLocalVariables {
-        public static int hashCode(Object o1) {
-            return o1.hashCode();
-        }
-    }
 }
 

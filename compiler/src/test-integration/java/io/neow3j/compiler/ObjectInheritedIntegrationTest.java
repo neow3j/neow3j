@@ -36,6 +36,7 @@ import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.hash256;
 import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -116,6 +117,22 @@ public class ObjectInheritedIntegrationTest {
         String bs2 = "02249425a06b5a1f8e6133fc79afa2c2b8430bf9327297f176761df79e8d8929c5";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bs1),
                 byteArray(bs1), byteArray(bs2));
+        List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
+
+        // ByteStrings are ByteStringStackItems on the neo-vm and are therefore compared by
+        // reference and by value.
+        assertTrue(boolArr.get(0).getBoolean());
+        assertTrue(boolArr.get(1).getBoolean());
+        assertFalse(boolArr.get(2).getBoolean());
+        assertFalse(boolArr.get(3).getBoolean());
+    }
+
+    @Test
+    public void stringEquals() throws Throwable {
+        String s1 = "string1";
+        String s2 = "string2";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(s1), string(s1),
+                string(s2));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
 
         // ByteStrings are ByteStringStackItems on the neo-vm and are therefore compared by
@@ -309,6 +326,15 @@ public class ObjectInheritedIntegrationTest {
             b[1] = bs1.equals(bs1_other);
             b[2] = bs1.equals(bs2);
             b[3] = bs1.equals(2);
+            return b;
+        }
+
+        public static boolean[] stringEquals(String s1, String s1_other, String s2) {
+            boolean[] b = new boolean[4];
+            b[0] = s1.equals(s1);
+            b[1] = s1.equals(s1_other);
+            b[2] = s1.equals(s2);
+            b[3] = s1.equals(2);
             return b;
         }
 
