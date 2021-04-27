@@ -19,6 +19,10 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.HashMap;
 
+import static io.neow3j.contract.ContractParameter.bool;
+import static io.neow3j.contract.ContractParameter.string;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class InstanceOfIntegrationTest {
@@ -33,7 +37,7 @@ public class InstanceOfIntegrationTest {
     @Test
     public void instanceOfString() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                ContractParameter.string("Neo"));
+                string("Neo"));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -54,7 +58,7 @@ public class InstanceOfIntegrationTest {
     @Test
     public void instanceOfBoolean() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                ContractParameter.bool(true));
+                bool(true));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -90,6 +94,20 @@ public class InstanceOfIntegrationTest {
     public void instanceOfBuffer() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void instanceOfInStaticVariable() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void instanceOfInIfElse() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"),
+                bool(true));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
+                is("hello, world!"));
     }
 
 
@@ -139,6 +157,18 @@ public class InstanceOfIntegrationTest {
             return obj instanceof byte[];
         }
 
+        static boolean var = "hello" instanceof String;
+
+        public static boolean instanceOfInStaticVariable() {
+            return var;
+        }
+
+        public static ByteString instanceOfInIfElse(Object s, boolean b) {
+            if (s instanceof ByteString && b) {
+                return (ByteString) s;
+            }
+            return new ByteString("");
+        }
 
     }
 
