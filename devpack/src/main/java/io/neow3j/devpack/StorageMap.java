@@ -229,4 +229,21 @@ public class StorageMap {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given storage map by value, i.e., checks if they have the same context
+     * and prefix.
+     *
+     * @param map Other storage map to compare to.
+     * @return True if the two storage maps have the same context and prefix. False otherwise.
+     */
+    public boolean equals(StorageMap map) {
+        if (this == map) {
+            return true;
+        }
+        return context.equals(map.context)
+                // We convert the prefix to byte strings for comparison because the neo-vm
+                // does not compare Buffers (which byte[] is on the neo-vm) by value.
+                && new ByteString(prefix).equals(new ByteString(map.prefix));
+    }
 }

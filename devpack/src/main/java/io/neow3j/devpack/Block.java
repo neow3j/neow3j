@@ -80,20 +80,22 @@ public class Block {
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (this == o) return true;
-//        if (!(o instanceof Block)) return false;
-//
-//        Block block = (Block) o;
-//        return version == block.version && timestamp == block.timestamp
-//                && index == block.index
-//                && primaryIndex == block.primaryIndex
-//                && transactionsCount == block.transactionsCount
-//                && hash.equals(block.hash)
-//                && prevHash.equals(block.prevHash)
-//                && merkleRoot.equals(block.merkleRoot)
-//                && nextConsensus.equals(block.nextConsensus);
-//    }
+    /**
+     * Compares this and the given block by value.
+     *
+     * @param block Other block to compare this block to.
+     * @return True if all fields of the two blocks are equal. False otherwise.
+     */
+    public boolean equals(Block block) {
+        if (this == block) return true;
+        return version == block.version && timestamp == block.timestamp
+                && index == block.index
+                && primaryIndex == block.primaryIndex
+                && transactionsCount == block.transactionsCount
+                && hash.equals(block.hash)
+                && prevHash.equals(block.prevHash)
+                && merkleRoot.equals(block.merkleRoot)
+                && nextConsensus.equals(block.nextConsensus);
+    }
 
 }

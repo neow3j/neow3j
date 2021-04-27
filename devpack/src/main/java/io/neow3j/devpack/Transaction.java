@@ -76,4 +76,18 @@ public class Transaction {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given transaction by value.
+     *
+     * @param tx Other transaction to compare to.
+     * @return True if all fields of the two contracts are equal. False otherwise.
+     */
+    public boolean equals(Transaction tx) {
+        if (this == tx) return true;
+        return version == tx.version && nonce == tx.nonce && systemFee == tx.systemFee &&
+                networkFee == tx.networkFee && validUntilBlock == tx.validUntilBlock &&
+                hash.equals(tx.hash) && sender.equals(tx.sender) && script.equals(tx.script);
+    }
+
 }

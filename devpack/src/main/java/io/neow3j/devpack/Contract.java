@@ -42,8 +42,8 @@ public class Contract {
         id = 0;
         updateCounter = 0;
         hash = new Hash160(new byte[0]);
-        nef = null;
-        manifest = null;
+        nef = new ByteString("");
+        manifest = "";
     }
 
     /**
@@ -69,6 +69,7 @@ public class Contract {
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
 
+
     /**
      * Compares this contract to the given object. The comparison happens by reference only. I.e.,
      * if you retrieve the same contract twice, e.g., with
@@ -81,5 +82,20 @@ public class Contract {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given contract by value.
+     *
+     * @param contract Other contract to compare this contract to.
+     * @return True if all fields of the two contracts are equal. False otherwise.
+     */
+    public boolean equals(Contract contract) {
+        if (this == contract) return true;
+        return id == contract.id
+                && updateCounter == contract.updateCounter
+                && hash.equals(contract.hash)
+                && nef.equals(contract.nef)
+                && manifest.equals(contract.manifest);
+    }
 
 }
