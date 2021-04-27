@@ -427,11 +427,12 @@ public class ContractParameter {
         public void serialize(ContractParameter value, JsonGenerator gen,
                 SerializerProvider provider) throws IOException {
 
+            gen.writeStartObject();
             serializeParameter(value, gen);
+            gen.writeEndObject();
         }
 
         private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
-            gen.writeStartObject();
             if (p.getParamName() != null) {
                 gen.writeStringField("name", p.getParamName());
             }
@@ -441,7 +442,6 @@ public class ContractParameter {
             if (p.getValue() != null) {
                 serializeValue(p, gen);
             }
-            gen.writeEndObject();
         }
 
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
@@ -473,7 +473,9 @@ public class ContractParameter {
                 case ARRAY:
                     gen.writeArrayFieldStart("value");
                     for (final ContractParameter param : (ContractParameter[]) p.getValue()) {
+                        gen.writeStartObject();
                         serializeParameter(param, gen);
+                        gen.writeEndObject();
                     }
                     gen.writeEndArray();
                     break;
@@ -482,12 +484,21 @@ public class ContractParameter {
                     HashMap<ContractParameter, ContractParameter> map =
                             (HashMap<ContractParameter, ContractParameter>) p.getValue();
                     for (final ContractParameter key : map.keySet()) {
-                        ContractParameter val = map.get(key);
-                        gen.writeObjectFieldStart("key");
+                        gen.writeStartObject();
+
+                        gen.writeFieldName("key");
+                        gen.writeStartObject();
                         serializeParameter(key, gen);
-                        gen.writeObjectFieldStart("value");
-                        serializeParameter(val, gen);
+                        gen.writeEndObject();
+
+                        gen.writeFieldName("value");
+                        gen.writeStartObject();
+                        serializeParameter(map.get(key), gen);
+                        gen.writeEndObject();
+
+                        gen.writeEndObject();
                     }
+                    gen.writeEndArray();
                     break;
                 default:
                     throw new UnsupportedOperationException("Parameter type '" +

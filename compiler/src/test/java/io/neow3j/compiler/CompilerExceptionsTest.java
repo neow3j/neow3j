@@ -1,29 +1,27 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.events.Event1Arg;
+import org.hamcrest.core.StringContains;
+import org.hamcrest.text.StringContainsInOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.hamcrest.core.StringContains;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.MethodNode;
+import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -178,6 +176,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
     }
 
+    @Test
+    public void failIfInstanceOfIsUsedOnUnsupportedType() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                Hash160.class.getName(), "is not supported for the instanceof operation.")));
+        new Compiler().compile(InstanceOfContract.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -315,6 +321,13 @@ public class CompilerExceptionsTest {
 
         public static int stringCompareTo(String s1, String s2) {
             return s1.compareTo(s2);
+        }
+    }
+
+    static class InstanceOfContract {
+
+        public static boolean method(Object obj) {
+            return obj instanceof Hash160;
         }
     }
 

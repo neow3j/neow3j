@@ -66,6 +66,7 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, ContractParameterType.ARRAY);
         assertClassIsMappedToType(byte[][].class, ContractParameterType.ARRAY);
         assertClassIsMappedToType(List.class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(Iterator.Struct.class, ContractParameterType.ARRAY);
 
         // Public Key
         assertClassIsMappedToType(ECPoint.class, ContractParameterType.PUBLIC_KEY);
@@ -120,6 +121,7 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, StackItemType.ARRAY);
         assertClassIsMappedToType(byte[][].class, StackItemType.ARRAY);
         assertClassIsMappedToType(List.class, StackItemType.ARRAY);
+        assertClassIsMappedToType(Iterator.Struct.class, StackItemType.STRUCT);
 
         // Map
         assertClassIsMappedToType(Map.class, StackItemType.MAP);

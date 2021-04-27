@@ -1,16 +1,19 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
-import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
-import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static java.util.Arrays.stream;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.utils.ArrayUtils;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,15 +30,13 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TryCatchBlockNode;
+
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
+import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
+import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
 
 /**
  * Represents a method in a NeoVM script.
@@ -502,7 +503,6 @@ public class NeoMethod {
             throw new CompilerException(sourceClass, "Could not find the beginning instruction of "
                     + "a try block.");
         }
-        int addr = insn.getAddress();
         Label catchLabel = null;
         if (block.catchLabelNode != null) {
             catchLabel = block.catchLabelNode.getLabel();
@@ -512,8 +512,9 @@ public class NeoMethod {
             finallyLabel = block.finallyLabelNode.getLabel();
         }
         NeoTryInstruction tryInsn = new NeoTryInstruction(catchLabel, finallyLabel);
-        insertInstruction(addr, tryInsn);
+        insertInstruction(insn.getAddress(), tryInsn);
         tryInstructions.add(tryInsn);
+        jumpTargets.put(block.tryLabelNode.getLabel(), tryInsn);
     }
 
     // Adds the given instruction at the given address into the sorted instructions map of this
@@ -551,10 +552,6 @@ public class NeoMethod {
             // that when a new instruction is added to this method and the `currentLabelNode` is
             // set, that label belongs to that `NeoInstruction`. The label is unset as
             // soon as it has been assigned.
-            // TODO: Clarify if this behavior is correct in all scenarios. JVM instructions don't
-            //  always get replaced one-to-one with `NeoInstructions`.
-            // TODO: Clarify if we only need jump points for instructions that additionally have
-            //  a `FrameNode` before them.
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
