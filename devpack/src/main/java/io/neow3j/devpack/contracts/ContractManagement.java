@@ -22,7 +22,7 @@ public class ContractManagement extends ContractInterface {
      *
      * @param nefFile  The NEF file of the contract to deploy.
      * @param manifest The manifest of the contract to deploy.
-     * @return The deployed <tt>Contract</tt>.
+     * @return The deployed {@code Contract}.
      */
     public static native Contract deploy(ByteString nefFile, String manifest);
 
@@ -33,7 +33,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest The manifest of the contract to deploy.
      * @param data     Data that is passed on to the {@code _deploy} method of the deployed contract
      *                 if it exists.
-     * @return The deployed <tt>Contract</tt>.
+     * @return The deployed {@code Contract}.
      */
     public static native Contract deploy(ByteString nefFile, String manifest, Object data);
 

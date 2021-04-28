@@ -1,5 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
+
 import static io.neow3j.devpack.Helper.concat;
 
 /**
@@ -11,7 +14,7 @@ public class StorageMap {
     private final byte[] prefix;
 
     /**
-     * Constructs a new <tt>StorageMep</tt> from entries with the given prefix in the given {@link
+     * Constructs a new {@code StorageMep} from entries with the given prefix in the given {@link
      * StorageContext}.
      *
      * @param context The storage to look for the entries.
@@ -83,7 +86,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -94,7 +97,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -105,7 +108,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -116,7 +119,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -127,7 +130,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -139,7 +142,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -150,7 +153,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -161,7 +164,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -172,7 +175,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -183,7 +186,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -195,7 +198,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -206,7 +209,7 @@ public class StorageMap {
     }
 
     /**
-     * Stores the given key-value pair prefixed with this <tt>StorageMap</tt>'s prefix ({@code
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
      * prefix + key}) into the underlying storage context.
      *
      * @param key   The key of the entry.
@@ -214,5 +217,33 @@ public class StorageMap {
      */
     public void put(String key, ByteString value) {
         Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Compares this {@code StorageMap} to the given object. The comparison happens by reference
+     * only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same storage map. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given storage map by value, i.e., checks if they have the same context
+     * and prefix.
+     *
+     * @param map Other storage map to compare to.
+     * @return True if the two storage maps have the same context and prefix. False otherwise.
+     */
+    public boolean equals(StorageMap map) {
+        if (this == map) {
+            return true;
+        }
+        return context.equals(map.context)
+                // We convert the prefix to byte strings for comparison because the neo-vm
+                // does not compare Buffers (which byte[] is on the neo-vm) by value.
+                && new ByteString(prefix).equals(new ByteString(map.prefix));
     }
 }

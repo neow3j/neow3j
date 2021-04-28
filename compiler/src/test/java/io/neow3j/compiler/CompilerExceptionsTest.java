@@ -1,8 +1,5 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
@@ -11,12 +8,6 @@ import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.events.Event1Arg;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import io.neow3j.utils.ClassUtils;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -24,6 +15,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -103,7 +101,7 @@ public class CompilerExceptionsTest {
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                OpCode.PUSHDATA1.name(),"needs an operand prefix of size", "1", "2")));
+                OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
         Compiler.addInstructionsFromAnnotation(method, neoMethod);
     }
 
@@ -166,6 +164,16 @@ public class CompilerExceptionsTest {
                 CompilerExceptionsTest.class.getSimpleName(),
                 "Local variables are not supported in the static constructor")));
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
+    }
+
+    // If this test fails for you, make sure that you are using Java 8's JDK and not anything
+    // higher.
+    @Test
+    public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("compareTo",
+                String.class.getName(), "was not compiled with debugging information")));
+        new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
     }
 
     @Test
@@ -246,7 +254,7 @@ public class CompilerExceptionsTest {
 
         }
     }
-    
+
     static class InstructionAnnotationWithWrongSizeOperandContract {
 
         @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
@@ -306,6 +314,13 @@ public class CompilerExceptionsTest {
 
         public static int method() {
             return number;
+        }
+    }
+
+    static class MethodOfClassMissingDebugInformation {
+
+        public static int stringCompareTo(String s1, String s2) {
+            return s1.compareTo(s2);
         }
     }
 

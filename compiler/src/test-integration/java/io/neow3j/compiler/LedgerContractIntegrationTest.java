@@ -45,8 +45,7 @@ public class LedgerContractIntegrationTest {
 
     @Test
     public void getTransactionHeight() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash256(ct.getDeployTxHash().toString()));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().longValue(),
                 is(blockOfDeployTx.getIndex()));
@@ -81,7 +80,7 @@ public class LedgerContractIntegrationTest {
     @Test
     public void getTransactionFromBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash256(ct.getBlockHashOfDeployTx().toString()), integer(0));
+                hash256(ct.getBlockHashOfDeployTx()), integer(0));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
         assertThat(tx.get(0).getHexString(),
                 is(Numeric.reverseHexString(ct.getDeployTxHash().toString())));
@@ -97,8 +96,7 @@ public class LedgerContractIntegrationTest {
 
     @Test
     public void getTransaction() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash256(ct.getDeployTxHash().toString()));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
         assertThat(tx.get(0).getHexString(),
                 is(Numeric.reverseHexString(ct.getDeployTxHash().toString())));
@@ -122,7 +120,7 @@ public class LedgerContractIntegrationTest {
     @Test
     public void getBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash256(ct.getBlockHashOfDeployTx().toString()));
+                hash256(ct.getBlockHashOfDeployTx()));
 
         List<StackItem> block = response.getInvocationResult().getStack().get(0).getList();
         assertThat(block.get(0).getHexString(),

@@ -152,4 +152,16 @@ public class ByteString {
     @Instruction(opcode = OpCode.RIGHT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public native ByteString last(int n);
+
+    /**
+     * Compares this byte string to the given object. The comparison happens first by reference and
+     * then by value. I.e., two {@code ByteString}s are compared byte by byte.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same object or have the same value.
+     * False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 }

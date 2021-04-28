@@ -20,8 +20,7 @@ public class StringConcatenationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StringConcatenation.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(StringConcatenation.class.getName());
 
     @Test
     public void concatTwoStrings() throws IOException {

@@ -297,8 +297,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(hash);
 
         assertThat(p.getParamType(), is(ContractParameterType.HASH256));
-        assertThat(reverseHexString(toHexStringNoPrefix((byte[]) p.getValue())),
-                is(hash.toString()));
+        assertThat(p.getValue(), is(hash));
     }
 
     @Test
@@ -307,7 +306,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, p.getValue().toString());
     }
 
     @Test
@@ -316,7 +315,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, p.getValue().toString());
     }
 
     @Test

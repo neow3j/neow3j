@@ -727,6 +727,7 @@ public class NeoMethod {
 
     private void initializeLocalVariablesAndParameters() {
         checkForUnsupportedLocalVariableTypes();
+        checkForMissingLocalVariableInformation();
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
         if (asmMethod.maxLocals == 0) {
@@ -741,6 +742,22 @@ public class NeoMethod {
             addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
                     (byte) variablesByNeoIndex.size(),
                     (byte) parametersByNeoIndex.size()}));
+        }
+    }
+
+    // Checks if this method was compiled with local variable information (debug info) attached
+    // to it. If not it throws an exception because it will not be possible to correctly convert
+    // the method to neo-vm code without that information. These checks don't work on methods
+    // that have no local variables and no parameters. Even if those methods were compiled with
+    // out that debug setting they can be converted just fine. I.e., we have no way of
+    // determining (via ASM) if such a method/class was compiled with the highest debug info
+    // setting.
+    private void checkForMissingLocalVariableInformation() {
+        if (asmMethod.maxLocals > 0 && asmMethod.localVariables.isEmpty()) {
+            throw new CompilerException(format("The method '%s' from %s was not compiled with " +
+                    "debugging information and can therefore not be used for smart contract " +
+                    "compilation. Make sure to only use methods from your workspace or smart " +
+                    "contract libraries.", asmMethod.name, getOwnerClassName()));
         }
     }
 
@@ -794,7 +811,7 @@ public class NeoMethod {
         }
     }
 
-    // Retruns the next index of the local variables after the method parameter slots.
+    // Returns the next index of the local variables after the method parameter slots.
     private int collectMethodParameters() {
         int paramCount = 0;
         List<LocalVariableNode> locVars = asmMethod.localVariables;

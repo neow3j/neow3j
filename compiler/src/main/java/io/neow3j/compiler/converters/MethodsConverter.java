@@ -78,7 +78,7 @@ public class MethodsConverter implements Converter {
             case INVOKESTATIC:
             case INVOKEVIRTUAL:
             case INVOKESPECIAL:
-                insn = MethodsConverter.handleInvoke(insn, neoMethod, compUnit);
+                insn = handleInvoke(insn, neoMethod, compUnit);
                 break;
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
@@ -142,6 +142,8 @@ public class MethodsConverter implements Converter {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
+        } else if (isStringEqualsMethodCall(methodInsn)) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
         } else {
             return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn,
                     compUnit);
