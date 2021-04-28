@@ -55,10 +55,11 @@ public class ObjectInheritedIntegrationTest {
     public void blockEquals() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-        // the comparison of Objects, which are Arrays on the neo-vm, is only by reference.
-        // Therefore, only the comparison of the same reference will return true.
+        // The Block is an ArrayStackItem on the neo-vm, thus, the EQUALS opcode only
+        // compares it by reference. But the separate equals(Block) implementation makes a
+        // comparison by value.
         assertTrue(boolArr.get(0).getBoolean());
-        assertFalse(boolArr.get(1).getBoolean());
+        assertTrue(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
         assertFalse(boolArr.get(3).getBoolean());
     }
@@ -73,11 +74,11 @@ public class ObjectInheritedIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()),
                 hash256(txHash));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-
-        // the comparison of Objects, which are Arrays on the neo-vm, is only by reference.
-        // Therefore, only the comparison of the same reference will return true.
+        // The Transaction is an ArrayStackItem on the neo-vm, thus, the EQUALS opcode only
+        // compares it by reference. But the separate equals(Transaction) implementation makes a
+        // comparison by value.
         assertTrue(boolArr.get(0).getBoolean());
-        assertFalse(boolArr.get(1).getBoolean());
+        assertTrue(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
         assertFalse(boolArr.get(3).getBoolean());
     }
@@ -135,7 +136,7 @@ public class ObjectInheritedIntegrationTest {
                 string(s2));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
 
-        // ByteStrings are ByteStringStackItems on the neo-vm and are therefore compared by
+        // Strings are ByteStringStackItems on the neo-vm and are therefore compared by
         // reference and by value.
         assertTrue(boolArr.get(0).getBoolean());
         assertTrue(boolArr.get(1).getBoolean());
@@ -171,7 +172,7 @@ public class ObjectInheritedIntegrationTest {
                 hash256(h2));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
 
-        // Hash160 are ByteStringStackItems on the neo-vm and are therefore compared by reference
+        // Hash256 are ByteStringStackItems on the neo-vm and are therefore compared by reference
         // and by value.
         assertTrue(boolArr.get(0).getBoolean());
         assertTrue(boolArr.get(1).getBoolean());
@@ -219,10 +220,11 @@ public class ObjectInheritedIntegrationTest {
     public void storageMapEquals() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-        // The StorageMap is an ArrayStackItem on the neo-vm, thus, it is only compared by
-        // reference.
+        // The StorageMap is an ArrayStackItem on the neo-vm, thus, the EQUALS opcode only
+        // compares it by reference. But the separate equals(StorageMap) implementation makes a
+        // comparison by value.
         assertTrue(boolArr.get(0).getBoolean());
-        assertFalse(boolArr.get(1).getBoolean());
+        assertTrue(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
         assertFalse(boolArr.get(3).getBoolean());
     }
