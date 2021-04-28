@@ -21,6 +21,7 @@ import static io.neow3j.TestProperties.neoTokenHash;
 import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -131,6 +132,14 @@ public class ArraysConverterIntegrationTest {
                 is(Numeric.reverseHexString(cryptoLibHash())));
     }
 
+    @Test
+    public void stringVarArgs() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                array(string("hello, "), string("world!")));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
+                is("hello, world!"));
+    }
+
     static class ArraysConverterIntegrationTestContract {
 
         public static String[] createStringArrayWithTwoEntries() {
@@ -182,6 +191,14 @@ public class ArraysConverterIntegrationTest {
             for (io.neow3j.devpack.Hash160 hash : hashes) {
                 event.fire(hash);
             }
+        }
+
+        public static String stringVarArgs(String... strings) {
+            String s = "";
+            for (String st : strings) {
+                s += st;
+            }
+            return s;
         }
 
     }
