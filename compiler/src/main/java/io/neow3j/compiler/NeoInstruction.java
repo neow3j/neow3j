@@ -254,14 +254,14 @@ public class NeoInstruction {
 
             // Check if operand has correct length according to specified operand prefix.
             BinaryReader reader = new BinaryReader(operandPrefix);
-            int specifiedOperandSize = 0;
+            long specifiedOperandSize = 0;
             try {
                 if (operandSize.prefixSize() == 1) {
-                    specifiedOperandSize = reader.readByte();
+                    specifiedOperandSize = reader.readUnsignedByte();
                 } else if (operandSize.prefixSize() == 2) {
-                    specifiedOperandSize = reader.readInt16();
+                    specifiedOperandSize = reader.readUInt16();
                 } else if (operandSize.prefixSize() == 4) {
-                    specifiedOperandSize = reader.readInt32();
+                    specifiedOperandSize = reader.readUInt32();
                 }
             } catch (IOException ignore) {
             }
