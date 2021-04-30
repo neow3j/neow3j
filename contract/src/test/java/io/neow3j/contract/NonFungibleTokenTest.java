@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -15,7 +16,6 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.methods.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
@@ -55,10 +55,10 @@ public class NonFungibleTokenTest {
 
         // APiZTA6Ym7EHpLK5PLpSLKn62qeMyCZEER
         account1 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
         account2 = new Account(ECKeyPair.create(
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
     }
 
@@ -67,10 +67,10 @@ public class NonFungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
 
-        byte[] expectedScript = new ScriptBuilder().contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                asList(
-                        hash160(account1.getScriptHash()),
-                        byteArray(TOKEN_ID)))
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
+                        asList(hash160(account1.getScriptHash()),
+                                byteArray(TOKEN_ID)))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);
@@ -108,8 +108,7 @@ public class NonFungibleTokenTest {
     public void testOwnerOf_returnInvalidAddress() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
         exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage(new StringContains(
-                "Return type did not contain script hash in expected format."));
+        exceptionRule.expectMessage("Return type did not contain script hash in expected format.");
         nfTestToken.ownerOf(new byte[]{1});
     }
 

@@ -7,6 +7,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
+import io.neow3j.model.types.NeoVMStateType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
@@ -26,12 +27,15 @@ import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -40,9 +44,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ContractTestRule implements TestRule {
-
-    public static final String VM_STATE_HALT = "HALT";
-    public static final String VM_STATE_FAULT = "FAULT";
 
     private NeoTestContainer neoTestContainer;
     private final String fullyQualifiedClassName;
@@ -92,7 +93,7 @@ public class ContractTestRule implements TestRule {
     }
 
     protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationUnit res = new Compiler().compileClass(fullyQualifiedName);
+        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
         NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
@@ -112,12 +113,12 @@ public class ContractTestRule implements TestRule {
         NeoApplicationLog appLog = neow3j.getApplicationLog(
                 response.getSendRawTransaction().getHash()).send().getApplicationLog();
         NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
-        if (execution.getState().equals(VM_STATE_FAULT)) {
+        if (execution.getState().equals(NeoVMStateType.FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
                     + "message was: '%s'", fullyQualifiedName, execution.getException()));
         }
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
-        Hash160 scriptHash = new Hash160(Numeric.hexStringToByteArray(scriptHashHex));
+        Hash160 scriptHash = new Hash160(reverseArray(hexStringToByteArray(scriptHashHex)));
         return new SmartContract(scriptHash, neow3j);
     }
 
@@ -198,7 +199,7 @@ public class ContractTestRule implements TestRule {
      * @param expectedValue The expected value.
      */
     public void assertStorageContains(String key, String expectedValue) throws IOException {
-        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash().toString(),
+        NeoGetStorage response = neow3j.getStorage(getContract().getScriptHash(),
                 Numeric.toHexStringNoPrefix(key.getBytes(UTF_8))).send();
         String value = new String(Base64.decode(response.getStorage()), UTF_8);
 
@@ -226,10 +227,9 @@ public class ContractTestRule implements TestRule {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    public Hash256 transferGas(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferGas(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
-                committee.getScriptHash())
+        return gasToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -245,10 +245,9 @@ public class ContractTestRule implements TestRule {
      * @throws Throwable if an error occurs when communicating the the neo-node, or when
      *                   constructing the transaction object.
      */
-    public Hash256 transferNeo(Hash160 to, String amount) throws Throwable {
+    public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transferFromSpecificAccounts(wallet, to, new BigDecimal(amount),
-                committee.getScriptHash())
+        return neoToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -321,7 +320,7 @@ public class ContractTestRule implements TestRule {
     public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
         assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
-                is(VM_STATE_HALT));
+                is(NeoVMStateType.HALT));
     }
 
     public void signWithCommitteeAccount() {

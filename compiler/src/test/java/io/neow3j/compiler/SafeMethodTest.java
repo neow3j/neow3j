@@ -13,7 +13,7 @@ public class SafeMethodTest {
 
     @Test
     public void methodShouldBeMarkedSafeIfAnnotatedWithSafeAnnotation() throws IOException {
-        CompilationUnit unit = new Compiler().compileClass(SafeMethodTestContract.class.getName());
+        CompilationUnit unit = new Compiler().compile(SafeMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods();
         assertTrue(methods.get(0).isSafe());
         assertTrue(methods.get(2).isSafe());
@@ -21,7 +21,7 @@ public class SafeMethodTest {
 
     @Test
     public void methodShouldNotBeMarkedSafeIfNotAnnotatedWithSafeAnnotation() throws IOException {
-        CompilationUnit unit = new Compiler().compileClass(SafeMethodTestContract.class.getName());
+        CompilationUnit unit = new Compiler().compile(SafeMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods();
         assertFalse(methods.get(1).isSafe());
     }

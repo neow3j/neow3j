@@ -16,7 +16,7 @@ public enum NodePluginType {
     STATES_DUMPER("StatesDumper"),
     SYSTEM_LOG("SystemLog");
 
-    private String name;
+    private final String name;
 
     NodePluginType(String name) {
         this.name = name;

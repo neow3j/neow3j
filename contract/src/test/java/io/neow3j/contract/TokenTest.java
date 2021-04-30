@@ -11,16 +11,21 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class TokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Token someToken;
     private static final Hash160 SOME_TOKEN_SCRIPT_HASH =
@@ -51,9 +56,42 @@ public class TokenTest {
 
     @Test
     public void testGetTotalSupply() throws Exception {
-        setUpWireMockForInvokeFunction("totalSupply",
-                "invokefunction_totalSupply.json");
+        setUpWireMockForInvokeFunction("totalSupply", "invokefunction_totalSupply.json");
         assertThat(someToken.getTotalSupply(), is(new BigInteger("3000000000000000")));
+    }
+
+    @Test
+    public void testToFractions() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
+        BigInteger fractions = someToken.toFractions(new BigDecimal("1.02"));
+        assertThat(fractions, is(new BigInteger("102")));
+    }
+
+    @Test
+    public void testToFractions_tooHighScale() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided amount has too many decimal points.");
+        someToken.toFractions(new BigDecimal("1.023"));
+    }
+
+    @Test
+    public void testToFractionsWithSpecificDecimals() {
+        BigInteger fractions = Token.toFractions(new BigDecimal("1.014"), 6);
+        assertThat(fractions, is(new BigInteger("1014000")));
+    }
+
+    @Test
+    public void testToDecimals() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
+        BigDecimal decimals = someToken.toDecimals(new BigInteger("123456789"));
+        assertThat(decimals, is(new BigDecimal("1.23456789")));
+    }
+
+    @Test
+    public void testToDecimalsWithSpecificDecimals() {
+        BigDecimal decimals = Token.toDecimals(new BigInteger("123456"), 3);
+        assertThat(decimals, is(new BigDecimal("123.456")));
     }
 
 }

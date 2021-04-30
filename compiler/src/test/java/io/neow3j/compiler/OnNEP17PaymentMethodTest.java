@@ -7,7 +7,6 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.devpack.annotations.OnNEP17Payment;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
@@ -31,7 +30,7 @@ public class OnNEP17PaymentMethodTest {
             throws IOException {
 
         CompilationUnit unit = new Compiler()
-                .compileClass(OnNep17PaymentMethodTestContract.class.getName());
+                .compile(OnNep17PaymentMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
                 .filter(m -> m.getName().equals(ONNEP17PAYMENT_METHOD_NAME))
                 .collect(Collectors.toList());
@@ -50,7 +49,7 @@ public class OnNEP17PaymentMethodTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
                 Object.class.getName(), void.class.getName())));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 OnNep17PaymentMethodIllegalReturnTypeTestContract.class.getName());
     }
 
@@ -60,7 +59,7 @@ public class OnNEP17PaymentMethodTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
                 Object.class.getName(), void.class.getName())));
-        new Compiler().compileClass(
+        new Compiler().compile(
                 OnNep17PaymentMethodIllegalParametersTestContract.class.getName());
     }
 
@@ -69,7 +68,7 @@ public class OnNEP17PaymentMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("multiple methods", ONNEP17PAYMENT_METHOD_NAME)));
-        new Compiler().compileClass(MultipleOnNep17PaymentMethodsTestContract.class.getName());
+        new Compiler().compile(MultipleOnNep17PaymentMethodsTestContract.class.getName());
     }
 
     static class OnNep17PaymentMethodTestContract {

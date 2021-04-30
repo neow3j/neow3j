@@ -38,10 +38,21 @@ public class List<T> {
     @Instruction(opcode = OpCode.CLEARITEMS)
     public native void clear();
 
+    @Override
     @Instruction(opcode = OpCode.VALUES)
     public native List<T> clone();
 
     @Instruction
     public native T[] toArray();
+
+    /**
+     * Compares this list to the given object. The comparison happens by reference only.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same list. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 
 }

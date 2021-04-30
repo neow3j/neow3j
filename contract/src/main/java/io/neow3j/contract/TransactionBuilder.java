@@ -2,14 +2,17 @@ package io.neow3j.contract;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
@@ -21,7 +24,6 @@ import io.neow3j.transaction.VerificationScript;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
@@ -45,7 +47,7 @@ import java.util.stream.Stream;
  */
 public class TransactionBuilder {
 
-    protected Neow3j neow;
+    protected Neow3j neow3j;
     protected Wallet wallet;
     protected Transaction transaction;
 
@@ -60,8 +62,8 @@ public class TransactionBuilder {
     private BiConsumer<BigInteger, BigInteger> consumer;
     private Supplier<? extends Throwable> supplier;
 
-    protected TransactionBuilder(Neow3j neow) {
-        this.neow = neow;
+    protected TransactionBuilder(Neow3j neow3j) {
+        this.neow3j = neow3j;
         // The random value used to initialize the nonce does not need cryptographic security,
         // therefore, we can use ThreadLocalRandom to generate it.
         this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
@@ -108,7 +110,7 @@ public class TransactionBuilder {
      * @return this transaction builder.
      * @throws TransactionConfigurationException if the nonce is not in the range [0, 2^32).
      */
-    public TransactionBuilder nonce(Long nonce) {
+    public TransactionBuilder nonce(long nonce) {
         if (nonce < 0 || nonce >= (long) Math.pow(2, 32)) {
             throw new TransactionConfigurationException(
                     "The value of the transaction nonce must be in the interval [0, 2^32).");
@@ -212,7 +214,7 @@ public class TransactionBuilder {
      * @param fee the additional network fee in fractions of GAS.
      * @return this transaction builder.
      */
-    public TransactionBuilder additionalNetworkFee(Long fee) {
+    public TransactionBuilder additionalNetworkFee(long fee) {
         this.additionalNetworkFee = fee;
         return this;
     }
@@ -232,8 +234,8 @@ public class TransactionBuilder {
     /**
      * Adds the given attributes to this transaction.
      * <p>
-     * The maximum number of attributes on a transaction is given in {@link
-     * NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
+     * The maximum number of attributes on a transaction is given in
+     * {@link NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
      *
      * @param attributes the attributes.
      * @return this transaction builder.
@@ -315,7 +317,7 @@ public class TransactionBuilder {
                 consumer.accept(fees, senderGasBalance);
             }
         }
-        return new Transaction(neow, version, nonce, validUntilBlock, signers, systemFee,
+        return new Transaction(neow3j, version, nonce, validUntilBlock, signers, systemFee,
                 networkFee, attributes, script, new ArrayList<>());
     }
 
@@ -326,7 +328,7 @@ public class TransactionBuilder {
 
     // Checks if this transaction contains a signer that is a committee member.
     private boolean isAllowedForHighPriority() throws IOException {
-        List<Hash160> committee = neow.getCommittee().send()
+        List<Hash160> committee = neow3j.getCommittee().send()
                 .getCommittee()
                 .stream().map(ECPublicKey::new)
                 .map(key -> key.getEncoded(true))
@@ -368,7 +370,7 @@ public class TransactionBuilder {
     }
 
     private long fetchCurrentBlockNr() throws IOException {
-        return neow.getBlockCount().send().getBlockIndex().longValue();
+        return neow3j.getBlockCount().send().getBlockIndex().longValue();
     }
 
     /*
@@ -380,9 +382,9 @@ public class TransactionBuilder {
         // The signers are required for `invokescript` calls that will hit a
         // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
-        String script = Numeric.toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow.invokeScript(
-                Base64.encode(Numeric.hexStringToByteArray(script)), signers)
+        String script = toHexStringNoPrefix(this.script);
+        NeoInvokeScript response = neow3j.invokeScript(
+                Base64.encode(hexStringToByteArray(script)), signers)
                 .send();
         if (response.hasError()) {
             throw new TransactionConfigurationException("The script is invalid. The vm returned " +
@@ -397,7 +399,7 @@ public class TransactionBuilder {
     }
 
     private long calcNetworkFee() throws IOException {
-        Transaction tx = new Transaction(neow, version, nonce, validUntilBlock, signers, 0, 0,
+        Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
         // For each signer that is available in the wallet and has a verification script, we add
         // a witness to a temporary transaction object that is serialized and sent to the
@@ -419,8 +421,8 @@ public class TransactionBuilder {
             throw new TransactionConfigurationException("No signers were set for which an account" +
                     " with verification script exists in the wallet.");
         }
-        String txHex = Numeric.toHexStringNoPrefix(tx.toArray());
-        return neow.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
+        String txHex = toHexStringNoPrefix(tx.toArray());
+        return neow3j.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
     }
 
     /**
@@ -443,8 +445,8 @@ public class TransactionBuilder {
         // is not the case because we cannot know if the invoked script needs it or not and it
         // doesn't lead to failures if we add them in any case.
         Signer[] signers = this.signers.toArray(new Signer[0]);
-        String script = Numeric.toHexStringNoPrefix(this.script);
-        return neow.invokeScript(script, signers).send();
+        String script = toHexStringNoPrefix(this.script);
+        return neow3j.invokeScript(script, signers).send();
     }
 
     /**
@@ -518,7 +520,7 @@ public class TransactionBuilder {
             if (ecKeyPair == null) {
                 continue;
             }
-            sigs.add(Sign.signMessage(txBytes, ecKeyPair));
+            sigs.add(signMessage(txBytes, ecKeyPair));
         }
         int m = multiSigVerifScript.getSigningThreshold();
         if (sigs.size() < m) {
@@ -527,7 +529,7 @@ public class TransactionBuilder {
                     "are part of the multi-sig account with script hash " +
                     signerAcc.getScriptHash() + ".");
         }
-        transaction.addWitness(Witness.createMultiSigWitness(sigs, multiSigVerifScript));
+        transaction.addWitness(createMultiSigWitness(sigs, multiSigVerifScript));
     }
 
     /**
@@ -536,8 +538,8 @@ public class TransactionBuilder {
      * balance.
      * <p>
      * The check and potential execution of the consumer is only performed when the transaction is
-     * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
-     * TransactionBuilder#getUnsignedTransaction()}.
+     * built, i.e., when calling {@link TransactionBuilder#sign()} or
+     * {@link TransactionBuilder#getUnsignedTransaction()}.
      *
      * @param consumer the consumer.
      * @return this transaction builder.
@@ -557,8 +559,8 @@ public class TransactionBuilder {
      * not, otherwise throw an exception created by the provided supplier.
      * <p>
      * The check and potential throwing of the exception is only performed when the transaction is
-     * built, i.e., when calling {@link TransactionBuilder#sign()} or {@link
-     * TransactionBuilder#getUnsignedTransaction()}.
+     * built, i.e., when calling {@link TransactionBuilder#sign()} or
+     * {@link TransactionBuilder#getUnsignedTransaction()}.
      *
      * @param exceptionSupplier the exception supplier.
      * @return this transaction builder.
@@ -574,7 +576,7 @@ public class TransactionBuilder {
     }
 
     private BigInteger getSenderGasBalance() throws IOException {
-        return new GasToken(neow).getBalanceOf(getSender());
+        return new GasToken(neow3j).getBalanceOf(getSender());
     }
 
     private Hash160 getSender() {

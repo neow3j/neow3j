@@ -19,7 +19,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.utils.Numeric;
@@ -29,9 +28,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.hamcrest.Matchers;
+import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -278,21 +276,28 @@ public class ContractParameterTest {
     }
 
     @Test
-    public void testHash256() {
-        Hash256 hash =
-                new Hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf");
-        ContractParameter p = hash256(hash);
+    public void testHash160ParameterCreationFromAccount() {
+        Account account = Account.create();
+        ContractParameter p = hash160(account);
 
-        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
-        assertThat(reverseHexString(toHexStringNoPrefix((byte[]) p.getValue())),
-                is(hash.toString()));
+        assertThat(p.getValue(), is(account.getScriptHash()));
     }
 
     @Test
     public void testHash160_null() {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("The script hash argument must not be null");
-        hash160(null);
+        hash160((Hash160) null);
+    }
+
+    @Test
+    public void testHash256() {
+        Hash256 hash =
+                new Hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf");
+        ContractParameter p = hash256(hash);
+
+        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
+        assertThat(p.getValue(), is(hash));
     }
 
     @Test
@@ -301,7 +306,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, p.getValue().toString());
     }
 
     @Test
@@ -310,7 +315,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(Numeric.hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
-        assertEquals(hashValue, toHexStringNoPrefix((byte[]) (p.getValue())));
+        assertEquals(hashValue, p.getValue().toString());
     }
 
     @Test

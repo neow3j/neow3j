@@ -1,19 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
-import static java.lang.String.format;
-
-import java.io.BufferedInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -28,12 +14,28 @@ import org.objectweb.asm.util.Printer;
 import org.objectweb.asm.util.Textifier;
 import org.objectweb.asm.util.TraceMethodVisitor;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
+import static java.lang.String.format;
+
 public class AsmHelper {
 
     private static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
             Arrays.asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
 
-    /** Gets the {@code MethodNode} corresponding to the method called in the given instruction.
+    /**
+     * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
      *
      * @param methodInsn The method instruction.
      * @param owner      The class that contains the method to be searched.
@@ -234,6 +236,13 @@ public class AsmHelper {
             idx++;
         }
         return idx;
+    }
+
+    public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit)
+            throws IOException {
+
+        return getFieldIndex(fieldInsn, getAsmClassForInternalName(fieldInsn.owner,
+                compUnit.getClassLoader()));
     }
 
     /**

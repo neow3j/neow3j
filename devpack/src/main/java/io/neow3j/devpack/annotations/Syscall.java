@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 /**
  * Used to mark a method to be replaced with a specific {@link InteropServiceCode}. The annotated
  * method can be used in a smart contract. A method can be annotated with multiple
- * <tt>Syscalls</tt>, which will be invoked sequentially.
+ * {@code Syscalls}, which will be invoked sequentially.
  * <p>
  * The method's body is ignored by the NeoVM compiler if it has this annotation.
  */

@@ -1,16 +1,19 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
-import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
-import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static java.util.Arrays.stream;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.utils.ArrayUtils;
+import org.objectweb.asm.Label;
+import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.LabelNode;
+import org.objectweb.asm.tree.LocalVariableNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TryCatchBlockNode;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -27,21 +30,18 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
-import org.objectweb.asm.Label;
-import org.objectweb.asm.Opcodes;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.LabelNode;
-import org.objectweb.asm.tree.LocalVariableNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TryCatchBlockNode;
+
+import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
+import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
+import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static java.util.Arrays.stream;
 
 /**
  * Represents a method in a NeoVM script.
  */
 public class NeoMethod {
-
 
     // The ASM counterpart of this method.
     private final MethodNode asmMethod;
@@ -503,7 +503,6 @@ public class NeoMethod {
             throw new CompilerException(sourceClass, "Could not find the beginning instruction of "
                     + "a try block.");
         }
-        int addr = insn.getAddress();
         Label catchLabel = null;
         if (block.catchLabelNode != null) {
             catchLabel = block.catchLabelNode.getLabel();
@@ -513,8 +512,9 @@ public class NeoMethod {
             finallyLabel = block.finallyLabelNode.getLabel();
         }
         NeoTryInstruction tryInsn = new NeoTryInstruction(catchLabel, finallyLabel);
-        insertInstruction(addr, tryInsn);
+        insertInstruction(insn.getAddress(), tryInsn);
         tryInstructions.add(tryInsn);
+        jumpTargets.put(block.tryLabelNode.getLabel(), tryInsn);
     }
 
     // Adds the given instruction at the given address into the sorted instructions map of this
@@ -552,10 +552,6 @@ public class NeoMethod {
             // that when a new instruction is added to this method and the `currentLabelNode` is
             // set, that label belongs to that `NeoInstruction`. The label is unset as
             // soon as it has been assigned.
-            // TODO: Clarify if this behavior is correct in all scenarios. JVM instructions don't
-            //  always get replaced one-to-one with `NeoInstructions`.
-            // TODO: Clarify if we only need jump points for instructions that additionally have
-            //  a `FrameNode` before them.
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
@@ -731,6 +727,7 @@ public class NeoMethod {
 
     private void initializeLocalVariablesAndParameters() {
         checkForUnsupportedLocalVariableTypes();
+        checkForMissingLocalVariableInformation();
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
         if (asmMethod.maxLocals == 0) {
@@ -745,6 +742,22 @@ public class NeoMethod {
             addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
                     (byte) variablesByNeoIndex.size(),
                     (byte) parametersByNeoIndex.size()}));
+        }
+    }
+
+    // Checks if this method was compiled with local variable information (debug info) attached
+    // to it. If not it throws an exception because it will not be possible to correctly convert
+    // the method to neo-vm code without that information. These checks don't work on methods
+    // that have no local variables and no parameters. Even if those methods were compiled with
+    // out that debug setting they can be converted just fine. I.e., we have no way of
+    // determining (via ASM) if such a method/class was compiled with the highest debug info
+    // setting.
+    private void checkForMissingLocalVariableInformation() {
+        if (asmMethod.maxLocals > 0 && asmMethod.localVariables.isEmpty()) {
+            throw new CompilerException(format("The method '%s' from %s was not compiled with " +
+                    "debugging information and can therefore not be used for smart contract " +
+                    "compilation. Make sure to only use methods from your workspace or smart " +
+                    "contract libraries.", asmMethod.name, getOwnerClassName()));
         }
     }
 
@@ -798,7 +811,7 @@ public class NeoMethod {
         }
     }
 
-    // Retruns the next index of the local variables after the method parameter slots.
+    // Returns the next index of the local variables after the method parameter slots.
     private int collectMethodParameters() {
         int paramCount = 0;
         List<LocalVariableNode> locVars = asmMethod.localVariables;

@@ -43,7 +43,7 @@ public class AsmHelperTest {
 
     @Test
     public void gettingMethodShouldReturnCorrectMethodNode() throws IOException {
-        String desc = "(Lio/neow3j/devpack/StorageContext;Ljava/lang/String;)[B";
+        String desc = "(Lio/neow3j/devpack/StorageContext;Lio/neow3j/devpack/ByteString;)Lio/neow3j/devpack/ByteString;";
         String name = "get";
         MethodInsnNode insn = new MethodInsnNode(JVMOpcode.INVOKESTATIC.getOpcode(),
                 "io/neow3j/devpack/neo/Storage", "get", desc);

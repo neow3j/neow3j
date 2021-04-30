@@ -1,5 +1,6 @@
 package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
@@ -21,9 +22,9 @@ public class ContractManagement extends ContractInterface {
      *
      * @param nefFile  The NEF file of the contract to deploy.
      * @param manifest The manifest of the contract to deploy.
-     * @return The deployed <tt>Contract</tt>.
+     * @return The deployed {@code Contract}.
      */
-    public static native Contract deploy(byte[] nefFile, String manifest);
+    public static native Contract deploy(ByteString nefFile, String manifest);
 
     /**
      * Deploys a new contract with the given NEF file and manifest.
@@ -32,9 +33,9 @@ public class ContractManagement extends ContractInterface {
      * @param manifest The manifest of the contract to deploy.
      * @param data     Data that is passed on to the {@code _deploy} method of the deployed contract
      *                 if it exists.
-     * @return The deployed <tt>Contract</tt>.
+     * @return The deployed {@code Contract}.
      */
-    public static native Contract deploy(byte[] nefFile, String manifest, Object data);
+    public static native Contract deploy(ByteString nefFile, String manifest, Object data);
 
     /**
      * Updates the calling smart contract with the given NEF file and manifest.
@@ -45,7 +46,7 @@ public class ContractManagement extends ContractInterface {
      * @param nefFile  The updated NEF file of the contract.
      * @param manifest The updated manifest of the contract.
      */
-    public static native void update(byte[] nefFile, String manifest);
+    public static native void update(ByteString nefFile, String manifest);
 
     /**
      * Updates the calling smart contract with the given NEF file and manifest.
@@ -57,7 +58,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest The updated manifest of the contract.
      * @param data     Data passed {@code update} method of the contract being deployed.
      */
-    public static native void update(byte[] nefFile, String manifest, Object data);
+    public static native void update(ByteString nefFile, String manifest, Object data);
 
     /**
      * Destroys the calling smart contract.

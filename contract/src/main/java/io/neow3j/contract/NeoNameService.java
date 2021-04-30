@@ -5,6 +5,8 @@ import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.model.types.StackItemType.MAP;
+import static io.neow3j.utils.Numeric.hexToString;
+import static io.neow3j.utils.Numeric.toHexString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -15,7 +17,6 @@ import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
@@ -45,8 +46,6 @@ public class NeoNameService extends NonFungibleToken {
 
     private static final ByteStringStackItem NAME_PROPERTY =
             new ByteStringStackItem("name".getBytes(UTF_8));
-    private static final ByteStringStackItem DESC_PROPERTY =
-            new ByteStringStackItem("description".getBytes(UTF_8));
     private static final ByteStringStackItem EXPI_PROPERTY =
             new ByteStringStackItem("expiration".getBytes(UTF_8));
 
@@ -334,7 +333,7 @@ public class NeoNameService extends NonFungibleToken {
      */
     @Override
     public NameState properties(byte[] name) throws IOException {
-        String domainAsString = Numeric.hexToString(Numeric.toHexString(name));
+        String domainAsString = hexToString(toHexString(name));
         checkDomainNameAvailability(domainAsString, false);
         InvocationResult invocationResult =
                 callInvokeFunction(PROPERTIES, singletonList(byteArray(name)))

@@ -5,6 +5,7 @@ import static io.neow3j.contract.ContractParameter.array;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.publicKey;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.contains;
@@ -22,6 +23,7 @@ import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,12 +35,11 @@ import org.junit.rules.ExpectedException;
 
 public class RoleManagementTest {
 
-    private static final String ROLEMANAGEMENT_SCRIPTHASH =
-            "49cf4e5378ffcd4dec034fd98a174c5491e395e2";
-    private static final String DESIGNATE_AS_ROLE = "designateAsRole";
+    private static final Hash160 ROLEMANAGEMENT_HASH =
+            new Hash160("49cf4e5378ffcd4dec034fd98a174c5491e395e2");
 
+    private RoleManagement roleManagement;
     private Account account1;
-    private Neow3j neow;
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -51,10 +52,13 @@ public class RoleManagementTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockRule.port();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+        roleManagement = new RoleManagement(neow3j);
 
-        account1 = new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
-                "0f7d2f77f3229178650b958eb286258f0e6533d0b86ec389b862c440c6511a4b")));
+        account1 = new Account(
+                ECKeyPair.create(hexStringToByteArray(
+                        "0f7d2f77f3229178650b958eb286258f0e6533d0b86ec389b862c440c6511a4b"
+                )));
     }
 
     @Test
@@ -70,8 +74,8 @@ public class RoleManagementTest {
         setUpWireMockForCall("invokefunction", "designation_getByRole.json",
                 String.valueOf(Role.STATE_VALIDATOR.byteValue()), "10");
 
-        RoleManagement roleManagement = new RoleManagement(neow);
-        List<ECPublicKey> list = roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, 10);
+        List<ECPublicKey> list =
+                roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, BigInteger.TEN);
         assertThat(list, contains(account1.getECKeyPair().getPublicKey()));
     }
 
@@ -81,28 +85,26 @@ public class RoleManagementTest {
         setUpWireMockForCall("invokefunction", "designation_getByRole_empty.json",
                 String.valueOf(Role.STATE_VALIDATOR.byteValue()), "12");
 
-        RoleManagement roleManagement = new RoleManagement(neow);
-        List<ECPublicKey> list = roleManagement.getDesignatedByRole(Role.ORACLE, 12);
+        List<ECPublicKey> list =
+                roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("12"));
         assertThat(list, hasSize(0));
     }
 
     @Test
     public void testGetDesignatedByRole_negativeIndex() throws IOException {
-        RoleManagement roleManagement = new RoleManagement(neow);
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(new StringContains("The block index has to be positive."));
-        roleManagement.getDesignatedByRole(Role.ORACLE, -1);
+        roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1"));
     }
 
     @Test
     public void testGetDesignatedByRole_indexTooHigh() throws IOException {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        RoleManagement roleManagement = new RoleManagement(neow);
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
                 new StringContains("The provided block index (1001) is too high."));
-        roleManagement.getDesignatedByRole(Role.ORACLE, 1001);
+        roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001"));
     }
 
     @Test
@@ -110,14 +112,15 @@ public class RoleManagementTest {
         setUpWireMockForCall("invokefunction", "designation_designateAsRole.json");
 
         byte[] expectedScript = new ScriptBuilder()
-                .contractCall(RoleManagement.SCRIPT_HASH, DESIGNATE_AS_ROLE,
+                .contractCall(
+                        RoleManagement.SCRIPT_HASH,
+                        "designateAsRole",
                         asList(
                                 integer(Role.ORACLE.byteValue()),
                                 array(publicKey(
                                         account1.getECKeyPair().getPublicKey().getEncoded(true)))))
                 .toArray();
 
-        RoleManagement roleManagement = new RoleManagement(neow);
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
         pubKeys.add(account1.getECKeyPair().getPublicKey());
         TransactionBuilder b = roleManagement.designateAsRole(Role.ORACLE, pubKeys);
@@ -127,7 +130,6 @@ public class RoleManagementTest {
 
     @Test
     public void testDesignate_roleNull() {
-        RoleManagement roleManagement = new RoleManagement(neow);
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
         pubKeys.add(account1.getECKeyPair().getPublicKey());
 
@@ -138,8 +140,6 @@ public class RoleManagementTest {
 
     @Test
     public void testDesignate_pubKeysNull() {
-        RoleManagement roleManagement = new RoleManagement(neow);
-
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage(
                 new StringContains("one public key is required for designation"));
@@ -148,7 +148,6 @@ public class RoleManagementTest {
 
     @Test
     public void testDesignate_pubKeysEmpty() {
-        RoleManagement roleManagement = new RoleManagement(neow);
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
 
         expectedException.expect(IllegalArgumentException.class);
@@ -159,8 +158,7 @@ public class RoleManagementTest {
 
     @Test
     public void scriptHash() {
-        assertThat(new RoleManagement(neow).getScriptHash().toString(),
-                is(ROLEMANAGEMENT_SCRIPTHASH));
+        assertThat(roleManagement.getScriptHash(), is(ROLEMANAGEMENT_HASH));
     }
 
 }

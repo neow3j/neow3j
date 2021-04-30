@@ -1,5 +1,7 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CALL;
@@ -29,7 +31,7 @@ public class Contract {
     /**
      * The contract's NEF.
      */
-    public final byte[] nef;
+    public final ByteString nef;
 
     /**
      * The contract's manifest in JSON format.
@@ -40,8 +42,8 @@ public class Contract {
         id = 0;
         updateCounter = 0;
         hash = new Hash160(new byte[0]);
-        nef = new byte[0];
-        manifest = null;
+        nef = new ByteString("");
+        manifest = "";
     }
 
     /**
@@ -66,5 +68,34 @@ public class Contract {
      */
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
+
+
+    /**
+     * Compares this contract to the given object. The comparison happens by reference only. I.e.,
+     * if you retrieve the same contract twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then
+     * comparing the two will return false.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same contract. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given contract by value.
+     *
+     * @param contract Other contract to compare this contract to.
+     * @return True if all fields of the two contracts are equal. False otherwise.
+     */
+    public boolean equals(Contract contract) {
+        if (this == contract) return true;
+        return id == contract.id
+                && updateCounter == contract.updateCounter
+                && hash.equals(contract.hash)
+                && nef.equals(contract.nef)
+                && manifest.equals(contract.manifest);
+    }
 
 }

@@ -30,7 +30,8 @@ public class ContractEventsIntegrationTest {
     private static final int EXEC_FEE_FACTOR = 30;
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(ContractEvents.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(
+            ContractEventsIntegrationTestContract.class.getName());
 
     @Test
     public void fireTwoEvents() throws Throwable {
@@ -90,12 +91,12 @@ public class ContractEventsIntegrationTest {
         assertThat(state.get(2).getList().get(0).getInteger().intValue(), is(10));
     }
 
-    static class ContractEvents {
+    static class ContractEventsIntegrationTestContract {
 
         private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
-        private static Event5Args<String, Integer, Boolean, String, Object> event2;
+        private static Event5Args<String, Integer, Boolean, String, Object> event2 = new Event5Args<>();
 
         private static Event3Args<byte[], byte[], int[]> event3;
 

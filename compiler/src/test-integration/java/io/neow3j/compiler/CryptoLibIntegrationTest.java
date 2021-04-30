@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.NamedCurve;
@@ -69,15 +70,15 @@ public class CryptoLibIntegrationTest {
 
     static class CryptoLibIntegrationTestContract {
 
-        public static String sha256(String value) {
+        public static ByteString sha256(ByteString value) {
             return CryptoLib.sha256(value);
         }
 
-        public static String ripemd160(String value) {
+        public static ByteString ripemd160(ByteString value) {
             return CryptoLib.ripemd160(value);
         }
 
-        public static boolean verifyWithECDsa(String message, ECPoint pubKey, String signature,
+        public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey, String signature,
                 byte curve) {
             return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
         }

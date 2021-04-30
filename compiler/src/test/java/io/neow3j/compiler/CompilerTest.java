@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -56,6 +57,7 @@ public class CompilerTest {
         // Byte arrays
         assertClassIsMappedToType(byte[].class, ContractParameterType.BYTE_ARRAY);
         assertClassIsMappedToType(Byte[].class, ContractParameterType.BYTE_ARRAY);
+        assertClassIsMappedToType(ByteString.class, ContractParameterType.BYTE_ARRAY);
 
         // Arrays
         assertClassIsMappedToType(String[].class, ContractParameterType.ARRAY);
@@ -64,6 +66,7 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, ContractParameterType.ARRAY);
         assertClassIsMappedToType(byte[][].class, ContractParameterType.ARRAY);
         assertClassIsMappedToType(List.class, ContractParameterType.ARRAY);
+        assertClassIsMappedToType(Iterator.Struct.class, ContractParameterType.ARRAY);
 
         // Public Key
         assertClassIsMappedToType(ECPoint.class, ContractParameterType.PUBLIC_KEY);
@@ -76,8 +79,8 @@ public class CompilerTest {
         assertClassIsMappedToType(Hash256.class, ContractParameterType.HASH256);
 
         // Others
-        assertClassIsMappedToType(Transaction.class, ContractParameterType.INTEROP_INTERFACE);
         assertClassIsMappedToType(Iterator.class, ContractParameterType.INTEROP_INTERFACE);
+        assertClassIsMappedToType(Transaction.class, ContractParameterType.ANY);
         assertClassIsMappedToType(Object.class, ContractParameterType.ANY);
         assertClassIsMappedToType(CompilerTest.class, ContractParameterType.ANY);
     }
@@ -109,6 +112,7 @@ public class CompilerTest {
         // Byte arrays
         assertClassIsMappedToType(byte[].class, StackItemType.BUFFER);
         assertClassIsMappedToType(Byte[].class, StackItemType.BUFFER);
+        assertClassIsMappedToType(ByteString.class, StackItemType.BYTE_STRING);
 
         // Arrays
         assertClassIsMappedToType(String[].class, StackItemType.ARRAY);
@@ -117,6 +121,7 @@ public class CompilerTest {
         assertClassIsMappedToType(boolean[].class, StackItemType.ARRAY);
         assertClassIsMappedToType(byte[][].class, StackItemType.ARRAY);
         assertClassIsMappedToType(List.class, StackItemType.ARRAY);
+        assertClassIsMappedToType(Iterator.Struct.class, StackItemType.STRUCT);
 
         // Map
         assertClassIsMappedToType(Map.class, StackItemType.MAP);

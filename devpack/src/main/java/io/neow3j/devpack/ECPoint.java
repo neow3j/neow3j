@@ -27,7 +27,7 @@ public class ECPoint {
     }
 
     /**
-     * Constructs an {@code ECPoint} from the given hex string. Checks if the argument has the
+     * Constructs an {@code ECPoint} from the given byte string. Checks if the argument has the
      * appropriate size of 33 bytes for an EC point.
      *
      * @param value The EC point as a hex string.
@@ -37,7 +37,7 @@ public class ECPoint {
     @Instruction(opcode = OpCode.PUSHINT8, operand = 0x21) // 33 bytes expected array size
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.ASSERT)
-    public ECPoint(String value) {
+    public ECPoint(ByteString value) {
 
     }
 
@@ -50,12 +50,23 @@ public class ECPoint {
     public native byte[] toByteArray();
 
     /**
-     * Returns this {@code ECPoint} as a hex string.
+     * Returns this {@code ECPoint} as a byte string. No GAS costs accrue for this conversion.
      *
-     * @return the string.
+     * @return the byte string.
      */
     @Instruction
-    public native String toString();
+    public native ByteString asByteString();
 
+    /**
+     * Compares this EC point to the given object. The comparison happens first by reference and
+     * then by value. I.e., two {@code ECPoint}s are compared byte by byte.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same object or have the same EC point
+     * value. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
 }
 

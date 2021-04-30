@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -100,7 +101,7 @@ public class StringLiteralHelperIntegrationTest {
         private static final Hash160 scriptHash =
                 addressToScriptHash("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
 
-        private static final byte[] bytes = hexToBytes("0x010203");
+        private static final ByteString bytes = hexToBytes("0x010203");
 
         private static final int integer = stringToInt("1000000000000000000000000000000");
 
@@ -117,16 +118,16 @@ public class StringLiteralHelperIntegrationTest {
             return bytes;
         }
 
-        public static byte[] hexStringToByteArrayInMethod() {
+        public static ByteString hexStringToByteArrayInMethod() {
             return hexToBytes("0x010203");
         }
 
-        public static byte[] hexStringToByteArrayInStaticVariableInitialization() {
+        public static ByteString hexStringToByteArrayInStaticVariableInitialization() {
             return bytes;
         }
 
-        public static byte[] hexStringToByteArrayInLocalVariable() {
-            byte[] bytes = hexToBytes("0x010203");
+        public static ByteString hexStringToByteArrayInLocalVariable() {
+            ByteString bytes = hexToBytes("0x010203");
             return bytes;
         }
 

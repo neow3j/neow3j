@@ -5,8 +5,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -23,56 +21,18 @@ public class Neow3jPluginUtils {
     protected static final String NEFDBGNFO_SUFFIX = ".nefdbgnfo";
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
-    static URL getBuildDirURL(File buildDir) {
-        try {
-            return buildDir.toURI().toURL();
-        } catch (MalformedURLException e) {
-            System.out.println("Error on converting ("
-                    + buildDir.getAbsolutePath() + ") to URL: " + e);
-        }
-        return null;
-    }
-
-    static List<URL> getSourceSetsFilesURL(Project project) {
+    static List<File> getOutputDirs(Project project) {
         final JavaPluginConvention pluginConv = project.getConvention()
                 .getPlugin(JavaPluginConvention.class);
-        List<URL> urls = new ArrayList<>();
-        pluginConv.getSourceSets().forEach(ss -> {
-            ss.getAllSource().forEach(f -> {
-                try {
-                    urls.add(f.toURI().toURL());
-                } catch (Exception e) {
-                    System.out.println("Error on converting ("
-                            + f.getAbsolutePath() + ") to URL: " + e);
-                }
-            });
-        });
-        return urls;
-    }
-
-    static List<URL> getSourceSetsDirsURL(Project project) {
-        final JavaPluginConvention pluginConv = project.getConvention()
-                .getPlugin(JavaPluginConvention.class);
-        List<URL> urls = new ArrayList<>();
-        pluginConv.getSourceSets().forEach(ss -> {
-            ss.getOutput().getClassesDirs().forEach(f -> {
-                try {
-                    urls.add(f.toURI().toURL());
-                } catch (Exception e) {
-                    System.out.println("Error on converting ("
-                            + f.getAbsolutePath() + ") to URL: " + e);
-                }
-            });
-        });
-        return urls;
+        List<File> dirs = new ArrayList<>();
+        pluginConv.getSourceSets()
+                .forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
+        return dirs;
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {
-        FileOutputStream outputStream = new FileOutputStream(file);
-        try {
+        try (FileOutputStream outputStream = new FileOutputStream(file)) {
             outputStream.write(content);
-        } finally {
-            outputStream.close();
         }
     }
 
