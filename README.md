@@ -36,7 +36,7 @@ Neow3j is split into tow modules, so you can also depend on just the core functi
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.8.+'
+implementation 'io.neow3j:contract:3.9.+'
 ```
 
 __Maven__
@@ -45,7 +45,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>[3.8.0,)</version>
+    <version>[3.9.0,)</version>
 </dependency>
 ```
 
@@ -61,7 +61,7 @@ following dependency to your project.
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.8.+'
+implementation 'io.neow3j:devpack:3.9.+'
 ```
 
 __Maven__
@@ -69,8 +69,8 @@ __Maven__
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
-    <artifactId>compiler</artifactId>
-    <version>[3.8.0,)</version>
+    <artifactId>devpack</artifactId>
+    <version>[3.9.0,)</version>
 </dependency>
 ```
 
