@@ -20,6 +20,7 @@ changes that shouldn't be in the release
 - Get approval for the Release Pull Request (i.e., click on approve)
 - Merge the Release Pull Request
 - Tag the Pull Request with the version to be release (e.g., `3.2.1`)
+- Right after merging, bump the version in the `build.gradle` file (`develop-3.x` branch)
 
 ## Credentials
 
