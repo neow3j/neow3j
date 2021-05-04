@@ -5,7 +5,6 @@ import io.neow3j.devpack.Block;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.ExecutionEngine;
 import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;

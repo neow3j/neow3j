@@ -12,7 +12,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.OpCode;
 import io.neow3j.io.TestBinaryUtils;
 
@@ -122,7 +122,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + key2 // public key
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script);
     }
@@ -136,7 +136,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script);
     }

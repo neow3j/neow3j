@@ -1,6 +1,6 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.OpCode;
 import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.BigIntegers;
@@ -90,11 +90,11 @@ public class ScriptBuilder {
         pushInteger(callFlags.getValue());
         pushData(method);
         pushData(hash160.toLittleEndianArray());
-        sysCall(InteropServiceCode.SYSTEM_CONTRACT_CALL);
+        sysCall(InteropService.SYSTEM_CONTRACT_CALL);
         return this;
     }
 
-    public ScriptBuilder sysCall(InteropServiceCode operation) {
+    public ScriptBuilder sysCall(InteropService operation) {
         writeByte(OpCode.SYSCALL.getCode());
         write(Numeric.hexStringToByteArray(operation.getHash()));
         return this;
@@ -367,7 +367,7 @@ public class ScriptBuilder {
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
         return new ScriptBuilder()
                 .pushData(encodedPublicKey)
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
+                .sysCall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
                 .toArray();
     }
 
@@ -385,7 +385,7 @@ public class ScriptBuilder {
         encodedPublicKeys.forEach(builder::pushData);
         return builder
                 .pushInteger(encodedPublicKeys.size())
-                .sysCall(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG)
+                .sysCall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
                 .toArray();
     }
 

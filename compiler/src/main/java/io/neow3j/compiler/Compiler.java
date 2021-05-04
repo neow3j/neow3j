@@ -9,8 +9,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
+import io.neow3j.constants.InteropService;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
-import io.neow3j.constants.InteropServiceCode;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
@@ -538,7 +538,7 @@ public class Compiler {
 
     private static void addSingleSyscall(AnnotationNode syscallAnnotation, NeoMethod neoMethod) {
         String syscallName = ((String[]) syscallAnnotation.values.get(1))[1];
-        InteropServiceCode syscall = InteropServiceCode.valueOf(syscallName);
+        InteropService syscall = InteropService.valueOf(syscallName);
         byte[] hash = Numeric.hexStringToByteArray(syscall.getHash());
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
     }

@@ -4,9 +4,9 @@ import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_CREATE;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_NEXT;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_ITERATOR_VALUE;
+import static io.neow3j.constants.InteropService.SYSTEM_ITERATOR_CREATE;
+import static io.neow3j.constants.InteropService.SYSTEM_ITERATOR_NEXT;
+import static io.neow3j.constants.InteropService.SYSTEM_ITERATOR_VALUE;
 
 /**
  * A NeoVM-specific iterator used to iterate over a set of elements.

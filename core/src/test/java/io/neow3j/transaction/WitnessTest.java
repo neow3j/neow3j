@@ -1,6 +1,6 @@
 package io.neow3j.transaction;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.Hash160;
 import io.neow3j.crypto.ECKeyPair;
@@ -57,7 +57,7 @@ public class WitnessTest {
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
                 toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) + // pubKey
                 SYSCALL.toString() + // syscall to...
-                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         assertArrayEquals(
                 hexStringToByteArray(expected),
@@ -117,7 +117,7 @@ public class WitnessTest {
                 + toHexStringNoPrefix(publicKeys.get(2).getEncoded(true)) // public key 3
                 + OpCode.PUSH3.toString() // m = 3, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash();
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash();
 
         // Test create from BigIntegers
         Witness script = createMultiSigWitness(signingThreshold, signatures, publicKeys);
@@ -157,7 +157,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) // pubKey
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         String serializedWitness = ""
                 + "42" // VarInt 66 bytes for invocation script
@@ -189,7 +189,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + pk // public key
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         byte[] expectedHash = sha256AndThenRipemd160(
                 hexStringToByteArray(expectedVerificationScript));
