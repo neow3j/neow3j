@@ -53,7 +53,7 @@ public class NonFungibleTokenTest {
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         nfTestToken = new NonFungibleToken(NF_TOKEN_SCRIPT_HASH, neow);
 
-        // APiZTA6Ym7EHpLK5PLpSLKn62qeMyCZEER
+        // NbUgTSFvPmsRxmGeWpuuGeJUoRoi6PErcM
         account1 = new Account(ECKeyPair.create(
                 hexStringToByteArray(
                         "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
@@ -69,12 +69,12 @@ public class NonFungibleTokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                        asList(hash160(account1.getScriptHash()),
+                        asList(hash160(account2.getScriptHash()),
                                 byteArray(TOKEN_ID)))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transfer(wallet, account1.getScriptHash(), TOKEN_ID);
+        TransactionBuilder b = nfTestToken.transfer(wallet, account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
     }
 
