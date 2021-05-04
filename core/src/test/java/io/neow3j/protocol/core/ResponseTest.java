@@ -1402,8 +1402,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"tcpport\": 40333,\n" +
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
-                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\",\n" +
-                        "        \"magic\": 769\n" +
+                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"network\": 769\n" +
                         "    }\n" +
                         "}"
         );
@@ -1413,8 +1413,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getTCPPort(), is(40333));
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview3-00/"));
-        assertThat(getVersion.getVersion().getMagic(), is(769));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(getVersion.getVersion().getNetwork(), is(769));
     }
 
     @Test
