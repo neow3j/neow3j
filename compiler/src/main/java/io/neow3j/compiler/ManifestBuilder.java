@@ -62,8 +62,7 @@ public class ManifestBuilder {
         List<String> trusts = buildTrusts(compUnit.getContractClass());
 
         return new ContractManifest(name, groups, null, supportedStandards, abi, permissions,
-                trusts,
-                extras);
+                trusts, extras);
     }
 
     private static ContractABI buildABI(NeoModule neoModule) {

@@ -10,6 +10,7 @@ import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,7 +25,7 @@ public class ContractManifest {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<ContractGroup> groups;
 
-    @JsonProperty("features")
+    @JsonProperty(value = "features")
     private Object features;
 
     @JsonProperty("supportedstandards")
@@ -57,7 +58,7 @@ public class ContractManifest {
             List<String> trusts, Object extra) {
         this.name = name;
         this.groups = groups;
-        this.features = features;
+        this.features = features == null ? new HashMap<>() : features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
