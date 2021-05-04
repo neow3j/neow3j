@@ -79,13 +79,13 @@ public class NameServiceIntegrationTest {
         Hash256 txHash = new ContractManagement(neow3j)
                 .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
                 .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(DEFAULT_ACCOUNT))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .sign()
                 .send()
                 .getSendRawTransaction()
                 .getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        return SmartContract.getContractHash(DEFAULT_ACCOUNT.getScriptHash(),
+        return SmartContract.getContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
                 NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
                 "NameService");
     }
