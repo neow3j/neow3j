@@ -944,9 +944,8 @@ public class ResponseTest extends ResponseTester {
                         ), 35, ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
         ContractPermission permission = new ContractPermission("*", singletonList("*"));
-        ContractManifest contractManifest =
-                new ContractManifest("LedgerContract", emptyList(), emptyList(), contractABI,
-                        singletonList(permission), emptyList(), null);
+        ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
+                null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
         ContractState expectedEqual =
                 new ContractState(id, updateCounter, hash, nef, contractManifest, null);
         assertThat(contractState, is(expectedEqual));
