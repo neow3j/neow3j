@@ -42,6 +42,7 @@ public enum InteropService {
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
     SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 8),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
+    SYSTEM_RUNTIME_BURNGAS("System.Runtime.BurnGas", 1 << 4),
 
     SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 1 << 4),
     SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 1 << 4),

@@ -134,4 +134,11 @@ public class Runtime {
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
     public static native Hash160 getEntryScriptHash();
+
+    /**
+     * Burns the given amount of GAS for the benefit of the Neo ecosystem.
+     * @param gas The amount of gas to burn.
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_BURNGAS)
+    public static native void burnGas(int gas);
 }
