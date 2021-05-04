@@ -60,7 +60,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public byte[] getNetworkMagicNumber() throws IOException {
         if (networkMagicNumber == null) {
-            networkMagicNumber = getVersion().send().getVersion().getMagic();
+            networkMagicNumber = getVersion().send().getVersion().getNetwork();
         }
         byte[] array = new byte[4];
         ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicNumber);

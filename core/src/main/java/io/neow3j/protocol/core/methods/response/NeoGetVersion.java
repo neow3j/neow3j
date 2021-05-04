@@ -27,8 +27,8 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
         @JsonProperty("useragent")
         private String userAgent;
 
-        @JsonProperty("magic")
-        private int magic;
+        @JsonProperty("network")
+        private int network;
 
         public Result() {
         }
@@ -65,8 +65,8 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             this.userAgent = userAgent;
         }
 
-        public int getMagic() {
-            return magic;
+        public int getNetwork() {
+            return network;
         }
 
         @Override
@@ -78,12 +78,12 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
                     getWSPort() == that.getWSPort() &&
                     getNonce() == that.getNonce() &&
                     Objects.equals(getUserAgent(), that.getUserAgent()) &&
-                    getMagic() == that.getMagic();
+                    getNetwork() == that.getNetwork();
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(), getMagic());
+            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(), getNetwork());
         }
 
         @Override
@@ -93,7 +93,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
                     ", wsport=" + wsPort +
                     ", nonce=" + nonce +
                     ", useragent='" + userAgent + '\'' +
-                    ", magic=" + magic +
+                    ", network=" + network +
                     '}';
         }
     }
