@@ -3,3 +3,7 @@ description 'neow3j: Java Development Package for Neo Smart Contracts'
 dependencies {
     compile project(':contract')
 }
+
+compileJava {
+    options.debugOptions.debugLevel = "source,lines,vars"
+}

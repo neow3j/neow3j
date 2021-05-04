@@ -27,7 +27,7 @@ public class PolicyContract extends SmartContract {
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
 
     /**
-     * Constructs a new <tt>PolicyContract</tt> that uses the given {@link Neow3j} instance for
+     * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for
      * invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
@@ -84,7 +84,7 @@ public class PolicyContract extends SmartContract {
      * @param fee the fee per byte.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder setFeePerByte(Integer fee) {
+    public TransactionBuilder setFeePerByte(BigInteger fee) {
         return invokeFunction(SET_FEE_PER_BYTE, integer(fee));
     }
 
@@ -95,7 +95,7 @@ public class PolicyContract extends SmartContract {
      * @param fee the execution fee factor.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder setExecFeeFactor(Integer fee) {
+    public TransactionBuilder setExecFeeFactor(BigInteger fee) {
         return invokeFunction(SET_EXEC_FEE_FACTOR, integer(fee));
     }
 
@@ -106,7 +106,7 @@ public class PolicyContract extends SmartContract {
      * @param price the storage price.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder setStoragePrice(Integer price) {
+    public TransactionBuilder setStoragePrice(BigInteger price) {
         return invokeFunction(SET_STORAGE_PRICE, integer(price));
     }
 

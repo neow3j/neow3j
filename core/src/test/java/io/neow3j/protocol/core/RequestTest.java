@@ -12,7 +12,7 @@ import io.neow3j.contract.Hash256;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
-import io.neow3j.protocol.core.methods.response.TransactionSendAsset;
+import io.neow3j.protocol.core.methods.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
 
 import java.math.BigInteger;
@@ -87,35 +87,9 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBlock_Hash_fromString() throws Exception {
-        neow3j.getBlock(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d",
-                true
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblock\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetBlock_notFullTxObjects() throws Exception {
         neow3j.getBlock(
                 new Hash256("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d"),
-                false
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblockheader\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetBlock_notFullTxObjects_fromString() throws Exception {
-        neow3j.getBlock(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d",
                 false
         ).send();
 
@@ -132,17 +106,6 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblock\"," +
                 "\"params\":[12345,0]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetRawBlock_Hash() throws Exception {
-        neow3j.getRawBlock("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblock\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",0]," +
                 "\"id\":1}");
     }
 
@@ -177,34 +140,12 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetBlockHeader_Hash() throws Exception {
-        neow3j.getBlockHeader(
-                "0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d").send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblockheader\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetBlockHeader_Index() throws Exception {
         neow3j.getBlockHeader(new BigInteger("12345")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getblockheader\"," +
                 "\"params\":[12345,1]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetRawBlockHeader_Hash() throws Exception {
-        neow3j.getRawBlockHeader("0x2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getblockheader\"," +
-                "\"params\":[\"2240b34669038f82ac492150d391dfc3d7fe5e3c1d34e5b547d50e99c09b468d\",0]," +
                 "\"id\":1}");
     }
 
@@ -231,7 +172,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetContractState_byName() throws Exception {
-        neow3j.getContractState("NeoToken").send();
+        neow3j.getNativeContractState("NeoToken").send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getcontractstate\"," +
@@ -272,17 +213,6 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetTransaction_string() throws Exception {
-        neow3j.getTransaction("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getrawtransaction\"," +
-                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",1]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetRawTransaction() throws Exception {
         Hash256 hash = new Hash256("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6");
         neow3j.getRawTransaction(hash).send();
@@ -294,20 +224,9 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
-    public void testGetRawTransaction_string() throws Exception {
-        neow3j.getRawTransaction("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getrawtransaction\"," +
-                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",0]," +
-                "\"id\":1}");
-    }
-
-    @Test
     public void testGetStorage() throws Exception {
         String key = "616e797468696e67";
-        neow3j.getStorage("03febccf81ac85e3d795bc5cbd4e84e907812aa3", key).send();
+        neow3j.getStorage(new Hash160("03febccf81ac85e3d795bc5cbd4e84e907812aa3"), key).send();
 
         String keyBase64 = Base64.encode("616e797468696e67");
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -320,17 +239,6 @@ public class RequestTest extends RequestTester {
     public void testGetTransactionHeight() throws Exception {
         neow3j.getTransactionHeight(
                 new Hash256("0x793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a"))
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"gettransactionheight\"," +
-                "\"params\":[\"793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a\"]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetTransactionHeight_fromString() throws Exception {
-        neow3j.getTransactionHeight("0x793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a")
                 .send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -418,7 +326,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testInvokeFunction() throws Exception {
         neow3j.invokeFunction(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
                 singletonList(
                         hash160(new Hash160(
@@ -445,20 +353,6 @@ public class RequestTest extends RequestTester {
     public void testInvokeFunction_without_Params() throws Exception {
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
-                "decimals"
-        ).send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"invokefunction\"," +
-                "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"decimals\",[]]," +
-                "\"id\":1}"
-        );
-    }
-
-    @Test
-    public void testInvokeFunction_without_Params_fromString() throws Exception {
-        neow3j.invokeFunction(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
                 "decimals"
         ).send();
 
@@ -500,7 +394,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testInvokeContractVerify() throws Exception {
         neow3j.invokeContractVerify(
-                "af7c7328eee5a275a3bcaee2bf0cf662b5e739be",
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 asList(string("a string"), string("another string")),
                 calledByEntry(new Hash160("cadb3dc2faa3ef14a13b619c9a43124755aa2569"))
         ).send();
@@ -518,7 +412,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeContractVerifyNoParamsNoSigners() throws Exception {
-        neow3j.invokeContractVerify("af7c7328eee5a275a3bcaee2bf0cf662b5e739be", null)
+        neow3j.invokeContractVerify(new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"), null)
                 .send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -575,27 +469,17 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testDumpPrivKey() throws Exception {
-        neow3j.dumpPrivKey("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4").send();
+        neow3j.dumpPrivKey(new Hash160("c11d816956b6682c3406bb99b7ec8a3e93f005c1")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"dumpprivkey\"," +
-                "\"params\":[\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"]," +
+                "\"params\":[\"NdWaiUoBWbPxGsm5wXPjXYJxCyuY1Zw8uW\"]," +
                 "\"id\":1}");
     }
 
     @Test
     public void testGetWalletBalance() throws Exception {
-        neow3j.getWalletBalance("de5f57d430d3dece511cf975a8d37848cb9e0525").send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
-                "\"method\":\"getwalletbalance\"," +
-                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"]," +
-                "\"id\":1}");
-    }
-
-    @Test
-    public void testGetWalletBalance_with_Prefix() throws Exception {
-        neow3j.getWalletBalance("0xde5f57d430d3dece511cf975a8d37848cb9e0525").send();
+        neow3j.getWalletBalance(new Hash160("de5f57d430d3dece511cf975a8d37848cb9e0525")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getwalletbalance\"," +
@@ -625,11 +509,11 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetUnclaimedGas() throws Exception {
-        neow3j.getUnclaimedGas("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN").send();
+        neow3j.getUnclaimedGas(new Hash160("ffa6adbb5f82ad2a1aafa22ce6aaf05dad5de39e")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getunclaimedgas\"," +
-                "\"params\":[\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"]," +
+                "\"params\":[\"NaQ6Kj6qYinh1frv1wrn53wbPFe5BH5T7g\"]," +
                 "\"id\":1}");
     }
 
@@ -666,18 +550,18 @@ public class RequestTest extends RequestTester {
     @Test
     public void testSendFrom() throws Exception {
         neow3j.sendFrom(
-                "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
-                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
-                "10.0"
+                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                new Hash160("8cdb257b8873049918fe5a1e7f6289f75d720ba5"),
+                new Hash160("db1acbae4dbae55f8325724cf080ed782925c7a7"),
+                BigInteger.TEN
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendfrom\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
-                "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"," +
-                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
-                "\"10.0\"" +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"NaxePjypvtsQ5GVi6S1jBsSjXribTSUKRu\"," +
+                "\"NbD6be5uYezFZRSBDt6aBfYR9bYsAk8Yui\"," +
+                "10" +
                 "]," +
                 "\"id\":1}");
     }
@@ -685,20 +569,20 @@ public class RequestTest extends RequestTester {
     @Test
     public void testSendFrom_TransactionSendAsset() throws Exception {
         neow3j.sendFrom(
-                "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4",
-                new TransactionSendAsset(
-                        "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                        "10.0",
-                        "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"
+                new Hash160("44b159ceed1bfbd753748227309428f54f52e4dd"),
+                new TransactionSendToken(
+                        new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                        BigInteger.TEN,
+                        "NUokBS9rfH8qncwFdfByBTT9yJjxQv8h2h"
                 )
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendfrom\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
-                "\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"," +
-                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
-                "\"10.0\"" +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"Ng9E3D4DpM6JrgSxizhanJ6zm6BjvZ2XkM\"," +
+                "\"NUokBS9rfH8qncwFdfByBTT9yJjxQv8h2h\"," +
+                "10" +
                 "]," +
                 "\"id\":1}");
     }
@@ -707,22 +591,22 @@ public class RequestTest extends RequestTester {
     public void testSendMany() throws Exception {
         neow3j.sendMany(
                 asList(
-                        new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                                "100",
-                                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb"),
-                        new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                                "10",
-                                "AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4")
+                        new TransactionSendToken(
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                                new BigInteger("100"),
+                                "NRkkHsxkzFxGz77mJtJgYZ3FnBm8baU5Um"),
+                        new TransactionSendToken(
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                                BigInteger.TEN,
+                                "NNFGNNK1HXSSnA7yKLzRpr8YXwcdgTrsCu")
                 )
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendmany\"," +
                 "\"params\":[" +
-                "[{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"100\",\"address\":\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"}," +
-                "{\"asset\":\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":\"10\",\"address\":\"AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4\"}]" +
+                "[{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":100,\"address\":\"NRkkHsxkzFxGz77mJtJgYZ3FnBm8baU5Um\"}," +
+                "{\"asset\":\"de5f57d430d3dece511cf975a8d37848cb9e0525\",\"value\":10,\"address\":\"NNFGNNK1HXSSnA7yKLzRpr8YXwcdgTrsCu\"}]" +
                 "]," +
                 "\"id\":1}");
     }
@@ -740,53 +624,52 @@ public class RequestTest extends RequestTester {
     @Test
     public void testSendManyWithFrom() throws Exception {
         neow3j.sendMany(
-                "AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN",
+                Hash160.fromAddress("NiVNRW6cBXwkvrZnetZToaHPGSSGgV1HmA"),
                 asList(
-                        new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                                "100",
-                                "AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2"),
-                        new TransactionSendAsset(
-                                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                                "10",
-                                "AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y")
+                        new TransactionSendToken(
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                                new BigInteger("100"),
+                                "Nhsi2q3hkByxcH2uBQw7cjc2qEpzXSEKTC"),
+                        new TransactionSendToken(
+                                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                                BigInteger.TEN,
+                                "NcwVWxJZh9fxncJ9Sq8msVLotJDsAD3ZD8")
                 )
         ).send();
 
 
-        verifyResult("{" +
-                     "  \"jsonrpc\": \"2.0\"," +
-                     "  \"method\": \"sendmany\"," +
-                     "  \"params\": [\"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"," +
-                     "  [" +
-                     "     {" +
-                     "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", " +
-                     "         \"value\": \"100\"," +
-                     "         \"address\": \"AbRTHXb9zqdqn5sVh4EYpQHGZ536FgwCx2\"" +
-                     "     }," +
-                     "     {" +
-                     "         \"asset\": \"0xde5f57d430d3dece511cf975a8d37848cb9e0525\", " +
-                     "         \"value\": \"10\"," +
-                     "         \"address\": \"AK2nJJpJr6o664CWJKi1QRXjqeic2zRp8y\"}" +
-                     "     ]" +
-                     "  ]," +
-                     "  \"id\": 1" +
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                     "\"method\": \"sendmany\"," +
+                     "\"params\": [\"NiVNRW6cBXwkvrZnetZToaHPGSSGgV1HmA\"," +
+                     "[" +
+                     "   {" +
+                     "       \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
+                     "       \"value\": 100," +
+                     "       \"address\": \"Nhsi2q3hkByxcH2uBQw7cjc2qEpzXSEKTC\"" +
+                     "   }," +
+                     "   {" +
+                     "       \"asset\": \"de5f57d430d3dece511cf975a8d37848cb9e0525\", " +
+                     "       \"value\": 10," +
+                     "       \"address\": \"NcwVWxJZh9fxncJ9Sq8msVLotJDsAD3ZD8\"}" +
+                     "   ]" +
+                     "]," +
+                     "\"id\": 1" +
                      "}");
     }
 
     @Test
     public void testSendToAddress() throws Exception {
         neow3j.sendToAddress(
-                "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
-                "10.0"
+                new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                new Hash160("674231bd321880fc5c4a73994c87870e52c5fe39"),
+                BigInteger.TEN
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendtoaddress\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
-                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
-                "\"10.0\"" +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"NRCcuUUxKCa3sp45o7bjXetyxUeq58T4ED\"," +
+                "10" +
                 "]," +
                 "\"id\":1}");
     }
@@ -794,17 +677,17 @@ public class RequestTest extends RequestTester {
     @Test
     public void testSendToAddress_TransactionSendAsset() throws Exception {
         neow3j.sendToAddress(
-                new TransactionSendAsset(
-                        "0xde5f57d430d3dece511cf975a8d37848cb9e0525",
-                        "10.0",
-                        "AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb")
+                new TransactionSendToken(
+                        new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
+                        BigInteger.TEN,
+                        "NaCsFrmoJepqCJSxnTyb41CXVSjr3dMjuL")
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendtoaddress\"," +
-                "\"params\":[\"0xde5f57d430d3dece511cf975a8d37848cb9e0525\"," +
-                "\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"," +
-                "\"10.0\"" +
+                "\"params\":[\"de5f57d430d3dece511cf975a8d37848cb9e0525\"," +
+                "\"NaCsFrmoJepqCJSxnTyb41CXVSjr3dMjuL\"," +
+                "10" +
                 "]," +
                 "\"id\":1}");
     }
@@ -813,47 +696,48 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetNep17Transfers() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+        neow3j.getNep17Transfers(new Hash160("04457ce4219e462146ac00b09793f81bc5bca2ce")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"]," +
+                "\"params\":[\"NekZLTu93WgrdFHxzBEJUYgLTQMAT85GLi\"]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Transfers_Date() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb", new Date(1553105830L)).send();
+        neow3j.getNep17Transfers(new Hash160("8bed27d0e88266807a6339270f0593510967cb45"),
+                new Date(1553105830L)).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830]," +
+                "\"params\":[\"NSH1UeM96PKhjuzVBKcyWeNNuQkT3sHGmA\",1553105830]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Transfers_DateFromTo() throws Exception {
-        neow3j.getNep17Transfers("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb",
+        neow3j.getNep17Transfers(new Hash160("2eeda865e7824c71b3fe14bed35d04d0f2f0e9d6"),
                 new Date(1553105830),
                 new Date(1557305830)
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17transfers\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\",1553105830,1557305830]," +
+                "\"params\":[\"NfWL3Kx7qtZzXrajmggAD4b6r2kGzajbaJ\",1553105830,1557305830]," +
                 "\"id\":1}"
         );
     }
 
     @Test
     public void testGetNep17Balances() throws Exception {
-        neow3j.getNep17Balances("AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb").send();
+        neow3j.getNep17Balances(new Hash160("5d75775015b024970bfeacf7c6ab1b0ade974886")).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getnep17balances\"," +
-                "\"params\":[\"AcozGpiGDpp9Vt9RMyokWNyu7hh341T2bb\"]," +
+                "\"params\":[\"NY9zhKwcmht5cQJ3oRqjJGo3QuVLwXwTzL\"]," +
                 "\"id\":1}"
         );
     }
@@ -867,21 +751,9 @@ public class RequestTest extends RequestTester {
                 .send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
-                        "\"method\":\"getapplicationlog\"," +
-                        "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"]" +
-                        ",\"id\":1}"
-        );
-    }
-
-    @Test
-    public void testGetApplicationLog_fromStringTxId() throws Exception {
-        neow3j.getApplicationLog("420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b")
-                .send();
-
-        verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"getapplicationlog\"," +
-                "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"]" +
-                ",\"id\":1}"
+                "\"params\":[\"420d1eb458c707d698c6d2ba0f91327918ddb3b7bae2944df070f3f4e579078b\"]," +
+                "\"id\":1}"
         );
     }
 

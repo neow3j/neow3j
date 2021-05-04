@@ -1,19 +1,13 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.OpCode;
 import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.events.Event1Arg;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -21,6 +15,13 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -33,7 +34,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 IllegalArgumentException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
-        new Compiler().compileClass(UnsupportedException.class.getName());
+        new Compiler().compile(UnsupportedException.class.getName());
     }
 
     @Test
@@ -42,28 +43,28 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList("catch",
                 RuntimeException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
-        new Compiler().compileClass(UnsupportedExceptionInCatchClause.class.getName());
+        new Compiler().compile(UnsupportedExceptionInCatchClause.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithMoreThanOneArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided 2 arguments."));
-        new Compiler().compileClass(UnsupportedNumberOfExceptionArguments.class.getName());
+        new Compiler().compile(UnsupportedNumberOfExceptionArguments.class.getName());
     }
 
     @Test
     public void throwExceptionIfExceptionWithANonStringArgumentIsUsed() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContains("You provided a non-string argument."));
-        new Compiler().compileClass(UnsupportedExceptionArgument.class.getName());
+        new Compiler().compile(UnsupportedExceptionArgument.class.getName());
     }
 
     @Test
     public void throwExceptionIfTwoEventsAreGivenTheSameName() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Two events", "transfer")));
-        new Compiler().compileClass(DuplicateUseOfEventDisplayName.class.getName());
+        new Compiler().compile(DuplicateUseOfEventDisplayName.class.getName());
     }
 
     @Test
@@ -71,7 +72,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList("Script hash", "8",
                 "CustomContractInterface")));
-        new Compiler().compileClass(InvalidScriptHashContractInterfaceContract.class.getName());
+        new Compiler().compile(InvalidScriptHashContractInterfaceContract.class.getName());
     }
 
     @Test
@@ -100,7 +101,7 @@ public class CompilerExceptionsTest {
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                OpCode.PUSHDATA1.name(),"needs an operand prefix of size", "1", "2")));
+                OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
         Compiler.addInstructionsFromAnnotation(method, neoMethod);
     }
 
@@ -142,13 +143,13 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 this.getClass().getSimpleName() + ".java", // the file name
                 "privateMethod", "safe")));
-        new Compiler().compileClass(PrivateMethodMarkedAsSafe.class.getName());
+        new Compiler().compile(PrivateMethodMarkedAsSafe.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 this.getClass().getSimpleName() + ".java", // the file name
                 "protectedMethod", "safe")));
-        new Compiler().compileClass(ProtectedMethodMarkedAsSafe.class.getName());
+        new Compiler().compile(ProtectedMethodMarkedAsSafe.class.getName());
 
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
@@ -162,7 +163,25 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 CompilerExceptionsTest.class.getSimpleName(),
                 "Local variables are not supported in the static constructor")));
-        new Compiler().compileClass(LocalVariableInStaticConstructorContract.class.getName());
+        new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
+    }
+
+    // If this test fails for you, make sure that you are using Java 8's JDK and not anything
+    // higher.
+    @Test
+    public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("compareTo",
+                String.class.getName(), "was not compiled with debugging information")));
+        new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
+    }
+
+    @Test
+    public void failIfInstanceOfIsUsedOnUnsupportedType() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                Hash160.class.getName(), "is not supported for the instanceof operation.")));
+        new Compiler().compile(InstanceOfContract.class.getName());
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -235,7 +254,7 @@ public class CompilerExceptionsTest {
 
         }
     }
-    
+
     static class InstructionAnnotationWithWrongSizeOperandContract {
 
         @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
@@ -295,6 +314,20 @@ public class CompilerExceptionsTest {
 
         public static int method() {
             return number;
+        }
+    }
+
+    static class MethodOfClassMissingDebugInformation {
+
+        public static int stringCompareTo(String s1, String s2) {
+            return s1.compareTo(s2);
+        }
+    }
+
+    static class InstanceOfContract {
+
+        public static boolean method(Object obj) {
+            return obj instanceof Hash160;
         }
     }
 

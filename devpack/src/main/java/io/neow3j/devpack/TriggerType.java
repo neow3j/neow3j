@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
 /**
- * The <tt>TriggerType</tt> defines the mode in which a smart contract is invoked. This implies that
+ * The {@code TriggerType} defines the mode in which a smart contract is invoked. This implies that
  * a smart contract can be invoked in other ways than just the normal application mode.
  */
 public class TriggerType {

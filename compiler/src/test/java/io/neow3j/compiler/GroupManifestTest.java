@@ -32,7 +32,7 @@ public class GroupManifestTest {
     @Test
     public void withGroupsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(GroupManifestTestContract.class.getName());
+                .compile(GroupManifestTestContract.class.getName());
         List<ContractGroup> groups = unit.getManifest().getGroups();
         assertThat(groups, hasSize(2));
         assertThat(groups.get(0).getPubKey(), is(PUBKEY1));
@@ -44,7 +44,7 @@ public class GroupManifestTest {
     @Test
     public void withGroupsAnnotationSingle() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(GroupManifestTestContractWithSingleAnnotation.class.getName());
+                .compile(GroupManifestTestContractWithSingleAnnotation.class.getName());
         List<ContractGroup> groups = unit.getManifest().getGroups();
         assertThat(groups, hasSize(1));
         assertThat(groups.get(0).getPubKey(), is(PUBKEY1));
@@ -54,7 +54,7 @@ public class GroupManifestTest {
     @Test
     public void withGroupsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(GroupManifestTestContractWithGroupsAnnotation.class.getName());
+                .compile(GroupManifestTestContractWithGroupsAnnotation.class.getName());
         List<ContractGroup> groups = unit.getManifest().getGroups();
         assertThat(groups, hasSize(2));
         assertThat(groups.get(0).getPubKey(), is(PUBKEY1));
@@ -66,7 +66,7 @@ public class GroupManifestTest {
     @Test
     public void withoutGroupsAnnotation() throws IOException {
         CompilationUnit unit = new Compiler()
-                .compileClass(GroupManifestTestContractWithoutAnnotation.class.getName());
+                .compile(GroupManifestTestContractWithoutAnnotation.class.getName());
         List<ContractGroup> groups = unit.getManifest().getGroups();
         assertThat(groups, hasSize(0));
     }
@@ -77,7 +77,7 @@ public class GroupManifestTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Invalid public key:", "invalidPubKey")));
         new Compiler()
-                .compileClass(GroupManifestTestContractWithNotValidPubKey.class.getName());
+                .compile(GroupManifestTestContractWithNotValidPubKey.class.getName());
     }
 
     @Test
@@ -86,7 +86,7 @@ public class GroupManifestTest {
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Invalid signature:", "invalidSignature12345")));
         new Compiler()
-                .compileClass(GroupManifestTestContractWithNotValidSignature.class.getName());
+                .compile(GroupManifestTestContractWithNotValidSignature.class.getName());
     }
 
     @Group(pubKey = PUBKEY1, signature = SIGNATURE1)

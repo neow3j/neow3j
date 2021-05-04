@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 
 /**
  * Used to mark a method to be replaced with an {@link OpCode} and its operand. The method can then
- * be used in a smart contract. A method can be annotated with multiple <tt>Instructions</tt>, which
+ * be used in a smart contract. A method can be annotated with multiple {@code Instructions}, which
  * offers the possibility to create a short, static script that is inserted wherever the annotated
  * method is called.
  * <p>

@@ -2,25 +2,17 @@ package io.neow3j.contract;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ContractParameter.ContractParameterDeserializer;
 import io.neow3j.contract.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -28,16 +20,18 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.neow3j.model.types.ContractParameterType.ARRAY;
+import static io.neow3j.model.types.ContractParameterType.HASH256;
 import static io.neow3j.model.types.ContractParameterType.INTEGER;
 import static io.neow3j.model.types.ContractParameterType.MAP;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Contract parameters are used for example in contract invocations and represent an input
- * parameter. They can also represent an output type and value.
+ * Contract parameters represent an input parameter for contract invocations.
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
-@JsonDeserialize(using = ContractParameterDeserializer.class)
 @SuppressWarnings("unchecked")
 public class ContractParameter {
 
@@ -67,10 +61,22 @@ public class ContractParameter {
         this(null, paramType, value);
     }
 
+    /**
+     * Creates a contract parameter from the given value.
+     *
+     * @param value any object value.
+     * @return the contract parameter.
+     */
     public static ContractParameter any(Object value) {
         return new ContractParameter(ContractParameterType.ANY, value);
     }
 
+    /**
+     * Creates a string parameter from the given value.
+     *
+     * @param value the string value.
+     * @return the contract parameter.
+     */
     public static ContractParameter string(String value) {
         return new ContractParameter(ContractParameterType.STRING, value);
     }
@@ -116,7 +122,7 @@ public class ContractParameter {
      * The {@code Map} argument can hold any types that can be cast to one of the available
      * {@link ContractParameterType}s. The types {@link ContractParameterType#ARRAY} and
      * {@link ContractParameterType#MAP} are not supported as map keys.
-     *
+     * <p>
      * The first example below uses regular Java types that can automatically be wrapped into a
      * {@code ContractParameter}.
      * <pre>
@@ -133,6 +139,7 @@ public class ContractParameter {
      * map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
      * ContractParameter param = map(map);
      * </pre>
+     *
      * @param map The map entries.
      * @return the contract parameter.
      */
@@ -191,10 +198,10 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(String hexString) {
-        if (!Numeric.isValidHexString(hexString)) {
+        if (!isValidHexString(hexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return byteArray(Numeric.hexStringToByteArray(hexString));
+        return byteArray(hexStringToByteArray(hexString));
     }
 
     /**
@@ -215,10 +222,10 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter signature(String signatureHexString) {
-        if (!Numeric.isValidHexString(signatureHexString)) {
+        if (!isValidHexString(signatureHexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return signature(Numeric.hexStringToByteArray(signatureHexString));
+        return signature(hexStringToByteArray(signatureHexString));
     }
 
     /**
@@ -266,6 +273,16 @@ public class ContractParameter {
     }
 
     /**
+     * Creates a hash160 parameter from the given account.
+     *
+     * @param account an account.
+     * @return the contract parameter.
+     */
+    public static ContractParameter hash160(Account account) {
+        return hash160(account.getScriptHash());
+    }
+
+    /**
      * Creates a hash160 parameter from the given script hash.
      *
      * @param hash a script hash
@@ -281,14 +298,14 @@ public class ContractParameter {
     /**
      * Creates a hash256 parameter from the given hex string.
      *
-     * @param hashHexString a 256-bit hash in hexadecimal and little-endian order.
+     * @param hashHexString a 256-bit hash in hexadecimal and big-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(String hashHexString) {
-        if (!Numeric.isValidHexString(hashHexString)) {
+        if (!isValidHexString(hashHexString)) {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
-        return hash256(Numeric.hexStringToByteArray(hashHexString));
+        return hash256(hexStringToByteArray(hashHexString));
     }
 
     /**
@@ -298,13 +315,13 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter hash256(Hash256 hash) {
-        return hash256(hash.toArray());
+        return new ContractParameter(HASH256, hash);
     }
 
     /**
      * Creates a hash256 parameter from the given bytes.
      *
-     * @param hash a 256-bit hash in little-endian order.
+     * @param hash a 256-bit hash in big-endian order.
      * @return the contract parameter.
      */
     public static ContractParameter hash256(byte[] hash) {
@@ -312,7 +329,7 @@ public class ContractParameter {
             throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes but was " +
                     hash.length + " bytes.");
         }
-        return new ContractParameter(ContractParameterType.HASH256, hash);
+        return hash256(new Hash256(hash));
     }
 
     /**
@@ -325,7 +342,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter publicKey(String publicKey) {
-        return publicKey(Numeric.hexStringToByteArray(publicKey));
+        return publicKey(hexStringToByteArray(publicKey));
     }
 
     /**
@@ -410,11 +427,12 @@ public class ContractParameter {
         public void serialize(ContractParameter value, JsonGenerator gen,
                 SerializerProvider provider) throws IOException {
 
+            gen.writeStartObject();
             serializeParameter(value, gen);
+            gen.writeEndObject();
         }
 
         private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
-            gen.writeStartObject();
             if (p.getParamName() != null) {
                 gen.writeStringField("name", p.getParamName());
             }
@@ -424,18 +442,16 @@ public class ContractParameter {
             if (p.getValue() != null) {
                 serializeValue(p, gen);
             }
-            gen.writeEndObject();
         }
 
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
             switch (p.getParamType()) {
                 case SIGNATURE:
-                case HASH256:
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
                     gen.writeStringField("value",
-                            Numeric.toHexStringNoPrefix((byte[]) p.getValue()));
+                            toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BYTE_ARRAY:
                     gen.writeStringField("value", Base64.encode((byte[]) p.getValue()));
@@ -446,9 +462,9 @@ public class ContractParameter {
                     break;
                 case INTEGER:
                     // Convert to a string, i.e. in the final json the number has quotes around it.
+                case HASH256:
                 case HASH160:
-                    // In case of a script hash the value is of type ScriptHash, of which the
-                    // toString() method returns a big-endian hex string of the hash.
+                    // In case of a hash, the toString() method returns a big-endian hex string.
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
                 case STRING:
@@ -457,7 +473,9 @@ public class ContractParameter {
                 case ARRAY:
                     gen.writeArrayFieldStart("value");
                     for (final ContractParameter param : (ContractParameter[]) p.getValue()) {
+                        gen.writeStartObject();
                         serializeParameter(param, gen);
+                        gen.writeEndObject();
                     }
                     gen.writeEndArray();
                     break;
@@ -466,12 +484,21 @@ public class ContractParameter {
                     HashMap<ContractParameter, ContractParameter> map =
                             (HashMap<ContractParameter, ContractParameter>) p.getValue();
                     for (final ContractParameter key : map.keySet()) {
-                        ContractParameter val = map.get(key);
-                        gen.writeObjectFieldStart("key");
+                        gen.writeStartObject();
+
+                        gen.writeFieldName("key");
+                        gen.writeStartObject();
                         serializeParameter(key, gen);
-                        gen.writeObjectFieldStart("value");
-                        serializeParameter(val, gen);
+                        gen.writeEndObject();
+
+                        gen.writeFieldName("value");
+                        gen.writeStartObject();
+                        serializeParameter(map.get(key), gen);
+                        gen.writeEndObject();
+
+                        gen.writeEndObject();
                     }
+                    gen.writeEndArray();
                     break;
                 default:
                     throw new UnsupportedOperationException("Parameter type '" +
@@ -479,100 +506,6 @@ public class ContractParameter {
             }
         }
 
-    }
-
-    protected static class ContractParameterDeserializer
-            extends ParameterDeserializer<ContractParameter> {
-
-        @Override
-        public ContractParameter newInstance(String name, ContractParameterType type,
-                Object value) {
-            return new ContractParameter(name, type, value);
-        }
-
-    }
-
-    protected static abstract class ParameterDeserializer<T extends ContractParameter>
-            extends StdDeserializer<T> {
-
-        public ParameterDeserializer() {
-            this(null);
-        }
-
-        public ParameterDeserializer(Class<T> vc) {
-            super(vc);
-        }
-
-        public abstract T newInstance(String name, ContractParameterType type, Object value);
-
-        @Override
-        public T deserialize(JsonParser jp, DeserializationContext ctxt)
-                throws IOException {
-
-            JsonNode node = jp.getCodec().readTree(jp);
-            return deserializeParameter(node, jp);
-        }
-
-        private T deserializeParameter(JsonNode param, JsonParser jp)
-                throws JsonProcessingException {
-
-            JsonNode nameNode = param.get("name");
-            String name = null;
-            if (nameNode != null) {
-                name = nameNode.asText();
-            }
-
-            JsonNode typeNode = param.get("type");
-            ContractParameterType type = null;
-            if (typeNode != null) {
-                type = jp.getCodec().treeToValue(typeNode, ContractParameterType.class);
-            }
-
-            JsonNode valueNode = param.get("value");
-            Object value = null;
-            if (valueNode != null) {
-                value = deserializeValue(valueNode, type, jp);
-            }
-            return newInstance(name, type, value);
-        }
-
-        private Object deserializeValue(JsonNode value, ContractParameterType type, JsonParser jp)
-                throws JsonProcessingException {
-
-            switch (type) {
-                case SIGNATURE:
-                case HASH256:
-                case PUBLIC_KEY:
-                    // Expected to be a hexadecimal string.
-                    return Numeric.hexStringToByteArray(value.asText());
-                case BYTE_ARRAY:
-                    // Expected to be a Base64-encoded byte array.
-                    return Base64.decode(value.asText());
-                case STRING:
-                    return value.asText();
-                case BOOLEAN:
-                    return value.asBoolean();
-                case INTEGER:
-                    return new BigInteger(value.asText());
-                case HASH160:
-                    // The script hash value is expected to be a big-endian hex string.
-                    return new Hash160(value.asText());
-                case ARRAY:
-                    if (value.isArray()) {
-                        List<ContractParameter> arr = new ArrayList<>(value.size());
-                        for (final JsonNode param : value) {
-                            arr.add(deserializeParameter(param, jp));
-                        }
-                        return arr.toArray(new ContractParameter[]{});
-                    }
-                case INTEROP_INTERFACE:
-                    // We assume that the interop interface parameter holds a plain string.
-                    return value.asText();
-                default:
-                    throw new UnsupportedOperationException("Parameter type '" + type +
-                            "' not supported.");
-            }
-        }
     }
 
 }

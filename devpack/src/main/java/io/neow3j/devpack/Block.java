@@ -1,5 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.devpack.annotations.Instruction;
+
 /**
  * Represents a block and provides block-related information. It is returned for example when
  * calling {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(Hash256)}.
@@ -63,4 +66,36 @@ public class Block {
         nextConsensus = new Hash160(new byte[0]);
         index = 0;
     }
+
+    /**
+     * Compares this block to the given object. The comparison happens by reference only. I.e.,
+     * if you retrieve the same block twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(int)}, then comparing the two
+     * will return false.
+     *
+     * @param other the object to compare with.
+     * @return true if this and {@code other} reference the same block. False otherwise.
+     */
+    @Override
+    @Instruction(opcode = OpCode.EQUAL)
+    public native boolean equals(Object other);
+
+    /**
+     * Compares this and the given block by value.
+     *
+     * @param block Other block to compare this block to.
+     * @return True if all fields of the two blocks are equal. False otherwise.
+     */
+    public boolean equals(Block block) {
+        if (this == block) return true;
+        return version == block.version && timestamp == block.timestamp
+                && index == block.index
+                && primaryIndex == block.primaryIndex
+                && transactionsCount == block.transactionsCount
+                && hash.equals(block.hash)
+                && prevHash.equals(block.prevHash)
+                && merkleRoot.equals(block.merkleRoot)
+                && nextConsensus.equals(block.nextConsensus);
+    }
+
 }

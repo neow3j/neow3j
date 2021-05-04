@@ -89,7 +89,7 @@ public class ScriptBuilder {
         }
         pushInteger(callFlags.getValue());
         pushData(method);
-        pushData(hash160.toArray());
+        pushData(hash160.toLittleEndianArray());
         sysCall(InteropService.SYSTEM_CONTRACT_CALL);
         return this;
     }
@@ -147,10 +147,10 @@ public class ScriptBuilder {
                 pushInteger((BigInteger) value);
                 break;
             case HASH160:
-                pushData(((Hash160) value).toArray());
+                pushData(((Hash160) value).toLittleEndianArray());
                 break;
             case HASH256:
-                pushData(((Hash256) value).toArray());
+                pushData(((Hash256) value).toLittleEndianArray());
                 break;
             case STRING:
                 pushData((String) value);

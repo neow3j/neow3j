@@ -26,3 +26,14 @@ act --detect-event -W .github/workflows/integration.yml
 ```
 
 That's it. :rocket:
+
+
+## Generate armored PGP file for GitHub Action
+
+```
+gpg --list-secret-keys info@neow3j.io
+gpg --export-secret-keys 7008418AEC2D69578BA07551DCED5430E76D91F5 | base64 > neow3j.key
+```
+
+Go to GitHub, create a new secret named `GPG_KEY_ARMOR` and paste
+the base64 content of the `neow3j.key` file.

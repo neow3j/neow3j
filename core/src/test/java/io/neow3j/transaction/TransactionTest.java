@@ -1,6 +1,9 @@
 package io.neow3j.transaction;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.transaction.Signer.feeOnly;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -61,7 +64,7 @@ public class TransactionTest {
                 new ArrayList<>());
 
         byte[] actual = tx.toArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "00" // version
                 + "04030201"  // nonce
                 + "00e1f50500000000"  // system fee (1 GAS)
@@ -97,7 +100,7 @@ public class TransactionTest {
                 witnesses);
 
         byte[] actual = tx.toArray();
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "00" // version
                 + "04030201"  // nonce
                 + "00e1f50500000000"  // system fee (1 GAS)
@@ -117,7 +120,7 @@ public class TransactionTest {
 
     @Test
     public void deserialize() throws DeserializationException {
-        byte[] data = Numeric.hexStringToByteArray(""
+        byte[] data = hexStringToByteArray(""
                 + "00" // version
                 + "62bdaa0e"  // nonce
                 + "c272890000000000"  // system fee
@@ -202,7 +205,7 @@ public class TransactionTest {
                 + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
                 + "01000100"); /* witness*/
-        byte[] txBytes = Numeric.hexStringToByteArray(txString.toString());
+        byte[] txBytes = hexStringToByteArray(txString.toString());
         NeoSerializableInterface.from(txBytes, Transaction.class);
     }
 
@@ -221,7 +224,7 @@ public class TransactionTest {
                 9007990L,
                 1244390L,
                 new ArrayList<>(),
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"),
                 new ArrayList<>());
 
@@ -242,11 +245,11 @@ public class TransactionTest {
                 9007990L,
                 1244390L,
                 new ArrayList<>(),
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238"),
                 new ArrayList<>());
 
-        byte[] expectedUnsignedBytes = Numeric.hexStringToByteArray(
+        byte[] expectedUnsignedBytes = hexStringToByteArray(
                 "00a2f17c0d7673890000000000e6fc120000000000661820000175715e89bbba44a25dc9ca8d4951f104c25c253d010055110c146cd3d4f4f7e35c5ee7d0e725c11dc880cef1e8b10c14c6a1c24a5b87fb8ccd7ac5f7948ffe526d4e01f713c00c087472616e736665720c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b5238");
         assertThat(tx.toArrayWithoutWitnesses(), is(expectedUnsignedBytes));
     }
@@ -256,7 +259,7 @@ public class TransactionTest {
         neow.setNetworkMagicNumber(769);
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.feeOnly(account1));
+        signers.add(feeOnly(account1));
         Transaction tx = new Transaction(neow, (byte) 0,
                 0L,
                 0L,
@@ -267,9 +270,9 @@ public class TransactionTest {
                 new byte[]{1, 2, 3},
                 new ArrayList<>());
 
-        byte[] txHexWithoutWitness = Numeric.hexStringToByteArray(
+        byte[] txHexWithoutWitness = hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
+        byte[] expectedData = concatenate(neow.getNetworkMagicNumber(),
                 sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }

@@ -6,10 +6,6 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.constants.OpCode;
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
-import io.neow3j.devpack.Map;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.utils.BigIntegers;
 import org.objectweb.asm.Opcodes;
@@ -82,7 +78,7 @@ public class ArraysConverter implements Converter {
                 // support non-static variables in the smart contract, but we currently handle this
                 // JVM opcode because we support instantiation of simple objects like the
                 // `StorageMap`.
-                addSetItem(insn, neoMethod);
+                addSetItem(insn, neoMethod, compUnit);
                 break;
             case GETFIELD:
                 // Get a field variable from an object. The index of the field inside the
@@ -213,12 +209,13 @@ public class ArraysConverter implements Converter {
         return null; // If the instruction is not a PUSH opcode.
     }
 
-    private static void addSetItem(AbstractInsnNode insn, NeoMethod neoMethod) {
+    private static void addSetItem(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
         // NeoVM doesn't support objects but can imitate them by using  arrays or structs. The
         // field variables of an object then simply becomes an index in the array. This is done
         // with the SETITEM opcode.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
+        int idx = getFieldIndex(fieldInsn, compUnit);
         addPushNumber(idx, neoMethod);
         // SETITEM expects the item to be on top of the stack (item -> index -> array)
         neoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
@@ -231,9 +228,7 @@ public class ArraysConverter implements Converter {
         // an index on top that is used by PICKITEM. We get this index from the class to which the
         // field belongs to.
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        ClassNode classNode = getAsmClassForInternalName(fieldInsn.owner,
-                compUnit.getClassLoader());
-        int idx = getFieldIndex(fieldInsn, classNode);
+        int idx = getFieldIndex(fieldInsn, compUnit);
         addPushNumber(idx, neoMethod);
         neoMethod.addInstruction(new NeoInstruction(OpCode.PICKITEM));
     }

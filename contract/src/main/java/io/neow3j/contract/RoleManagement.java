@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -45,7 +46,7 @@ public class RoleManagement extends SmartContract {
      * @return the {@code ECPublicKeys} of the designated nodes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<ECPublicKey> getDesignatedByRole(Role role, int blockIndex) throws IOException {
+    public List<ECPublicKey> getDesignatedByRole(Role role, BigInteger blockIndex) throws IOException {
         checkBlockIndexValidity(blockIndex);
         NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
                 asList(
@@ -60,13 +61,13 @@ public class RoleManagement extends SmartContract {
                 .collect(Collectors.toList());
     }
 
-    private void checkBlockIndexValidity(int blockIndex) throws IOException {
-        if (blockIndex < 0) {
+    private void checkBlockIndexValidity(BigInteger blockIndex) throws IOException {
+        if (blockIndex.compareTo(BigInteger.ZERO) < 0) {
             throw new IllegalArgumentException("The block index has to be positive.");
         }
 
-        int currentBlockIndex = neow.getBlockCount().send().getBlockIndex().intValue();
-        if (blockIndex > currentBlockIndex) {
+        BigInteger currentBlockIndex = neow3j.getBlockCount().send().getBlockIndex();
+        if (blockIndex.compareTo(currentBlockIndex) > 0) {
             throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is " +
                     "too high. The current block count is " + currentBlockIndex + ".");
         }

@@ -26,10 +26,10 @@ buildscript {
 }
 
 plugins {
-    id 'com.jfrog.bintray' version '1.8.5'
     id 'org.unbroken-dome.test-sets' version '3.0.1' apply false
-    id "de.marcphilipp.nexus-publish" version '0.4.0' apply false
+    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0' apply true
     id 'com.gradle.plugin-publish' version '0.12.0' apply false
+    id 'jacoco' apply true
 }
 
 description 'neow3j Project'
@@ -39,11 +39,24 @@ ext {
     publishSonaTypePassword = project.hasProperty('nexusPassword') ? project.property('nexusPassword') : ''
     publishGitHubUsername = project.hasProperty('githubUsername') ? project.property('githubUsername') : ''
     publishGitHubPassword = project.hasProperty('githubPassword') ? project.property('githubPassword') : ''
-    publishJFrogUsername = project.hasProperty('jfrogUsername') ? project.property('jfrogUsername') : ''
-    publishJFrogPassword = project.hasProperty('jfrogPassword') ? project.property('jfrogPassword') : ''
 }
 
-apply plugin: 'jacoco'
+nexusPublishing {
+    repositories {
+        sonatype {
+            nexusUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            snapshotRepositoryUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            username = publishSonaTypeUsername
+            password = publishSonaTypePassword
+        }
+        github {
+            nexusUrl = uri("https://maven.pkg.github.com/neow3j/neow3j/")
+            snapshotRepositoryUrl = uri("https://maven.pkg.github.com/neow3j/neow3j/")
+            username = publishGitHubUsername
+            password = publishGitHubPassword
+        }
+    }
+}
 
 allprojects { thisproject ->
 
@@ -54,7 +67,7 @@ allprojects { thisproject ->
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.8.0'
+    version '3.9.1'
     archivesBaseName = "${thisproject.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -95,18 +108,6 @@ allprojects { thisproject ->
 
     tasks.withType(Test) {
         reports.html.destination = file("${reporting.baseDir}/${name}")
-    }
-
-    bintray {
-        if (thisproject.name.startsWith(rootProject.name)) {
-            configurations = []
-            publications = []
-            pkg {
-                repo = 'maven'
-                name = rootProject.name
-                userOrg = 'neow3j'
-            }
-        }
     }
 
 //    checkstyle {
@@ -159,34 +160,12 @@ subprojects {
     // In addition the gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (!project.name.startsWith(rootProject.name) && !project.name.startsWith("test-properties")) {
+    if (!project.name.startsWith(rootProject.name)
+            && !project.name.startsWith("test-properties")) {
 
-        apply plugin: 'com.jfrog.bintray'
         apply plugin: 'maven-publish'
-        apply plugin: "de.marcphilipp.nexus-publish"
 
         publishing {
-            repositories {
-                maven {
-                    def sonatypeReleasesRepoUrl = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
-                    def sonatypeSnapshotsRepoUrl = "https://oss.sonatype.org/content/repositories/snapshots/"
-                    def githubRepoUrl = "https://maven.pkg.github.com/neow3j/neow3j/"
-                    if (project.hasProperty('sonatype')) {
-                        url = project.hasProperty('snapshot') ? sonatypeSnapshotsRepoUrl : sonatypeReleasesRepoUrl
-                        credentials {
-                            username publishSonaTypeUsername
-                            password publishSonaTypePassword
-                        }
-                    }
-                    if (project.hasProperty('github')) {
-                        url = githubRepoUrl
-                        credentials {
-                            username publishGitHubUsername
-                            password publishGitHubPassword
-                        }
-                    }
-                }
-            }
             publications {
                 mavenJava(MavenPublication) {
 
@@ -241,9 +220,7 @@ subprojects {
         signing {
             // only execute as part of this task
             required {
-                (gradle.taskGraph.hasTask('publish')
-                        || gradle.taskGraph.hasTask('bintrayUpload')
-                        || gradle.taskGraph.hasTask('bintrayPublish'))
+                gradle.taskGraph.hasTask('publish')
             }
             sign publishing.publications.mavenJava
         }
@@ -253,41 +230,6 @@ subprojects {
             dependsOn 'publish'
 
             tasks.findByName('publish').mustRunAfter 'build'
-        }
-
-        bintray {
-            //dryRun = true
-            user = publishJFrogUsername
-            key = publishJFrogPassword
-            def slug = rootProject.name
-            if (project.hasProperty('rootProjectOverride')) {
-                slug = project.rootProjectOverride
-            }
-            publications = ['mavenJava']
-            publish = true
-            override = true
-            // The filesSpec clause below is based on:
-            // https://github.com/bintray/gradle-bintray-plugin/issues/255
-            // The problem solved is: .asc files (signatures) are not
-            // uploaded by the bintrayUpload
-            filesSpec {
-                from("${buildDir}/libs") {
-                    include '*.jar.asc'
-                }
-                from("${buildDir}/publications/mavenJava") {
-                    include 'pom-default.xml.asc'
-                    rename 'pom-default.xml.asc', "${project.name}-${project.version}.pom.asc"
-                }
-                into "${project.group.replaceAll(/\./, '/')}/${project.name}/${project.version}"
-            }
-            pkg {
-                repo = 'maven'
-                name = slug
-                userOrg = 'neow3j'
-                licenses = ['Apache-2.0']
-                publicDownloadNumbers = true
-                vcsUrl = 'https://github.com/neow3j/neow3j.git'
-            }
         }
 
         task bundleJar(type: Jar) {
@@ -333,13 +275,15 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     }
 
     afterEvaluate {
-        getClassDirectories().from(files(classDirectories.files.collect {
+        classDirectories.setFrom(files(getClassDirectories().files.collect {
             fileTree(
                     dir: it,
                     // here we specify which path/modules should be
                     // excluded from the jacoco reports
                     exclude: [
-                            'test-properties/**'
+                            '**/io/neow3j/devpack/**',
+                            '**/io/neow3j/NeoTestContainer*',
+                            '**/io/neow3j/TestProperties*',
                     ]
             )
         }))

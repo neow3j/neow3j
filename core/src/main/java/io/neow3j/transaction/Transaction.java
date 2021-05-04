@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 
 public class Transaction extends NeoSerializable {
 
@@ -65,9 +67,8 @@ public class Transaction extends NeoSerializable {
     }
 
     public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock,
-            List<Signer> signers,
-            long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
-            List<Witness> witnesses) {
+            List<Signer> signers, long systemFee, long networkFee,
+            List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
         this.neow = neow;
         this.version = version;
         this.nonce = nonce;
@@ -157,7 +158,7 @@ public class Transaction extends NeoSerializable {
      * @return the transaction ID.
      */
     public Hash256 getTxId() {
-        return new Hash256(sha256(toArrayWithoutWitnesses()));
+        return new Hash256(reverseArray(sha256(toArrayWithoutWitnesses())));
     }
 
     /**
@@ -317,8 +318,7 @@ public class Transaction extends NeoSerializable {
      * @throws IOException if an error occurs when fetching the network's magic number
      */
     public byte[] getHashData() throws IOException {
-        return ArrayUtils.concatenate(neow.getNetworkMagicNumber(),
-                sha256(toArrayWithoutWitnesses()));
+        return concatenate(neow.getNetworkMagicNumber(), sha256(toArrayWithoutWitnesses()));
     }
 
     /**

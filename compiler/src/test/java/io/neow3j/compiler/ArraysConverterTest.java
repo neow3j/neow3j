@@ -15,7 +15,7 @@ public class ArraysConverterTest {
     public void emptyByteArrayInitializationShouldConvertToPUSHDATAInstruction()
             throws IOException {
 
-        CompilationUnit c = new Compiler().compileClass(EmptyByteArray.class.getName());
+        CompilationUnit c = new Compiler().compile(EmptyByteArray.class.getName());
         String script = toHexString(c.getNefFile().getScript());
         String expectedSequence = toHexStringNoPrefix((byte) OpCode.PUSHDATA1.getCode()) + "00" +
                 toHexStringNoPrefix((byte) OpCode.CONVERT.getCode()) + toHexStringNoPrefix(
@@ -27,7 +27,7 @@ public class ArraysConverterTest {
     public void filledByteArrayInitializationShouldConvertToPUSHDATAInstruction()
             throws IOException {
 
-        CompilationUnit c = new Compiler().compileClass(FilledByteArray.class.getName());
+        CompilationUnit c = new Compiler().compile(FilledByteArray.class.getName());
         String script = toHexString(c.getNefFile().getScript());
         byte[] data = new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09};
         String expectedSequence = toHexStringNoPrefix((byte) OpCode.PUSHDATA1.getCode()) + "0a" +
@@ -40,7 +40,7 @@ public class ArraysConverterTest {
     public void byteArrayInitializationWithSizeShouldConvertToPUSHDATAInstruction()
             throws IOException {
 
-        CompilationUnit c = new Compiler().compileClass(ByteArrayWithSize.class.getName());
+        CompilationUnit c = new Compiler().compile(ByteArrayWithSize.class.getName());
         String script = toHexString(c.getNefFile().getScript());
         byte[] data = new byte[10];
         String expectedSequence = toHexStringNoPrefix((byte) OpCode.PUSHDATA1.getCode()) + "0a" +

@@ -5,9 +5,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.SupportedStandards;
-import io.neow3j.devpack.Account;
+
 import java.io.IOException;
 import org.junit.Test;
 
@@ -15,14 +14,14 @@ public class SupportedStandardsTest {
 
     @Test
     public void multiStandardContract() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 MultiStandardContract.class.getName());
         assertThat(res.getManifest().getSupportedStandards(), containsInAnyOrder("NEP17", "NEP10"));
     }
 
     @Test
     public void singleStandardContract() throws IOException {
-        CompilationUnit res = new Compiler().compileClass(
+        CompilationUnit res = new Compiler().compile(
                 SingleStandardContract.class.getName());
         assertThat(res.getManifest().getSupportedStandards(), hasSize(1));
         assertThat(res.getManifest().getSupportedStandards(), contains("NEP17"));

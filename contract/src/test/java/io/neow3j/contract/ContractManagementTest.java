@@ -7,6 +7,8 @@ import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
 import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
+import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
@@ -19,10 +21,8 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.wallet.Account;
@@ -92,7 +92,7 @@ public class ContractManagementTest {
         Transaction tx = new ContractManagement(neow3j)
                 .setMinimumDeploymentFee(new BigInteger("70000000"))
                 .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1.getScriptHash()))
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
@@ -116,15 +116,14 @@ public class ContractManagementTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
-        File nefFile = new File(
-                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
-        File manifestFile = new File(this.getClass()
-                .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
-        ContractManifest manifest = ObjectMapperFactory.getObjectMapper()
-                .readValue(manifestFile, ContractManifest.class);
-        byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
+        File manifestFile = new File(
+                getClass().getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
+        ContractManifest manifest =
+                getObjectMapper().readValue(manifestFile, ContractManifest.class);
+        byte[] manifestBytes = getObjectMapper().writeValueAsBytes(manifest);
 
         byte[] expectedScript = new ScriptBuilder().contractCall(
                 ContractManagement.SCRIPT_HASH, "deploy",
@@ -133,7 +132,7 @@ public class ContractManagementTest {
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest)
                 .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1.getScriptHash()))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -152,9 +151,9 @@ public class ContractManagementTest {
 
         File manifestFile = new File(this.getClass()
                 .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
-        ContractManifest manifest = ObjectMapperFactory.getObjectMapper()
+        ContractManifest manifest = getObjectMapper()
                 .readValue(manifestFile, ContractManifest.class);
-        byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
+        byte[] manifestBytes = getObjectMapper().writeValueAsBytes(manifest);
 
         ContractParameter data = string("some data");
 
@@ -166,7 +165,7 @@ public class ContractManagementTest {
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest, data)
                 .wallet(w)
-                .signers(Signer.calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1.getScriptHash()))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));

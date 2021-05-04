@@ -1,14 +1,20 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
+import static io.neow3j.utils.AddressUtils.addressToScriptHash;
+import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.Hash;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.AddressUtils;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -23,7 +29,7 @@ import java.util.List;
 public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     /**
-     * The hash is stored as an unsigned integer in little-endian order.
+     * The hash is stored as an unsigned integer in big-endian order.
      */
     private byte[] hash;
 
@@ -36,14 +42,14 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * Constructs a new hash with 20 zero bytes.
      */
     public Hash160() {
-        this.hash = new byte[NeoConstants.HASH160_SIZE];
+        hash = new byte[NeoConstants.HASH160_SIZE];
     }
 
     /**
-     * Constructs a new hash from the given byte array. The byte array must be in little-endian
+     * Constructs a new hash from the given byte array. The byte array must be in big-endian
      * order and 160 bits long.
      *
-     * @param hash the hash in little-endian order.
+     * @param hash the hash in big-endian order.
      */
     public Hash160(byte[] hash) {
         checkAndThrowHashLength(hash);
@@ -57,8 +63,8 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @param hash the hash in big-endian order.
      */
     public Hash160(String hash) {
-        if (Numeric.isValidHexString(hash)) {
-            this.hash = ArrayUtils.reverseArray(Numeric.hexStringToByteArray(hash));
+        if (isValidHexString(hash)) {
+            this.hash = hexStringToByteArray(hash);
             checkAndThrowHashLength(this.hash);
         } else {
             throw new IllegalArgumentException("String argument is not hexadecimal.");
@@ -68,7 +74,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            this.hash = reader.readBytes(NeoConstants.HASH160_SIZE);
+            hash = reverseArray(reader.readBytes(NeoConstants.HASH160_SIZE));
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -76,7 +82,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
-        writer.write(this.hash);
+        writer.write(reverseArray(hash));
     }
 
     @Override
@@ -85,13 +91,22 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
+     * Gets the script hash as a byte array in big-endian order.
+     *
+     * @return the script hash byte array in big-endian order.
+     */
+    @Override
+    public byte[] toArray() {
+        return hash;
+    }
+
+    /**
      * Gets the script hash as a byte array in little-endian order.
      *
      * @return the script hash byte array in little-endian order.
      */
-    @Override
-    public byte[] toArray() {
-        return super.toArray();
+    public byte[] toLittleEndianArray() {
+        return reverseArray(hash);
     }
 
     /**
@@ -99,8 +114,9 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      *
      * @return the script hash as hex string in big-endian order.
      */
+    @JsonValue
     public String toString() {
-        return Numeric.toHexStringNoPrefix(ArrayUtils.reverseArray(hash));
+        return toHexStringNoPrefix(hash);
     }
 
     /**
@@ -109,7 +125,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @return the address.
      */
     public String toAddress() {
-        return AddressUtils.scriptHashToAddress(this.hash);
+        return scriptHashToAddress(hash);
     }
 
     /**
@@ -119,7 +135,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @return the script hash.
      */
     public static Hash160 fromAddress(String address) {
-        return new Hash160(AddressUtils.addressToScriptHash(address));
+        return new Hash160(addressToScriptHash(address));
     }
 
     /**
@@ -129,18 +145,15 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @return the script hash.
      */
     public static Hash160 fromScript(byte[] script) {
-        // There is no need to reverse the hash. The hashing method returns the script hash in
-        // little-endian format.
-        return new Hash160(Hash.sha256AndThenRipemd160(script));
+        return new Hash160(reverseArray(sha256AndThenRipemd160(script)));
     }
 
     public static Hash160 fromPublicKey(byte[] encodedPublicKey) {
-        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKey));
+        return fromScript(buildVerificationScript(encodedPublicKey));
     }
 
     public static Hash160 fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
-        return fromScript(ScriptBuilder.buildVerificationScript(encodedPublicKeys,
-                signingThreshold));
+        return fromScript(buildVerificationScript(encodedPublicKeys, signingThreshold));
     }
 
     /**
@@ -150,7 +163,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
      * @return the script hash.
      */
     public static Hash160 fromScript(String script) {
-        return fromScript(Numeric.hexStringToByteArray(script));
+        return fromScript(hexStringToByteArray(script));
     }
 
     private void checkAndThrowHashLength(byte[] hash) {
@@ -162,8 +175,8 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     @Override
     public int compareTo(Hash160 o) {
-        return new BigInteger(1, ArrayUtils.reverseArray(hash))
-                .compareTo(new BigInteger(1, ArrayUtils.reverseArray(o.toArray())));
+        return new BigInteger(1, hash)
+                .compareTo(new BigInteger(1, o.toArray()));
     }
 
     @Override
@@ -180,7 +193,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(this.hash);
+        return Arrays.hashCode(hash);
     }
 
 }

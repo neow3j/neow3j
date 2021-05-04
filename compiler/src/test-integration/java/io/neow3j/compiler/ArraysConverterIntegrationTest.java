@@ -1,6 +1,9 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
+import io.neow3j.devpack.events.Event1Arg;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import io.neow3j.utils.Numeric;
@@ -12,6 +15,13 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.TestProperties.cryptoLibHash;
+import static io.neow3j.TestProperties.gasTokenHash;
+import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.contract.ContractParameter.array;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -96,6 +106,40 @@ public class ArraysConverterIntegrationTest {
                 is(Hash160.ZERO.toString()));
     }
 
+    @Test
+    public void variableLengthParam() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1),
+                array(integer(10), integer(23), integer(100), integer(42)));
+        int sum = response.getInvocationResult().getStack().get(0).getInteger().intValue();
+        assertThat(sum, is(186));
+    }
+
+    @Test
+    public void callRuntimeNotifyWithVarArgs() throws Throwable {
+        Hash160 hash1 = new Hash160(gasTokenHash());
+        Hash160 hash2 = new Hash160(neoTokenHash());
+        Hash160 hash3 = new Hash160(cryptoLibHash());
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName,
+                array(hash160(hash1), hash160(hash2), hash160(hash3)));
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
+        List<NeoApplicationLog.Execution.Notification> notifications =
+                log.getExecutions().get(0).getNotifications();
+        assertThat(notifications.get(0).getState().getList().get(0).getHexString(),
+                is(Numeric.reverseHexString(gasTokenHash())));
+        assertThat(notifications.get(1).getState().getList().get(0).getHexString(),
+                is(Numeric.reverseHexString(neoTokenHash())));
+        assertThat(notifications.get(2).getState().getList().get(0).getHexString(),
+                is(Numeric.reverseHexString(cryptoLibHash())));
+    }
+
+    @Test
+    public void stringVarArgs() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                array(string("hello, "), string("world!")));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
+                is("hello, world!"));
+    }
+
     static class ArraysConverterIntegrationTestContract {
 
         public static String[] createStringArrayWithTwoEntries() {
@@ -132,6 +176,31 @@ public class ArraysConverterIntegrationTest {
         public static Object[] createObjectArray() {
             return new Object[]{1, "hello, world!", io.neow3j.devpack.Hash160.zero()};
         }
+
+        public static int variableLengthParam(int a, int... integers) {
+            int sum = integers[0];
+            for (int i : integers) {
+                sum += i;
+            }
+            return sum + a;
+        }
+
+        static Event1Arg<io.neow3j.devpack.Hash160> event;
+
+        public static void callRuntimeNotifyWithVarArgs(io.neow3j.devpack.Hash160... hashes) {
+            for (io.neow3j.devpack.Hash160 hash : hashes) {
+                event.fire(hash);
+            }
+        }
+
+        public static String stringVarArgs(String... strings) {
+            String s = "";
+            for (String st : strings) {
+                s += st;
+            }
+            return s;
+        }
+
     }
 
 }

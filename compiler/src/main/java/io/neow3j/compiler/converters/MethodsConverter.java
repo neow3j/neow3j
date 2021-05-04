@@ -11,8 +11,12 @@ import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.constants.OpCode.CALLT;
+import static io.neow3j.utils.AddressUtils.addressToScriptHash;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
@@ -36,7 +40,7 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.model.types.CallFlags;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
@@ -44,6 +48,7 @@ import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -73,7 +78,7 @@ public class MethodsConverter implements Converter {
             case INVOKESTATIC:
             case INVOKEVIRTUAL:
             case INVOKESPECIAL:
-                insn = MethodsConverter.handleInvoke(insn, neoMethod, compUnit);
+                insn = handleInvoke(insn, neoMethod, compUnit);
                 break;
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
@@ -94,7 +99,7 @@ public class MethodsConverter implements Converter {
     private static final String ADDRESS_TO_SCRIPTHASH_METHOD_NAME = "addressToScriptHash";
     private static final String HEX_TO_BYTES_METHOD_NAME = "hexToBytes";
     private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
-    private static final String EQUALS_METHOD_NAME = "hashCode";
+    private static final String EQUALS_METHOD_NAME = "equals";
     private static final String LENGTH_METHOD_NAME = "length";
     private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
 
@@ -137,6 +142,8 @@ public class MethodsConverter implements Converter {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
+        } else if (isStringEqualsMethodCall(methodInsn)) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
         } else {
             return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn,
                     compUnit);
@@ -232,21 +239,20 @@ public class MethodsConverter implements Converter {
                     + "methods can only be applied to constant string literals.");
         }
         String stringLiteral = new String(lastNeoInsn.getOperand(), UTF_8);
-//        byte[] newInsnBytes = null;
         NeoInstruction newInsn = null;
         if (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)) {
             if (!AddressUtils.isValidAddress(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid address "
                         + "'%s' used in static field initialization.", stringLiteral));
             }
-            byte[] scriptHash = AddressUtils.addressToScriptHash(stringLiteral);
-            newInsn = buildPushDataInsn(scriptHash);
+            byte[] scriptHash = addressToScriptHash(stringLiteral);
+            newInsn = buildPushDataInsn(reverseArray(scriptHash));
         } else if (methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)) {
-            if (!Numeric.isValidHexString(stringLiteral)) {
+            if (!isValidHexString(stringLiteral)) {
                 throw new CompilerException(callingNeoMethod, format("Invalid hex string ('%s') "
                         + "used in static field initialization.", stringLiteral));
             }
-            byte[] bytes = Numeric.hexStringToByteArray(stringLiteral);
+            byte[] bytes = hexStringToByteArray(stringLiteral);
             newInsn = buildPushDataInsn(bytes);
         } else if (methodNode.name.equals(STRING_TO_INT_METHOD_NAME)) {
             try {
@@ -281,7 +287,7 @@ public class MethodsConverter implements Converter {
         // Before the call to `hashCode()` there the opcodes ICONST_M1, ISTORE,
         // and ALOAD occured. The compiler already converted them and added them to the
         // `NeoMethod` at this point. But they are not needed when converting the switch to
-        // NeoVM code. Thus, they must to be removed again.
+        // NeoVM code. Thus, they must be removed again.
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
         callingNeoMethod.removeLastInstruction();
@@ -344,7 +350,7 @@ public class MethodsConverter implements Converter {
         Hash160 scriptHash;
         try {
             scriptHash = new Hash160((String) annotation.values.get(1));
-        } catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             throw new CompilerException(owner, format("Script hash '%s' of the contract "
                             + "class '%s' does not have the length of a correct script hash.",
                     annotation.values.get(1), getClassNameForInternalName(owner.name)));
@@ -352,8 +358,7 @@ public class MethodsConverter implements Converter {
 
         // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
         if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
-            callingNeoMethod.addInstruction(
-                    buildPushDataInsn(ArrayUtils.reverseArray(scriptHash.toArray())));
+            callingNeoMethod.addInstruction(buildPushDataInsn(scriptHash.toArray()));
             return;
         }
 

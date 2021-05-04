@@ -10,10 +10,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.constants.InteropService;
+import io.neow3j.compiler.sourcelookup.ISourceContainer;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.ScriptBuilder;
-import io.neow3j.devpack.ApiInterface;
+import io.neow3j.devpack.ByteString;
+import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Hash160;
@@ -27,6 +29,7 @@ import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
@@ -36,6 +39,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -50,7 +54,7 @@ import org.objectweb.asm.tree.MethodNode;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.8.0";
+    public static final String COMPILER_NAME = "neow3j-3.9.1";
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -95,7 +99,8 @@ public class Compiler {
             return ContractParameterType.BOOLEAN;
         }
         if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
+                || typeName.equals(byte[].class.getTypeName())
+                || typeName.equals(ByteString.class.getTypeName())) {
             return ContractParameterType.BYTE_ARRAY;
         }
         if (typeName.equals(Void.class.getTypeName())
@@ -114,14 +119,14 @@ public class Compiler {
         if (typeName.equals(Hash256.class.getTypeName())) {
             return ContractParameterType.HASH256;
         }
-        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
+        if (typeName.equals(io.neow3j.devpack.List.class.getTypeName())
+                || typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
             return ContractParameterType.ARRAY;
         }
         try {
             typeName = getFullyQualifiedNameForInternalName(type.getInternalName());
             Class<?> clazz = Class.forName(typeName);
-            if (Arrays.asList(clazz.getInterfaces()).contains(ApiInterface.class)) {
+            if (Arrays.asList(clazz.getInterfaces()).contains(InteropInterface.class)) {
                 return ContractParameterType.INTEROP_INTERFACE;
             }
         } catch (ClassNotFoundException ignore) {
@@ -152,7 +157,8 @@ public class Compiler {
         if (typeName.equals(String.class.getTypeName())
                 || typeName.equals(Hash160.class.getTypeName())
                 || typeName.equals(Hash256.class.getTypeName())
-                || typeName.equals(ECPoint.class.getTypeName())) {
+                || typeName.equals(ECPoint.class.getTypeName())
+                || typeName.equals(ByteString.class.getTypeName())) {
             return StackItemType.BYTE_STRING;
         }
         if (typeName.equals(Integer.class.getTypeName())
@@ -182,6 +188,14 @@ public class Compiler {
             // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.ARRAY;
         }
+        if (typeName.equals(InteropInterface.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.INTEROP_INTERFACE;
+        }
+        if (typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
+            // The io.neow3j.devpack.List type is simply an array-abstraction.
+            return StackItemType.STRUCT;
+        }
         try {
             typeName = type.getDescriptor().replace("/", ".");
             Class<?> clazz = Class.forName(typeName);
@@ -195,113 +209,55 @@ public class Compiler {
     }
 
 
-//    /**
-//     * Converts the given classes to neo-vm code and generates debug information with the help of
-//     * the given source file paths.
-//     * <p>
-//     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
-//     the
-//     * paths to the given class files.
-//     *
-//     * @param classNames      The fully qualified names of the classes
-//     * @param sourceFilePaths The absolute paths to the source files of the given classes.
-//     * @return the compilation results.
-//     * @throws IOException if something goes wrong when reading Java and class files from disk.
-//     */
-//    public CompilationUnit compileClasses(Set<String> classNames, Set<String> sourceFilePaths)
-//            throws IOException {
-//
-//        List<ClassNode> classes = new ArrayList<>();
-//        for (String className : classNames) {
-//            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
-//            classes.add(asmClass);
-//            String relativePath = className.replace(".", "/");
-//            String sourceFilePath = sourceFilePaths.stream()
-//                    .filter(path -> path.contains(relativePath))
-//                    .findFirst().orElseThrow(() -> new CompilerException(
-//                            "Could not find source file for class " + className));
-//            compUnit.addClassToSourceMapping(className, sourceFilePath);
-//        }
-//        for (ClassNode asmClass : classes) {
-//            compileClass(asmClass);
-//        }
-//        finalizeCompilation();
-//        return compUnit;
-//    }
-
-//    /**
-//     * Converts the given JVM class files a neo-vm script. No debugging information is created
-//     * because the source files are unknown.
-//     * <p>
-//     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
-//     the
-//     * paths to the given class files.
-//     *
-//     * @param classNames The fully qualified names of the classes to convert to neo-vm code.
-//     * @return The compilation result.
-//     * @throws IOException if something goes wrong when reading Java and class files from disk.
-//     */
-//    public CompilationUnit compileClasses(Set<String> classNames) throws IOException {
-//        for (String className : classNames) {
-//            ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
-//            compileClass(asmClass);
-//        }
-//        finalizeCompilation();
-//        return compUnit;
-//    }
-
     /**
-     * Compiles the given class to the corresponding neo-vm script and produces debugging
-     * information to be used with the Neo Debugger.
+     * Compiles the given contract class to neo-vm code and generates debug information with the
+     * help of the given source containers.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
+     * the paths to the given class files.
      *
-     * @param className      The fully qualified name of the class to compile.
-     * @param sourceFilePath The absolute path of the class' source file.
-     * @return The compilation unit holding the NEF, contract manifest, and {@code DebugInfo}.
-     * @throws IOException If an error occurs when reading the class and source files.
+     * @param contractClass    The fully qualified name of the contract class.
+     * @param sourceContainers A list of source containers used for generating debugging
+     *                         information.
+     * @return the compilation results.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
      */
-    public CompilationUnit compileClass(String className, String sourceFilePath)
+    public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers)
             throws IOException {
 
-        ClassNode asmClass = getAsmClass(className, compUnit.getClassLoader());
-        String relativePath = className.replace(".", "/");
-        if (!sourceFilePath.contains(relativePath)) {
-            throw new IllegalArgumentException("Source file path does not correspond to the fully "
-                    + "qualified name of the given class.");
-        }
-        compUnit.addClassToSourceMapping(className, sourceFilePath);
-        compileClass(asmClass);
-        return compUnit;
+        compUnit.addSourceContainers(sourceContainers);
+        return compile(contractClass);
     }
 
     /**
-     * Compiles the given class to NeoVM code.
+     * Compiles the given contract class to neo-vm code.
      *
-     * @param fullyQualifiedClassName the fully qualified name of the class.
+     * @param contractClass the fully qualified name of the contract class.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException if an error occurs when trying to read class files.
      */
-    public CompilationUnit compileClass(String fullyQualifiedClassName) throws IOException {
-        return compileClass(getAsmClass(fullyQualifiedClassName, compUnit.getClassLoader()));
+    public CompilationUnit compile(String contractClass) throws IOException {
+        return compile(getAsmClass(contractClass, compUnit.getClassLoader()));
     }
 
     /**
-     * Compiles the given class to NeoVM code.
+     * Compiles the given contract class to neo-vm code.
      *
-     * @param classStream the {@link InputStream} pointing to a class file.
+     * @param classStream the {@link InputStream} pointing to a contract class file.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException if an error occurs when trying to read class files.
      */
-    public CompilationUnit compileClass(InputStream classStream) throws IOException {
-        return compileClass(getAsmClass(classStream));
+    public CompilationUnit compile(InputStream classStream) throws IOException {
+        return compile(getAsmClass(classStream));
     }
 
     /**
-     * Compiles the given class to NeoVM code.
+     * Compiles the given contract class to neo-vm code.
      *
-     * @param classNode the {@link ClassNode} representing a class file.
+     * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compileClass(ClassNode classNode) throws IOException {
+    private CompilationUnit compile(ClassNode classNode) throws IOException {
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
         checkFieldVariables(classNode);
@@ -343,7 +299,6 @@ public class Compiler {
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
     }
-
 
     private void collectSmartContractEvents(ClassNode asmClass) {
         if (asmClass.fields == null || asmClass.fields.size() == 0) {
@@ -512,7 +467,7 @@ public class Compiler {
      * There should always be a super call even if it was not explicitly specified by the developer.
      *
      * @param constructor The constructor method.
-     * @param owner The class of the constructor method.
+     * @param owner       The class of the constructor method.
      * @return The instruction that calls the super constructor.
      */
     public static MethodInsnNode skipToSuperCtorCall(MethodNode constructor, ClassNode owner) {
@@ -521,7 +476,7 @@ public class Compiler {
         while (it.hasNext()) {
             insn = it.next();
             if (isCallToCtor(insn, owner.superName)) {
-               break;
+                break;
             }
         }
         assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call " +
@@ -533,7 +488,7 @@ public class Compiler {
      * Skips instructions, starting at the given one, until the constructor call to the given
      * class is reached.
      *
-     * @param insn The instruction from which to start looking for the constructor.
+     * @param insn  The instruction from which to start looking for the constructor.
      * @param owner The class that owns the constructor.
      * @return The instruction that calls the constructor.
      */
@@ -648,7 +603,7 @@ public class Compiler {
             String instructionAnnotationOperandPrefix) {
         byte[] operandPrefix = new byte[]{};
         int idx = insnAnnotation.values.indexOf(instructionAnnotationOperandPrefix);
-        Object prefixObj = insnAnnotation.values.get(idx+1);
+        Object prefixObj = insnAnnotation.values.get(idx + 1);
         if (prefixObj instanceof byte[]) {
             operandPrefix = (byte[]) prefixObj;
         } else if (prefixObj instanceof List) {

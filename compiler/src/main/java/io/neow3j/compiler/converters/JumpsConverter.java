@@ -68,16 +68,18 @@ public class JumpsConverter implements Converter {
             // cases (IFLT, IFLE, IFGT, and IFGE) the NeoVM opcode is switched, e.g., from GT to
             // LE because zero value will be on top of the stack and not the integer value.
             case IFEQ: // Tests if the value on the stack is equal to zero.
-            case IFNULL: // Object comparison with null.
-                // JMPIFNOT_L means that the process should jump if the value is not set, is null,
-                // or is zero.
                 addJumpInstruction(neoMethod, insn, OpCode.JMPIFNOT_L);
                 break;
-            case IFNE: // Tests if the value on the stack is not equal to zero.
-            case IFNONNULL: // Object comparison with null.
-                // JMPIF_L means that the process should jump if the value is set, is not null, or
-                // not zero.
+            case IFNULL: // Object comparison with null.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ISNULL));
                 addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
+                break;
+            case IFNE: // Tests if the value on the stack is not equal to zero.
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIF_L);
+                break;
+            case IFNONNULL: // Object comparison with null.
+                neoMethod.addInstruction(new NeoInstruction(OpCode.ISNULL));
+                addJumpInstruction(neoMethod, insn, OpCode.JMPIFNOT_L);
                 break;
             case IFLT: // Tests if the value on the stack is less than zero.
                 addPushNumber(0, neoMethod);

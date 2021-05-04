@@ -31,7 +31,7 @@ public class VerificationMethodTest {
             throws IOException {
 
         CompilationUnit unit = new Compiler()
-                .compileClass(VerificationMethodTestContract.class.getName());
+                .compile(VerificationMethodTestContract.class.getName());
         List<ContractMethod> methods = unit.getManifest().getAbi().getMethods().stream()
                 .filter(m -> m.getName().equals(VERIFY_METHOD_NAME))
                 .collect(Collectors.toList());
@@ -44,7 +44,7 @@ public class VerificationMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "doVerify", "required to have return type", "boolean")));
-        new Compiler().compileClass(VerificationMethodIllegalSignatureTestContract.class.getName());
+        new Compiler().compile(VerificationMethodIllegalSignatureTestContract.class.getName());
     }
 
     @Test
@@ -52,7 +52,7 @@ public class VerificationMethodTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList("multiple methods", VERIFY_METHOD_NAME)));
-        new Compiler().compileClass(MultipleVerificationMethodsTestContract.class.getName());
+        new Compiler().compile(MultipleVerificationMethodsTestContract.class.getName());
     }
 
     static class VerificationMethodTestContract {
