@@ -29,7 +29,7 @@ public class NEP2Test {
             NEP2InvalidPassphrase {
 
         ScryptParams nonDefaultScryptParams = new ScryptParams(256, 1, 1);
-        String nep2Encrypted = "6PYRSp9YqgK7QftFbS2akbtpVzkbGVZM6xYuBqZEDKWrm9X7GgsiGSbSxC";
+        String nep2Encrypted = "6PYM7jHL3uwhP8uuHP9fMGMfJxfyQbanUZPQEh1772iyb7vRnUkbkZmdRT";
         ECKeyPair pair = NEP2.decrypt(defaultAccountPassword(), nep2Encrypted,
                 nonDefaultScryptParams);
         assertThat(pair.getPrivateKey().getBytes(),
@@ -47,7 +47,7 @@ public class NEP2Test {
     @Test
     public void encryptWithNonDefaultScryptParams() throws CipherException {
         ScryptParams nonDefaultScryptParams = new ScryptParams(256, 1, 1);
-        String expected = "6PYRSp9YqgK7QftFbS2akbtpVzkbGVZM6xYuBqZEDKWrm9X7GgsiGSbSxC";
+        String expected = "6PYM7jHL3uwhP8uuHP9fMGMfJxfyQbanUZPQEh1772iyb7vRnUkbkZmdRT";
         ECKeyPair keyPair =
                 ECKeyPair.create(Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
         assertThat(NEP2.encrypt(defaultAccountPassword(), keyPair, nonDefaultScryptParams),
