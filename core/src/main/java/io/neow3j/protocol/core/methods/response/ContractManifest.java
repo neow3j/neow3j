@@ -24,6 +24,9 @@ public class ContractManifest {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<ContractGroup> groups;
 
+    @JsonProperty("features")
+    private Object features;
+
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -49,11 +52,12 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(String name, List<ContractGroup> groups,
+    public ContractManifest(String name, List<ContractGroup> groups, Object features,
             List<String> supportedStandards, ContractABI abi, List<ContractPermission> permissions,
             List<String> trusts, Object extra) {
         this.name = name;
         this.groups = groups;
+        this.features = features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
@@ -67,6 +71,10 @@ public class ContractManifest {
 
     public List<ContractGroup> getGroups() {
         return groups;
+    }
+
+    public Object getFeatures() {
+        return features;
     }
 
     public List<String> getSupportedStandards() {
@@ -100,6 +108,7 @@ public class ContractManifest {
         ContractManifest that = (ContractManifest) o;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getGroups(), that.getGroups()) &&
+                Objects.equals(getFeatures(), that.getFeatures()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
@@ -111,6 +120,7 @@ public class ContractManifest {
     public int hashCode() {
         return Objects.hash(getName(),
                 getGroups(),
+                getFeatures(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
@@ -123,6 +133,7 @@ public class ContractManifest {
         return "ContractManifest{" +
                 "name=" + name +
                 ", groups=" + groups +
+                ", features=" + features +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +

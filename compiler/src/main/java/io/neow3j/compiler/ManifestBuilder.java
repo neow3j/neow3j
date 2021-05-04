@@ -27,6 +27,7 @@ import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.Con
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
 import io.neow3j.utils.ClassUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -59,7 +61,8 @@ public class ManifestBuilder {
         List<ContractPermission> permissions = buildPermissions(compUnit.getContractClass());
         List<String> trusts = buildTrusts(compUnit.getContractClass());
 
-        return new ContractManifest(name, groups, supportedStandards, abi, permissions, trusts,
+        return new ContractManifest(name, groups, null, supportedStandards, abi, permissions,
+                trusts,
                 extras);
     }
 

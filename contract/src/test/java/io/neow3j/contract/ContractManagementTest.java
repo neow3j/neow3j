@@ -215,7 +215,7 @@ public class ContractManagementTest {
             stringBuilder.append(partialName);
         }
         String namePlaceholder = stringBuilder.toString();
-        return new ContractManifest(namePlaceholder, null, null, null, null, null, null);
+        return new ContractManifest(namePlaceholder, null, null, null, null, null, null, null);
     }
 
 }
