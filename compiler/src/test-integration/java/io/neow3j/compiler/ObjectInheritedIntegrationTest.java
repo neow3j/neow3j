@@ -296,9 +296,9 @@ public class ObjectInheritedIntegrationTest {
             event1.fire("event1");
             event2.fire("event2", 10);
             Notification[] notifications1 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             Notification[] notifications2 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             if (notifications1[0] == null || notifications1[1] == null) {
                 throw new Exception("Couldn't fetch notifications");
             }
