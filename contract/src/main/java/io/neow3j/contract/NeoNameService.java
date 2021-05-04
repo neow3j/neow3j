@@ -25,12 +25,11 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
- * Represents the NameService native contract and provides methods to invoke its functions.
+ * Represents the NameService contract and provides methods to invoke its functions.
  */
 public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String ADD_ROOT = "addRoot";
     private static final String SET_PRICE = "setPrice";
@@ -66,8 +65,8 @@ public class NeoNameService extends NonFungibleToken {
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
-    public NeoNameService(Neow3j neow) {
-        super(SCRIPT_HASH, neow);
+    public NeoNameService(Hash160 scriptHash, Neow3j neow) {
+        super(scriptHash, neow);
     }
 
     /**

@@ -1,14 +1,20 @@
 package io.neow3j.contract;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
+import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.utils.Numeric.toBigInt;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -19,11 +25,13 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import io.neow3j.NeoTestContainer;
+import io.neow3j.TestProperties;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import org.junit.BeforeClass;
@@ -37,6 +45,7 @@ import java.util.Date;
 public class NameServiceIntegrationTest {
 
     private static Neow3j neow3j;
+    private static Hash160 nameServiceHash;
     private static NeoNameService nameService;
 
     private static final String ROOT_DOMAIN = "neo";
@@ -54,12 +63,31 @@ public class NameServiceIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
-        nameService = new NeoNameService(getNeow3j());
+        nameServiceHash = deployNameServiceContract();
+        nameService = new NeoNameService(nameServiceHash, getNeow3j());
         // make a transaction that can be used for the tests
         fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromCommittee(DOMAIN);
         setRecordFromCommittee(DOMAIN, RecordType.A, A_RECORD);
+    }
+
+    private static Hash160 deployNameServiceContract() throws Throwable {
+        byte[] manifestBytes = TestProperties.nameServiceManifest();
+        byte[] nefBytes = TestProperties.nameServiceNef();
+
+        Hash256 txHash = new ContractManagement(neow3j)
+                .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(DEFAULT_ACCOUNT))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        return SmartContract.getContractHash(DEFAULT_ACCOUNT.getScriptHash(),
+                NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
+                "NameService");
     }
 
     private static Neow3j getNeow3j() {

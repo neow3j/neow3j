@@ -133,7 +133,18 @@ public class NefFile extends NeoSerializable {
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
-        return toBigInt(reverseArray(checkSum)).longValue();
+        return getCheckSumAsInteger(checkSum);
+    }
+
+    /**
+     * Converts check sum bytes to an integer.
+     * <p>
+     * The check sum bytes are read as a little endian unsigned integer.
+     *
+     * @return the check sum.
+     */
+    public static long getCheckSumAsInteger(byte[] checkSumBytes) {
+        return toBigInt(reverseArray(checkSumBytes)).longValue();
     }
 
     /**
@@ -199,9 +210,19 @@ public class NefFile extends NeoSerializable {
 
     public static byte[] computeChecksum(NefFile file) {
         byte[] serialized = file.toArray();
+        return computeChecksumFromBytes(serialized);
+    }
+
+    /**
+     * Computes the checksum from the bytes of a nef file.
+     *
+     * @param fileBytes the bytes of the nef file.
+     * @return the checksum.
+     */
+    public static byte[] computeChecksumFromBytes(byte[] fileBytes) {
         // Get nef file bytes without the checksum.
-        int fileSizeWithoutCheckSum = serialized.length - CHECKSUM_SIZE;
-        byte[] nefFileBytes = getFirstNBytes(serialized, fileSizeWithoutCheckSum);
+        int fileSizeWithoutCheckSum = fileBytes.length - CHECKSUM_SIZE;
+        byte[] nefFileBytes = getFirstNBytes(fileBytes, fileSizeWithoutCheckSum);
         // Hash the nef file bytes and from that the first bytes as the checksum.
         return getFirstNBytes(hash256(nefFileBytes), CHECKSUM_SIZE);
     }
@@ -219,7 +240,7 @@ public class NefFile extends NeoSerializable {
         }
     }
 
-    public static NefFile readFromStackitem(StackItem stackItem)
+    public static NefFile readFromStackItem(StackItem stackItem)
             throws DeserializationException, IOException {
 
         // the 'nef' is represented in a ByteString stack item
