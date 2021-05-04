@@ -111,7 +111,8 @@ public class NeoNameServiceTest {
     public void ownerOf() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nns_ownerof.json");
-        assertThat(new NeoNameService(neow).ownerOf("client1.neo"), is(account1.getScriptHash()));
+        assertThat(new NeoNameService(neow).ownerOf("client1.neo"),
+                is(new Hash160("1ee8109df70043dc34dbad14dde961cc6925acfe")));
     }
 
     @Test
@@ -580,7 +581,7 @@ public class NeoNameServiceTest {
                 asList(hash160(account2.getScriptHash()), byteArray("636c69656e74312e6e656f")))
                 .toArray();
 
-        Wallet wallet = Wallet.withAccounts(account2);
+        Wallet wallet = Wallet.withAccounts(account1);
         TransactionBuilder b = new NeoNameService(neow)
                 .transfer(wallet, account2.getScriptHash() ,"client1.neo");
         assertThat(b.getScript(), is(expectedScript));
