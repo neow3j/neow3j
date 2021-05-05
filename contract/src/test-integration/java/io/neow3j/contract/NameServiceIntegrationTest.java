@@ -13,6 +13,7 @@ import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.utils.Numeric.toBigInt;
 import static org.hamcrest.Matchers.greaterThan;
@@ -63,6 +64,7 @@ public class NameServiceIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
         // make a transaction that can be used for the tests

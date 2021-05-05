@@ -5,6 +5,7 @@ import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
@@ -35,6 +36,7 @@ public class RoleManagementIntegrationTest {
     @BeforeClass
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         roleManagement = new RoleManagement(neow3j);
     }
 
