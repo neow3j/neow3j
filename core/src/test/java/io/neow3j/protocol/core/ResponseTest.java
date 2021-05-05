@@ -838,6 +838,7 @@ public class ResponseTest extends ResponseTester {
                 "        \"manifest\": {\n" +
                 "            \"name\": \"LedgerContract\",\n" +
                 "            \"groups\": [],\n" +
+                "            \"features\": {},\n" +
                 "            \"supportedstandards\": [],\n" +
                 "            \"abi\": {\n" +
                 "                \"methods\": [\n" +

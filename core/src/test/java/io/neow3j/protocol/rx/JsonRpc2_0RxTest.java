@@ -39,7 +39,9 @@ public class JsonRpc2_0RxTest {
     @Before
     public void setUp() {
         neow3jService = mock(Neow3jService.class);
-        neow3j = Neow3j.build(neow3jService, 1000, Executors.newSingleThreadScheduledExecutor());
+        neow3j = Neow3j.build(neow3jService, new Neow3j.Config()
+                .setPollingInterval(1000)
+                .setScheduledExecutorService(Executors.newSingleThreadScheduledExecutor()));
     }
 
     @Test

@@ -3,6 +3,8 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.rx.Neow3jRx;
+import io.neow3j.utils.Async;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -13,9 +15,11 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public abstract class Neow3j implements Neo, Neow3jRx {
 
-    private Integer networkMagicNumber;
+    public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
+    public static final byte DEFAULT_ADDRESS_VERSION = 0x35;
 
-    private static Byte addressVersion = 0x35;
+    private Config config;
+    private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
 
     /**
      * Construct a new Neow3j instance.
@@ -24,23 +28,21 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return new Neow3j instance
      */
     public static Neow3j build(Neow3jService neow3jService) {
-        return new JsonRpc2_0Neow3j(neow3jService);
+        return new JsonRpc2_0Neow3j(neow3jService, new Config());
     }
 
     /**
      * Construct a new Neow3j instance.
      *
-     * @param neow3jService            neow3j service instance - i.e. HTTP or IPC
-     * @param pollingInterval          polling interval for responses from network nodes
-     * @param scheduledExecutorService executor service to use for scheduled tasks.
-     *                                 <strong>You are responsible for terminating this thread
-     *                                 pool</strong>
-     * @return new Neow3j instance
+     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
+     * @return new Neow3j instance.
      */
-    public static Neow3j build(
-            Neow3jService neow3jService, long pollingInterval,
-            ScheduledExecutorService scheduledExecutorService) {
-        return new JsonRpc2_0Neow3j(neow3jService, pollingInterval, scheduledExecutorService);
+    public static Neow3j build(Neow3jService neow3jService, Config config) {
+        return new JsonRpc2_0Neow3j(neow3jService, config);
+    }
+
+    protected void setConfig(Config config) {
+        this.config = config;
     }
 
     /**
@@ -49,36 +51,33 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     public abstract void shutdown();
 
     /**
-     * Gets the magic number of the connect Neo network.
-     * <p>
-     * If the magic number is not explicitly set with {@link Neow3j#setNetworkMagicNumber(int)}, it
-     * is retrieved from the connected neo-node.
+     * Gets the configured network magic number.
      *
      * @return The network's magic number.
-     * @throws IOException if an error occurs when tyring to fetch the magic number from the
-     *                     connected neo-node.
      */
     public byte[] getNetworkMagicNumber() throws IOException {
-        if (networkMagicNumber == null) {
-            networkMagicNumber = getVersion().send().getVersion().getNetwork();
+        if (config.getNetworkMagic() == null) {
+            config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
         }
         byte[] array = new byte[4];
-        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicNumber);
+        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(config.getNetworkMagic());
         return array;
     }
 
-    /**
-     * Sets the network magic number to the given value without consulting the connected neo-node.
-     *
-     * @param magicNumber The magic number.
-     */
-    public void setNetworkMagicNumber(int magicNumber) {
-        networkMagicNumber = magicNumber;
+    public ScheduledExecutorService getScheduledExecutorService() {
+        return config.getScheduledExecutorService();
+    }
+
+    public int getBlockInterval() {
+        return config.getBlockInterval();
+    }
+
+    public int getPollingInterval() {
+        return config.getPollingInterval();
     }
 
     /**
-     * Gets the locally configured address version number to use for address creation and
-     * verification.
+     * Gets the configured address version number to use for address creation and verification.
      * <p>
      * The default address version is 53.
      *
@@ -95,6 +94,73 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public static void setAddressVersion(byte version) {
         addressVersion = version;
+    }
+
+    public void setNetworkMagicNumber(int magic) {
+        config.setNetworkMagic(magic);
+    }
+
+    public static class Config {
+
+        private int pollingInterval = DEFAULT_BLOCK_TIME;
+        private ScheduledExecutorService scheduledExecutorService =
+                Async.defaultExecutorService();
+        private byte addressVersion = Neow3j.addressVersion;
+        private Integer networkMagic = null;
+        private int blockInterval = DEFAULT_BLOCK_TIME;
+
+        public Config() {
+        }
+
+        public Config(byte addressVersion, int networkMagic, int blockInterval, int pollingInterval,
+                ScheduledExecutorService scheduledExecutorService) {
+
+            this.addressVersion = addressVersion;
+            this.networkMagic = networkMagic;
+            this.blockInterval = blockInterval;
+            this.pollingInterval = pollingInterval;
+            this.scheduledExecutorService = scheduledExecutorService;
+        }
+
+        private int getPollingInterval() {
+            return pollingInterval;
+        }
+
+        public Config setPollingInterval(int pollingInterval) {
+            this.pollingInterval = pollingInterval;
+            return this;
+        }
+
+        private ScheduledExecutorService getScheduledExecutorService() {
+            return scheduledExecutorService;
+        }
+
+        public Config setScheduledExecutorService(ScheduledExecutorService executorService) {
+            scheduledExecutorService = executorService;
+            return this;
+        }
+
+        private byte getAddressVersion() {
+            return addressVersion;
+        }
+
+        private Integer getNetworkMagic() {
+            return networkMagic;
+        }
+
+        public Config setNetworkMagic(int magic) {
+            networkMagic = magic;
+            return this;
+        }
+
+        private int getBlockInterval() {
+            return blockInterval;
+        }
+
+        public Config setBlockInterval(int blockInterval) {
+            this.blockInterval = blockInterval;
+            return this;
+        }
     }
 
 }
