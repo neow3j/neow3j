@@ -25,7 +25,6 @@ public enum InteropService {
     SYSTEM_CRYPTO_CHECKSIG("System.Crypto.CheckSig", 1 << 15),
     SYSTEM_CRYPTO_CHECKMULTISIG("System.Crypto.CheckMultisig", 0),
 
-    SYSTEM_ITERATOR_CREATE("System.Iterator.Create", 1 << 4),
     SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),
     SYSTEM_ITERATOR_VALUE("System.Iterator.Value", 1 << 4),
 
