@@ -139,7 +139,7 @@ public class Runtime {
      * Burns the given amount of GAS in the current invocation. The GAS is taken from the amount
      * available to the invocation.
      *
-     * @param gas The amount of gas to burn.
+     * @param gas The amount of gas to burn (in GAS fractions).
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_BURNGAS)
     public static native void burnGas(int gas);

@@ -1,8 +1,11 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractParameter;
+import io.neow3j.contract.GasToken;
+import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
@@ -11,6 +14,7 @@ import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.utils.Await;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,7 +31,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class RuntimeIntegrationTest {
 
@@ -138,6 +141,19 @@ public class RuntimeIntegrationTest {
         assertThat(notif2.get(2).getList().get(1).getInteger(), is(BigInteger.TEN)); // event state
     }
 
+    @Test
+    public void burnGas() throws Throwable {
+        BigInteger gasToBurn = BigInteger.TEN.pow(10);
+        // Provide the default account with enough GAS. 10 times more than what will be burned.
+        Hash256 txHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), gasToBurn);
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
+
+        ct.signWithDefaultAccount();
+        txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        String usedGas = ct.getNeow3j().getTransaction(txHash).send().getTransaction().getSysFee();
+        assertTrue(new BigInteger(usedGas).compareTo(gasToBurn) >= 0);
+    }
+
     static class RuntimeIntegrationTestContract {
 
         public static byte getTriggerType() {
@@ -191,6 +207,10 @@ public class RuntimeIntegrationTest {
             event1.fire("event1");
             event2.fire("event2", 10);
             return Runtime.getNotifications(Runtime.getExecutingScriptHash());
+        }
+
+        public static void burnGas() {
+            Runtime.burnGas(Helper.pow(10, 10)); // burn 100 GAS
         }
 
     }
