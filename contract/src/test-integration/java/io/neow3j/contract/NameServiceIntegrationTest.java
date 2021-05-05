@@ -64,11 +64,11 @@ public class NameServiceIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
-        waitUntilBlockCountIsGreaterThanZero(neow3j);
+        waitUntilBlockCountIsGreaterThanZero(getNeow3j());
         nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
+        fundAccountsWithGas(getNeow3j(), CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromCommittee(DOMAIN);
         setRecordFromCommittee(DOMAIN, RecordType.A, A_RECORD);
@@ -78,7 +78,7 @@ public class NameServiceIntegrationTest {
         byte[] manifestBytes = TestProperties.nameServiceManifest();
         byte[] nefBytes = TestProperties.nameServiceNef();
 
-        Hash256 txHash = new ContractManagement(neow3j)
+        Hash256 txHash = new ContractManagement(getNeow3j())
                 .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
                 .wallet(COMMITTEE_WALLET)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
@@ -86,7 +86,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
         return SmartContract.getContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
                 NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
                 "NameService");
