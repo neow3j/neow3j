@@ -99,11 +99,8 @@ public class Runtime {
      * Gets the container that triggered the execution of the current contract.
      * <p>
      * The container of an contract-invoking script is usually a {@link Transaction}. In that case,
-     * the return value can be cast to a <tt>Transaction</tt>. E.g.:
-     * <p>
-     * <tt>
-     * Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();
-     * </tt>
+     * the return value can be cast to a {@code Transaction}. E.g.:
+     * {@code Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();}
      *
      * @return the script container.
      */
