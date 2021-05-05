@@ -1,1 +1,367 @@
-{"name":"NameService","groups":[],"features":{},"supportedstandards":["NEP-11"],"abi":{"methods":[{"name":"symbol","offset":0,"safe":true,"returntype":"String","parameters":[]},{"name":"decimals","offset":6,"safe":true,"returntype":"Integer","parameters":[]},{"name":"totalSupply","offset":8,"safe":true,"returntype":"Integer","parameters":[]},{"name":"ownerOf","offset":53,"safe":true,"returntype":"Hash160","parameters":[{"name":"tokenId","type":"ByteArray"}]},{"name":"properties","offset":190,"safe":true,"returntype":"Map","parameters":[{"name":"tokenId","type":"ByteArray"}]},{"name":"balanceOf","offset":278,"safe":true,"returntype":"Integer","parameters":[{"name":"owner","type":"Hash160"}]},{"name":"tokens","offset":393,"safe":true,"returntype":"InteropInterface","parameters":[]},{"name":"tokensOf","offset":442,"safe":true,"returntype":"InteropInterface","parameters":[{"name":"owner","type":"Hash160"}]},{"name":"transfer","offset":554,"safe":false,"returntype":"Boolean","parameters":[{"name":"to","type":"Hash160"},{"name":"tokenId","type":"ByteArray"},{"name":"data","type":"Any"}]},{"name":"update","offset":1085,"safe":false,"returntype":"Void","parameters":[{"name":"nef","type":"ByteArray"},{"name":"manifest","type":"String"}]},{"name":"addRoot","offset":1163,"safe":false,"returntype":"Void","parameters":[{"name":"root","type":"String"}]},{"name":"roots","offset":1489,"safe":true,"returntype":"InteropInterface","parameters":[]},{"name":"setPrice","offset":1525,"safe":false,"returntype":"Void","parameters":[{"name":"price","type":"Integer"}]},{"name":"getPrice","offset":1608,"safe":true,"returntype":"Integer","parameters":[]},{"name":"isAvailable","offset":1665,"safe":true,"returntype":"Boolean","parameters":[{"name":"name","type":"String"}]},{"name":"register","offset":1964,"safe":false,"returntype":"Boolean","parameters":[{"name":"name","type":"String"},{"name":"owner","type":"Hash160"}]},{"name":"renew","offset":2538,"safe":false,"returntype":"Integer","parameters":[{"name":"name","type":"String"}]},{"name":"setAdmin","offset":2695,"safe":false,"returntype":"Void","parameters":[{"name":"name","type":"String"},{"name":"admin","type":"Hash160"}]},{"name":"setRecord","offset":2898,"safe":false,"returntype":"Void","parameters":[{"name":"name","type":"String"},{"name":"type","type":"Integer"},{"name":"data","type":"String"}]},{"name":"getRecord","offset":3815,"safe":true,"returntype":"String","parameters":[{"name":"name","type":"String"},{"name":"type","type":"Integer"}]},{"name":"deleteRecord","offset":4012,"safe":false,"returntype":"Void","parameters":[{"name":"name","type":"String"},{"name":"type","type":"Integer"}]},{"name":"resolve","offset":4213,"safe":true,"returntype":"String","parameters":[{"name":"name","type":"String"},{"name":"type","type":"Integer"}]},{"name":"_deploy","offset":4516,"safe":false,"returntype":"Void","parameters":[{"name":"data","type":"Any"},{"name":"update","type":"Boolean"}]}],"events":[{"name":"Transfer","parameters":[{"name":"from","type":"Hash160"},{"name":"to","type":"Hash160"},{"name":"amount","type":"Integer"},{"name":"tokenId","type":"ByteArray"}]}]},"permissions":[{"contract":"0x726cb6e0cd8628a1350a611384688911ab75f51b","methods":["ripemd160"]},{"contract":"0xacce6fd80d44e1796aa0c2c625e9e4e0ce39efc0","methods":["atoi","deserialize","serialize","stringSplit"]},{"contract":"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5","methods":["getCommittee"]},{"contract":"0xfffdc93764dbaddd97c48f252a53ea4643faa3fd","methods":["getContract","update"]},{"contract":"*","methods":["onNEP11Payment"]}],"trusts":[],"extra":{"Author":"Erik Zhang","Email":"erik@neo.org","Description":"Neo Name Service"}}
+{
+  "name": "NameService",
+  "groups": [],
+  "features": {},
+  "supportedstandards": [
+    "NEP-11"
+  ],
+  "abi": {
+    "methods": [
+      {
+        "name": "symbol",
+        "offset": 0,
+        "safe": true,
+        "returntype": "String",
+        "parameters": []
+      },
+      {
+        "name": "decimals",
+        "offset": 6,
+        "safe": true,
+        "returntype": "Integer",
+        "parameters": []
+      },
+      {
+        "name": "totalSupply",
+        "offset": 8,
+        "safe": true,
+        "returntype": "Integer",
+        "parameters": []
+      },
+      {
+        "name": "ownerOf",
+        "offset": 53,
+        "safe": true,
+        "returntype": "Hash160",
+        "parameters": [
+          {
+            "name": "tokenId",
+            "type": "ByteArray"
+          }
+        ]
+      },
+      {
+        "name": "properties",
+        "offset": 190,
+        "safe": true,
+        "returntype": "Map",
+        "parameters": [
+          {
+            "name": "tokenId",
+            "type": "ByteArray"
+          }
+        ]
+      },
+      {
+        "name": "balanceOf",
+        "offset": 278,
+        "safe": true,
+        "returntype": "Integer",
+        "parameters": [
+          {
+            "name": "owner",
+            "type": "Hash160"
+          }
+        ]
+      },
+      {
+        "name": "tokens",
+        "offset": 393,
+        "safe": true,
+        "returntype": "InteropInterface",
+        "parameters": []
+      },
+      {
+        "name": "tokensOf",
+        "offset": 442,
+        "safe": true,
+        "returntype": "InteropInterface",
+        "parameters": [
+          {
+            "name": "owner",
+            "type": "Hash160"
+          }
+        ]
+      },
+      {
+        "name": "transfer",
+        "offset": 554,
+        "safe": false,
+        "returntype": "Boolean",
+        "parameters": [
+          {
+            "name": "to",
+            "type": "Hash160"
+          },
+          {
+            "name": "tokenId",
+            "type": "ByteArray"
+          },
+          {
+            "name": "data",
+            "type": "Any"
+          }
+        ]
+      },
+      {
+        "name": "update",
+        "offset": 1085,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "nef",
+            "type": "ByteArray"
+          },
+          {
+            "name": "manifest",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "addRoot",
+        "offset": 1163,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "root",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "roots",
+        "offset": 1489,
+        "safe": true,
+        "returntype": "InteropInterface",
+        "parameters": []
+      },
+      {
+        "name": "setPrice",
+        "offset": 1525,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "price",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "name": "getPrice",
+        "offset": 1608,
+        "safe": true,
+        "returntype": "Integer",
+        "parameters": []
+      },
+      {
+        "name": "isAvailable",
+        "offset": 1665,
+        "safe": true,
+        "returntype": "Boolean",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "register",
+        "offset": 1964,
+        "safe": false,
+        "returntype": "Boolean",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "owner",
+            "type": "Hash160"
+          }
+        ]
+      },
+      {
+        "name": "renew",
+        "offset": 2538,
+        "safe": false,
+        "returntype": "Integer",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "setAdmin",
+        "offset": 2695,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "admin",
+            "type": "Hash160"
+          }
+        ]
+      },
+      {
+        "name": "setRecord",
+        "offset": 2898,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "Integer"
+          },
+          {
+            "name": "data",
+            "type": "String"
+          }
+        ]
+      },
+      {
+        "name": "getRecord",
+        "offset": 3815,
+        "safe": true,
+        "returntype": "String",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "name": "deleteRecord",
+        "offset": 4012,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "name": "resolve",
+        "offset": 4213,
+        "safe": true,
+        "returntype": "String",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "type",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
+        "name": "_deploy",
+        "offset": 4516,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": [
+          {
+            "name": "data",
+            "type": "Any"
+          },
+          {
+            "name": "update",
+            "type": "Boolean"
+          }
+        ]
+      }
+    ],
+    "events": [
+      {
+        "name": "Transfer",
+        "parameters": [
+          {
+            "name": "from",
+            "type": "Hash160"
+          },
+          {
+            "name": "to",
+            "type": "Hash160"
+          },
+          {
+            "name": "amount",
+            "type": "Integer"
+          },
+          {
+            "name": "tokenId",
+            "type": "ByteArray"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": [
+    {
+      "contract": "0x726cb6e0cd8628a1350a611384688911ab75f51b",
+      "methods": [
+        "ripemd160"
+      ]
+    },
+    {
+      "contract": "0xacce6fd80d44e1796aa0c2c625e9e4e0ce39efc0",
+      "methods": [
+        "atoi",
+        "deserialize",
+        "serialize",
+        "stringSplit"
+      ]
+    },
+    {
+      "contract": "0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5",
+      "methods": [
+        "getCommittee"
+      ]
+    },
+    {
+      "contract": "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd",
+      "methods": [
+        "getContract",
+        "update"
+      ]
+    },
+    {
+      "contract": "*",
+      "methods": [
+        "onNEP11Payment"
+      ]
+    }
+  ],
+  "trusts": [],
+  "extra": {
+    "Author": "Erik Zhang",
+    "Email": "erik@neo.org",
+    "Description": "Neo Name Service"
+  }
+}
