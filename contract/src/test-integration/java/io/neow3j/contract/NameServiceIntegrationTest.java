@@ -46,7 +46,6 @@ import java.util.Date;
 public class NameServiceIntegrationTest {
 
     private static Neow3j neow3j;
-    private static Hash160 nameServiceHash;
     private static NeoNameService nameService;
 
     private static final String ROOT_DOMAIN = "neo";
@@ -65,7 +64,7 @@ public class NameServiceIntegrationTest {
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
-        nameServiceHash = deployNameServiceContract();
+        Hash160 nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
         // make a transaction that can be used for the tests
         fundAccountsWithGas(getNeow3j(), CLIENT_1, CLIENT_2);
