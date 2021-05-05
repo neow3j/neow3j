@@ -144,7 +144,7 @@ public class RuntimeIntegrationTest {
     @Test
     public void burnGas() throws Throwable {
         BigInteger gasToBurn = BigInteger.TEN.pow(10);
-        // Provide the default account with enough GAS. 10 times more than what will be burned.
+        // Provide the default account with enough GAS.
         Hash256 txHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), gasToBurn);
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
