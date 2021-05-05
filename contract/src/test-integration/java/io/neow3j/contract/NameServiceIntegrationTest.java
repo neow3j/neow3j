@@ -6,16 +6,11 @@ import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
-import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
-import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static io.neow3j.utils.Numeric.toBigInt;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -85,7 +80,7 @@ public class NameServiceIntegrationTest {
                 .send()
                 .getSendRawTransaction()
                 .getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
         return SmartContract.getContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
                 NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
                 "NameService");
