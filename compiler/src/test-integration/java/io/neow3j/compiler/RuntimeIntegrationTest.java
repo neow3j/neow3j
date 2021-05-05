@@ -7,6 +7,8 @@ import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.TriggerType;
+import io.neow3j.devpack.events.Event1Arg;
+import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
@@ -15,16 +17,16 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.devpack.Helper.assertTrue;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class RuntimeIntegrationTest {
@@ -74,19 +76,21 @@ public class RuntimeIntegrationTest {
     @Test
     public void getPlatform() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getString(), is("the platform"));
+        assertThat(res.getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
     public void getCallingScriptHash() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getHexString(), is("is this the transaction hash?"));
+        assertThat(res.getStack().get(0).getHexString(),
+                is("becdc9e83c4c0655ca914635429330258f182703"));
     }
 
     @Test
     public void getEntryScriptHash() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getHexString(), is("is this the transaction hash?"));
+        assertThat(res.getStack().get(0).getHexString(),
+                is("01f14d3761a43dbb75136b93b826dba3ab66ef02"));
     }
 
     @Test
@@ -124,8 +128,14 @@ public class RuntimeIntegrationTest {
     public void getNotifications() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         List<StackItem> notifications = res.getStack().get(0).getList();
-        // TODO: check what notifications are available.
-        fail();
+        List<StackItem> notif1 = notifications.get(0).getList();
+        assertThat(notif1.get(1).getString(), is("event1")); // event name
+        assertThat(notif1.get(2).getList().get(0).getString(), is("event1")); // event state
+
+        List<StackItem> notif2 = notifications.get(1).getList();
+        assertThat(notif2.get(1).getString(), is("event2")); // event name
+        assertThat(notif2.get(2).getList().get(0).getString(), is("event2")); // event state
+        assertThat(notif2.get(2).getList().get(1).getInteger(), is(BigInteger.TEN)); // event state
     }
 
     static class RuntimeIntegrationTestContract {
@@ -174,9 +184,13 @@ public class RuntimeIntegrationTest {
             return Runtime.getTime();
         }
 
+        static Event1Arg<String> event1;
+        static Event2Args<String, Integer> event2;
+
         public static Notification[] getNotifications() {
-            return Runtime.getNotifications(new Hash160(
-                    hexToBytes("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")));
+            event1.fire("event1");
+            event2.fire("event2", 10);
+            return Runtime.getNotifications(Runtime.getExecutingScriptHash());
         }
 
     }
