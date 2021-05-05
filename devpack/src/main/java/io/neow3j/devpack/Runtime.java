@@ -136,7 +136,9 @@ public class Runtime {
     public static native Hash160 getEntryScriptHash();
 
     /**
-     * Burns the given amount of GAS for the benefit of the Neo ecosystem.
+     * Burns the given amount of GAS in the current invocation. The GAS is taken from the amount
+     * available to the invocation.
+     *
      * @param gas The amount of gas to burn.
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_BURNGAS)
