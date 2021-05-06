@@ -259,7 +259,7 @@ public class ContractUtilsTest {
         ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
         String name = "neowww";
         List<ContractGroup> cgs = asList(cg1, cg2);
-        HashMap<String, Object> features = new HashMap<>();
+        HashMap<Object, Object> features = new HashMap<>();
         features.put("test-feature1", false);
         features.put("test-feature2", "test");
 
