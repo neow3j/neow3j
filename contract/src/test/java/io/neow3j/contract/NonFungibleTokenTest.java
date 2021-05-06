@@ -114,8 +114,9 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testGetDecimals() {
-        assertThat(nfTestToken.getDecimals(), is(0));
+    public void testGetDecimals() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
+        assertThat(nfTestToken.getDecimals(), is(5));
     }
 
     @Test

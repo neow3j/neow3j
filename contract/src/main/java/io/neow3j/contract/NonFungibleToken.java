@@ -41,16 +41,6 @@ public class NonFungibleToken extends Token {
     }
 
     /**
-     * Returns the decimals of non-fungible tokens.
-     *
-     * @return the decimals.
-     */
-    @Override
-    public int getDecimals() {
-        return 0;
-    }
-
-    /**
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
