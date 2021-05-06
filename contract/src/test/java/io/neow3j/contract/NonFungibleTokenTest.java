@@ -22,7 +22,6 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -69,8 +68,10 @@ public class NonFungibleTokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                        asList(hash160(account2.getScriptHash()),
-                                byteArray(TOKEN_ID)))
+                        asList(
+                                hash160(account2.getScriptHash()),
+                                byteArray(TOKEN_ID),
+                                null))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);

@@ -64,6 +64,25 @@ public class NonFungibleToken extends Token {
      */
     public TransactionBuilder transfer(Wallet wallet, Hash160 to, byte[] tokenID)
             throws IOException {
+        return transfer(wallet, to, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The returned transaction builder is ready to be signed and sent.
+     *
+     * @param wallet  the wallet that holds the account of the token owner.
+     * @param to      the receiver of the token.
+     * @param tokenID the token ID.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving
+     *                smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, byte[] tokenID,
+            ContractParameter data) throws IOException {
         Hash160 tokenOwner = ownerOf(tokenID);
         if (!wallet.holdsAccount(tokenOwner)) {
             throw new IllegalArgumentException("The provided wallet does not contain the account " +
@@ -71,9 +90,7 @@ public class NonFungibleToken extends Token {
                     " owner of this token is " + tokenOwner.toAddress() + ".");
         }
 
-        return invokeFunction(TRANSFER,
-                hash160(to),
-                byteArray(tokenID))
+        return invokeFunction(TRANSFER, hash160(to), byteArray(tokenID), data)
                 .wallet(wallet)
                 .signers(calledByEntry(tokenOwner));
     }

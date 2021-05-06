@@ -133,42 +133,46 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder pushParam(ContractParameter param) {
-        Object value = param.getValue();
-        switch (param.getParamType()) {
-            case BYTE_ARRAY:
-            case SIGNATURE:
-            case PUBLIC_KEY:
-                pushData((byte[]) value);
-                break;
-            case BOOLEAN:
-                pushBoolean((boolean) value);
-                break;
-            case INTEGER:
-                pushInteger((BigInteger) value);
-                break;
-            case HASH160:
-                pushData(((Hash160) value).toLittleEndianArray());
-                break;
-            case HASH256:
-                pushData(((Hash256) value).toLittleEndianArray());
-                break;
-            case STRING:
-                pushData((String) value);
-                break;
-            case ARRAY:
-                pushArray((ContractParameter[]) value);
-                break;
-            case MAP:
-                pushMap((HashMap<ContractParameter, ContractParameter>) value);
-                break;
-            case ANY:
-                if (value == null) {
-                    opCode(OpCode.PUSHNULL);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-                        "' not supported.");
+        if (param == null) {
+            opCode(OpCode.PUSHNULL);
+        } else {
+            Object value = param.getValue();
+            switch (param.getParamType()) {
+                case BYTE_ARRAY:
+                case SIGNATURE:
+                case PUBLIC_KEY:
+                    pushData((byte[]) value);
+                    break;
+                case BOOLEAN:
+                    pushBoolean((boolean) value);
+                    break;
+                case INTEGER:
+                    pushInteger((BigInteger) value);
+                    break;
+                case HASH160:
+                    pushData(((Hash160) value).toLittleEndianArray());
+                    break;
+                case HASH256:
+                    pushData(((Hash256) value).toLittleEndianArray());
+                    break;
+                case STRING:
+                    pushData((String) value);
+                    break;
+                case ARRAY:
+                    pushArray((ContractParameter[]) value);
+                    break;
+                case MAP:
+                    pushMap((HashMap<ContractParameter, ContractParameter>) value);
+                    break;
+                case ANY:
+                    if (value == null) {
+                        opCode(OpCode.PUSHNULL);
+                    }
+                    break;
+                default:
+                    throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
+                            "' not supported.");
+            }
         }
         return this;
     }
