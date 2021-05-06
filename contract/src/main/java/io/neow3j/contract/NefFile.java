@@ -139,7 +139,8 @@ public class NefFile extends NeoSerializable {
     /**
      * Converts check sum bytes to an integer.
      * <p>
-     * The check sum bytes are read as a little endian unsigned integer.
+     * The check sum is expected to be 4 bytes and it is interpreted as a little endian unsigned
+     * integer.
      *
      * @return the check sum.
      */
@@ -208,6 +209,12 @@ public class NefFile extends NeoSerializable {
         }
     }
 
+    /**
+     * Computes the checksum for the given NEF file.
+     *
+     * @param file The NEF file.
+     * @return the checksum.
+     */
     public static byte[] computeChecksum(NefFile file) {
         byte[] serialized = file.toArray();
         return computeChecksumFromBytes(serialized);
