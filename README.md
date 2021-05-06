@@ -1,7 +1,6 @@
 [![neow3j Actions Status](https://github.com/neow3j/neow3j/workflows/neow3j-ci-cd/badge.svg)](https://github.com/neow3j/neow3j/actions)
 ![Maven metadata URI](https://img.shields.io/maven-metadata/v/http/search.maven.org/maven2/io/neow3j/core/maven-metadata.xml.svg)
 [![javadoc](https://javadoc.io/badge2/io.neow3j/core/javadoc.svg)](https://javadoc.io/doc/io.neow3j)
-![Bintray (latest)](https://img.shields.io/bintray/dt/neow3j/maven/neow3j)
 [![codecov](https://codecov.io/gh/neow3j/neow3j/branch/master-3.x/graph/badge.svg?token=Xd0m5I7cz0)](https://codecov.io/gh/neow3j/neow3j)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/f82a724b90a94df88e11c6462f2176ca)](https://www.codacy.com/manual/gsmachado/neow3j?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neow3j/neow3j&amp;utm_campaign=Badge_Grade)
 

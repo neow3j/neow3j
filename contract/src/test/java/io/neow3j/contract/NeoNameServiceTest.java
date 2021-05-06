@@ -51,6 +51,7 @@ public class NeoNameServiceTest {
 
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";
+    private static final String DECIMALS = "decimals";
 
     private static final String OWNER_OF = "ownerOf";
     private static final String PROPERTIES = "properties";
@@ -101,7 +102,8 @@ public class NeoNameServiceTest {
     }
 
     @Test
-    public void getDecimals() {
+    public void getDecimals() throws IOException {
+        setUpWireMockForInvokeFunction(DECIMALS, "nns_invokefunction_decimals.json");
         assertThat(nameServiceContract.getDecimals(), is(0));
     }
 
@@ -585,7 +587,10 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(nameServiceHash, TRANSFER,
-                asList(hash160(account2.getScriptHash()), byteArray("636c69656e74312e6e656f")))
+                asList(
+                        hash160(account2.getScriptHash()),
+                        byteArray("636c69656e74312e6e656f"),
+                        null))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);

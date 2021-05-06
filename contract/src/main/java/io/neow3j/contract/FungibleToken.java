@@ -1,11 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.any;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static java.util.Arrays.asList;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Signer;
@@ -19,6 +13,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static java.util.Arrays.asList;
 
 /**
  * Represents a fungible token contract that is compliant with the NEP-17 standard and provides
@@ -272,19 +271,11 @@ public class FungibleToken extends Token {
     private byte[] buildSingleTransferScript(Account acc, Hash160 to, BigInteger amount,
             ContractParameter data) {
         List<ContractParameter> params;
-        if (data == null) {
-            params = asList(
-                    hash160(acc.getScriptHash()),
-                    hash160(to),
-                    integer(amount),
-                    any(null));
-        } else {
-            params = asList(
-                    hash160(acc.getScriptHash()),
-                    hash160(to),
-                    integer(amount),
-                    data);
-        }
+        params = asList(
+                hash160(acc.getScriptHash()),
+                hash160(to),
+                integer(amount),
+                data);
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
@@ -349,19 +340,12 @@ public class FungibleToken extends Token {
         }
 
         TransactionBuilder b;
-        if (data == null) {
-            b = invokeFunction(TRANSFER,
-                    hash160(acc.getScriptHash()),
-                    hash160(to),
-                    integer(amount),
-                    any(null));
-        } else {
-            b = invokeFunction(TRANSFER,
-                    hash160(acc.getScriptHash()),
-                    hash160(to),
-                    integer(amount),
-                    data);
-        }
+        b = invokeFunction(TRANSFER,
+                hash160(acc.getScriptHash()),
+                hash160(to),
+                integer(amount),
+                data);
+
 
         return b.wallet(wallet)
                 .signers(calledByEntry(acc.getScriptHash()));
