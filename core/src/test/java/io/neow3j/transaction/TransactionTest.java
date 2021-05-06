@@ -1,5 +1,21 @@
 package io.neow3j.transaction;
 
+import io.neow3j.constants.OpCode;
+import io.neow3j.contract.Hash160;
+import io.neow3j.contract.Hash256;
+import io.neow3j.io.NeoSerializableInterface;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.transaction.Signer.feeOnly;
 import static io.neow3j.utils.ArrayUtils.concatenate;
@@ -9,25 +25,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-
-import io.neow3j.constants.OpCode;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.junit.Before;
-import org.junit.Test;
 
 public class TransactionTest {
 
@@ -211,7 +208,8 @@ public class TransactionTest {
 
     @Test
     public void getTxId() throws IOException {
-        neow.setNetworkMagicNumber(5195086);
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
+                new Neow3j.Config().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
@@ -234,7 +232,9 @@ public class TransactionTest {
 
     @Test
     public void toArrayWithoutWitness() {
-        neow.setNetworkMagicNumber(5195086);
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
+                new Neow3j.Config().setNetworkMagic(5195086));
+
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
         Transaction tx = new Transaction(neow,
@@ -256,7 +256,8 @@ public class TransactionTest {
 
     @Test
     public void getHashData() throws IOException {
-        neow.setNetworkMagicNumber(769);
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
+                new Neow3j.Config().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(feeOnly(account1));

@@ -17,9 +17,14 @@ public abstract class Neow3j implements Neo, Neow3jRx {
 
     public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
     public static final byte DEFAULT_ADDRESS_VERSION = 0x35;
+    private static final int MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE = 86400000;
 
-    private Config config;
+    private final Config config;
     private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
+
+    public Neow3j(Config config) {
+        this.config = config;
+    }
 
     /**
      * Construct a new Neow3j instance.
@@ -39,10 +44,6 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public static Neow3j build(Neow3jService neow3jService, Config config) {
         return new JsonRpc2_0Neow3j(neow3jService, config);
-    }
-
-    protected void setConfig(Config config) {
-        this.config = config;
     }
 
     /**
@@ -76,6 +77,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         return config.getPollingInterval();
     }
 
+    public long getMaxValidUntilBlockIncrement() {
+        return config.getMaxValidUntilBlockIncrement();
+    }
+
     /**
      * Gets the configured address version number to use for address creation and verification.
      * <p>
@@ -96,18 +101,14 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         addressVersion = version;
     }
 
-    public void setNetworkMagicNumber(int magic) {
-        config.setNetworkMagic(magic);
-    }
-
     public static class Config {
 
-        private int pollingInterval = DEFAULT_BLOCK_TIME;
-        private ScheduledExecutorService scheduledExecutorService =
-                Async.defaultExecutorService();
         private byte addressVersion = Neow3j.addressVersion;
         private Integer networkMagic = null;
         private int blockInterval = DEFAULT_BLOCK_TIME;
+        private int pollingInterval = DEFAULT_BLOCK_TIME;
+        private ScheduledExecutorService scheduledExecutorService =
+                Async.defaultExecutorService();
 
         public Config() {
         }
@@ -160,6 +161,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         public Config setBlockInterval(int blockInterval) {
             this.blockInterval = blockInterval;
             return this;
+        }
+
+        public long getMaxValidUntilBlockIncrement() {
+            return MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / getBlockInterval();
         }
     }
 

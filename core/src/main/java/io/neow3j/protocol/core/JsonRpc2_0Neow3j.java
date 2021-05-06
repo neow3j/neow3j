@@ -80,7 +80,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     private final JsonRpc2_0Rx neow3jRx;
 
     public JsonRpc2_0Neow3j(Neow3jService neow3jService, Config config) {
-        super.setConfig(config);
+        super(config);
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
     }
