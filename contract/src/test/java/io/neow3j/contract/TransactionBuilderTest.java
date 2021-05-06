@@ -373,8 +373,7 @@ public class TransactionBuilderTest {
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
 
-        assertThat(tx.getValidUntilBlock(),
-                is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT + 1000 - 1));
+        assertThat(tx.getValidUntilBlock(), is(neow.getMaxValidUntilBlockIncrement() + 1000 - 1));
     }
 
     @Test

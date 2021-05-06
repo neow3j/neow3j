@@ -1,7 +1,6 @@
 package io.neow3j.contract;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
-import static io.neow3j.constants.NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
@@ -15,6 +14,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
 import io.neow3j.transaction.HighPriorityAttribute;
 import io.neow3j.transaction.Signer;
@@ -125,7 +125,7 @@ public class TransactionBuilder {
      * becomes invalid.
      * <p>
      * By default it is set to the maximum, which is the current chain height plus
-     * {@link NeoConstants#MAX_VALID_UNTIL_BLOCK_INCREMENT}.
+     * {@link Neow3jConfig#getMaxValidUntilBlockIncrement()}.
      *
      * @param blockNr the block number.
      * @return this transaction builder.
@@ -292,7 +292,8 @@ public class TransactionBuilder {
             // If validUntilBlock is not set explicitly, then set it to the current max. It can
             // happen that the neo-node rejects the transaction when we set the validUntilBlock
             // to the max. To be sure that this does not happen, we decrement the max by 1.
-            this.validUntilBlock(fetchCurrentBlockNr() + MAX_VALID_UNTIL_BLOCK_INCREMENT - 1);
+            this.validUntilBlock(fetchCurrentBlockNr() + neow3j.getMaxValidUntilBlockIncrement()
+                    - 1);
         }
 
         if (signers.isEmpty()) {

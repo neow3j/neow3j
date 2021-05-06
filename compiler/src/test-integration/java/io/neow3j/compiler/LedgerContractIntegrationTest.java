@@ -5,6 +5,7 @@ import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.contracts.LedgerContract;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
@@ -72,8 +73,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -89,8 +90,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -105,8 +106,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 

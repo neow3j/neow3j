@@ -72,28 +72,9 @@ public class NeoConstants {
     public static final int PUBLIC_KEY_SIZE = 33;
 
     /**
-     * Number of characters in a NEO address String.
-     */
-    public static final int ADDRESS_SIZE = 34;
-
-    /**
      * Size of a signature in bytes.
      */
     public static final int SIGNATURE_SIZE = 64;
-
-    /**
-     * Size of an invocation (signature) script in bytes.
-     * <p>
-     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 66
-     */
-    public static final int INVOCATION_SCRIPT_SIZE = 66;
-
-    /**
-     * Size of a serialized invocation (signature) script in bytes.
-     * <p>
-     * 1 (byte for VarInt) + 1 (PUSHDATA OpCode) + 1 (byte for data length) + 64 (signature) = 67
-     */
-    public static final int SERIALIZED_INVOCATION_SCRIPT_SIZE = 67;
 
     /**
      * Size of a single signature verification script in bytes.
@@ -105,27 +86,12 @@ public class NeoConstants {
 
     //endregion
 
-    //region Fees
-
-    /**
-     * The network fee per byte of a transaction. The amount is given in fractions of GAS.
-     */
-    public static final long GAS_PER_BYTE = 1000;
-
-
-    //endregion
-
     //region Transactions & Contracts
 
     /**
      * The current version used for Neo transaction.
      */
     public static final byte CURRENT_TX_VERSION = 0;
-
-    /**
-     * The maximum size of a transaction in bytes.
-     */
-    public static final int MAX_TRANSACTION_SIZE = 102400;
 
     /**
      * The maximum number of attributes that a transaction can have.
@@ -136,11 +102,6 @@ public class NeoConstants {
      * The maximum number of contracts or groups a signer scope can contain.
      */
     public static final int MAX_SIGNER_SUBITEMS = 16;
-
-    /**
-     * The maximum value for the 'validUntilBlock' transaction property.
-     */
-    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT = 5760;
 
     /**
      * Max byte length for a valid contract manifest.
