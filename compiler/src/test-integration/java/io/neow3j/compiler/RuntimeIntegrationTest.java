@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.GasToken;
 import io.neow3j.contract.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -26,6 +26,7 @@ import java.util.List;
 
 import static io.neow3j.contract.ContractParameter.hash160;
 import static io.neow3j.contract.ContractParameter.publicKey;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -85,15 +86,17 @@ public class RuntimeIntegrationTest {
     @Test
     public void getCallingScriptHash() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getHexString(),
-                is("becdc9e83c4c0655ca914635429330258f182703"));
+        assertThat(res.getStack().get(0).getHexString().length(),
+                is(2 * NeoConstants.HASH160_SIZE));
+        assertThat(res.getStack().get(0).getInteger(), is(not(BigInteger.ZERO)));
     }
 
     @Test
     public void getEntryScriptHash() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getHexString(),
-                is("01f14d3761a43dbb75136b93b826dba3ab66ef02"));
+        assertThat(res.getStack().get(0).getHexString().length(),
+                is(2 * NeoConstants.HASH160_SIZE));
+        assertThat(res.getStack().get(0).getInteger(), is(not(BigInteger.ZERO)));
     }
 
     @Test
