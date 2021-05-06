@@ -58,7 +58,7 @@ public class VerificationMethodIntegrationTest {
 
         // default account
         static Hash160 ownerScriptHash =
-                StringLiteralHelper.addressToScriptHash("NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K");
+                StringLiteralHelper.addressToScriptHash("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP");
 
         @OnVerification
         public static boolean verify(String s) {
