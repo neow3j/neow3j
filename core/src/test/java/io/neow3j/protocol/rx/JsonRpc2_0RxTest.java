@@ -11,6 +11,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.methods.response.NeoBlock;
@@ -39,7 +40,7 @@ public class JsonRpc2_0RxTest {
     @Before
     public void setUp() {
         neow3jService = mock(Neow3jService.class);
-        neow3j = Neow3j.build(neow3jService, new Neow3j.Config()
+        neow3j = Neow3j.build(neow3jService, new Neow3jConfig()
                 .setPollingInterval(1000)
                 .setScheduledExecutorService(Executors.newSingleThreadScheduledExecutor()));
     }

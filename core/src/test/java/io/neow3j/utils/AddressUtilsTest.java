@@ -1,5 +1,10 @@
 package io.neow3j.utils;
 
+import io.neow3j.protocol.Neow3jConfig;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
 import static io.neow3j.utils.AddressUtils.isValidAddress;
@@ -12,11 +17,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.protocol.Neow3j;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
 public class AddressUtilsTest {
 
     @Rule
@@ -25,7 +25,7 @@ public class AddressUtilsTest {
     @Test
     public void testCreatesScriptHashThenToAddress() {
         String script =
-            "0c2102249425a06b5a1f8e6133fc79afa2c2b8430bf9327297f176761df79e8d8929c50b4195440d78";
+                "0c2102249425a06b5a1f8e6133fc79afa2c2b8430bf9327297f176761df79e8d8929c50b4195440d78";
         // sha256AndThenRipemd160 returns little-endian
         byte[] scriptHash = reverseArray(sha256AndThenRipemd160(hexStringToByteArray(script)));
         String address = scriptHashToAddress(scriptHash);
@@ -36,22 +36,22 @@ public class AddressUtilsTest {
 
     @Test
     public void testScriptHashToAddressWithAddressVersion() {
-        Neow3j.setAddressVersion((byte) 0x37);
+        Neow3jConfig.setAddressVersion((byte) 0x37);
         String script =
-            "21030529d1296dc2af1f77d8344138a77748599b69599af7ae6be57812a4ec3fa33968747476aa";
+                "21030529d1296dc2af1f77d8344138a77748599b69599af7ae6be57812a4ec3fa33968747476aa";
         // sha256AndThenRipemd160 returns little-endian
         byte[] scriptHash = reverseArray(sha256AndThenRipemd160(hexStringToByteArray(script)));
         String address = scriptHashToAddress(scriptHash);
         String expectedAddress = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(address, is(expectedAddress));
-        Neow3j.setAddressVersion((byte) 0x35);
+        Neow3jConfig.setAddressVersion((byte) 0x35);
     }
 
     @Test
     public void testAddressToScriptHash() {
         byte[] scriptHash = addressToScriptHash("NeE8xcV4ohHi9rjyj4nPdCYTGyXnWZ79UU");
         String script =
-            "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
+                "2102208aea0068c429a03316e37be0e3e8e21e6cda5442df4c5914a19b3a9b6de37568747476aa";
         // sha256AndThenRipemd160 returns little-endian
         byte[] expected = reverseArray(sha256AndThenRipemd160(hexStringToByteArray(script)));
         assertArrayEquals(scriptHash, expected);
@@ -80,11 +80,11 @@ public class AddressUtilsTest {
 
     @Test
     public void testScriptHashToAddressWithVersion() {
-        Neow3j.setAddressVersion((byte) 0x37);
+        Neow3jConfig.setAddressVersion((byte) 0x37);
         byte[] scriptHash = hexStringToByteArray("c67d4f062a94e9ed6a110264e50881500d4cf1bb");
         String address = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(scriptHashToAddress(scriptHash), is(address));
-        Neow3j.setAddressVersion((byte) 0x35);
+        Neow3jConfig.setAddressVersion((byte) 0x35);
     }
 
     @Test

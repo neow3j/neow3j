@@ -6,6 +6,7 @@ import io.neow3j.contract.Hash256;
 import io.neow3j.io.NeoSerializableInterface;
 import io.neow3j.io.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
 import org.junit.Test;
@@ -209,7 +210,7 @@ public class TransactionTest {
     @Test
     public void getTxId() throws IOException {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3j.Config().setNetworkMagic(5195086));
+                new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
@@ -233,7 +234,7 @@ public class TransactionTest {
     @Test
     public void toArrayWithoutWitness() {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3j.Config().setNetworkMagic(5195086));
+                new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(Signer.calledByEntry(account3));
@@ -257,7 +258,7 @@ public class TransactionTest {
     @Test
     public void getHashData() throws IOException {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3j.Config().setNetworkMagic(769));
+                new Neow3jConfig().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(feeOnly(account1));

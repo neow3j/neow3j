@@ -5,6 +5,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
@@ -79,7 +80,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
 
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Config config) {
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) {
         super(config);
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
