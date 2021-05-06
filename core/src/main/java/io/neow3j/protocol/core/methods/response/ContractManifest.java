@@ -26,7 +26,7 @@ public class ContractManifest {
     private List<ContractGroup> groups;
 
     @JsonProperty(value = "features")
-    private Object features;
+    private HashMap<Object, Object> features;
 
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -53,9 +53,9 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(String name, List<ContractGroup> groups, Object features,
-            List<String> supportedStandards, ContractABI abi, List<ContractPermission> permissions,
-            List<String> trusts, Object extra) {
+    public ContractManifest(String name, List<ContractGroup> groups,
+            HashMap<Object, Object> features, List<String> supportedStandards, ContractABI abi,
+            List<ContractPermission> permissions, List<String> trusts, Object extra) {
         this.name = name;
         this.groups = groups;
         this.features = features == null ? new HashMap<>() : features;
@@ -74,7 +74,7 @@ public class ContractManifest {
         return groups;
     }
 
-    public Object getFeatures() {
+    public HashMap<Object, Object> getFeatures() {
         return features;
     }
 

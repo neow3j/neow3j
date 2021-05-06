@@ -74,19 +74,19 @@ public class Neow3jWriteIntegrationTest {
     public void testSendRawTransaction() throws IOException {
         // Tx generated from the following code with a local neo-node running on the first few
         // blocks:
-//        io.neow3j.transaction.Transaction tx = new GasToken(neow)
+//        io.neow3j.transaction.Transaction tx = new GasToken(neow3j)
 //                .transferFromSpecificAccounts(
-//                      w, a.getAddress(), BigDecimal.TEN, committee.getScriptHash())
+//                        w, client1.getScriptHash(), BigInteger.TEN, committee.getScriptHash())
 //                .validUntilBlock(1000)
 //                .sign();
 
         NeoSendRawTransaction sendRawTransaction = getNeow3j().sendRawTransaction(
-                "00ccc7576a968b970000000000acd2120000000000e80300000100159d24baf9a34b3607bb86486a0c6b39a73f4801005a0b0200ca9a3b0c14620c0e6f7f9326ab7aab5f6815e5bfb5cded36030c1400159d24baf9a34b3607bb86486a0c6b39a73f4814c01f0c087472616e736665720c14cf76e28bd0062c4a478ee35561011319f3cfa4d241627d5b5201420c40ac3c4a6ddf30373023ea6930ea4fd1952a339b2ab9dfe29b42746e27f52f4613c973cc90ae278f4a2ef21d5db0b8faba28b10a95d541e31ff729a4df1afe22b02a110c21036cfcc5d0550d0481b66f58e25067280f042b4933fc013dc4930ce2a4194c9d9411417bce6ca5")
+                "0x00ffb88f68963f9800000000000cc3120000000000e8030000017f65d434362708b255f0e06856bdcb5ce99d85050100560b1a0c1463bfef60905cd87c56da4064644be6f7ae8ec4880c147f65d434362708b255f0e06856bdcb5ce99d850514c01f0c087472616e736665720c14cf76e28bd0062c4a478ee35561011319f3cfa4d241627d5b5201420c4085add1b6dbeb3e64da6469eb078d87604bc4ae901a89106709b50e521081d1693f5dc52ffd6983c7359a7c6c06bd9a54abd93659f8f245b4245329568af3c1db2a110c21033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b11419ed0dc3a")
                 .send();
         RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
         Hash256 hash = rawTx.getHash();
-        assertThat(hash.toString(),
-                is("c7fa8aab1e5d64e5bde866826dc3362a203bd32c5617ee644651aacf57145825"));
+        assertThat(hash, is(
+                new Hash256("0xda5a53a79ac399e07c6eea366c192a4942fa930d6903ffc10b497f834a538fee")));
     }
 
     @Ignore("Future work, act as a consensus to submit blocks.")
