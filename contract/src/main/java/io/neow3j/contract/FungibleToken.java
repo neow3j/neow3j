@@ -118,7 +118,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -139,7 +139,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method of the receiving
      *               smart contract.
      * @return a transaction builder.
@@ -168,7 +168,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
      *               the amount.
      * @return a transaction builder.
@@ -192,7 +192,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method of the receiving
      *               smart contract.
      * @param from   the script hashes of the accounts in the wallet that should be used to cover
@@ -260,8 +260,8 @@ public class FungibleToken extends Token {
 
         if (remainingAmount.signum() > 0) {
             BigInteger coveredAmount = amount.subtract(remainingAmount);
-            throw new InsufficientFundsException("The wallet does not hold enough tokens, resp. " +
-                    "token-holding accounts with available private keys. The transfer amount is " +
+            throw new InsufficientFundsException("The wallet does not hold enough tokens (i.e. " +
+                    "token-holding accounts with available private keys). The transfer amount is " +
                     amount + " " + getSymbol() + " but the wallet only holds " + coveredAmount +
                     " " + getSymbol() + " (in token fractions).");
         }
@@ -301,7 +301,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -319,7 +319,7 @@ public class FungibleToken extends Token {
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer as a decimal number (not token fractions).
+     * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method of the receiving
      *               smart contract.
      * @return a transaction builder.
@@ -336,7 +336,7 @@ public class FungibleToken extends Token {
         if (accBalance.compareTo(amount) < 0) {
             throw new InsufficientFundsException("The wallet's default account does not hold " +
                     "enough tokens. Transfer amount is " + amount + " but account only holds " +
-                    accBalance + " (in token fractions).");
+                    accBalance + ".");
         }
 
         TransactionBuilder b;
