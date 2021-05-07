@@ -3,9 +3,12 @@ package io.neow3j.protocol.core.methods.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.model.types.StackItemType;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 
 import java.util.List;
 import java.util.Objects;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InteropInterfaceStackItem extends StackItem {
@@ -39,9 +42,12 @@ public class InteropInterfaceStackItem extends StackItem {
         this.truncated = truncated;
     }
 
-
     @Override
     public List<StackItem> getIterator() {
+        if (iterator == null) {
+            throw new StackItemCastException(format("Cannot cast stack item %s to an iterator.",
+                    toString()));
+        }
         return iterator;
     }
 

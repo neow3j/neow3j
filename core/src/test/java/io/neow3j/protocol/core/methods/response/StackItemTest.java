@@ -406,6 +406,16 @@ public class StackItemTest extends ResponseTester {
     }
 
     @Test
+    public void testDeserializeInteropInterfaceStackItem_noIterator() throws IOException {
+        String json = "{\"type\": \"InteropInterface\"}";
+        InteropInterfaceStackItem item = getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
+        assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
+        exceptionRule.expect(StackItemCastException.class);
+        exceptionRule.expectMessage("to an iterator.");
+        item.getIterator();
+    }
+
+    @Test
     public void testDeserializeStructStackItem() throws IOException {
         String json = ""
                 + "{"
