@@ -13,7 +13,6 @@ import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;
 import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;

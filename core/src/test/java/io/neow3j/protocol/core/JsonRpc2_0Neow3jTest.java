@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import org.junit.Test;
 
@@ -17,7 +18,9 @@ public class JsonRpc2_0Neow3jTest {
             = mock(ScheduledExecutorService.class);
     private Neow3jService service = mock(Neow3jService.class);
 
-    private Neow3j neow3j = Neow3j.build(service, 10, scheduledExecutorService);
+    private Neow3j neow3j = Neow3j.build(service, new Neow3jConfig()
+            .setPollingInterval(10)
+            .setScheduledExecutorService(scheduledExecutorService));
 
     @Test
     public void testStopExecutorOnShutdown() throws Exception {

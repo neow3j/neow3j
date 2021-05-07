@@ -10,6 +10,7 @@ import io.neow3j.contract.ContractParameter;
 import io.neow3j.model.types.ContractParameterType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -23,6 +24,9 @@ public class ContractManifest {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<ContractGroup> groups;
+
+    @JsonProperty(value = "features")
+    private HashMap<Object, Object> features;
 
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -50,10 +54,11 @@ public class ContractManifest {
     }
 
     public ContractManifest(String name, List<ContractGroup> groups,
-            List<String> supportedStandards, ContractABI abi, List<ContractPermission> permissions,
-            List<String> trusts, Object extra) {
+            HashMap<Object, Object> features, List<String> supportedStandards, ContractABI abi,
+            List<ContractPermission> permissions, List<String> trusts, Object extra) {
         this.name = name;
         this.groups = groups;
+        this.features = features == null ? new HashMap<>() : features;
         this.supportedStandards = supportedStandards;
         this.abi = abi;
         this.permissions = permissions;
@@ -67,6 +72,10 @@ public class ContractManifest {
 
     public List<ContractGroup> getGroups() {
         return groups;
+    }
+
+    public HashMap<Object, Object> getFeatures() {
+        return features;
     }
 
     public List<String> getSupportedStandards() {
@@ -100,6 +109,7 @@ public class ContractManifest {
         ContractManifest that = (ContractManifest) o;
         return Objects.equals(getName(), that.getName()) &&
                 Objects.equals(getGroups(), that.getGroups()) &&
+                Objects.equals(getFeatures(), that.getFeatures()) &&
                 Objects.equals(getAbi(), that.getAbi()) &&
                 Objects.equals(getPermissions(), that.getPermissions()) &&
                 Objects.equals(getTrusts(), that.getTrusts()) &&
@@ -111,6 +121,7 @@ public class ContractManifest {
     public int hashCode() {
         return Objects.hash(getName(),
                 getGroups(),
+                getFeatures(),
                 getAbi(),
                 getPermissions(),
                 getTrusts(),
@@ -123,6 +134,7 @@ public class ContractManifest {
         return "ContractManifest{" +
                 "name=" + name +
                 ", groups=" + groups +
+                ", features=" + features +
                 ", abi=" + abi +
                 ", permissions=" + permissions +
                 ", trusts=" + trusts +

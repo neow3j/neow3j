@@ -17,7 +17,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.OnVerification;
@@ -102,7 +102,7 @@ public class AsmHelperTest {
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropServiceCode.NEO_CRYPTO_CHECKSIG)
+    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
     @Instruction
     private void annotatedMethod() {
 

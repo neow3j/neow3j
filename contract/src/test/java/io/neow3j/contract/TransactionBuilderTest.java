@@ -1,5 +1,49 @@
 package io.neow3j.contract;
 
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.crypto.WIF;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
+import io.neow3j.protocol.core.methods.response.NeoBlock;
+import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
+import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.HighPriorityAttribute;
+import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionAttribute;
+import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.transaction.Witness;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
+import io.reactivex.Observable;
+import org.hamcrest.core.StringContains;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
+
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.contract.ContractParameter.any;
 import static io.neow3j.contract.ContractParameter.hash160;
@@ -25,52 +69,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.crypto.WIF;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.HighPriorityAttribute;
-import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Transaction;
-import io.neow3j.transaction.TransactionAttribute;
-import io.neow3j.transaction.TransactionAttributeType;
-import io.neow3j.transaction.Witness;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.Numeric;
-import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
-import io.reactivex.Observable;
-
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
-
-import org.hamcrest.core.StringContains;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 public class TransactionBuilderTest {
 
@@ -99,8 +97,8 @@ public class TransactionBuilderTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neow.setNetworkMagicNumber(769);
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                new Neow3jConfig().setNetworkMagic(769));
         account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(hexStringToByteArray(
@@ -375,8 +373,7 @@ public class TransactionBuilderTest {
                 .signers(feeOnly(wallet.getDefaultAccount()))
                 .buildTransaction();
 
-        assertThat(tx.getValidUntilBlock(),
-                is((long) NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT + 1000 - 1));
+        assertThat(tx.getValidUntilBlock(), is(neow.getMaxValidUntilBlockIncrement() + 1000 - 1));
     }
 
     @Test
@@ -988,7 +985,7 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
         Hash256 txHash =
-                new Hash256("0570dc3a7dcca42d295d75caeef084c2452e69fd9e663f4d63ce4d970b49836a");
+                new Hash256("1bf80f98084ede43fba9e347b0af546e2e7da9038e019baf0258f09b59f019f0");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                 new BigInteger("1000"), true))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),

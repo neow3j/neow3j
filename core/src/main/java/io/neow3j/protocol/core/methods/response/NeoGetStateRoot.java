@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.contract.Hash256;
 import io.neow3j.protocol.core.Response;
 
+import java.util.List;
 import java.util.Objects;
 
 public class NeoGetStateRoot extends Response<NeoGetStateRoot.StateRoot> {
@@ -25,13 +26,13 @@ public class NeoGetStateRoot extends Response<NeoGetStateRoot.StateRoot> {
         @JsonProperty("roothash")
         private Hash256 rootHash;
 
-        @JsonProperty("witness")
-        private NeoWitness witness;
+        @JsonProperty("witnesses")
+        private List<NeoWitness> witness;
 
         public StateRoot() {
         }
 
-        public StateRoot(int version, long index, Hash256 rootHash, NeoWitness witness) {
+        public StateRoot(int version, long index, Hash256 rootHash, List<NeoWitness> witness) {
             this.version = version;
             this.index = index;
             this.rootHash = rootHash;
@@ -50,7 +51,7 @@ public class NeoGetStateRoot extends Response<NeoGetStateRoot.StateRoot> {
             return rootHash;
         }
 
-        public NeoWitness getWitness() {
+        public List<NeoWitness> getWitnesses() {
             return witness;
         }
 
@@ -66,12 +67,12 @@ public class NeoGetStateRoot extends Response<NeoGetStateRoot.StateRoot> {
             return getVersion() == that.getVersion() &&
                     getIndex() == that.getIndex() &&
                     Objects.equals(getRootHash(), that.getRootHash()) &&
-                    Objects.equals(getWitness(), that.getWitness());
+                    Objects.equals(getWitnesses(), that.getWitnesses());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getVersion(), getIndex(), getRootHash(), getWitness());
+            return Objects.hash(getVersion(), getIndex(), getRootHash(), getWitnesses());
         }
 
         @Override

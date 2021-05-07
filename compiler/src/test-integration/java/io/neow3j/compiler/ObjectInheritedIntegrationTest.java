@@ -5,7 +5,6 @@ import io.neow3j.devpack.Block;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.ExecutionEngine;
 import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -297,9 +296,9 @@ public class ObjectInheritedIntegrationTest {
             event1.fire("event1");
             event2.fire("event2", 10);
             Notification[] notifications1 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             Notification[] notifications2 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             if (notifications1[0] == null || notifications1[1] == null) {
                 throw new Exception("Couldn't fetch notifications");
             }

@@ -2,7 +2,7 @@ package io.neow3j.transaction;
 
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 
-import io.neow3j.constants.InteropServiceCode;
+import io.neow3j.constants.InteropService;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.Hash160;
@@ -162,7 +162,7 @@ public class VerificationScript extends NeoSerializable {
                 && script[1] == 33 // 33 bytes of public key
                 && script[35] == OpCode.SYSCALL.getCode()
                 && interopService.equals(
-                        InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash());
+                        InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
     }
 
     /**
@@ -213,7 +213,7 @@ public class VerificationScript extends NeoSerializable {
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
             if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash())) {
+                    .equals(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {

@@ -16,6 +16,7 @@ import static org.junit.Assert.assertThat;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
@@ -46,8 +47,8 @@ public class PolicyContractTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockRule.port();
         WireMock.configureFor(port);
-        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neow3j.setNetworkMagicNumber(769);
+        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                new Neow3jConfig().setNetworkMagic(769));
         policyContract = new PolicyContract(neow3j);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");

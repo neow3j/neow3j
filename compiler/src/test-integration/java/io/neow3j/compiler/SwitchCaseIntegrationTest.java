@@ -4,7 +4,6 @@ import io.neow3j.devpack.Runtime;
 import io.neow3j.protocol.core.methods.response.InvocationResult;
 import io.neow3j.protocol.core.methods.response.StackItem;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
@@ -14,7 +13,6 @@ import java.util.List;
 
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.devpack.ExecutionEngine.getCallingScriptHash;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -134,7 +132,7 @@ public class SwitchCaseIntegrationTest {
                                 case 100:
                                     localInt = 100;
                                     localString = "is" + "Hello" +
-                                            getCallingScriptHash().asByteString().asString();
+                                            Runtime.getCallingScriptHash().asByteString().asString();
                                     break;
                                 default:
                                     throw new Exception();

@@ -838,6 +838,7 @@ public class ResponseTest extends ResponseTester {
                 "        \"manifest\": {\n" +
                 "            \"name\": \"LedgerContract\",\n" +
                 "            \"groups\": [],\n" +
+                "            \"features\": {},\n" +
                 "            \"supportedstandards\": [],\n" +
                 "            \"abi\": {\n" +
                 "                \"methods\": [\n" +
@@ -944,9 +945,8 @@ public class ResponseTest extends ResponseTester {
                         ), 35, ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
         ContractPermission permission = new ContractPermission("*", singletonList("*"));
-        ContractManifest contractManifest =
-                new ContractManifest("LedgerContract", emptyList(), emptyList(), contractABI,
-                        singletonList(permission), emptyList(), null);
+        ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
+                null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
         ContractState expectedEqual =
                 new ContractState(id, updateCounter, hash, nef, contractManifest, null);
         assertThat(contractState, is(expectedEqual));
@@ -1402,8 +1402,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"tcpport\": 40333,\n" +
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
-                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\",\n" +
-                        "        \"magic\": 769\n" +
+                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"network\": 769\n" +
                         "    }\n" +
                         "}"
         );
@@ -1413,8 +1413,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getTCPPort(), is(40333));
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview3-00/"));
-        assertThat(getVersion.getVersion().getMagic(), is(769));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(getVersion.getVersion().getNetwork(), is(769));
     }
 
     @Test
@@ -2604,10 +2604,12 @@ public class ResponseTest extends ResponseTester {
                 "        \"version\": 0,\n" +
                 "        \"index\": 160,\n" +
                 "        \"roothash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
-                "        \"witness\": {\n" +
-                "            \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
-                "            \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
-                "        }\n" +
+                "        \"witnesses\": [\n" +
+                "            {\n" +
+                "                \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
+                "                \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
+                "            }\n" +
+                "        ]\n" +
                 "    }\n" +
                 "}"
         );
@@ -2619,10 +2621,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(stateRoot.getIndex(), is(160L));
         assertThat(stateRoot.getRootHash(),
                 is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
-        assertNotNull(stateRoot.getWitness());
-        assertThat(stateRoot.getWitness().getInvocation(),
+        assertNotNull(stateRoot.getWitnesses());
+        assertThat(stateRoot.getWitnesses(), hasSize(1));
+        assertThat(stateRoot.getWitnesses().get(0).getInvocation(),
                 is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs"));
-        assertThat(stateRoot.getWitness().getVerification(),
+        assertThat(stateRoot.getWitnesses().get(0).getVerification(),
                 is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
     }
 

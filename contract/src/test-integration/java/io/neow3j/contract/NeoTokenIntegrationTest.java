@@ -10,6 +10,7 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -44,6 +45,7 @@ public class NeoTokenIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         neoToken = new NeoToken(neow3j);
         fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }

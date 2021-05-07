@@ -1,15 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.model.types.StackItemType.MAP;
-import static io.neow3j.utils.Numeric.hexToString;
-import static io.neow3j.utils.Numeric.toHexString;
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
@@ -24,13 +14,22 @@ import java.math.BigInteger;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.model.types.StackItemType.MAP;
+import static io.neow3j.utils.Numeric.hexToString;
+import static io.neow3j.utils.Numeric.toHexString;
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.util.Collections.singletonList;
+
 /**
- * Represents the NameService native contract and provides methods to invoke its functions.
+ * Represents the NameService contract and provides methods to invoke its functions.
  */
 public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
 
     private static final String ADD_ROOT = "addRoot";
     private static final String SET_PRICE = "setPrice";
@@ -66,8 +65,8 @@ public class NeoNameService extends NonFungibleToken {
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
-    public NeoNameService(Neow3j neow) {
-        super(SCRIPT_HASH, neow);
+    public NeoNameService(Hash160 scriptHash, Neow3j neow) {
+        super(scriptHash, neow);
     }
 
     /**
@@ -368,8 +367,27 @@ public class NeoNameService extends NonFungibleToken {
      */
     public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name)
             throws IOException {
+        return transfer(wallet, to, name, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a domain name and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The returned {@link TransactionBuilder} is ready to be signed and sent.
+     *
+     * @param wallet the wallet.
+     * @param to     the receiver of the domain name.
+     * @param name   the domain name.
+     * @param data   the data that is passed to the {@code onNEP11Payment} method of the receiving
+     *               smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name,
+            ContractParameter data) throws IOException {
         checkDomainNameAvailability(name, false);
-        return transfer(wallet, to, name.getBytes(UTF_8));
+        return transfer(wallet, to, name.getBytes(UTF_8), data);
     }
 
 }

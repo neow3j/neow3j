@@ -1,7 +1,7 @@
 package io.neow3j.utils;
 
 import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.protocol.Neow3j.getAddressVersion;
+import static io.neow3j.protocol.Neow3jConfig.getAddressVersion;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;

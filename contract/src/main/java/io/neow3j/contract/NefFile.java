@@ -133,7 +133,19 @@ public class NefFile extends NeoSerializable {
      * @return the check sum.
      */
     public long getCheckSumAsInteger() {
-        return toBigInt(reverseArray(checkSum)).longValue();
+        return getCheckSumAsInteger(checkSum);
+    }
+
+    /**
+     * Converts check sum bytes to an integer.
+     * <p>
+     * The check sum is expected to be 4 bytes and it is interpreted as a little endian unsigned
+     * integer.
+     *
+     * @return the check sum.
+     */
+    public static long getCheckSumAsInteger(byte[] checkSumBytes) {
+        return toBigInt(reverseArray(checkSumBytes)).longValue();
     }
 
     /**
@@ -197,15 +209,40 @@ public class NefFile extends NeoSerializable {
         }
     }
 
+    /**
+     * Computes the checksum for the given NEF file.
+     *
+     * @param file The NEF file.
+     * @return the checksum.
+     */
     public static byte[] computeChecksum(NefFile file) {
         byte[] serialized = file.toArray();
+        return computeChecksumFromBytes(serialized);
+    }
+
+    /**
+     * Computes the checksum from the bytes of a NEF file.
+     *
+     * @param fileBytes the bytes of the NEF file.
+     * @return the checksum.
+     */
+    public static byte[] computeChecksumFromBytes(byte[] fileBytes) {
         // Get nef file bytes without the checksum.
-        int fileSizeWithoutCheckSum = serialized.length - CHECKSUM_SIZE;
-        byte[] nefFileBytes = getFirstNBytes(serialized, fileSizeWithoutCheckSum);
+        int fileSizeWithoutCheckSum = fileBytes.length - CHECKSUM_SIZE;
+        byte[] nefFileBytes = getFirstNBytes(fileBytes, fileSizeWithoutCheckSum);
         // Hash the nef file bytes and from that the first bytes as the checksum.
         return getFirstNBytes(hash256(nefFileBytes), CHECKSUM_SIZE);
     }
 
+    /**
+     * Reads and constructs an {@code NefFile} instance from the fiven file.
+     *
+     * @param nefFile The file to read from.
+     * @return The deserialized {@code NefFile} instance.
+     * @throws DeserializationException If an error occurs while trying to deserialize the file
+     *                                  bytes to the {@code NefFile}.
+     * @throws IOException              If an error occurs when reading from the file.
+     */
     public static NefFile readFromFile(File nefFile) throws DeserializationException, IOException {
         int nefFileSize = (int) nefFile.length();
         if (nefFileSize > 0x100000) {
@@ -219,8 +256,20 @@ public class NefFile extends NeoSerializable {
         }
     }
 
-    public static NefFile readFromStackitem(StackItem stackItem)
-            throws DeserializationException, IOException {
+    /**
+     * Deserializes and constructs a {@code NefFile} from the given stack item.
+     * <p>
+     * It is expected that the stack item is of type
+     * {@link io.neow3j.model.types.StackItemType#BYTE_STRING} and its content is simply a
+     * serialized NEF file.
+     *
+     * @param stackItem The stack item to deserialize.
+     * @return The deserialized {@code NefFile}.
+     * @throws DeserializationException If an error occurs while trying to deserialize the file
+     *                                  bytes to the {@code NefFile}.
+     */
+    public static NefFile readFromStackItem(StackItem stackItem)
+            throws DeserializationException {
 
         // the 'nef' is represented in a ByteString stack item
         if (!stackItem.getType().equals(BYTE_STRING)) {
@@ -230,6 +279,9 @@ public class NefFile extends NeoSerializable {
         try (ByteArrayInputStream nefStream = new ByteArrayInputStream(nefBytes)) {
             BinaryReader reader = new BinaryReader(nefStream);
             return reader.readSerializable(NefFile.class);
+        } catch (IOException ignore) {
+            // doesn't happen because we are reading from a byte array.
+            return null;
         }
     }
 

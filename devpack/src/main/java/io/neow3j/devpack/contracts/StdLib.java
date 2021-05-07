@@ -24,7 +24,7 @@ public class StdLib extends ContractInterface {
      *     }
      * }
      * </pre>
-     *
+     * <p>
      * Serialized bytes:
      * <pre>
      * [0] StackItemType.ARRAY
@@ -37,6 +37,7 @@ public class StdLib extends ContractInterface {
      * [7] 0x45 // part 1 of the variable's value (little-endian)
      * [8] 0x7D // part 2 of the variable's value (little-endian)
      * </pre>
+     *
      * @param source the object to serialize.
      * @return the serialized bytes.
      */
@@ -72,6 +73,7 @@ public class StdLib extends ContractInterface {
      *         }
      *     }
      * </pre>
+     *
      * @param obj The object to JSON-serialize.
      * @return the object as a JSON string.
      */
@@ -94,6 +96,7 @@ public class StdLib extends ContractInterface {
      *     }
      * }
      * </pre>
+     *
      * @param json The string to deserialize.
      * @return The deserialized object.
      */
@@ -155,5 +158,81 @@ public class StdLib extends ContractInterface {
      * @return the number.
      */
     public static native int atoi(String s, int base);
+
+    /**
+     * Determines the relative order of the two given byte strings.
+     *
+     * @param mem1 First byte string.
+     * @param mem2 Second byte string.
+     * @return <ul>
+     * <li> -1, if {@code mem1} precedes {@code mem2}.
+     * <li> 0, if {@code mem1} equals {@code mem2}.
+     * <li> 1, if {@code mem1} follows {@code mem2}.
+     * </ul>
+     */
+    public static native int memoryCompare(ByteString mem1, ByteString mem2);
+
+    /**
+     * Searches for the first occurrence of {@code value} in {@code mem} starting at index 0.
+     *
+     * @param mem   The bytes string to search in.
+     * @param value The value to search.
+     * @return The index of the first occurrence of {@code value}, or -1 if not found.
+     */
+    public static native int memorySearch(ByteString mem, ByteString value);
+
+    /**
+     * Searches for the first occurrence of {@code value} in {@code mem} starting at index
+     * defined by {@code start}.
+     *
+     * @param mem   The bytes string to search in.
+     * @param value The value to search.
+     * @param start The index at which to start searching.
+     * @return The index of the first occurrence of {@code value}, or -1 if not found.
+     */
+    public static native int memorySearch(ByteString mem, ByteString value, int start);
+
+    /**
+     * Searches for the first occurrence of {@code value} in {@code mem} starting at index
+     * defined by {@code start}.
+     * <p>
+     * If you want to search backwards, set {@code backward} to true. The start index is still
+     * counting from start to end and the searched value doesn't need t be reversed. For example,
+     * searching backward in "0102030405060708090a0b0c0d0e0f" needs {@code start} to be 14 in
+     * order to begin the search all the way at the end of the bytes. If we search for "060708"
+     * the returned index will be 5, i.e. counted from the left beginning of the bytes.
+     *
+     * @param mem      The bytes string to search in.
+     * @param value    The value to search.
+     * @param start    The index at which to start searching.
+     * @param backward If search should be performed backward or forward.
+     * @return The index of the first occurrence of {@code value} depending on the choice of {@code
+     * backward}, or -1 if not found.
+     */
+    public static native int memorySearch(ByteString mem, ByteString value, int start,
+            boolean backward);
+
+    /**
+     * Splits the given string at the locations of the {@code separator}.
+     * <p>
+     * The returned list will contain empty strings if the separator string appears consecutive
+     * without other characters in between.
+     *
+     * @param str       The string to split.
+     * @param separator The character sequence to use as the separator.
+     * @return The list of separated strings.
+     */
+    public static native String[] stringSplit(String str, String separator);
+
+    /**
+     * Splits the given string at the locations of the {@code separator}.
+     *
+     * @param str                The string to split.
+     * @param separator          The character sequence to use as the separator.
+     * @param removeEmptyEntries If empty strings should be included in the returned array or not.
+     * @return The list of separated strings.
+     */
+    public static native String[] stringSplit(String str, String separator,
+            boolean removeEmptyEntries);
 
 }

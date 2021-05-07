@@ -1,24 +1,7 @@
 package io.neow3j.contract;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import io.neow3j.NeoTestContainer;
+import io.neow3j.TestProperties;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.methods.response.NameState;
@@ -34,6 +17,27 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
 
+import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
+import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class NameServiceIntegrationTest {
 
     private static Neow3j neow3j;
@@ -41,12 +45,12 @@ public class NameServiceIntegrationTest {
 
     private static final String ROOT_DOMAIN = "neo";
     private static final String DOMAIN = "neow3j.neo";
-    private static final String A_RECORD = "127.0.0.1";
+    private static final String A_RECORD = "157.0.0.1";
     private static final String CNAME_RECORD = "cnamerecord.neow3j.neo";
     private static final String TXT_RECORD = "textrecord";
-    private static final String AAAA_RECORD = "1:2:3:4:5:6:7:8";
-    private static final long ONE_YEAR_IN_SECONDS = 365 * 24 * 3600;
-    private static final long BUFFER_SECONDS = 3600;
+    private static final String AAAA_RECORD = "2001:2:3:4:5:6:7:8";
+    private static final long ONE_YEAR_IN_MILLISECONDS = 365L * 24 * 3600 * 1000;
+    private static final long BUFFER_MILLISECONDS = 3600 * 1000;
 
     @ClassRule
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
@@ -54,12 +58,32 @@ public class NameServiceIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
-        nameService = new NeoNameService(getNeow3j());
+        waitUntilBlockCountIsGreaterThanZero(getNeow3j());
+        Hash160 nameServiceHash = deployNameServiceContract();
+        nameService = new NeoNameService(nameServiceHash, getNeow3j());
         // make a transaction that can be used for the tests
-        fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
+        fundAccountsWithGas(getNeow3j(), CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromCommittee(DOMAIN);
         setRecordFromCommittee(DOMAIN, RecordType.A, A_RECORD);
+    }
+
+    private static Hash160 deployNameServiceContract() throws Throwable {
+        byte[] manifestBytes = TestProperties.nameServiceManifest();
+        byte[] nefBytes = TestProperties.nameServiceNef();
+
+        Hash256 txHash = new ContractManagement(getNeow3j())
+                .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
+                .wallet(COMMITTEE_WALLET)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        return SmartContract.getContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
+                NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
+                "NameService");
     }
 
     private static Neow3j getNeow3j() {
@@ -109,8 +133,8 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static long getNowInSeconds() {
-        return new Date().getTime() / 1000L;
+    private static long getNowInMilliSeconds() {
+        return new Date().getTime();
     }
 
     @Test
@@ -141,8 +165,9 @@ public class NameServiceIntegrationTest {
     public void testProperties() throws IOException {
         NameState properties = nameService.properties(DOMAIN);
         assertThat(properties.getName(), is(DOMAIN));
-        long inOneYear = getNowInSeconds() + ONE_YEAR_IN_SECONDS;
-        long lessThanInOneYear = getNowInSeconds() + ONE_YEAR_IN_SECONDS - BUFFER_SECONDS;
+        long inOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS;
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS -
+                BUFFER_MILLISECONDS;
         assertThat(properties.getExpiration(), lessThanOrEqualTo(inOneYear));
         assertThat(properties.getExpiration(), greaterThan(lessThanInOneYear));
     }
@@ -219,8 +244,9 @@ public class NameServiceIntegrationTest {
     public void testRenew() throws Throwable {
         String domain = "renew.neo";
         registerDomainFromCommittee(domain);
-        long inOneYear = getNowInSeconds() + ONE_YEAR_IN_SECONDS;
-        long lessThanInOneYear = getNowInSeconds() + ONE_YEAR_IN_SECONDS - BUFFER_SECONDS;
+        long inOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS;
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS -
+                BUFFER_MILLISECONDS;
         NameState propertiesBefore = nameService.properties(domain);
         assertThat(propertiesBefore.getExpiration(), lessThanOrEqualTo(inOneYear));
         assertThat(propertiesBefore.getExpiration(), greaterThan(lessThanInOneYear));
@@ -235,8 +261,9 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         NameState propertiesAfter = nameService.properties(domain);
-        long inTwoYears = getNowInSeconds() + 2 * ONE_YEAR_IN_SECONDS;
-        long lessThanInTwoYears = getNowInSeconds() + 2 * ONE_YEAR_IN_SECONDS - BUFFER_SECONDS;
+        long inTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR_IN_MILLISECONDS;
+        long lessThanInTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR_IN_MILLISECONDS -
+                BUFFER_MILLISECONDS;
         assertThat(propertiesAfter.getExpiration(), lessThanOrEqualTo(inTwoYears));
         assertThat(propertiesAfter.getExpiration(), greaterThan(lessThanInTwoYears));
     }
@@ -317,8 +344,10 @@ public class NameServiceIntegrationTest {
         try {
             nameService.getRecord(domain, RecordType.TXT);
             fail();
-        } catch (IllegalArgumentException ignored) {
+        } catch (IllegalArgumentException exception) {
             // if getRecord throws an exception here, the record is deleted successfully.
+            assertThat(exception.getMessage(),
+                    containsString("No record of type " + RecordType.TXT.jsonValue()));
         }
     }
 

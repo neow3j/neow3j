@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.methods.response.NFTokenState;
@@ -22,7 +23,6 @@ import io.neow3j.wallet.Wallet;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,13 +53,8 @@ public class NonFungibleTokenTest {
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         nfTestToken = new NonFungibleToken(NF_TOKEN_SCRIPT_HASH, neow);
 
-        // APiZTA6Ym7EHpLK5PLpSLKn62qeMyCZEER
-        account1 = new Account(ECKeyPair.create(
-                hexStringToByteArray(
-                        "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
-        account2 = new Account(ECKeyPair.create(
-                hexStringToByteArray(
-                        "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
+        account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
+        account2 = Account.fromWIF(TestProperties.client1AccountWIF());
     }
 
     @Test
@@ -69,12 +64,14 @@ public class NonFungibleTokenTest {
 
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
-                        asList(hash160(account1.getScriptHash()),
-                                byteArray(TOKEN_ID)))
+                        asList(
+                                hash160(account2.getScriptHash()),
+                                byteArray(TOKEN_ID),
+                                null))
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transfer(wallet, account1.getScriptHash(), TOKEN_ID);
+        TransactionBuilder b = nfTestToken.transfer(wallet, account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -113,8 +110,9 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testGetDecimals() {
-        assertThat(nfTestToken.getDecimals(), is(0));
+    public void testGetDecimals() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
+        assertThat(nfTestToken.getDecimals(), is(5));
     }
 
     @Test

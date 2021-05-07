@@ -1,5 +1,29 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.wallet.Account;
+import io.neow3j.wallet.Wallet;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.File;
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.constants.NeoConstants.MAX_MANIFEST_SIZE;
 import static io.neow3j.contract.ContractParameter.byteArray;
@@ -15,30 +39,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Transaction;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
-
-import java.io.File;
-import java.io.IOException;
-import java.math.BigInteger;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ContractManagementTest {
 
@@ -64,8 +64,8 @@ public class ContractManagementTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockRule.port();
         WireMock.configureFor(port);
-        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neow3j.setNetworkMagicNumber(769);
+        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                new Neow3jConfig().setNetworkMagic(769));
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
     }
 
@@ -215,7 +215,7 @@ public class ContractManagementTest {
             stringBuilder.append(partialName);
         }
         String namePlaceholder = stringBuilder.toString();
-        return new ContractManifest(namePlaceholder, null, null, null, null, null, null);
+        return new ContractManifest(namePlaceholder, null, null, null, null, null, null, null);
     }
 
 }

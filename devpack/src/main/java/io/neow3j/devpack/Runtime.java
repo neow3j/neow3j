@@ -1,16 +1,16 @@
 package io.neow3j.devpack;
 
+import io.neow3j.constants.InteropService;
 import io.neow3j.devpack.annotations.Syscall;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_CHECKWITNESS;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GASLEFT;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETINVOCATIONCOUNTER;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETNOTIFICATIONS;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETTIME;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_GETTRIGGER;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_LOG;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_NOTIFY;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_RUNTIME_PLATFORM;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_CHECKWITNESS;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_GASLEFT;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_GETINVOCATIONCOUNTER;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_GETNOTIFICATIONS;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_GETTIME;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_GETTRIGGER;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_LOG;
+import static io.neow3j.constants.InteropService.SYSTEM_RUNTIME_PLATFORM;
 
 /**
  * Provides a set of general methods for usage in smart contracts.
@@ -51,6 +51,7 @@ public class Runtime {
 
     /**
      * Gets the amount of GAS left in the current invocation of the contract.
+     *
      * @return the amount in fractions of GAS.
      */
     @Syscall(SYSTEM_RUNTIME_GASLEFT)
@@ -87,24 +88,57 @@ public class Runtime {
     public static native boolean checkWitness(Hash160 scriptHash);
 
     /**
-     * Issues a notification, notifying the client that invoked the contract.
-     * <p>
-     * The given state can be a list of any types, e.g. `notify("Notification reason", Blockchain
-     * .getHeight()`. The client developer needs to know what types to expect when reading the
-     * notification.
-     *
-     * @param state The state to send with the notification.
-     */
-    @Syscall(SYSTEM_RUNTIME_NOTIFY)
-    public static native void notify(Object... state);
-
-    /**
      * Issues a log message, notifying the client that invoked the contract.
-     * <p>
-     * This is similar to {@link Runtime#notify(Object...)} but restricted to a string message.
      *
      * @param message The message to log.
      */
     @Syscall(SYSTEM_RUNTIME_LOG)
     public static native void log(String message);
+
+    /**
+     * Gets the container that triggered the execution of the current contract.
+     * <p>
+     * The container of an contract-invoking script is usually a {@link Transaction}. In that case,
+     * the return value can be cast to a {@code Transaction}. E.g.:
+     * {@code Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();}
+     *
+     * @return the script container.
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
+    public static native Object getScriptContainer();
+
+    /**
+     * Gets the script hash of the currently executing contract.
+     *
+     * @return the script hash of the executing contract.
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
+    public static native Hash160 getExecutingScriptHash();
+
+    /**
+     * Gets the script hash of the caller of the contract.
+     *
+     * @return the caller's script hash.
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
+    public static native Hash160 getCallingScriptHash();
+
+    /**
+     * Gets the script hash of the entry context, i.e., the context at the beginning of the
+     * contract invocation chain).
+     *
+     * @return the script hash.
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
+    public static native Hash160 getEntryScriptHash();
+
+    /**
+     * Burns the given amount of GAS in the current invocation. The GAS is taken from the amount
+     * available to the invocation (system fee). Any overflow is not consumed from the
+     * transaction sender's GAS balance.
+     *
+     * @param gas The amount of GAS to burn (in GAS fractions).
+     */
+    @Syscall(InteropService.SYSTEM_RUNTIME_BURNGAS)
+    public static native void burnGas(int gas);
 }

@@ -90,7 +90,7 @@ public abstract class StackItem {
      *
      * @return the boolean value.
      * @throws StackItemCastException if the stack item cannot be converted to a boolean or if
-     *                                it's value is null.
+     *                                its value is null.
      */
     @JsonIgnore
     public boolean getBoolean() {
@@ -103,7 +103,7 @@ public abstract class StackItem {
      *
      * @return the integer.
      * @throws StackItemCastException if the stack item cannot be converted to a integer or if
-     *                                it's value is null.
+     *                                its value is null.
      */
     @JsonIgnore
     public BigInteger getInteger() {
@@ -210,7 +210,7 @@ public abstract class StackItem {
     }
 
     /**
-     * Gets this item as an {@code InteropInterface}.
+     * Gets this item as an iterator.
      * <p>
      * This can only be used if the expected stack item type is
      * {@link StackItemType#INTEROP_INTERFACE}.
@@ -220,7 +220,7 @@ public abstract class StackItem {
      *                                InteropInterface} or if its value is null.
      */
     @JsonIgnore
-    public Object getInteropInterface() {
+    public List<StackItem> getIterator() {
         throw new StackItemCastException(format("Cannot cast stack item %s to a neo-vm " +
                 "interoperability interface.", toString()));
     }

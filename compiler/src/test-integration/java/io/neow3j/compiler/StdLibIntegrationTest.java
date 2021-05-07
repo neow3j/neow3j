@@ -18,6 +18,7 @@ import java.util.List;
 
 import static io.neow3j.TestProperties.stdLibHash;
 import static io.neow3j.contract.ContractParameter.bool;
+import static io.neow3j.contract.ContractParameter.byteArray;
 import static io.neow3j.contract.ContractParameter.integer;
 import static io.neow3j.contract.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
@@ -169,6 +170,110 @@ public class StdLibIntegrationTest {
                 is(stdLibHash()));
     }
 
+    @Test
+    public void memoryCompare() throws Throwable {
+        String b1 = "010203";
+        String b2 = "010203";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(b1), byteArray(b2));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
+
+        b1 = "000203";
+        b2 = "010203";
+        response = ct.callInvokeFunction(testName, byteArray(b1), byteArray(b2));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(-1));
+
+        b1 = "020203";
+        b2 = "010203";
+        response = ct.callInvokeFunction(testName, byteArray(b1), byteArray(b2));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(1));
+    }
+
+    @Test
+    public void memorySearch() throws Throwable {
+        String b = "0102030405060708090a0b0c0d0e0f";
+        String value = "040506";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                byteArray(b), byteArray(value));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(3));
+
+        value = "050406";
+        response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(-1));
+    }
+
+    @Test
+    public void memorySearchWithStart() throws Throwable {
+        String b = "0102030405060708090a0b0c0d0e0f";
+        String value = "060708";
+        int start = 4;
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                byteArray(b), byteArray(value), integer(start));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(5));
+
+        value = "030405";
+        start = 4;
+        response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(-1));
+    }
+
+    @Test
+    public void memorySearchWithStartAndBackwards() throws Throwable {
+        String b = "0102030405060708090a0b0c0d0e0f";
+        String value = "060708";
+        int start = 14;
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                byteArray(b), byteArray(value), integer(start));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(5));
+
+        // start index doesn't cover the whole value.
+        start = 6;
+        response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(-1));
+
+        // start index doesn't cover the whole value.
+        value = "010203";
+        start = 6;
+        response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
+    }
+
+    @Test
+    public void stringSplit() throws Throwable {
+        String s = "hello,world,,hello,world";
+        String sep = ",";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(s), string(sep));
+        List<StackItem> strings = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(strings.get(0).getString(), is("hello"));
+        assertThat(strings.get(1).getString(), is("world"));
+        assertThat(strings.get(2).getString(), is(""));
+        assertThat(strings.get(3).getString(), is("hello"));
+        assertThat(strings.get(4).getString(), is("world"));
+
+        s = "helloworldworldhelloworld";
+        sep = "world";
+        response = ct.callInvokeFunction(testName, string(s), string(sep));
+        strings = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(strings.get(0).getString(), is("hello"));
+        assertThat(strings.get(1).getString(), is(""));
+        assertThat(strings.get(2).getString(), is("hello"));
+    }
+
+    @Test
+    public void stringSplitRemoveEmptyEntries() throws Throwable {
+        String s = "hello,world,,hello,world";
+        String sep = ",";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(s), string(sep));
+        List<StackItem> strings = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(strings.get(0).getString(), is("hello"));
+        assertThat(strings.get(1).getString(), is("world"));
+        assertThat(strings.get(2).getString(), is("hello"));
+        assertThat(strings.get(3).getString(), is("world"));
+    }
+
     static class StdLibIntegrationTestContract {
 
         public static Object serializeAndDeserialize(boolean b, int i) {
@@ -214,6 +319,31 @@ public class StdLibIntegrationTest {
 
         public static Hash160 getHash() {
             return StdLib.getHash();
+        }
+
+        public static int memoryCompare(ByteString b1, ByteString b2) {
+            return StdLib.memoryCompare(b1, b2);
+        }
+
+        public static int memorySearch(ByteString b, ByteString value) {
+            return StdLib.memorySearch(b, value);
+        }
+
+        public static int memorySearchWithStart(ByteString b, ByteString value, int start) {
+            return StdLib.memorySearch(b, value, start);
+        }
+
+        public static int memorySearchWithStartAndBackwards(ByteString b, ByteString value,
+                int start) {
+            return StdLib.memorySearch(b, value, start, true);
+        }
+
+        public static String[] stringSplit(String s, String sep) {
+            return StdLib.stringSplit(s, sep);
+        }
+
+        public static String[] stringSplitRemoveEmptyEntries(String s, String sep) {
+            return StdLib.stringSplit(s, sep, true);
         }
 
         static class SimpleClass {

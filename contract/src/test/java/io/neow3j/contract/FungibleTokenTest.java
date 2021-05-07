@@ -245,10 +245,10 @@ public class FungibleTokenTest {
 
     /*
      * In this test case, 7 NEO should be transferred.
-     * Result: Account 1 should transfer 5 NEO and Account 3 should transfer the rest (2 NEO).
+     * Result: Account 1 should transfer 5 NEO and Account 2 should transfer the rest (2 NEO).
      * Note: The account used for transferring the remaining 2 NEO is not fixed. In this test
-     * account 3 is used, because the accounts are sorted by their Hash160 and account 3 comes
-     * before account 2.
+     * account 2 is used because the accounts are iterated through according to their Hash160
+     * values.
      */
     @Test
     public void testTransferWithTheFirstTwoAccountsNeededToCoverAmount() throws IOException {
@@ -256,8 +256,10 @@ public class FungibleTokenTest {
         setUpWireMockForGetBlockCount(1000);
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
         setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
+        setUpWireMockForBalanceOf(account2.getScriptHash(), "invokefunction_balanceOf_4.json");
 
+        // The accounts are ordered by script hash (but the default account is always first) and
+        // then used in that order to cover the amount.
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
                         asList(hash160(account1.getScriptHash()), // from
@@ -265,7 +267,7 @@ public class FungibleTokenTest {
                                 integer(5), // amount
                                 any(null))) // data
                 .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
-                        asList(hash160(account3.getScriptHash()),
+                        asList(hash160(account2.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(2),
                                 any(null)))
@@ -273,36 +275,6 @@ public class FungibleTokenTest {
 
         TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1,
                 account2, account3), RECIPIENT_SCRIPT_HASH, new BigInteger("7"));
-
-        assertThat(b.getScript(), is(expectedScript));
-    }
-
-    @Test
-    public void testTransferWithTheFirstTwoAccountsNeededToCoverAmount_RecipientAsAddress()
-            throws IOException {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForGetBlockCount(1000);
-        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash(), "invokefunction_balanceOf_5.json");
-        setUpWireMockForBalanceOf(account3.getScriptHash(), "invokefunction_balanceOf_4.json");
-
-        // The accounts are ordered by script hash (but the default account is always first) and
-        // then used in that order to cover the amount.
-        byte[] expectedScript = new ScriptBuilder()
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
-                        asList(hash160(account1.getScriptHash()),
-                                hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(5),
-                                any(null)))
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER,
-                        asList(hash160(account3.getScriptHash()),
-                                hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(2),
-                                any(null)))
-                .toArray();
-
-        TransactionBuilder b = neoToken.transfer(Wallet.withAccounts(account1, account2, account3),
-                RECIPIENT_SCRIPT_HASH, new BigInteger("7"));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -330,14 +302,14 @@ public class FungibleTokenTest {
                         integer(5),
                         any(null)))
                 .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
-                        hash160(account3.getScriptHash()),
-                        hash160(RECIPIENT_SCRIPT_HASH),
-                        integer(3),
-                        any(null)))
-                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
                         hash160(account2.getScriptHash()),
                         hash160(RECIPIENT_SCRIPT_HASH),
                         integer(4),
+                        any(null)))
+                .contractCall(new Hash160(neoTokenHash()), NEP17_TRANSFER, asList(
+                        hash160(account3.getScriptHash()),
+                        hash160(RECIPIENT_SCRIPT_HASH),
+                        integer(3),
                         any(null)))
                 .toArray();
 

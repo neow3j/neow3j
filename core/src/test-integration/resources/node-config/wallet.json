@@ -1,6 +1,6 @@
 {
   "name": null,
-  "version": "3.0",
+  "version": "1.0",
   "scrypt": {
     "n": 16384,
     "r": 8,
@@ -8,13 +8,13 @@
   },
   "accounts": [
     {
-      "address": "NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K",
+      "address": "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP",
       "label": null,
-      "isdefault": false,
+      "isDefault": false,
       "lock": false,
-      "key": "6PYRSp9YqwcNpUz4bgvFi74CNQBGRkx3snsy2og53a7NLrRwtYTXpBFfye",
+      "key": "6PYM7jHL4GmS8Aw2iEFpuaHTCUKjhT4mwVqdoozGU6sUE25BjV4ePXDdLz",
       "contract": {
-        "script": "DCEDbPzF0FUNBIG2b1jiUGcoDwQrSTP8AT3EkwzipBlMnZRBdHR2qg==",
+        "script": "DCEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtBVuezJw==",
         "parameters": [
           {
             "name": "signature",
@@ -26,13 +26,13 @@
       "extra": null
     },
     {
-      "address": "NKvR5WeczCQMcVWQD9aaMqegfEoCBXGWpW",
+      "address": "NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3",
       "label": null,
-      "isdefault": false,
+      "isDefault": false,
       "lock": false,
-      "key": "6PYRSp9YqwcNpUz4bgvFi74CNQBGRkx3snsy2og53a7NLrRwtYTXpBFfye",
+      "key": "6PYM7jHL4GmS8Aw2iEFpuaHTCUKjhT4mwVqdoozGU6sUE25BjV4ePXDdLz",
       "contract": {
-        "script": "EQwhA2z8xdBVDQSBtm9Y4lBnKA8EK0kz/AE9xJMM4qQZTJ2UEUF7zmyl",
+        "script": "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6",
         "parameters": [
           {
             "name": "parameter0",

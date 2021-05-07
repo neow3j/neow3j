@@ -1,15 +1,11 @@
 package io.neow3j.protocol.core;
 
-import static java.util.Arrays.asList;
-import static java.util.Arrays.stream;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
 import io.neow3j.contract.ContractParameter;
 import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
@@ -27,6 +23,7 @@ import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetPeers;
 import io.neow3j.protocol.core.methods.response.NeoGetProof;
 import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
@@ -38,7 +35,6 @@ import io.neow3j.protocol.core.methods.response.NeoGetStorage;
 import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
 import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
 import io.neow3j.protocol.core.methods.response.NeoGetVersion;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
@@ -60,7 +56,6 @@ import io.neow3j.protocol.core.methods.response.TransactionSendToken;
 import io.neow3j.protocol.core.methods.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.transaction.Signer;
-import io.neow3j.utils.Async;
 import io.reactivex.Observable;
 
 import java.io.IOException;
@@ -69,32 +64,26 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static java.util.Arrays.asList;
+import static java.util.Arrays.stream;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 /**
  * JSON-RPC 2.0 factory implementation.
  */
 public class JsonRpc2_0Neow3j extends Neow3j {
 
-    public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
-
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
-    private final long blockTime;
-    private final ScheduledExecutorService scheduledExecutorService;
 
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService) {
-        this(neow3jService, DEFAULT_BLOCK_TIME, Async.defaultExecutorService());
-    }
-
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService, long pollingInterval,
-            ScheduledExecutorService scheduledExecutorService) {
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) {
+        super(config);
         this.neow3jService = neow3jService;
-        this.neow3jRx = new JsonRpc2_0Rx(this, scheduledExecutorService);
-        this.blockTime = pollingInterval;
-        this.scheduledExecutorService = scheduledExecutorService;
+        this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
     }
 
     // Blockchain Methods
@@ -1067,7 +1056,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     @Override
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects) {
-        return neow3jRx.blockObservable(fullTransactionObjects, blockTime);
+        return neow3jRx.blockObservable(fullTransactionObjects, getPollingInterval());
     }
 
     @Override
@@ -1103,19 +1092,20 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
             BigInteger startBlock, boolean fullTransactionObjects) {
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(
-                startBlock, fullTransactionObjects, blockTime);
+                startBlock, fullTransactionObjects, getPollingInterval());
     }
 
     @Override
     public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects)
             throws IOException {
 
-        return neow3jRx.subscribeToNewBlocksObservable(fullTransactionObjects, blockTime);
+        return neow3jRx.subscribeToNewBlocksObservable(fullTransactionObjects,
+                getPollingInterval());
     }
 
     @Override
     public void shutdown() {
-        scheduledExecutorService.shutdown();
+        getScheduledExecutorService().shutdown();
         try {
             neow3jService.close();
         } catch (IOException e) {
