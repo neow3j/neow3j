@@ -18,6 +18,7 @@ import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
@@ -78,11 +79,10 @@ public class NeoNameServiceTest {
         int port = wireMockRule.port();
         WireMock.configureFor(port);
         neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        account1 = Account.fromWIF("KwjpUzqHThukHZqw5zu4QLGJXessUxwcG3GinhJeBmqj4uKM4K5z");
-        account2 = Account.fromWIF("KyHFg26DHTUWZtmUVTRqDHg8uVvZi9dr5zV3tQ22JZUjvWVCFvtw");
+        account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
+        account2 = Account.fromWIF(TestProperties.client1AccountWIF());
         nameServiceContract = new NeoNameService(Hash160.ZERO, neow);
     }
-
 
     @Test
     public void getName() {
@@ -112,7 +112,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nns_ownerof.json");
         assertThat(nameServiceContract.ownerOf("client1.neo"),
-                is(new Hash160("1ee8109df70043dc34dbad14dde961cc6925acfe")));
+                is(new Hash160(TestProperties.defaultAccountScriptHash())));
     }
 
     @Test

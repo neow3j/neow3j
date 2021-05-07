@@ -44,7 +44,8 @@ public class NonFungibleToken extends Token {
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The returned transaction builder is ready to be signed and sent.
+     * The token owner is set as the signer of the transaction, thus, the given wallet must
+     * contain the owner account. The returned builder is ready to be signed and sent.
      *
      * @param wallet  the wallet that holds the account of the token owner.
      * @param to      the receiver of the token.
@@ -61,7 +62,8 @@ public class NonFungibleToken extends Token {
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The returned transaction builder is ready to be signed and sent.
+     * The token owner is set as the signer of the transaction, thus, the given wallet must
+     * contain the owner account. The returned builder is ready to be signed and sent.
      *
      * @param wallet  the wallet that holds the account of the token owner.
      * @param to      the receiver of the token.

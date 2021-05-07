@@ -11,6 +11,7 @@ import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import io.neow3j.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.methods.response.NFTokenState;
@@ -52,13 +53,8 @@ public class NonFungibleTokenTest {
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         nfTestToken = new NonFungibleToken(NF_TOKEN_SCRIPT_HASH, neow);
 
-        // NbUgTSFvPmsRxmGeWpuuGeJUoRoi6PErcM
-        account1 = new Account(ECKeyPair.create(
-                hexStringToByteArray(
-                        "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
-        account2 = new Account(ECKeyPair.create(
-                hexStringToByteArray(
-                        "b4b2b579cac270125259f08a5f414e9235817e7637b9a66cfeb3b77d90c8e7f9")));
+        account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
+        account2 = Account.fromWIF(TestProperties.client1AccountWIF());
     }
 
     @Test
