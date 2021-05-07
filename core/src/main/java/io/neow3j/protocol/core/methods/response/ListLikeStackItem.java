@@ -10,7 +10,7 @@ import java.util.Objects;
 /**
  * Represents a stack item that has a list-like value (e.g., array).
  * <p>
- * This abstraction does not represent an actual stack item type form the neo-vm.
+ * This abstraction does not represent an actual stack item type from the neo-vm.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class ListLikeStackItem extends StackItem {
@@ -36,20 +36,24 @@ public abstract class ListLikeStackItem extends StackItem {
     protected String valueToString() {
         return value.stream()
                 .map(StackItem::toString)
-                .reduce("", (a, b) ->  a + ", " + b)
+                .reduce("", (a, b) -> a + ", " + b)
                 .substring(2); // remove the first comma and space
     }
 
     @Override
     public List<StackItem> getList() {
         nullCheck();
-       return value;
+        return value;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ListLikeStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ListLikeStackItem)) {
+            return false;
+        }
         ListLikeStackItem other = (ListLikeStackItem) o;
         return getType() == other.getType() &&
                 Objects.equals(getValue(), other.getValue());

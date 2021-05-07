@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
@@ -79,7 +80,7 @@ public class StackItemTest extends ResponseTester {
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getInteropInterface();
+        rawItem.getIterator();
     }
 
     @Test
@@ -134,13 +135,19 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void throwOnCastingToIntegerFromIllegalType() throws IOException {
-        StackItem item = getObjectMapper().readValue("{\"type\":\"InteropInterface\"," +
-                "\"value\":\"0x01020304\"}", StackItem.class);
+        StackItem item = getObjectMapper().readValue("{\n" +
+                "    \"type\": \"Array\",\n" +
+                "    \"value\": [\n" +
+                "        {\n" +
+                "            \"type\": \"Boolean\",\n" +
+                "            \"value\": \"false\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}", StackItem.class);
         exceptionRule.expect(StackItemCastException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.INTEROP_INTERFACE.getValue(), "0x01020304")));
+                asList(StackItemType.ARRAY.getValue(), "false")));
         item.getInteger();
-
     }
 
     @Test
@@ -356,12 +363,44 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void testDeserializeInteropInterfaceStackItem() throws IOException {
-        String json = "{\"type\":\"InteropInterface\", \"value\":\"dGVzdGluZw==\"}";
+        String json = "{\n" +
+                "    \"type\": \"InteropInterface\",\n" +
+                "    \"iterator\": [\n" +
+                "        {\n" +
+                "            \"type\": \"ByteString\",\n" +
+                "            \"value\": \"Dg==\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"truncated\": true\n" +
+                "}";
+        InteropInterfaceStackItem item = getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
+        assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
+        List<StackItem> list = new ArrayList<>();
+        list.add(new ByteStringStackItem("0e"));
+        assertEquals(item.getIterator(), list);
+        assertTrue(item.isTruncated());
+    }
+
+    @Test
+    public void testDeserializeInteropInterfaceStackItem_getIterator() throws IOException {
+        String json = "{\n" +
+                "    \"type\": \"InteropInterface\",\n" +
+                "    \"iterator\": [\n" +
+                "        {\n" +
+                "            \"type\": \"ByteString\",\n" +
+                "            \"value\": \"Dg==\"\n" +
+                "        }\n" +
+                "    ],\n" +
+                "    \"truncated\": false\n" +
+                "}";
         StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        assertThat(item.getInteropInterface(), is("dGVzdGluZw=="));
+        List<StackItem> list = new ArrayList<>();
+        list.add(new ByteStringStackItem("0e"));
+        assertEquals(item.getIterator(), list);
+        assertThat(item.valueToString(), is("ByteString{value='0e'}"));
 
-        InteropInterfaceStackItem other = new InteropInterfaceStackItem("dGVzdGluZw==");
+        InteropInterfaceStackItem other = new InteropInterfaceStackItem(list, false);
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }
