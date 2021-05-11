@@ -5,9 +5,8 @@ package io.neow3j.devpack.contracts;
  */
 public class Role {
 
-    public static final byte STATE_VALIDATOR =
-            io.neow3j.protocol.core.Role.STATE_VALIDATOR.byteValue();
+    public static final byte STATE_VALIDATOR = 1 << 2;
 
-    public static final byte ORACLE = io.neow3j.protocol.core.Role.ORACLE.byteValue();
+    public static final byte ORACLE = 1 << 3;
 
 }
