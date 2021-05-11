@@ -49,11 +49,19 @@ public class Contract {
     /**
      * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing the
      * {@code arguments}.
+     * <p>
+     * Make sure to pass the script hash in little-endian format, e.g., when you hardcode the
+     * hash in your contract code as shown in the following example.
+     * <p>
+     * {@code Hash160 scriptHash =
+     * new Hash160(hexToBytes("cf76e28bd0062c4a478ee35561011319f3cfa4d2"))}
      *
-     * @param scriptHash The script hash of the contract to invoke.
+     * @param scriptHash The script hash of the contract to invoke in little-endian format.
      * @param method     The method to call.
      * @param callFlags  The {@link CallFlags} to use for the call.
-     * @param arguments  The arguments to hand to the method.
+     * @param arguments  The arguments to hand to the method. If the called method doesn't take
+     *                   any arguments pass an empty object array, i.e., {@code new Object[]{}}.
+     *                   Passing null will make the contract fail at runtime.
      * @return the value returned by the contract method call.
      */
     @Syscall(SYSTEM_CONTRACT_CALL)
