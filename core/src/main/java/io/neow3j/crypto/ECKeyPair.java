@@ -1,20 +1,21 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.contract.ScriptBuilder.buildVerificationScript;
-import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
-import static io.neow3j.utils.ArrayUtils.concatenate;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.toBytesPadded;
-
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ScriptBuilder;
 import io.neow3j.contract.Hash160;
 import io.neow3j.io.BinaryReader;
 import io.neow3j.io.BinaryWriter;
 import io.neow3j.io.NeoSerializable;
 import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.utils.Numeric;
+import org.bouncycastle.crypto.digests.SHA256Digest;
+import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.util.BigIntegers;
+
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
@@ -25,15 +26,13 @@ import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 import java.util.Objects;
-import org.bouncycastle.crypto.digests.SHA256Digest;
-import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
-import org.bouncycastle.crypto.signers.ECDSASigner;
-import org.bouncycastle.crypto.signers.HMacDSAKCalculator;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPrivateKey;
-import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.BigIntegers;
+
+import static io.neow3j.contract.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.crypto.Hash.hash256;
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toBytesPadded;
 
 
 /**

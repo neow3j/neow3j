@@ -194,7 +194,8 @@ public class WitnessTest {
         byte[] expectedHash = sha256AndThenRipemd160(
                 hexStringToByteArray(expectedVerificationScript));
 
-        assertArrayEquals(expectedHash, script.getScriptHash().toLittleEndianArray());
+        assertArrayEquals(expectedHash, script.getVerificationScript().getScriptHash()
+                .toLittleEndianArray());
     }
 
     @Test
@@ -207,19 +208,8 @@ public class WitnessTest {
         Witness witness = new Witness(invocationScript, verificationScript);
         assertArrayEquals(
                 hexStringToByteArray("35b20010db73bf86371075ddfba4e6596f1ff35d"),
-                witness.getScriptHash().toLittleEndianArray()
+                witness.getVerificationScript().getScriptHash().toLittleEndianArray()
         );
-    }
-
-    @Test
-    public void createWithoutVerificationScript() {
-        byte[] invocationScript = hexStringToByteArray("0000");
-        Hash160 hash = new Hash160("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
-        Witness witness = new Witness(invocationScript, hash);
-        // 02: two bytes of invocation script;
-        // 0000: invocation script;
-        // 00: zero bytes of verification script
-        assertEquals("02000000", toHexStringNoPrefix(witness.toArray()));
     }
 
 }

@@ -14,32 +14,25 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A script used to validate a transaction.
- * Usually, a so-called witness, i.e. a transaction signature (invocation script) and the
- * verification script derived from the signing key.
+ * A script (invocation and verification script) used to validate a transaction.
+ * Usually, a witness is made up of a signature (invocation script) and a check-signature script
+ * (verification script) that together prove that the signer has witnessed the signed data.
  */
 public class Witness extends NeoSerializable {
 
     private InvocationScript invocationScript;
     private VerificationScript verificationScript;
-    private Hash160 hash160;
 
     /**
-     * Constructs an empty witness with a zero-valued script hash.
+     * Constructs an empty witness.
      */
     public Witness() {
         invocationScript = new InvocationScript();
         verificationScript = new VerificationScript();
-        hash160 = Hash160.ZERO;
     }
 
     /**
-     * <p>Creates a new script from the given invocation and verification script.</p>
-     * <br>
-     * <p>Make sure that the scripts are proper NEO VM scripts. E.g. the invocation script byte
-     * array must not only contain the serialized signature data but it also needs the prefix 40
-     * which signifies that 64 bytes follow. It is safer to use the static creation methods from
-     * {@link InvocationScript} and {@link VerificationScript} to create valid scripts.</p>
+     * Creates a new witness from the given invocation and verification script.
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
@@ -51,12 +44,7 @@ public class Witness extends NeoSerializable {
     }
 
     /**
-     * <p>Creates a new script from the given invocation and verification script.</p>
-     * <br>
-     * <p>The verification script cannot be null because the script hash is derived from it. If you
-     * don't have a verification script you can use the constructor
-     * {@link Witness#Witness(byte[], Hash160)} and just provide a script hash instead of the
-     * verification script.</p>
+     * Creates a new script from the given invocation and verification script.
      *
      * @param invocationScript   the invocation script
      * @param verificationScript the verification script
@@ -64,25 +52,6 @@ public class Witness extends NeoSerializable {
     public Witness(InvocationScript invocationScript, VerificationScript verificationScript) {
         this.invocationScript = invocationScript;
         this.verificationScript = verificationScript;
-        if (verificationScript == null || verificationScript.getScriptHash() == null) {
-            throw new IllegalArgumentException("The script hash cannot be produced. " +
-                    "The verification script must not be null because the script hash is derived " +
-                    "from it.");
-        }
-        this.hash160 = verificationScript.getScriptHash();
-    }
-
-    /**
-     * Creates a new witness from the given invocation script and script hash. The verification
-     * script is empty.
-     *
-     * @param invocationScript the invocation script
-     * @param hash160          a script hash instead of a verification script.
-     */
-    public Witness(byte[] invocationScript, Hash160 hash160) {
-        this.invocationScript = new InvocationScript(invocationScript);
-        this.verificationScript = new VerificationScript();
-        this.hash160 = hash160;
     }
 
     /**
@@ -128,13 +97,6 @@ public class Witness extends NeoSerializable {
         return verificationScript;
     }
 
-    /**
-     * @return the script hash of this script in big-endian order.
-     */
-    public Hash160 getScriptHash() {
-        return hash160;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -161,7 +123,6 @@ public class Witness extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         this.invocationScript = reader.readSerializable(InvocationScript.class);
         this.verificationScript = reader.readSerializable(VerificationScript.class);
-        this.hash160 = verificationScript.getScriptHash();
     }
 
     @Override

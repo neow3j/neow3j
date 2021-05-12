@@ -144,10 +144,6 @@ public class Transaction extends NeoSerializable {
     }
 
     public void addWitness(Witness witness) {
-        if (witness.getScriptHash() == null) {
-            throw new IllegalArgumentException("The script hash of the given witness must not be "
-                    + "null.");
-        }
         this.witnesses.add(witness);
     }
 
