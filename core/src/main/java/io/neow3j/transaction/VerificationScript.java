@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+/**
+ * A verification script is part of a witness and is simply a sequence of neo-vm instructions.
+ * The verification script is the part of a witness that describes what has to be verified such
+ * that the witness is valid. E.g., for a regular signature witness the verification script is
+ * made up of a check-signature call and it expects a signature as input.
+ */
 public class VerificationScript extends NeoSerializable {
 
     private byte[] script;
@@ -36,17 +42,16 @@ public class VerificationScript extends NeoSerializable {
 
     /**
      * Creates a verification script from the given byte array.
-     * <p>
-     * The bytes do not necessarily have to be a signature verification script.
      *
-     * @param script The script
+     * @param script The script.
      */
     public VerificationScript(byte[] script) {
         this.script = script;
     }
 
     /**
-     * Creates a verification script for the given public key.
+     * Creates a verification script for the given public key. The resulting verification
+     * script contains a signature check with the given public key as the expected signer.
      *
      * @param publicKey Key to create the script for.
      */
@@ -56,6 +61,8 @@ public class VerificationScript extends NeoSerializable {
 
     /**
      * Creates a multi-sig verification script for the given keys and signing threshold.
+     * The resulting verification script contains a multi-signature check with the given public
+     * keys as the expected signer.
      *
      * @param publicKeys       The public keys to create the script for.
      * @param signingThreshold The minimum number of public keys needed to sign transactions from
@@ -77,7 +84,7 @@ public class VerificationScript extends NeoSerializable {
     }
 
     /**
-     * Gets the raw script.
+     * Gets this verification script as a byte array.
      *
      * @return the script as a byte array.
      */

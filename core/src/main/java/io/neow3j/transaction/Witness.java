@@ -69,6 +69,17 @@ public class Witness extends NeoSerializable {
         return new Witness(i, v);
     }
 
+    /**
+     * Creates a witness in which the invocation script contains the given signatures and the
+     * verification script checks the signatures according to the given public keys and signing
+     * threshold.
+     *
+     * @param signingThreshold The minimum number of signatures required for successful multi-sig
+     *                         verification.
+     * @param signatures       The signatures to add to the invocation script.
+     * @param publicKeys       The public keys to add to verification script.
+     * @return the witness.
+     */
     public static Witness createMultiSigWitness(int signingThreshold,
             List<SignatureData> signatures, List<ECPublicKey> publicKeys) {
 
@@ -76,6 +87,15 @@ public class Witness extends NeoSerializable {
         return createMultiSigWitness(signatures, v);
     }
 
+    /**
+     * Constructs a witness with the given verification script and an invocation script
+     * containing the given signatures. The number of signatures must reach the signing threshold
+     * given in the verification script.
+     *
+     * @param signatures         The signatures to add to the invocation script.
+     * @param verificationScript The verification script to use in the witness.
+     * @return the witness.
+     */
     public static Witness createMultiSigWitness(List<SignatureData> signatures,
             VerificationScript verificationScript) {
 
