@@ -258,52 +258,6 @@ public class NumericTest {
     }
 
     @Test
-    public void testFromFixed8ToBigDecimal() {
-        byte[] fixed8 = {0x01, (byte) 0xe4, 0x0b, (byte) 0x54, 0x02, 0x00, 0x00, 0x00};
-        BigDecimal asBigDecimal = Numeric.fromFixed8ToDecimal(fixed8);
-        BigDecimal expected = BigDecimal.valueOf(100.00000001d);
-        Assert.assertEquals(0, expected.compareTo(asBigDecimal));
-    }
-
-    @Test
-    public void testFromDecimalToFixed8HexString() {
-        BigDecimal d = BigDecimal.TEN;
-        String i = Numeric.fromDecimalToFixed8HexString(d);
-        assertEquals(i, "000000003b9aca00");
-
-        d = new BigDecimal("0.001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
-        assertEquals(i, "00000000000186a0");
-
-        d = new BigDecimal("0.00000001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
-        assertEquals(i, "0000000000000001");
-
-        d = new BigDecimal("0.000000001");
-        i = Numeric.fromDecimalToFixed8HexString(d);
-        assertEquals(i, "0000000000000000");
-    }
-
-    @Test
-    public void testFromDecimalToFixed8ByteArray() {
-        BigDecimal d = BigDecimal.TEN;
-        byte[] i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{(byte) 0x00, (byte) 0xca, (byte) 0x9a, (byte) 0x3b, 0x00, 0x00, 0x00, 0x00});
-
-        d = new BigDecimal("0.001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{(byte) 0xa0, (byte) 0x86, (byte) 0x01, 0x00, 0x00, 0x00, 0x00, 0x00});
-
-        d = new BigDecimal("0.00000001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
-
-        d = new BigDecimal("0.000000001");
-        i = Numeric.fromDecimalToFixed8ByteArray(d);
-        assertArrayEquals(i, new byte[]{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00});
-    }
-
-    @Test
     public void testIsValidHexString() {
         assertTrue(Numeric.isValidHexString("0x9ef022"));
         assertTrue(Numeric.isValidHexString("9ef022"));
