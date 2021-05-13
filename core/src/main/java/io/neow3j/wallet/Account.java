@@ -12,6 +12,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.model.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
 import io.neow3j.transaction.VerificationScript;
 import io.neow3j.utils.AddressUtils;
@@ -200,6 +201,11 @@ public class Account {
         this.keyPair = null;
     }
 
+    /**
+     * Checks if this account its a multi-sig account or not.
+     *
+     * @return true if this account is a multi-sig account. False otherwise.
+     */
     public boolean isMultiSig() {
         if (this.verificationScript == null) {
             throw new AccountStateException("The account with script hash " + this.getScriptHash() +
@@ -340,6 +346,17 @@ public class Account {
         return account;
     }
 
+    /**
+     * Creates an account from the given address.
+     * <p>
+     * Note that an account created with this method does not contain a verification script nor
+     * an EC key pair. Therefore, it cannot be used for transaction signing.
+     *
+     * @param address The address of the account. Must be a valid Neo address. Make sure that the
+     *                address version used in this address is the same as the one configured in
+     *                {@link Neow3jConfig#getAddressVersion()}.
+     * @return the account.
+     */
     public static Account fromAddress(String address) {
         if (!AddressUtils.isValidAddress(address)) {
             throw new IllegalArgumentException("Invalid address.");
