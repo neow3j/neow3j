@@ -53,9 +53,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * The magic number is an ingredient, e.g., when generating the hash of a transaction.
      * <p>
      * The default value is null. Only once this method is called for the first time the value is
-     * fetched from the connected neo-node.
+     * fetched from the connected Neo node.
      *
      * @return The network's magic number.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public byte[] getNetworkMagicNumber() throws IOException {
         if (config.getNetworkMagic() == null) {
@@ -67,7 +68,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the executor service used for polling new blocks from the neo-node.
+     * Gets the executor service used for polling new blocks from the Neo node.
      * <p>
      * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads
      * as CPUs available to the JVM.
@@ -90,7 +91,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the interval in milliseconds in which {@code Neow3j} should poll the neo-node for new
+     * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new
      * block information when observing the blockchain.
      * <p>
      * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
