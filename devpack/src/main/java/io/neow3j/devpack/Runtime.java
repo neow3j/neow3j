@@ -100,7 +100,7 @@ public class Runtime {
      * <p>
      * The container of an contract-invoking script is usually a {@link Transaction}. In that case,
      * the return value can be cast to a {@code Transaction}. E.g.:
-     * {@code Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();}
+     * {@code Transaction tx = (Transaction) Runtime.getScriptContainer();}
      *
      * @return the script container.
      */

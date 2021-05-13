@@ -63,6 +63,7 @@ public class NeoNameService extends NonFungibleToken {
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
      * invocations.
      *
+     * @param scriptHash the script hash of the name service contract.
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
     public NeoNameService(Hash160 scriptHash, Neow3j neow) {

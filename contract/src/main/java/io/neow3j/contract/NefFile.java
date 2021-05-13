@@ -142,6 +142,7 @@ public class NefFile extends NeoSerializable {
      * The check sum is expected to be 4 bytes and it is interpreted as a little endian unsigned
      * integer.
      *
+     * @param checkSumBytes the check sum bytes.
      * @return the check sum.
      */
     public static long getCheckSumAsInteger(byte[] checkSumBytes) {
