@@ -139,7 +139,7 @@ public class ByteStringIntegrationTest {
         }
 
         public static  String byteStringAsString(ByteString s) {
-            return s.asString();
+            return s.toString();
         }
 
         public static byte[] byteStringToByteArray(ByteString s) {
