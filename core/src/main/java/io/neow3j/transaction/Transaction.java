@@ -221,8 +221,7 @@ public class Transaction extends NeoSerializable {
         NeoApplicationLog applicationLog = null;
         try {
             applicationLog = neow.getApplicationLog(getTxId()).send().getApplicationLog();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignore) {
         }
         return applicationLog;
     }
