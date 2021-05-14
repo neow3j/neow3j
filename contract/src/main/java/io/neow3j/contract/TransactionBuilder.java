@@ -62,7 +62,7 @@ public class TransactionBuilder {
     private BiConsumer<BigInteger, BigInteger> consumer;
     private Supplier<? extends Throwable> supplier;
 
-    protected TransactionBuilder(Neow3j neow3j) {
+    public TransactionBuilder(Neow3j neow3j) {
         this.neow3j = neow3j;
         // The random value used to initialize the nonce does not need cryptographic security,
         // therefore, we can use ThreadLocalRandom to generate it.
