@@ -82,7 +82,7 @@ public class ScriptBuilder {
     public ScriptBuilder contractCall(Hash160 hash160, String method,
             List<ContractParameter> params, CallFlags callFlags) {
 
-        if (params.size() > 0) {
+        if (params != null && params.size() > 0) {
             pushParams(params);
         } else {
             opCode(OpCode.NEWARRAY0);
