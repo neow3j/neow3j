@@ -6,7 +6,7 @@ import java.math.BigInteger;
 
 public class NeoBlockCount extends Response<BigInteger> {
 
-    public BigInteger getBlockIndex() {
+    public BigInteger getBlockCount() {
         return getResult();
     }
 

@@ -173,7 +173,7 @@ public class JsonRpc2_0RxTest {
 
         for (int i = 4; i < 7; i++) {
             Thread.sleep(2000);
-            BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
+            BigInteger added = neoBlockCount.getBlockCount().add(BigInteger.ONE);
             neoBlockCount.setResult(added);
             stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
         }
@@ -234,7 +234,7 @@ public class JsonRpc2_0RxTest {
 
         for (int i = 0; i < 4; i++) {
             Thread.sleep(2000);
-            BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
+            BigInteger added = neoBlockCount.getBlockCount().add(BigInteger.ONE);
             neoBlockCount.setResult(added);
             stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
         }

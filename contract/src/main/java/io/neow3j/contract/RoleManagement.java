@@ -66,10 +66,10 @@ public class RoleManagement extends SmartContract {
             throw new IllegalArgumentException("The block index has to be positive.");
         }
 
-        BigInteger currentBlockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        if (blockIndex.compareTo(currentBlockIndex) > 0) {
+        BigInteger currentBlockCount = neow3j.getBlockCount().send().getBlockCount();
+        if (blockIndex.compareTo(currentBlockCount) > 0) {
             throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is " +
-                    "too high. The current block count is " + currentBlockIndex + ".");
+                    "too high. The current block count is " + currentBlockCount + ".");
         }
     }
 

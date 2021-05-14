@@ -57,7 +57,7 @@ public class Transaction extends NeoSerializable {
     private List<TransactionAttribute> attributes;
     private byte[] script;
     private List<Witness> witnesses;
-    private BigInteger blockIndexWhenSent;
+    private BigInteger blockCountWhenSent;
 
     public Transaction() {
         signers = new ArrayList<>();
@@ -172,7 +172,7 @@ public class Transaction extends NeoSerializable {
                     "witness, even if that witness is empty.");
         }
         String hex = Numeric.toHexStringNoPrefix(toArray());
-        blockIndexWhenSent = neow.getBlockCount().send().getBlockIndex();
+        blockCountWhenSent = neow.getBlockCount().send().getBlockCount();
         return neow.sendRawTransaction(hex).send();
     }
 
@@ -188,7 +188,7 @@ public class Transaction extends NeoSerializable {
      * @throws IllegalStateException if this transaction has not yet been sent.
      */
     public Observable<Long> track() {
-        if (blockIndexWhenSent == null) {
+        if (blockCountWhenSent == null) {
             throw new IllegalStateException("Can't subscribe before transaction has been sent.");
         }
 
@@ -197,7 +197,7 @@ public class Transaction extends NeoSerializable {
                         neoGetBlock.getBlock().getTransactions().stream()
                                 .anyMatch(tx -> tx.getHash().equals(getTxId()));
 
-        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockIndexWhenSent, true)
+        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
                 .takeUntil(pred)
                 .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
@@ -214,7 +214,7 @@ public class Transaction extends NeoSerializable {
      * @return the application log.
      */
     public NeoApplicationLog getApplicationLog() {
-        if (blockIndexWhenSent == null) {
+        if (blockCountWhenSent == null) {
             throw new IllegalStateException("Can't get the application log before transaction has" +
                     " been sent.");
         }

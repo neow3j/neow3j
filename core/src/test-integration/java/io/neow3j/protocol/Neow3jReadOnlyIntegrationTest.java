@@ -258,7 +258,7 @@ public class Neow3jReadOnlyIntegrationTest {
         BigInteger blockIndex = getNeow3j()
                 .getBlockCount()
                 .send()
-                .getBlockIndex();
+                .getBlockCount();
 
         assertNotNull(blockIndex);
         assertThat(blockIndex, greaterThan(BigInteger.valueOf(0)));

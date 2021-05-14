@@ -292,7 +292,7 @@ public class TransactionBuilder {
             // If validUntilBlock is not set explicitly, then set it to the current max. It can
             // happen that the neo-node rejects the transaction when we set the validUntilBlock
             // to the max. To be sure that this does not happen, we decrement the max by 1.
-            this.validUntilBlock(fetchCurrentBlockNr() + neow3j.getMaxValidUntilBlockIncrement()
+            this.validUntilBlock(fetchCurrentBlockCount() + neow3j.getMaxValidUntilBlockIncrement()
                     - 1);
         }
 
@@ -370,8 +370,8 @@ public class TransactionBuilder {
         return false;
     }
 
-    private long fetchCurrentBlockNr() throws IOException {
-        return neow3j.getBlockCount().send().getBlockIndex().longValue();
+    private long fetchCurrentBlockCount() throws IOException {
+        return neow3j.getBlockCount().send().getBlockCount().longValue();
     }
 
     /*

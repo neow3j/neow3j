@@ -55,9 +55,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, nextBlockIndex);
@@ -81,9 +81,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.ORACLE, nextBlockIndex);
@@ -107,9 +107,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.NEO_FS_ALPHABET_NODE, nextBlockIndex);

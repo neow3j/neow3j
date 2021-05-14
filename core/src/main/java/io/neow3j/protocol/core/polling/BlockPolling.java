@@ -37,7 +37,7 @@ public class BlockPolling {
     }
 
     private BigInteger getLatestBlockIndex() throws IOException {
-        return neow3j.getBlockCount().send().getBlockIndex();
+        return neow3j.getBlockCount().send().getBlockCount();
     }
 
     public void run(ScheduledExecutorService scheduledExecutorService, long pollingInterval) {
