@@ -2,6 +2,25 @@
 
 This file describes configurations and nuances for developing in the neow3j project.
 
+## Using the SNAPSHOT versions
+
+If you would like to use the "latest and greatest" version of newo3j (for development *only*), then
+add the Sonatype Snapshot repository to your `build.gradle`:
+
+```groovy
+repositories {
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+```
+
+Then you would be able to use the snapshot versions:
+
+```groovy
+implementation 'io.neow3j:contract:3.10.0-SNAPSHOT'
+implementation 'io.neow3j:devpack:3.10.0-SNAPSHOT'
+```
+
 ## Locally Testing GitHub Action Workflows
 
 If you would like to locally test GitHub Actions workflows, it's not required to make
