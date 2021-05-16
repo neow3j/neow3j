@@ -1,26 +1,20 @@
 package io.neow3j.compiler;
 
-import io.neow3j.model.types.NeoVMStateType;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
-
-import java.io.IOException;
-import java.util.List;
-
 import static io.neow3j.contract.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class TryCatchBlocksTest {
+import io.neow3j.model.types.NeoVMStateType;
+import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.methods.response.StackItem;
+import java.io.IOException;
+import java.util.List;
+import org.junit.ClassRule;
+import org.junit.Test;
 
-    @Rule
-    public TestName testName = new TestName();
+public class TryCatchBlocksTest {
 
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(
@@ -207,6 +201,27 @@ public class TryCatchBlocksTest {
         assertTrue(res.get(4).getBoolean());
     }
 
+    @Test
+    public void innerVarAssignmentAndEmptyCatch() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction("innerVarAssignmentAndEmptyCatch");
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertTrue(res.getBoolean());
+    }
+
+    @Test
+    public void innerInitVarAndEmptyCatch() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction("innerInitVarAndEmptyCatch");
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertTrue(res.getBoolean());
+    }
+
+    @Test
+    public void emptyTryCatch() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction("emptyTryCatch");
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertTrue(res.getBoolean());
+    }
+
     static class TryCatchBlocks {
 
         public static boolean[] tryCatchBlock(int i) {
@@ -349,5 +364,34 @@ public class TryCatchBlocksTest {
             }
             return b;
         }
+
+        public static boolean innerVarAssignmentAndEmptyCatch() {
+            String test;
+            try {
+                test = "test";
+            } catch (Exception e) {
+
+            }
+            return true;
+        }
+
+        public static boolean innerInitVarAndEmptyCatch() {
+            try {
+                String test = "test";
+            } catch (Exception e) {
+
+            }
+            return true;
+        }
+
+        public static boolean emptyTryCatch() {
+            try {
+
+            } catch (Exception e) {
+
+            }
+            return true;
+        }
+
     }
 }
