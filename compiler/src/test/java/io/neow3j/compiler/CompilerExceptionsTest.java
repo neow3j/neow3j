@@ -166,16 +166,6 @@ public class CompilerExceptionsTest {
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
     }
 
-    // If this test fails for you, make sure that you are using Java 8's JDK and not anything
-    // higher.
-    @Test
-    public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList("compareTo",
-                String.class.getName(), "was not compiled with debugging information")));
-        new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
-    }
-
     @Test
     public void failIfInstanceOfIsUsedOnUnsupportedType() throws IOException {
         exceptionRule.expect(CompilerException.class);

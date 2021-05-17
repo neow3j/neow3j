@@ -727,7 +727,6 @@ public class NeoMethod {
 
     private void initializeLocalVariablesAndParameters() {
         checkForUnsupportedLocalVariableTypes();
-        checkForMissingLocalVariableInformation();
         // Look for method params and local variables and add them to the NeoMethod. Note that Java
         // mixes method params and local variables.
         if (asmMethod.maxLocals == 0) {
@@ -742,22 +741,6 @@ public class NeoMethod {
             addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
                     (byte) variablesByNeoIndex.size(),
                     (byte) parametersByNeoIndex.size()}));
-        }
-    }
-
-    // Checks if this method was compiled with local variable information (debug info) attached
-    // to it. If not it throws an exception because it will not be possible to correctly convert
-    // the method to neo-vm code without that information. These checks don't work on methods
-    // that have no local variables and no parameters. Even if those methods were compiled with
-    // out that debug setting they can be converted just fine. I.e., we have no way of
-    // determining (via ASM) if such a method/class was compiled with the highest debug info
-    // setting.
-    private void checkForMissingLocalVariableInformation() {
-        if (asmMethod.maxLocals > 0 && asmMethod.localVariables.isEmpty()) {
-            throw new CompilerException(format("The method '%s' from %s was not compiled with " +
-                    "debugging information and can therefore not be used for smart contract " +
-                    "compilation. Make sure to only use methods from your workspace or smart " +
-                    "contract libraries.", asmMethod.name, getOwnerClassName()));
         }
     }
 
@@ -801,8 +784,9 @@ public class NeoMethod {
                 }
             }
             if (neoVar == null) {
-                // Not all local variables show up in ASM's `localVariables` list, e.g. when a
-                // String-based switch-case occurs.
+                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string
+                // switch-case, declared but unnused variables in try-catch clauses, or if the
+                // local variables debug info was not generated.
                 neoVar = new NeoVariable(neoIdx, jvmIdx, null);
             }
             addVariable(neoVar);
@@ -829,11 +813,10 @@ public class NeoMethod {
         while (neoIdx < paramCount) {
             // The parameters' indices start at zero. Nonetheless, we need to look through all local
             // variables because the ordering is not necessarily according to the indices.
+            NeoVariable neoParam = null;
             for (LocalVariableNode varNode : locVars) {
                 if (varNode.index == jvmIdx) {
-                    addParameter(new NeoVariable(neoIdx, jvmIdx, varNode));
-                    jvmIdx++;
-                    neoIdx++;
+                    neoParam = new NeoVariable(neoIdx, jvmIdx, varNode);
                     if (Type.getType(varNode.desc) == Type.LONG_TYPE) {
                         // Long vars/params use two index slots, i.e. we increment one more time.
                         jvmIdx++;
@@ -841,6 +824,15 @@ public class NeoMethod {
                     break;
                 }
             }
+            if (neoParam == null) {
+                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string
+                // switch-case, declared but unnused variables in try-catch clauses, or if the
+                // local variables debug info was not generated.
+                neoParam = new NeoVariable(neoIdx, jvmIdx, null);
+            }
+            addParameter(neoParam);
+            jvmIdx++;
+            neoIdx++;
         }
         return jvmIdx;
     }
