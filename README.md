@@ -11,19 +11,11 @@
 <img src="./images/neow3j-neo3-with-balloon.png" alt="Bongo Cat Neow3j" width="400" height="291" />
 </p>
 
-Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and Smart
-Contracts using the Java platform (Java, Kotlin, Android).
+Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and
+Smart Contracts using the Java platform (Java, Kotlin, Android). It is an open-source project
+developed by the community and maintained by [AxLabs](https://axlabs.com).
 
-The toolkit can be divided into the neow3j SDK, which is used for dApp development, and the
-neow3j devpack, which is used for smart contract development. We use the term dApp development
-for activities around the blockchain, e.g., building a web page that interacts with the
-blockchain, but exclude the implementation of smart contracts. Of course, smart contracts will
-naturally be part of a running dApp.
-
-Neow3j is an open-source project developed by the community and maintained by
-[AxLabs](https://axlabs.com).
-
-Visit [neow3j.io](https://neow3j.io) for more information on neow3j and the technical documentation.
+**Visit [neow3j.io](https://neow3j.io) for more information and technical documentation.**
 
 # Getting started
 
@@ -69,7 +61,7 @@ __Maven__
 ```xml
 <dependency>
     <groupId>io.neow3j</groupId>
-    <artifactId>compiler</artifactId>
+    <artifactId>devpack</artifactId>
     <version>[3.10.0,)</version>
 </dependency>
 ```
