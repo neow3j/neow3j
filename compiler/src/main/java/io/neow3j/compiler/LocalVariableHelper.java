@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static java.lang.String.format;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 
 public class LocalVariableHelper {
 

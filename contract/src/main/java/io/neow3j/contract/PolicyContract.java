@@ -1,9 +1,11 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;

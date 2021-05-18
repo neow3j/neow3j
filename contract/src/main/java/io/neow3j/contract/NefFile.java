@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
 import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
+import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
@@ -11,13 +11,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.IOUtils;
-import io.neow3j.io.NeoSerializable;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.IOUtils;
+import io.neow3j.serialization.NeoSerializable;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.CallFlags;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -261,7 +263,7 @@ public class NefFile extends NeoSerializable {
      * Deserializes and constructs a {@code NefFile} from the given stack item.
      * <p>
      * It is expected that the stack item is of type
-     * {@link io.neow3j.model.types.StackItemType#BYTE_STRING} and its content is simply a
+     * {@link StackItemType#BYTE_STRING} and its content is simply a
      * serialized NEF file.
      *
      * @param stackItem The stack item to deserialize.

@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.utils.ArrayUtils;

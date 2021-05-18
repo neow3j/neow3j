@@ -9,11 +9,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.constants.InteropService;
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.InvocationScript;
+import io.neow3j.script.VerificationScript;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.utils.Numeric;
 import java.util.Arrays;

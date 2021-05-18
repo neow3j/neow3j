@@ -1,12 +1,12 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -18,13 +18,16 @@ import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.TestProperties;
+import io.neow3j.test.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
-import io.neow3j.protocol.core.methods.response.NameState;
+import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 

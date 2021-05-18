@@ -7,7 +7,7 @@ import static org.hamcrest.core.Is.is;
 
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Permission.Permissions;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import java.io.IOException;
 import java.util.List;
 import org.hamcrest.text.StringContainsInOrder;

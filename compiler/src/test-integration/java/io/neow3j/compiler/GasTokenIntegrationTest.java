@@ -1,14 +1,14 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.contracts.GasToken;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.utils.Await;
 import org.junit.ClassRule;
 import org.junit.Rule;

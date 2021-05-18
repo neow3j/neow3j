@@ -1,6 +1,6 @@
 package io.neow3j.wallet;
 
-import io.neow3j.contract.Hash160;
+import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -10,11 +10,11 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
-import io.neow3j.transaction.VerificationScript;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;

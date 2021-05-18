@@ -1,6 +1,6 @@
 package io.neow3j.wallet;
 
-import io.neow3j.contract.Hash160;
+import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
@@ -11,7 +11,7 @@ import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.transaction.VerificationScript;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
 import java.io.File;

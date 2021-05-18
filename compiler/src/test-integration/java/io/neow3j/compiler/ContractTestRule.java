@@ -1,19 +1,19 @@
 package io.neow3j.compiler;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.contract.ContractManagement;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
-import io.neow3j.model.types.NeoVMStateType;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetStorage;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetStorage;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Numeric;
@@ -26,11 +26,10 @@ import org.junit.runners.model.Statement;
 import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;

@@ -1,10 +1,10 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
@@ -19,7 +19,9 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.utils.Numeric;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;

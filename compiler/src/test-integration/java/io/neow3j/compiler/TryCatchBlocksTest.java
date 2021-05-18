@@ -1,18 +1,19 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.contract.ContractParameter.integer;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.NeoVMStateType;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
+import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.model.types.NeoVMStateType;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import java.io.IOException;
-import java.util.List;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 public class TryCatchBlocksTest {
 

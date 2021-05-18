@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.types.Hash160;
 
 /**
  * Represents the GasToken native contract and provides methods to invoke its functions.

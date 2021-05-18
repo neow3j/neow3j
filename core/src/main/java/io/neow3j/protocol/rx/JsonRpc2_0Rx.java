@@ -1,8 +1,8 @@
 package io.neow3j.protocol.rx;
 
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.polling.BlockPolling;
 import io.neow3j.utils.Observables;
 import io.reactivex.Observable;

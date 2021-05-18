@@ -1,14 +1,18 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
@@ -17,10 +21,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.neow3j.model.types.StackItemType.BOOLEAN;
-import static io.neow3j.model.types.StackItemType.BUFFER;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.BOOLEAN;
+import static io.neow3j.types.StackItemType.BUFFER;
+import static io.neow3j.types.StackItemType.BYTE_STRING;
+import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 

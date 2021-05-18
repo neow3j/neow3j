@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

@@ -8,12 +8,12 @@ import static org.junit.Assert.assertThat;
 
 import io.neow3j.compiler.DebugInfo.Event;
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 
 import java.io.File;
 import java.io.IOException;

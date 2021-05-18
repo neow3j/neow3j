@@ -1,8 +1,8 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.TestProperties.defaultAccountEncryptedPrivateKey;
-import static io.neow3j.TestProperties.defaultAccountPassword;
-import static io.neow3j.TestProperties.defaultAccountPrivateKey;
+import static io.neow3j.test.TestProperties.defaultAccountEncryptedPrivateKey;
+import static io.neow3j.test.TestProperties.defaultAccountPassword;
+import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

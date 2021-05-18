@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;

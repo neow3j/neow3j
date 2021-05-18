@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.events.Event2Args;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;

@@ -1,7 +1,7 @@
 package io.neow3j.protocol.http;
 
 import io.neow3j.protocol.core.Request;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.exceptions.ClientConnectionException;
 import okhttp3.Call;
 import okhttp3.OkHttpClient;

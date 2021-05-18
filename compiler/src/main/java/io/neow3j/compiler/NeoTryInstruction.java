@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import org.objectweb.asm.Label;
 
 public class NeoTryInstruction extends NeoInstruction {

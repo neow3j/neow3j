@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -10,8 +10,8 @@ import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.StackItemType;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.Strings;
 import io.neow3j.wallet.Wallet;
 

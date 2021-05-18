@@ -1,13 +1,13 @@
 package io.neow3j.contract;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.BeforeClass;

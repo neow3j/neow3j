@@ -10,10 +10,10 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.CallFlags;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import io.neow3j.types.Hash160;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;

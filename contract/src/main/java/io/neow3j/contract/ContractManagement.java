@@ -1,14 +1,17 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
 import static java.lang.String.format;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;

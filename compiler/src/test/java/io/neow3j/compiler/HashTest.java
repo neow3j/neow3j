@@ -8,7 +8,7 @@ import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameterType;
 
 import java.io.File;
 import java.io.IOException;

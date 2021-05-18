@@ -19,14 +19,15 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 
 import java.io.File;
 import java.io.IOException;

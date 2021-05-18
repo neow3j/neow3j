@@ -1,10 +1,10 @@
 package io.neow3j.transaction;
 
-import io.neow3j.constants.OpCode;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.OpCode;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
