@@ -11,7 +11,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

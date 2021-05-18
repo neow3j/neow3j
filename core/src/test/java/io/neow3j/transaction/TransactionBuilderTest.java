@@ -2,8 +2,8 @@ package io.neow3j.transaction;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.WireMockTestHelper;
-import io.neow3j.TestProperties;
+import io.neow3j.test.WireMockTestHelper;
+import io.neow3j.test.TestProperties;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;

@@ -1,15 +1,15 @@
 package io.neow3j.protocol;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.TestProperties.committeeAccountAddress;
-import static io.neow3j.TestProperties.committeeAccountScriptHash;
-import static io.neow3j.TestProperties.contractManagementHash;
-import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountScriptHash;
-import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.TestProperties.gasTokenName;
-import static io.neow3j.TestProperties.neoTokenHash;
-import static io.neow3j.TestProperties.oracleContractHash;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.test.TestProperties.contractManagementHash;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
+import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.TestProperties.gasTokenName;
+import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.oracleContractHash;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -42,7 +42,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;

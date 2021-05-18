@@ -3,14 +3,14 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.TestProperties;
+import io.neow3j.test.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.core.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;

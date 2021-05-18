@@ -13,9 +13,9 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import static io.neow3j.TestProperties.committeeAccountScriptHash;
-import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;

@@ -27,7 +27,7 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;

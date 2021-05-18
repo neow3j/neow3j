@@ -1,6 +1,6 @@
 package io.neow3j.protocol;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -23,9 +23,9 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.TestProperties.committeeAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;

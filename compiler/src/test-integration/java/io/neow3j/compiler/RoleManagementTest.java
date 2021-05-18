@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.TestProperties.roleManagementHash;
+import static io.neow3j.test.TestProperties.roleManagementHash;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;

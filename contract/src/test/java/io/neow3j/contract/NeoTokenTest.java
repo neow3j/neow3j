@@ -7,9 +7,9 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
-import static io.neow3j.WireMockTestHelper.loadFile;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.test.WireMockTestHelper.loadFile;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;

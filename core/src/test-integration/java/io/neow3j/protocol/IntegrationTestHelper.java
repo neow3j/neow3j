@@ -2,10 +2,10 @@ package io.neow3j.protocol;
 
 import io.neow3j.types.Hash160;
 
-import static io.neow3j.TestProperties.committeeAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 
 public class IntegrationTestHelper {
 

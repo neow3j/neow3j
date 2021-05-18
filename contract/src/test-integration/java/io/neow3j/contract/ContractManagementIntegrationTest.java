@@ -1,6 +1,6 @@
 package io.neow3j.contract;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.contract.SmartContract.getContractHash;
@@ -11,7 +11,7 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;

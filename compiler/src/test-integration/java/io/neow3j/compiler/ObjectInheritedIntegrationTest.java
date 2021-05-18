@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.TestProperties;
+import io.neow3j.test.TestProperties;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;

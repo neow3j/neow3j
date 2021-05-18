@@ -15,9 +15,9 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.TestProperties.cryptoLibHash;
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.cryptoLibHash;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;

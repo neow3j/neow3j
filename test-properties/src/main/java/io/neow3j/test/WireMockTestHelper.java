@@ -1,4 +1,4 @@
-package io.neow3j;
+package io.neow3j.test;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.ContainsPattern;

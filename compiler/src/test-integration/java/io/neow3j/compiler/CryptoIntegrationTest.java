@@ -15,7 +15,7 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.publicKey;

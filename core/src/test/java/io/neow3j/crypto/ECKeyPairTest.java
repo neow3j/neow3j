@@ -1,7 +1,7 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountPrivateKey;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;

@@ -13,7 +13,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.TestProperties.cryptoLibHash;
+import static io.neow3j.test.TestProperties.cryptoLibHash;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;

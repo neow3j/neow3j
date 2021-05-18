@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.TestProperties.ledgerContractHash;
+import static io.neow3j.test.TestProperties.ledgerContractHash;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;

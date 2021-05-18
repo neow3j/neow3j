@@ -1,4 +1,4 @@
-package io.neow3j;
+package io.neow3j.test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

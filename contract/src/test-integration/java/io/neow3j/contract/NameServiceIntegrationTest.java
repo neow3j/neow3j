@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
-import io.neow3j.NeoTestContainer;
-import io.neow3j.TestProperties;
+import io.neow3j.test.NeoTestContainer;
+import io.neow3j.test.TestProperties;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Date;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;

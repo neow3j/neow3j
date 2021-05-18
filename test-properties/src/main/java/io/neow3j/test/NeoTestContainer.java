@@ -1,4 +1,4 @@
-package io.neow3j;
+package io.neow3j.test;
 
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
@@ -6,7 +6,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import static io.neow3j.TestProperties.neo3PrivateNetContainerImg;
+import static io.neow3j.test.TestProperties.neo3PrivateNetContainerImg;
 
 public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 

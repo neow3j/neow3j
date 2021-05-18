@@ -16,7 +16,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.TestProperties.stdLibHash;
+import static io.neow3j.test.TestProperties.stdLibHash;
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;

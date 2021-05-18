@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -28,8 +28,8 @@ import org.testcontainers.containers.ContainerState;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;

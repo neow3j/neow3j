@@ -1,16 +1,16 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForBalanceOf;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForGetBlockCount;
-import static io.neow3j.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
