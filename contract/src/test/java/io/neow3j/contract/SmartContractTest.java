@@ -1,10 +1,10 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForGetBlockCount;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.core.Is.is;
@@ -15,11 +15,14 @@ import static org.junit.Assert.assertTrue;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Account;
@@ -62,8 +65,8 @@ public class SmartContractTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neow.setNetworkMagicNumber(769);
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                new Neow3jConfig().setNetworkMagic(769));
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
     }
@@ -211,14 +214,32 @@ public class SmartContractTest {
     }
 
     @Test
+    public void callFunctionReturningBool_asInteger_zero() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnIntZero.json",
+                NEO_SCRIPT_HASH.toString(), "getZero");
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean b = sc.callFuncReturningBool("getZero");
+        assertFalse(b);
+    }
+
+    @Test
+    public void callFunctionReturningBool_asInteger_one() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnIntOne.json",
+                NEO_SCRIPT_HASH.toString(), "getOne");
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean b = sc.callFuncReturningBool("getOne");
+        assertTrue(b);
+    }
+
+    @Test
     public void callFunctionReturningNonBool() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_returnInt.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                NEO_SCRIPT_HASH.toString(), "getCandidates");
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(
                 new StringContains("but expected " + StackItemType.BOOLEAN.jsonValue()));
-        sc.callFuncReturningBool(NEP17_TOTALSUPPLY);
+        sc.callFuncReturningBool("getCandidates");
     }
 
     @Test

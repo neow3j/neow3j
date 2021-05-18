@@ -1,8 +1,8 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
+import io.neow3j.protocol.core.response.InvocationResult;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,9 +10,9 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -139,7 +139,7 @@ public class ByteStringIntegrationTest {
         }
 
         public static  String byteStringAsString(ByteString s) {
-            return s.asString();
+            return s.toString();
         }
 
         public static byte[] byteStringToByteArray(ByteString s) {

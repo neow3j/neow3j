@@ -1,13 +1,13 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.contracts.StdLib;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,9 +17,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 

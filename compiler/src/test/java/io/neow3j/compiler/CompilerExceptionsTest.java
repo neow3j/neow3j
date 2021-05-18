@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
@@ -164,16 +164,6 @@ public class CompilerExceptionsTest {
                 CompilerExceptionsTest.class.getSimpleName(),
                 "Local variables are not supported in the static constructor")));
         new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName());
-    }
-
-    // If this test fails for you, make sure that you are using Java 8's JDK and not anything
-    // higher.
-    @Test
-    public void failIfMethodOfClassMissingDebugInformationIsCalled() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList("compareTo",
-                String.class.getName(), "was not compiled with debugging information")));
-        new Compiler().compile(MethodOfClassMissingDebugInformation.class.getName());
     }
 
     @Test

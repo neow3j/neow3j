@@ -1,21 +1,25 @@
 package io.neow3j.utils;
 
 import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.protocol.Neow3j.getAddressVersion;
+import static io.neow3j.protocol.Neow3jConfig.getAddressVersion;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 
 import io.neow3j.crypto.Base58;
 import io.neow3j.crypto.exceptions.AddressFormatException;
+import io.neow3j.protocol.Neow3jConfig;
 
 public class AddressUtils {
 
     /**
-     * Checks whether the give address is valid or not.
+     * Checks whether the given string is a valid Neo address.
+     * <p>
+     * Make sure that the address version used in the address is the same as the one configured in
+     * {@link Neow3jConfig#setAddressVersion(byte)}.
      *
      * @param address The address to be checked.
-     * @return whether the address is valid or not
+     * @return whether the address is valid or not.
      */
     public static boolean isValidAddress(String address) {
         byte[] data;
@@ -58,9 +62,10 @@ public class AddressUtils {
     /**
      * Derives the Neo address from the given script hash.
      * <p>
-     * The script hash needs to be in big-endian order.
+     * Make sure that the address version configured in {@link Neow3jConfig#getAddressVersion()}
+     * matches the blockchain network you are intending the address for.
      *
-     * @param scriptHash The script hash to get the address for.
+     * @param scriptHash The script hash in big-endian order.
      * @return the address
      */
     public static String scriptHashToAddress(byte[] scriptHash) {

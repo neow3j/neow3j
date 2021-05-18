@@ -19,73 +19,73 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.model.types.NeoVMStateType;
-import io.neow3j.model.types.NodePluginType;
-import io.neow3j.model.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
-import io.neow3j.protocol.core.methods.response.ContractNef;
-import io.neow3j.protocol.core.methods.response.HighPriorityAttribute;
-import io.neow3j.protocol.core.methods.response.NeoAddress;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
-import io.neow3j.protocol.core.methods.response.NeoBlockHash;
-import io.neow3j.protocol.core.methods.response.NeoBlockHeaderCount;
-import io.neow3j.protocol.core.methods.response.NeoCloseWallet;
-import io.neow3j.protocol.core.methods.response.NeoConnectionCount;
-import io.neow3j.protocol.core.methods.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetNativeContracts;
-import io.neow3j.protocol.core.methods.response.NeoGetProof;
-import io.neow3j.protocol.core.methods.response.NeoGetStateHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetStateRoot;
-import io.neow3j.protocol.core.methods.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Transfers;
-import io.neow3j.protocol.core.methods.response.NeoGetNewAddress;
-import io.neow3j.protocol.core.methods.response.NeoGetPeers;
-import io.neow3j.protocol.core.methods.response.NeoGetRawBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetRawMemPool;
-import io.neow3j.protocol.core.methods.response.NeoGetRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetStorage;
-import io.neow3j.protocol.core.methods.response.NeoGetTransaction;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.methods.response.NeoGetNextBlockValidators;
-import io.neow3j.protocol.core.methods.response.NeoGetVersion;
-import io.neow3j.protocol.core.methods.response.NeoImportPrivKey;
-import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.NeoInvokeScript;
-import io.neow3j.protocol.core.methods.response.NeoListAddress;
-import io.neow3j.protocol.core.methods.response.NeoListPlugins;
-import io.neow3j.protocol.core.methods.response.NeoOpenWallet;
-import io.neow3j.protocol.core.methods.response.NeoSendFrom;
-import io.neow3j.protocol.core.methods.response.NeoSendMany;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.methods.response.NeoSendToAddress;
-import io.neow3j.protocol.core.methods.response.NeoSubmitBlock;
-import io.neow3j.protocol.core.methods.response.NeoValidateAddress;
-import io.neow3j.protocol.core.methods.response.NeoVerifyProof;
-import io.neow3j.protocol.core.methods.response.NeoWitness;
-import io.neow3j.protocol.core.methods.response.OracleResponseAttribute;
-import io.neow3j.protocol.core.methods.response.OracleResponseCode;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.core.methods.response.Transaction;
-import io.neow3j.protocol.core.methods.response.TransactionAttribute;
-import io.neow3j.protocol.core.methods.response.TransactionSigner;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.types.NodePluginType;
+import io.neow3j.types.StackItemType;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.HighPriorityAttribute;
+import io.neow3j.protocol.core.response.NeoAddress;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
+import io.neow3j.protocol.core.response.NeoCloseWallet;
+import io.neow3j.protocol.core.response.NeoConnectionCount;
+import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetProof;
+import io.neow3j.protocol.core.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.response.NeoGetStateRoot;
+import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
+import io.neow3j.protocol.core.response.NeoGetMemPool;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
+import io.neow3j.protocol.core.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.response.NeoGetPeers;
+import io.neow3j.protocol.core.response.NeoGetRawBlock;
+import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetStorage;
+import io.neow3j.protocol.core.response.NeoGetTransaction;
+import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.response.NeoGetWalletUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.protocol.core.response.NeoListAddress;
+import io.neow3j.protocol.core.response.NeoListPlugins;
+import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoSendFrom;
+import io.neow3j.protocol.core.response.NeoSendMany;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyProof;
+import io.neow3j.protocol.core.response.NeoWitness;
+import io.neow3j.protocol.core.response.OracleResponseAttribute;
+import io.neow3j.protocol.core.response.OracleResponseCode;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.core.response.Transaction;
+import io.neow3j.protocol.core.response.TransactionAttribute;
+import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
@@ -445,9 +445,9 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoBlockCount neoBlockCount = deserialiseResponse(NeoBlockCount.class);
-        assertThat(neoBlockCount.getBlockIndex(), is(notNullValue()));
+        assertThat(neoBlockCount.getBlockCount(), is(notNullValue()));
 
-        assertThat(neoBlockCount.getBlockIndex(), is(BigInteger.valueOf(1234)));
+        assertThat(neoBlockCount.getBlockCount(), is(BigInteger.valueOf(1234)));
     }
 
     @Test
@@ -838,6 +838,7 @@ public class ResponseTest extends ResponseTester {
                 "        \"manifest\": {\n" +
                 "            \"name\": \"LedgerContract\",\n" +
                 "            \"groups\": [],\n" +
+                "            \"features\": {},\n" +
                 "            \"supportedstandards\": [],\n" +
                 "            \"abi\": {\n" +
                 "                \"methods\": [\n" +
@@ -944,9 +945,8 @@ public class ResponseTest extends ResponseTester {
                         ), 35, ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
         ContractPermission permission = new ContractPermission("*", singletonList("*"));
-        ContractManifest contractManifest =
-                new ContractManifest("LedgerContract", emptyList(), emptyList(), contractABI,
-                        singletonList(permission), emptyList(), null);
+        ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
+                null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
         ContractState expectedEqual =
                 new ContractState(id, updateCounter, hash, nef, contractManifest, null);
         assertThat(contractState, is(expectedEqual));
@@ -1402,8 +1402,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"tcpport\": 40333,\n" +
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
-                        "        \"useragent\": \"/Neo:3.0.0-preview3-00/\",\n" +
-                        "        \"magic\": 769\n" +
+                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"network\": 769\n" +
                         "    }\n" +
                         "}"
         );
@@ -1413,8 +1413,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getTCPPort(), is(40333));
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0-preview3-00/"));
-        assertThat(getVersion.getVersion().getMagic(), is(769));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(getVersion.getVersion().getNetwork(), is(769));
     }
 
     @Test
@@ -2604,10 +2604,12 @@ public class ResponseTest extends ResponseTester {
                 "        \"version\": 0,\n" +
                 "        \"index\": 160,\n" +
                 "        \"roothash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
-                "        \"witness\": {\n" +
-                "            \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
-                "            \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
-                "        }\n" +
+                "        \"witnesses\": [\n" +
+                "            {\n" +
+                "                \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
+                "                \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
+                "            }\n" +
+                "        ]\n" +
                 "    }\n" +
                 "}"
         );
@@ -2619,10 +2621,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(stateRoot.getIndex(), is(160L));
         assertThat(stateRoot.getRootHash(),
                 is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
-        assertNotNull(stateRoot.getWitness());
-        assertThat(stateRoot.getWitness().getInvocation(),
+        assertNotNull(stateRoot.getWitnesses());
+        assertThat(stateRoot.getWitnesses(), hasSize(1));
+        assertThat(stateRoot.getWitnesses().get(0).getInvocation(),
                 is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs"));
-        assertThat(stateRoot.getWitness().getVerification(),
+        assertThat(stateRoot.getWitnesses().get(0).getVerification(),
                 is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
     }
 

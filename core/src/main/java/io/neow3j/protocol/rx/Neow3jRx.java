@@ -1,8 +1,8 @@
 package io.neow3j.protocol.rx;
 
-import io.neow3j.protocol.core.methods.response.NeoBlock;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.Transaction;
 import io.reactivex.Observable;
 
 import java.io.IOException;

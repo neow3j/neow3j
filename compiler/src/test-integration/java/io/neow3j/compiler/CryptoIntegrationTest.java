@@ -5,8 +5,8 @@ import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -15,10 +15,10 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.TestProperties.defaultAccountPublicKey;
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -40,7 +40,7 @@ public class CryptoIntegrationTest {
         // Therefore, the checkSig will return false.
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
-        io.neow3j.contract.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
+        io.neow3j.types.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
                 publicKey(pubKey), byteArray(signature));
         List<NeoApplicationLog.Execution> executions =
                 ct.getNeow3j().getApplicationLog(res).send().getApplicationLog().getExecutions();
@@ -57,7 +57,7 @@ public class CryptoIntegrationTest {
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         String signature2 =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
-        io.neow3j.contract.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
+        io.neow3j.types.Hash256 res = ct.invokeFunctionAndAwaitExecution(testName,
                 array(publicKey(pubKey1), publicKey(pubKey2)),
                 array(byteArray(signature1), byteArray(signature2)));
         List<NeoApplicationLog.Execution> executions =

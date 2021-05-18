@@ -8,7 +8,7 @@ import static org.junit.Assert.assertTrue;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
 

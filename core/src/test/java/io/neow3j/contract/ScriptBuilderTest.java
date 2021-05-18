@@ -1,10 +1,10 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.bool;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.map;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.bool;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.map;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.copyOfRange;
 import static org.hamcrest.Matchers.isOneOf;
@@ -12,14 +12,16 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
-import io.neow3j.io.TestBinaryUtils;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.serialization.TestBinaryUtils;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Numeric;
 import org.junit.Before;
 import org.junit.Test;
@@ -122,7 +124,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + key2 // public key
                 + OpCode.PUSH2.toString() // m = 2, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );
         assertArrayEquals(expected, script);
     }
@@ -136,7 +138,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
         assertArrayEquals(expected, script);
     }

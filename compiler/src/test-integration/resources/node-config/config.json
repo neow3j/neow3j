@@ -19,12 +19,12 @@
     "PluginURL": "https://github.com/neo-project/neo-modules/releases/download/v{1}/{0}.zip"
   },
   "ProtocolConfiguration": {
-    "Magic": 5195086,
+    "Network": 5195086,
     "MillisecondsPerBlock": 1000,
     "MaxTraceableBlocks": 2102400,
     "ValidatorsCount": 1,
     "StandbyCommittee": [
-      "036cfcc5d0550d0481b66f58e25067280f042b4933fc013dc4930ce2a4194c9d94"
+      "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"
     ],
     "SeedList": [
       "localhost:40333"

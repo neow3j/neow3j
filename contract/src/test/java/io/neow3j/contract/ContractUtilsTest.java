@@ -19,14 +19,15 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +74,8 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameHappyPath() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest("neowww", null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest("neowww", null, null, null, null, null, null,
+                extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is("neowww" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -81,7 +83,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameNoManifestName() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest(null, null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest(null, null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -89,7 +91,7 @@ public class ContractUtilsTest {
     @Test
     public void testGetContractManifestFilenameEmptyManifestName() {
         HashMap<String, String> extras = new HashMap<>();
-        ContractManifest m = new ContractManifest("", null, null, null, null, null, extras);
+        ContractManifest m = new ContractManifest("", null, null, null, null, null, null, extras);
         String result = getContractManifestFilename(m);
         assertThat(result, is(ContractUtils.MANIFEST_FILENAME_SUFFIX));
     }
@@ -258,6 +260,10 @@ public class ContractUtilsTest {
         ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
         String name = "neowww";
         List<ContractGroup> cgs = asList(cg1, cg2);
+        HashMap<Object, Object> features = new HashMap<>();
+        features.put("test-feature1", false);
+        features.put("test-feature2", "test");
+
         List<String> supportedStandards = asList("nothing", "blah");
 
         HashMap<String, Object> extras = new HashMap<>();
@@ -318,6 +324,7 @@ public class ContractUtilsTest {
         return new ContractManifest(
                 name,
                 cgs,
+                features,
                 supportedStandards,
                 abi,
                 contractPermissions,
@@ -344,6 +351,7 @@ public class ContractUtilsTest {
         return new ContractManifest(
                 name,
                 cgs,
+                null,
                 supportedStandards,
                 null,
                 contractPermissions,

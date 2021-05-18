@@ -1,7 +1,7 @@
 package io.neow3j.wallet.nep6;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameterType;
 
 import java.util.List;
 import java.util.Objects;

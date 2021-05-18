@@ -1,16 +1,17 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.PUSHDATA2;
+import static io.neow3j.script.OpCode.PUSHDATA1;
+import static io.neow3j.script.OpCode.PUSHDATA2;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.InvocationScript;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import java.security.InvalidAlgorithmParameterException;

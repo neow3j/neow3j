@@ -13,6 +13,7 @@
         "MaxGasInvoke": 100000,
         "MaxFee": 0.1,
         "MaxConcurrentConnections": 40,
+        "MaxIteratorResultItems": 100,
         "DisabledMethods": [ ]
       }
     ]

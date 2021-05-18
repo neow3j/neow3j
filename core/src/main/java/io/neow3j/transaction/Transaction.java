@@ -1,19 +1,18 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.IOUtils;
-import io.neow3j.io.NeoSerializable;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.IOUtils;
+import io.neow3j.serialization.NeoSerializable;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
-import io.neow3j.protocol.core.methods.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
-import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
@@ -58,7 +57,7 @@ public class Transaction extends NeoSerializable {
     private List<TransactionAttribute> attributes;
     private byte[] script;
     private List<Witness> witnesses;
-    private BigInteger blockIndexWhenSent;
+    private BigInteger blockCountWhenSent;
 
     public Transaction() {
         signers = new ArrayList<>();
@@ -145,10 +144,6 @@ public class Transaction extends NeoSerializable {
     }
 
     public void addWitness(Witness witness) {
-        if (witness.getScriptHash() == null) {
-            throw new IllegalArgumentException("The script hash of the given witness must not be "
-                    + "null.");
-        }
         this.witnesses.add(witness);
     }
 
@@ -177,7 +172,7 @@ public class Transaction extends NeoSerializable {
                     "witness, even if that witness is empty.");
         }
         String hex = Numeric.toHexStringNoPrefix(toArray());
-        blockIndexWhenSent = neow.getBlockCount().send().getBlockIndex();
+        blockCountWhenSent = neow.getBlockCount().send().getBlockCount();
         return neow.sendRawTransaction(hex).send();
     }
 
@@ -193,7 +188,7 @@ public class Transaction extends NeoSerializable {
      * @throws IllegalStateException if this transaction has not yet been sent.
      */
     public Observable<Long> track() {
-        if (blockIndexWhenSent == null) {
+        if (blockCountWhenSent == null) {
             throw new IllegalStateException("Can't subscribe before transaction has been sent.");
         }
 
@@ -202,7 +197,7 @@ public class Transaction extends NeoSerializable {
                         neoGetBlock.getBlock().getTransactions().stream()
                                 .anyMatch(tx -> tx.getHash().equals(getTxId()));
 
-        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockIndexWhenSent, true)
+        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
                 .takeUntil(pred)
                 .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
@@ -219,15 +214,14 @@ public class Transaction extends NeoSerializable {
      * @return the application log.
      */
     public NeoApplicationLog getApplicationLog() {
-        if (blockIndexWhenSent == null) {
+        if (blockCountWhenSent == null) {
             throw new IllegalStateException("Can't get the application log before transaction has" +
                     " been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {
             applicationLog = neow.getApplicationLog(getTxId()).send().getApplicationLog();
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (IOException ignore) {
         }
         return applicationLog;
     }

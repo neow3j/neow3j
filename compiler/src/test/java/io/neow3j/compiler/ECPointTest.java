@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameterType;
 
 import java.io.File;
 import java.io.IOException;

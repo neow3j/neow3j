@@ -4,7 +4,7 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.contracts.FungibleToken;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,8 +12,8 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

@@ -2,9 +2,9 @@ package io.neow3j.compiler;
 
 import static java.lang.String.format;
 
-import io.neow3j.constants.OpCode;
-import io.neow3j.constants.OperandSize;
-import io.neow3j.io.BinaryReader;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.OperandSize;
+import io.neow3j.serialization.BinaryReader;
 import io.neow3j.utils.Numeric;
 import java.io.IOException;
 

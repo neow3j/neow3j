@@ -1,8 +1,21 @@
 package io.neow3j.contract;
 
-import static io.neow3j.TestProperties.committeeAccountScriptHash;
-import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.TestProperties.defaultAccountPublicKey;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.Hash160;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
+import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -13,19 +26,6 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class Hash160Test {
 
@@ -128,7 +128,7 @@ public class Hash160Test {
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash()
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
 
         Hash160 hash = Hash160.fromPublicKey(hexStringToByteArray(key));

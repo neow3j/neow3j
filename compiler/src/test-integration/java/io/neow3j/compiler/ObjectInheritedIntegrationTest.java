@@ -1,11 +1,10 @@
 package io.neow3j.compiler;
 
-import io.neow3j.TestProperties;
+import io.neow3j.test.TestProperties;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.ExecutionEngine;
 import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -21,8 +20,8 @@ import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,11 +31,11 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.hash256;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -67,7 +66,7 @@ public class ObjectInheritedIntegrationTest {
     @Test
     public void transactionEquals() throws Throwable {
         // Add a transaction to compare.
-        io.neow3j.contract.Hash256 txHash =
+        io.neow3j.types.Hash256 txHash =
                 ct.transferGas(ct.getDefaultAccount().getScriptHash(), BigInteger.ONE);
         waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
@@ -146,10 +145,10 @@ public class ObjectInheritedIntegrationTest {
 
     @Test
     public void hash160Equals() throws Throwable {
-        io.neow3j.contract.Hash160 h1 =
-                new io.neow3j.contract.Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a");
-        io.neow3j.contract.Hash160 h2 =
-                new io.neow3j.contract.Hash160("3d255cc204f151498dcac95da244babb895e7175");
+        io.neow3j.types.Hash160 h1 =
+                new io.neow3j.types.Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a");
+        io.neow3j.types.Hash160 h2 =
+                new io.neow3j.types.Hash160("3d255cc204f151498dcac95da244babb895e7175");
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(h1), hash160(h1),
                 hash160(h2));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
@@ -164,9 +163,9 @@ public class ObjectInheritedIntegrationTest {
 
     @Test
     public void hash256Equals() throws Throwable {
-        io.neow3j.contract.Hash256 h1 = new io.neow3j.contract.Hash256(
+        io.neow3j.types.Hash256 h1 = new io.neow3j.types.Hash256(
                         "ec2b32ed87e3747e826a0abd7229cb553220fd7a7229cb553220fd7a0fd7a0fd");
-        io.neow3j.contract.Hash256 h2 = new io.neow3j.contract.Hash256(
+        io.neow3j.types.Hash256 h2 = new io.neow3j.types.Hash256(
                         "3d255cc204f151498dcac95da244babb895e7175d255cc204f151498dcac7175");
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(h1), hash256(h1),
                 hash256(h2));
@@ -242,10 +241,10 @@ public class ObjectInheritedIntegrationTest {
 
     @Test
     public void contractEquals() throws IOException {
-        io.neow3j.contract.Hash160 c1 =
-                new io.neow3j.contract.Hash160(TestProperties.gasTokenHash());
-        io.neow3j.contract.Hash160 c2 =
-                new io.neow3j.contract.Hash160(TestProperties.neoTokenHash());
+        io.neow3j.types.Hash160 c1 =
+                new io.neow3j.types.Hash160(TestProperties.gasTokenHash());
+        io.neow3j.types.Hash160 c2 =
+                new io.neow3j.types.Hash160(TestProperties.neoTokenHash());
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(c1), hash160(c2));
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
         // the comparison of Objects, which are Arrays on the neo-vm, is only by reference.
@@ -297,9 +296,9 @@ public class ObjectInheritedIntegrationTest {
             event1.fire("event1");
             event2.fire("event2", 10);
             Notification[] notifications1 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             Notification[] notifications2 =
-                    Runtime.getNotifications(ExecutionEngine.getExecutingScriptHash());
+                    Runtime.getNotifications(Runtime.getExecutingScriptHash());
             if (notifications1[0] == null || notifications1[1] == null) {
                 throw new Exception("Couldn't fetch notifications");
             }

@@ -1,6 +1,6 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 
 /**

@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
 /**
  * Represents a hash with 160 bit length that was produced by first applying SHA-256 and then

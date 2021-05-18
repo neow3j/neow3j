@@ -1,15 +1,18 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static java.util.Arrays.asList;
 
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -39,10 +42,10 @@ public class RoleManagement extends SmartContract {
     }
 
     /**
-     * Gets the designated nodes by their role and the block index.
+     * Gets the nodes that where assigned to the given role at the given block index.
      *
      * @param role       the role.
-     * @param blockIndex the block index for which the nodes are designated.
+     * @param blockIndex the block
      * @return the {@code ECPublicKeys} of the designated nodes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -66,16 +69,19 @@ public class RoleManagement extends SmartContract {
             throw new IllegalArgumentException("The block index has to be positive.");
         }
 
-        BigInteger currentBlockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        if (blockIndex.compareTo(currentBlockIndex) > 0) {
+        BigInteger currentBlockCount = neow3j.getBlockCount().send().getBlockCount();
+        if (blockIndex.compareTo(currentBlockCount) > 0) {
             throw new IllegalArgumentException("The provided block index (" + blockIndex + ") is " +
-                    "too high. The current block count is " + currentBlockIndex + ".");
+                    "too high. The current block count is " + currentBlockCount + ".");
         }
     }
 
     /**
      * Creates a transaction script to designate nodes as a {@link Role} and
      * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has
+     * to be signed by the committee members.
      *
      * @param role    the designation role.
      * @param pubKeys the public keys of the nodes that are designated.

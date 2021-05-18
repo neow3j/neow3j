@@ -67,7 +67,7 @@ allprojects { thisproject ->
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.9.0'
+    version '3.10.0'
     archivesBaseName = "${thisproject.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -161,7 +161,7 @@ subprojects {
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
     if (!project.name.startsWith(rootProject.name)
-            && !project.name.startsWith("test-properties")) {
+            && !project.name.startsWith("test-tools")) {
 
         apply plugin: 'maven-publish'
 
@@ -282,8 +282,7 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
                     // excluded from the jacoco reports
                     exclude: [
                             '**/io/neow3j/devpack/**',
-                            '**/io/neow3j/NeoTestContainer*',
-                            '**/io/neow3j/TestProperties*',
+                            '**/io/neow3j/test-tools/**',
                     ]
             )
         }))

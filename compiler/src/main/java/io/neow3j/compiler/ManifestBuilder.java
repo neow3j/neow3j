@@ -4,8 +4,8 @@ import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Optional.ofNullable;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash160;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -19,14 +19,15 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
-import io.neow3j.model.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractPermission;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.utils.ClassUtils;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -34,6 +35,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -59,8 +61,8 @@ public class ManifestBuilder {
         List<ContractPermission> permissions = buildPermissions(compUnit.getContractClass());
         List<String> trusts = buildTrusts(compUnit.getContractClass());
 
-        return new ContractManifest(name, groups, supportedStandards, abi, permissions, trusts,
-                extras);
+        return new ContractManifest(name, groups, null, supportedStandards, abi, permissions,
+                trusts, extras);
     }
 
     private static ContractABI buildABI(NeoModule neoModule) {

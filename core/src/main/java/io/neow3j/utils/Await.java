@@ -5,14 +5,14 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.notNullValue;
 
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balance;
+import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.response.NeoGetWalletBalance;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -50,6 +50,7 @@ public class Await {
      * Checks and waits until the block count (height) is greater than {@code blockCount}.
      *
      * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     * @param blockCount The block count (height) that is waited for.
      */
     public static void waitUntilBlockCountIsGreaterThan(Neow3j neow3j, BigInteger blockCount) {
         waitUntil(callableGetBlockCount(neow3j), greaterThan(blockCount));
@@ -146,7 +147,7 @@ public class Await {
         return () -> {
             try {
                 NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
-                return getBlockCount.getBlockIndex();
+                return getBlockCount.getBlockCount();
             } catch (IOException e) {
                 return BigInteger.ZERO;
             }

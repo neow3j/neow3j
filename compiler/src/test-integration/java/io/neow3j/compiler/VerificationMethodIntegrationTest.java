@@ -4,7 +4,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
+import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.Signer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -12,7 +12,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.string;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -58,7 +58,7 @@ public class VerificationMethodIntegrationTest {
 
         // default account
         static Hash160 ownerScriptHash =
-                StringLiteralHelper.addressToScriptHash("NUrPrFLETzoe7N2FLi2dqTvLwc9L2Em84K");
+                StringLiteralHelper.addressToScriptHash("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP");
 
         @OnVerification
         public static boolean verify(String s) {

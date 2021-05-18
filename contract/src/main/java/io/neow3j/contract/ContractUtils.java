@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest;
 
 import java.io.File;
 import java.io.FileInputStream;

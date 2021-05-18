@@ -3,7 +3,7 @@ package io.neow3j.crypto;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.Hash160;
+import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.ArrayUtils;

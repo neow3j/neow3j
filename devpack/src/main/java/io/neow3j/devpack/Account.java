@@ -2,8 +2,8 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Syscall;
 
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT;
-import static io.neow3j.constants.InteropServiceCode.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
+import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT;
+import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
 
 /**
  * Offers several account-related methods for use in smart contracts.

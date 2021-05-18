@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.protocol.core.methods.response.NeoGetVersion;
-import io.neow3j.protocol.core.methods.response.Transaction;
+import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.Transaction;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;

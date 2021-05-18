@@ -1,16 +1,18 @@
 package io.neow3j.contract;
 
-import static io.neow3j.TestProperties.client1AccountWIF;
-import static io.neow3j.TestProperties.client2AccountWIF;
-import static io.neow3j.TestProperties.defaultAccountWIF;
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.client1AccountWIF;
+import static io.neow3j.test.TestProperties.client2AccountWIF;
+import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static io.neow3j.wallet.Account.fromWIF;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 

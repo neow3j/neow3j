@@ -1,16 +1,12 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.FindOptions;
-import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
-import io.neow3j.model.types.NeoVMStateType;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
@@ -21,14 +17,10 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
-import java.util.Map;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.byteArrayFromString;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;

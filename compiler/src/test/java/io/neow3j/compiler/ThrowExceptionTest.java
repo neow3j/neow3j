@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;

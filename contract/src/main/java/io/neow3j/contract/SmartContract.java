@@ -1,13 +1,18 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
@@ -16,9 +21,10 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.neow3j.model.types.StackItemType.BOOLEAN;
-import static io.neow3j.model.types.StackItemType.BYTE_STRING;
-import static io.neow3j.model.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.BOOLEAN;
+import static io.neow3j.types.StackItemType.BUFFER;
+import static io.neow3j.types.StackItemType.BYTE_STRING;
+import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 
@@ -35,7 +41,7 @@ public class SmartContract {
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the smart contract's script hash.
-     * @param neow3j       the {@link Neow3j} instance to use for invocations.
+     * @param neow3j     the {@link Neow3j} instance to use for invocations.
      */
     public SmartContract(Hash160 scriptHash, Neow3j neow3j) {
         if (scriptHash == null) {
@@ -144,10 +150,14 @@ public class SmartContract {
             item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
-        if (item.getType().equals(BOOLEAN)) {
+        StackItemType type = item.getType();
+        if (type.equals(BOOLEAN) ||
+                type.equals(INTEGER) ||
+                type.equals(BYTE_STRING) ||
+                type.equals(BUFFER)) {
             return item.getBoolean();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
+        throw new UnexpectedReturnTypeException(type, BOOLEAN);
     }
 
     /**

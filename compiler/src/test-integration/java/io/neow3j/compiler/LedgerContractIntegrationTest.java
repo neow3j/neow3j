@@ -1,13 +1,13 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.contracts.LedgerContract;
-import io.neow3j.protocol.core.methods.response.NeoBlock;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.TestProperties.ledgerContractHash;
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.test.TestProperties.ledgerContractHash;
+import static io.neow3j.types.ContractParameter.hash256;
+import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -72,8 +72,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -89,8 +89,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -105,8 +105,8 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(3).getAddress(), is(ct.getCommittee().getAddress())); // sender
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
-        assertThat(tx.get(6).getInteger().intValue(),
-                greaterThanOrEqualTo(NeoConstants.MAX_VALID_UNTIL_BLOCK_INCREMENT));
+        assertThat(tx.get(6).getInteger().longValue(),
+                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 

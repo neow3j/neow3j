@@ -3,44 +3,43 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.rx.Neow3jRx;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
  * JSON-RPC Request object building factory.
  */
 public abstract class Neow3j implements Neo, Neow3jRx {
 
-    private Integer networkMagicNumber;
+    private final Neow3jConfig config;
 
-    private static Byte addressVersion = 0x35;
+    protected Neow3j(Neow3jConfig config) {
+        this.config = config;
+    }
 
     /**
-     * Construct a new Neow3j instance.
+     * Constructs a new Neow3j instance with the default configuration.
      *
      * @param neow3jService neow3j service instance - i.e. HTTP or IPC
      * @return new Neow3j instance
      */
     public static Neow3j build(Neow3jService neow3jService) {
-        return new JsonRpc2_0Neow3j(neow3jService);
+        return new JsonRpc2_0Neow3j(neow3jService, new Neow3jConfig());
     }
 
     /**
-     * Construct a new Neow3j instance.
+     * Constructs a new Neow3j instance using the given configuration.
      *
-     * @param neow3jService            neow3j service instance - i.e. HTTP or IPC
-     * @param pollingInterval          polling interval for responses from network nodes
-     * @param scheduledExecutorService executor service to use for scheduled tasks.
-     *                                 <strong>You are responsible for terminating this thread
-     *                                 pool</strong>
-     * @return new Neow3j instance
+     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
+     * @param config        The configuration to use.
+     * @return new Neow3j instance.
      */
-    public static Neow3j build(
-            Neow3jService neow3jService, long pollingInterval,
-            ScheduledExecutorService scheduledExecutorService) {
-        return new JsonRpc2_0Neow3j(neow3jService, pollingInterval, scheduledExecutorService);
+    public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
+        return new JsonRpc2_0Neow3j(neow3jService, config);
     }
 
     /**
@@ -49,52 +48,72 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     public abstract void shutdown();
 
     /**
-     * Gets the magic number of the connect Neo network.
+     * Gets the configured network magic number.
      * <p>
-     * If the magic number is not explicitly set with {@link Neow3j#setNetworkMagicNumber(int)}, it
-     * is retrieved from the connected neo-node.
+     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
+     * <p>
+     * The default value is null. Only once this method is called for the first time the value is
+     * fetched from the connected Neo node.
      *
      * @return The network's magic number.
-     * @throws IOException if an error occurs when tyring to fetch the magic number from the
-     *                     connected neo-node.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public byte[] getNetworkMagicNumber() throws IOException {
-        if (networkMagicNumber == null) {
-            networkMagicNumber = getVersion().send().getVersion().getMagic();
+        if (config.getNetworkMagic() == null) {
+            config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
         }
         byte[] array = new byte[4];
-        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicNumber);
+        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(config.getNetworkMagic());
         return array;
     }
 
     /**
-     * Sets the network magic number to the given value without consulting the connected neo-node.
-     *
-     * @param magicNumber The magic number.
-     */
-    public void setNetworkMagicNumber(int magicNumber) {
-        networkMagicNumber = magicNumber;
-    }
-
-    /**
-     * Gets the locally configured address version number to use for address creation and
-     * verification.
+     * Gets the executor service used for polling new blocks from the Neo node.
      * <p>
-     * The default address version is 53.
+     * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads
+     * as CPUs available to the JVM.
      *
-     * @return The address version.
+     * @return the configured executor service.
      */
-    public static byte getAddressVersion() {
-        return addressVersion;
+    public ScheduledExecutorService getScheduledExecutorService() {
+        return config.getScheduledExecutorService();
     }
 
     /**
-     * Sets the address version to use for address creation and verification.
+     * Gets the interval in milliseconds in which blocks are produced.
+     * <p>
+     * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
      *
-     * @param version The address version.
+     * @return the block interval in milliseconds.
      */
-    public static void setAddressVersion(byte version) {
-        addressVersion = version;
+    public int getBlockInterval() {
+        return config.getBlockInterval();
+    }
+
+    /**
+     * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new
+     * block information when observing the blockchain.
+     * <p>
+     * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
+     *
+     * @return the polling interval in milliseconds.
+     */
+    public int getPollingInterval() {
+        return config.getPollingInterval();
+    }
+
+    /**
+     * Gets the maximum time in milliseconds that can pass form the construction of a transaction
+     * until it gets included in a block. A transaction becomes invalid after this time increment
+     * is surpassed. @return the
+     * <p>
+     * Defaults to {@link Neow3jConfig#MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE} divided by the
+     * configured block interval.
+     *
+     * @return the maximum valid until block time increment.
+     */
+    public long getMaxValidUntilBlockIncrement() {
+        return config.getMaxValidUntilBlockIncrement();
     }
 
 }

@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DAASDBSTrRVy",
+    "state": "FAULT",
+    "gasconsumed": "270",
+    "exception": "Instruction out of bounds. InstructionPointer: 5, operandSize: 20, length: 9",
+    "stack": []
+  }
+}

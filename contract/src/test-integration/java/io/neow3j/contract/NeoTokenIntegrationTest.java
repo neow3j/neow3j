@@ -1,6 +1,6 @@
 package io.neow3j.contract;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
@@ -10,6 +10,7 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
 import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -17,10 +18,11 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import org.junit.BeforeClass;
@@ -28,7 +30,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -44,14 +45,15 @@ public class NeoTokenIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         neoToken = new NeoToken(neow3j);
         fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }
 
     @Test
     public void testUnclaimedGas() throws IOException {
-        long blockHeight = neow3j.getBlockCount().send().getBlockIndex().longValue();
-        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT, blockHeight);
+        long blockCount = neow3j.getBlockCount().send().getBlockCount().longValue();
+        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT, blockCount);
         assertThat(client1UnclaimedGas, greaterThanOrEqualTo(new BigInteger("100000000")));
     }
 

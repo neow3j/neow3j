@@ -9,7 +9,7 @@ import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.contracts.GasToken;
 import io.neow3j.devpack.contracts.NeoToken;
-import io.neow3j.model.types.CallFlags;
+import io.neow3j.types.CallFlags;
 import java.io.IOException;
 import java.util.List;
 import org.junit.Test;

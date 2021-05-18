@@ -1,21 +1,23 @@
 package io.neow3j.contract;
 
-import static io.neow3j.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.NeoTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -35,6 +37,7 @@ public class RoleManagementIntegrationTest {
     @BeforeClass
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        waitUntilBlockCountIsGreaterThanZero(neow3j);
         roleManagement = new RoleManagement(neow3j);
     }
 
@@ -53,9 +56,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, nextBlockIndex);
@@ -79,9 +82,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.ORACLE, nextBlockIndex);
@@ -105,9 +108,9 @@ public class RoleManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
-        BigInteger blockIndex = neow3j.getBlockCount().send().getBlockIndex();
-        waitUntilBlockCountIsGreaterThan(neow3j, blockIndex);
-        BigInteger nextBlockIndex = blockIndex.add(BigInteger.ONE);
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
 
         List<ECKeyPair.ECPublicKey> designatedByRole =
                 roleManagement.getDesignatedByRole(Role.NEO_FS_ALPHABET_NODE, nextBlockIndex);

@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
 /**
  * Represents a public key elliptic curve point. Use this class instead of plain byte arrays and

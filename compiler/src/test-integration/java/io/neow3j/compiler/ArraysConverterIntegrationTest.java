@@ -1,11 +1,11 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.devpack.events.Event1Arg;
-import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -15,13 +15,13 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.TestProperties.cryptoLibHash;
-import static io.neow3j.TestProperties.gasTokenHash;
-import static io.neow3j.TestProperties.neoTokenHash;
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.test.TestProperties.cryptoLibHash;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

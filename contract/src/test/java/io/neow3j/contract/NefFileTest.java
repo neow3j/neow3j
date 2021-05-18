@@ -10,11 +10,10 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
-import io.neow3j.model.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.utils.Numeric;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.CallFlags;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import io.neow3j.types.Hash160;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -230,7 +230,7 @@ public class NefFileTest {
         byte[] nefBytes = hexStringToByteArray(
                 "4e4546336e656f2d636f72652d76332e3000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000700fd411af77b6771cbbae9");
         ByteStringStackItem stackItem = new ByteStringStackItem(nefBytes);
-        NefFile nef = NefFile.readFromStackitem(stackItem);
+        NefFile nef = NefFile.readFromStackItem(stackItem);
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getScript(), is(hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));

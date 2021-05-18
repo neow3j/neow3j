@@ -5,7 +5,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,10 +13,10 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.TestProperties.cryptoLibHash;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.test.TestProperties.cryptoLibHash;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;

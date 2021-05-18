@@ -1,13 +1,14 @@
 package io.neow3j.transaction;
 
-import io.neow3j.constants.InteropServiceCode;
-import io.neow3j.constants.OpCode;
-import io.neow3j.contract.Hash160;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.InvocationScript;
+import io.neow3j.script.VerificationScript;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -18,9 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.SYSCALL;
+import static io.neow3j.script.OpCode.PUSH2;
+import static io.neow3j.script.OpCode.PUSHDATA1;
+import static io.neow3j.script.OpCode.SYSCALL;
 import static io.neow3j.crypto.ECKeyPair.createEcKeyPair;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.crypto.Sign.signMessage;
@@ -57,7 +58,7 @@ public class WitnessTest {
                 PUSHDATA1.toString() + "21" + // 33 bytes of public key
                 toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) + // pubKey
                 SYSCALL.toString() + // syscall to...
-                InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         assertArrayEquals(
                 hexStringToByteArray(expected),
@@ -117,7 +118,7 @@ public class WitnessTest {
                 + toHexStringNoPrefix(publicKeys.get(2).getEncoded(true)) // public key 3
                 + OpCode.PUSH3.toString() // m = 3, number of keys
                 + OpCode.SYSCALL.toString()
-                + InteropServiceCode.NEO_CRYPTO_CHECKMULTISIG.getHash();
+                + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash();
 
         // Test create from BigIntegers
         Witness script = createMultiSigWitness(signingThreshold, signatures, publicKeys);
@@ -157,7 +158,7 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + toHexStringNoPrefix(keyPair.getPublicKey().getEncoded(true)) // pubKey
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         String serializedWitness = ""
                 + "42" // VarInt 66 bytes for invocation script
@@ -189,12 +190,13 @@ public class WitnessTest {
                 + PUSHDATA1.toString() + "21" // 33 bytes of public key
                 + pk // public key
                 + SYSCALL.toString() // syscall to...
-                + InteropServiceCode.NEO_CRYPTO_CHECKSIG.getHash(); // ...signature verification
+                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash(); // ...signature verification
 
         byte[] expectedHash = sha256AndThenRipemd160(
                 hexStringToByteArray(expectedVerificationScript));
 
-        assertArrayEquals(expectedHash, script.getScriptHash().toLittleEndianArray());
+        assertArrayEquals(expectedHash, script.getVerificationScript().getScriptHash()
+                .toLittleEndianArray());
     }
 
     @Test
@@ -207,19 +209,8 @@ public class WitnessTest {
         Witness witness = new Witness(invocationScript, verificationScript);
         assertArrayEquals(
                 hexStringToByteArray("35b20010db73bf86371075ddfba4e6596f1ff35d"),
-                witness.getScriptHash().toLittleEndianArray()
+                witness.getVerificationScript().getScriptHash().toLittleEndianArray()
         );
-    }
-
-    @Test
-    public void createWithoutVerificationScript() {
-        byte[] invocationScript = hexStringToByteArray("0000");
-        Hash160 hash = new Hash160("1a70eac53f5882e40dd90f55463cce31a9f72cd4");
-        Witness witness = new Witness(invocationScript, hash);
-        // 02: two bytes of invocation script;
-        // 0000: invocation script;
-        // 00: zero bytes of verification script
-        assertEquals("02000000", toHexStringNoPrefix(witness.toArray()));
     }
 
 }

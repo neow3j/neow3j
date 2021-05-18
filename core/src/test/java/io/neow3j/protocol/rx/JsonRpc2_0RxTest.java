@@ -11,11 +11,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.Request;
-import io.neow3j.protocol.core.methods.response.NeoBlock;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
-import io.neow3j.protocol.core.methods.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 import java.math.BigInteger;
@@ -39,7 +40,9 @@ public class JsonRpc2_0RxTest {
     @Before
     public void setUp() {
         neow3jService = mock(Neow3jService.class);
-        neow3j = Neow3j.build(neow3jService, 1000, Executors.newSingleThreadScheduledExecutor());
+        neow3j = Neow3j.build(neow3jService, new Neow3jConfig()
+                .setPollingInterval(1000)
+                .setScheduledExecutorService(Executors.newSingleThreadScheduledExecutor()));
     }
 
     @Test
@@ -170,7 +173,7 @@ public class JsonRpc2_0RxTest {
 
         for (int i = 4; i < 7; i++) {
             Thread.sleep(2000);
-            BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
+            BigInteger added = neoBlockCount.getBlockCount().add(BigInteger.ONE);
             neoBlockCount.setResult(added);
             stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
         }
@@ -231,7 +234,7 @@ public class JsonRpc2_0RxTest {
 
         for (int i = 0; i < 4; i++) {
             Thread.sleep(2000);
-            BigInteger added = neoBlockCount.getBlockIndex().add(BigInteger.ONE);
+            BigInteger added = neoBlockCount.getBlockCount().add(BigInteger.ONE);
             neoBlockCount.setResult(added);
             stubbingNeoBlockCount = stubbingNeoBlockCount.thenReturn(neoBlockCount);
         }

@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import io.neow3j.types.Hash160;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

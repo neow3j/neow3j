@@ -1,10 +1,10 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForCall;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
@@ -16,9 +16,12 @@ import static org.junit.Assert.assertThat;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 
@@ -46,8 +49,8 @@ public class PolicyContractTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockRule.port();
         WireMock.configureFor(port);
-        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
-        neow3j.setNetworkMagicNumber(769);
+        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                new Neow3jConfig().setNetworkMagic(769));
         policyContract = new PolicyContract(neow3j);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");

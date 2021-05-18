@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigDecimal;

@@ -2,11 +2,10 @@ package io.neow3j.compiler;
 
 import static java.lang.String.format;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.annotations.MethodSignature;
-import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.annotations.OnVerification;
+
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
