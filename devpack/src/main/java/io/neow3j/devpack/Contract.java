@@ -77,7 +77,6 @@ public class Contract {
     @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
 
-
     /**
      * Compares this contract to the given object. The comparison happens by reference only. I.e.,
      * if you retrieve the same contract twice, e.g., with

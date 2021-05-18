@@ -48,6 +48,9 @@ public class ContractManagement extends SmartContract {
     /**
      * Creates a transaction script to set the minimum deployment fee and initializes a {@link
      * TransactionBuilder} based on this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has
+     * to be signed by the committee members.
      *
      * @param minimumFee the minimum deployment fee.
      * @return a transaction builder.
@@ -56,12 +59,31 @@ public class ContractManagement extends SmartContract {
         return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, integer(minimumFee));
     }
 
+    /**
+     * Creates a script and a containing transaction builder for a transaction that deploys the
+     * contract with the given NEF and manifest.
+     *
+     * @param nef      The NEF file.
+     * @param manifest The manifest.
+     * @return a transaction builder containing the deployment script.
+     * @throws JsonProcessingException If there is a problem serializing the manifest.
+     */
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
             throws JsonProcessingException {
 
         return deploy(nef, manifest, null);
     }
 
+    /**
+     * Creates a script and a containing transaction builder for a transaction that deploys the
+     * contract with the given NEF and manifest.
+     *
+     * @param nef      The NEF file.
+     * @param manifest The manifest.
+     * @param data     Data to pass to the deployed contract's {@code _deploy} method.
+     * @return a transaction builder containing the deployment script.
+     * @throws JsonProcessingException If there is a problem serializing the manifest.
+     */
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest, ContractParameter data)
             throws JsonProcessingException {
         if (nef == null) {

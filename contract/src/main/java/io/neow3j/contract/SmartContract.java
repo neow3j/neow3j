@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import io.neow3j.constants.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.model.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState.ContractState;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.model.types.StackItemType.BOOLEAN;
+import static io.neow3j.model.types.StackItemType.BUFFER;
 import static io.neow3j.model.types.StackItemType.BYTE_STRING;
 import static io.neow3j.model.types.StackItemType.INTEGER;
 import static io.neow3j.utils.Numeric.reverseHexString;
@@ -35,7 +37,7 @@ public class SmartContract {
      * hash. Uses the given {@link Neow3j} instance for all invocations.
      *
      * @param scriptHash the smart contract's script hash.
-     * @param neow3j       the {@link Neow3j} instance to use for invocations.
+     * @param neow3j     the {@link Neow3j} instance to use for invocations.
      */
     public SmartContract(Hash160 scriptHash, Neow3j neow3j) {
         if (scriptHash == null) {
@@ -144,10 +146,14 @@ public class SmartContract {
             item = callInvokeFunction(function, asList(params))
                     .getInvocationResult().getStack().get(0);
         }
-        if (item.getType().equals(BOOLEAN)) {
+        StackItemType type = item.getType();
+        if (type.equals(BOOLEAN) ||
+                type.equals(INTEGER) ||
+                type.equals(BYTE_STRING) ||
+                type.equals(BUFFER)) {
             return item.getBoolean();
         }
-        throw new UnexpectedReturnTypeException(item.getType(), BOOLEAN);
+        throw new UnexpectedReturnTypeException(type, BOOLEAN);
     }
 
     /**

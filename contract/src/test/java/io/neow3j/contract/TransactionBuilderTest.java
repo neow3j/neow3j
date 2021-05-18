@@ -453,7 +453,7 @@ public class TransactionBuilderTest {
         // The first signing account for the multi-sig is not in the wallet.
         // The sign method should execute normally and ignore the absence.
         b.sign();
-        assertThat(b.transaction.getWitnesses().get(0).getScriptHash(),
+        assertThat(b.transaction.getWitnesses().get(0).getVerificationScript().getScriptHash(),
                 is(dummyMultiSig.getScriptHash()));
         assertThat(toHexStringNoPrefix(b.transaction.getScript()),
                 is(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL));

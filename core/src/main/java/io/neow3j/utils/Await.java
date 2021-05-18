@@ -50,6 +50,7 @@ public class Await {
      * Checks and waits until the block count (height) is greater than {@code blockCount}.
      *
      * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     * @param blockCount The block count (height) that is waited for.
      */
     public static void waitUntilBlockCountIsGreaterThan(Neow3j neow3j, BigInteger blockCount) {
         waitUntil(callableGetBlockCount(neow3j), greaterThan(blockCount));
@@ -146,7 +147,7 @@ public class Await {
         return () -> {
             try {
                 NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
-                return getBlockCount.getBlockIndex();
+                return getBlockCount.getBlockCount();
             } catch (IOException e) {
                 return BigInteger.ZERO;
             }

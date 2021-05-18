@@ -445,9 +445,9 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoBlockCount neoBlockCount = deserialiseResponse(NeoBlockCount.class);
-        assertThat(neoBlockCount.getBlockIndex(), is(notNullValue()));
+        assertThat(neoBlockCount.getBlockCount(), is(notNullValue()));
 
-        assertThat(neoBlockCount.getBlockIndex(), is(BigInteger.valueOf(1234)));
+        assertThat(neoBlockCount.getBlockCount(), is(BigInteger.valueOf(1234)));
     }
 
     @Test

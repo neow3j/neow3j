@@ -8,6 +8,7 @@ import io.neow3j.contract.Hash160;
 import io.neow3j.contract.Hash256;
 
 import io.neow3j.model.types.NeoVMStateType;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -72,26 +73,61 @@ public class NeoApplicationLog {
             this.notifications = notifications;
         }
 
+        /**
+         * Gets the trigger type with which the invocation was made. For normal contract
+         * invocations the trigger type is "Application" but a contract can also be invoked for
+         * verification in which case the trigger type is "Verification".
+         *
+         * @return the trigger.
+         */
         public String getTrigger() {
             return trigger;
         }
 
+        /**
+         * Gets the state in which the NeoVM exited this invocation/execution, e.g., FALSE if
+         * something went wrong.
+         *
+         * @return the NeoVM exit state of the invocation.
+         */
         public NeoVMStateType getState() {
             return state;
         }
 
+        /**
+         * Gets the exception thrown by the invocation if any.
+         *
+         * @return The exception or null if no exception was thrown.
+         */
         public String getException() {
             return exception;
         }
 
+        /**
+         * Gets the amount of GAS consumed by the execution.
+         *
+         * @return the amount of GAS.
+         */
         public String getGasConsumed() {
             return gasConsumed;
         }
 
+        /**
+         * Gets the return stack of the invocation, i.e., the values that were returned by the
+         * NeoVM at the end of the invocation. Usually this stack contains one single stack item
+         * at index 0;
+         *
+         * @return the return stack.
+         */
         public List<StackItem> getStack() {
             return stack;
         }
 
+        /**
+         * Gets the notifications fired by this invocation.
+         *
+         * @return the notifications.
+         */
         public List<Notification> getNotifications() {
             return notifications;
         }
@@ -117,14 +153,34 @@ public class NeoApplicationLog {
                 this.state = state;
             }
 
+            /**
+             * Gets the script hash of the contract that fired this notification.
+             *
+             * @return the script hash.
+             */
             public Hash160 getContract() {
                 return contract;
             }
 
+            /**
+             * Gets the event name as described in the manifest of the contract that
+             * fired the notification.
+             * <p>
+             * The words event and notification can be used synonymously here.
+             *
+             * @return The event name.
+             */
             public String getEventName() {
                 return eventName;
             }
 
+            /**
+             * Gets the state attached to this notification. It is up to the developer to know
+             * what to in the state and it needs knowledge about the contract that triggered the
+             * notification.
+             *
+             * @return the notification's state as a NeoVM stack item.
+             */
             public StackItem getState() {
                 return state;
             }

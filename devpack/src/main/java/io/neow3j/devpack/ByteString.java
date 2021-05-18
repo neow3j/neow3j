@@ -60,8 +60,9 @@ public class ByteString {
      *
      * @return the string.
      */
+    @Override
     @Instruction()
-    public native String asString();
+    public native String toString();
 
     /**
      * Converts this {@code ByteString} to a byte array. This incurs the GAS cost of converting

@@ -18,26 +18,27 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * An invocation script used in the script/witness part of a transaction.
- * It can hold an arbitrary byte array.
+ * An invocation script is part of a witness and is simply a sequence of neo-vm instructions. The
+ * invocation script usually is the input to the verification script. In most cases it will
+ * contain a signature that is checked in the verification script.
  */
 public class InvocationScript extends NeoSerializable {
 
     private byte[] script;
 
+    /**
+     * Constructs an empty invocation script.
+     */
     public InvocationScript() {
         script = new byte[0];
     }
 
     /**
      * Creates an invocation script with the given script.
-     * If the script represents a signature make sure that it starts with either of the following
-     * opcodes, dynamically: {@link OpCode#PUSHDATA1},
-     * {@link OpCode#PUSHDATA2}, and
-     * {@link OpCode#PUSHDATA4}. The opcode is not added automatically.
-     * It's recommended to use {@link InvocationScript#fromSignature(Sign.SignatureData)} or {@link
-     * InvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need
-     * a signature invocation script.
+     * <p>
+     * It is recommended to use {@link InvocationScript#fromSignature(Sign.SignatureData)} or
+     * {@link InvocationScript#fromMessageAndKeyPair(byte[], ECKeyPair)} when you need a signature
+     * invocation script.
      *
      * @param script The script in an array of bytes.
      */
@@ -57,11 +58,11 @@ public class InvocationScript extends NeoSerializable {
     }
 
     /**
-     * Creates an invocation script constructed from the signature of the given message, signed with
-     * the given key pair.
+     * Creates an invocation script from the signature of the given message signed with the given
+     * key pair.
      *
      * @param message Message to sign.
-     * @param keyPair Key pair to use for signing
+     * @param keyPair Key pair to use for signing.
      * @return the constructed invocation script.
      */
     public static InvocationScript fromMessageAndKeyPair(byte[] message, ECKeyPair keyPair) {
@@ -69,12 +70,21 @@ public class InvocationScript extends NeoSerializable {
         return fromSignature(signature);
     }
 
+    /**
+     * Constructs an invocation script from the given signatures.
+     * @param sigs The signatures.
+     * @return the invocation script.
+     */
     public static InvocationScript fromSignatures(List<SignatureData> sigs) {
         ScriptBuilder builder = new ScriptBuilder();
         sigs.forEach(sig -> builder.pushData(sig.getConcatenated()));
         return new InvocationScript(builder.toArray());
     }
 
+    /**
+     * Gets this invocation script as a byte array.
+     * @return this invocation script as a byte array.
+     */
     public byte[] getScript() {
         return script;
     }

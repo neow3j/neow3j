@@ -15,7 +15,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 /**
  * neow3j reactive API implementation.
@@ -151,7 +150,7 @@ public class JsonRpc2_0Rx {
     }
 
     private BigInteger getLatestBlockNumber() throws IOException {
-        return neow3j.getBlockCount().send().getBlockIndex().subtract(BigInteger.ONE);
+        return neow3j.getBlockCount().send().getBlockCount().subtract(BigInteger.ONE);
     }
 
 }

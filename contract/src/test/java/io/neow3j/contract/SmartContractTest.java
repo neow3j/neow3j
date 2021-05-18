@@ -212,14 +212,32 @@ public class SmartContractTest {
     }
 
     @Test
+    public void callFunctionReturningBool_asInteger_zero() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnIntZero.json",
+                NEO_SCRIPT_HASH.toString(), "getZero");
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean b = sc.callFuncReturningBool("getZero");
+        assertFalse(b);
+    }
+
+    @Test
+    public void callFunctionReturningBool_asInteger_one() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnIntOne.json",
+                NEO_SCRIPT_HASH.toString(), "getOne");
+        SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
+        boolean b = sc.callFuncReturningBool("getOne");
+        assertTrue(b);
+    }
+
+    @Test
     public void callFunctionReturningNonBool() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_returnInt.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                NEO_SCRIPT_HASH.toString(), "getCandidates");
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         expectedException.expect(UnexpectedReturnTypeException.class);
         expectedException.expectMessage(
                 new StringContains("but expected " + StackItemType.BOOLEAN.jsonValue()));
-        sc.callFuncReturningBool(NEP17_TOTALSUPPLY);
+        sc.callFuncReturningBool("getCandidates");
     }
 
     @Test

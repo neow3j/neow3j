@@ -100,7 +100,7 @@ public class Runtime {
      * <p>
      * The container of an contract-invoking script is usually a {@link Transaction}. In that case,
      * the return value can be cast to a {@code Transaction}. E.g.:
-     * {@code Transaction tx = (Transaction) ExecutionEngine.getScriptContainer();}
+     * {@code Transaction tx = (Transaction) Runtime.getScriptContainer();}
      *
      * @return the script container.
      */
@@ -117,6 +117,10 @@ public class Runtime {
 
     /**
      * Gets the script hash of the caller of the contract.
+     * <p>
+     * If the contact was invoked directly by a transaction, then this returns the hash of that
+     * transaction's script. If the contract is called by another contact as part of an invocation
+     * chain, then this returns the script hash of the calling contract.
      *
      * @return the caller's script hash.
      */
@@ -125,7 +129,10 @@ public class Runtime {
 
     /**
      * Gets the script hash of the entry context, i.e., the context at the beginning of the
-     * contract invocation chain).
+     * contract invocation chain.
+     * <p>
+     * In case the invocation was induced by a transaction, the hash of that transaction's script is
+     * the entry script hash.
      *
      * @return the script hash.
      */

@@ -29,7 +29,6 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
@@ -52,8 +51,8 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void testUnclaimedGas() throws IOException {
-        long blockHeight = neow3j.getBlockCount().send().getBlockIndex().longValue();
-        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT, blockHeight);
+        long blockCount = neow3j.getBlockCount().send().getBlockCount().longValue();
+        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT, blockCount);
         assertThat(client1UnclaimedGas, greaterThanOrEqualTo(new BigInteger("100000000")));
     }
 

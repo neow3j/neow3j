@@ -39,6 +39,10 @@ public class Neow3jConfig {
     }
 
     /**
+     * Gets the interval in milliseconds in which {@code Neow3j} polls the neo-node for new block
+     * information when observing the blockchain.
+     *
+     * @return The polling interval in milliseconds.
      * @see Neow3j#getPollingInterval()
      */
     public int getPollingInterval() {
@@ -58,6 +62,9 @@ public class Neow3jConfig {
     }
 
     /**
+     * Gets the executor service used for polling new blocks from the neo-node.
+     *
+     * @return The executor service.
      * @see Neow3j#getScheduledExecutorService()
      */
     public ScheduledExecutorService getScheduledExecutorService() {
@@ -123,6 +130,7 @@ public class Neow3jConfig {
      * The magic number is an ingredient, e.g., when generating the hash of a transaction.
      * This should match the configuration of the neo-node you connect to.
      *
+     * @param magic The network magic number.
      * @return this.
      */
     public Neow3jConfig setNetworkMagic(int magic) {
@@ -131,6 +139,9 @@ public class Neow3jConfig {
     }
 
     /**
+     * Gets the block interval in milliseconds.
+     *
+     * @return The block interval in milliseconds.
      * @see Neow3j#getScheduledExecutorService()
      */
     public int getBlockInterval() {
@@ -151,6 +162,11 @@ public class Neow3jConfig {
     }
 
     /**
+     * Gets the maximum time in milliseconds that can pass from the construction of a transaction
+     * until it gets included in a block. A transaction becomes invalid after this time increment
+     * is surpassed.
+     *
+     * @return The maximum valid until block time increment.
      * @see Neow3j#getMaxValidUntilBlockIncrement()
      */
     public long getMaxValidUntilBlockIncrement() {
@@ -158,7 +174,7 @@ public class Neow3jConfig {
     }
 
     /**
-     * Sets the maximum time in milliseconds that can pass form the construction of a transaction
+     * Sets the maximum time in milliseconds that can pass from the construction of a transaction
      * until it gets included in a block. A transaction becomes invalid after this time increment
      * is surpassed.
      * <p>
