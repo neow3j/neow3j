@@ -4,7 +4,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.devpack.annotations.Safe;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;
 import java.util.List;
 import org.junit.Test;

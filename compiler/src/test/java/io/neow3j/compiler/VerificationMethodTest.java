@@ -10,7 +10,7 @@ import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;

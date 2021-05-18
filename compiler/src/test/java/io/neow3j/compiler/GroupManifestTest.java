@@ -7,7 +7,7 @@ import static org.hamcrest.core.Is.is;
 
 import io.neow3j.devpack.annotations.Group;
 import io.neow3j.devpack.annotations.Group.Groups;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractGroup;
+import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import java.io.IOException;
 import java.util.List;
 import org.hamcrest.text.StringContainsInOrder;

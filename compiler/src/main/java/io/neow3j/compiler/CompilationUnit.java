@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
 import io.neow3j.contract.NefFile;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest;
 
 import java.io.File;
 import java.util.ArrayList;

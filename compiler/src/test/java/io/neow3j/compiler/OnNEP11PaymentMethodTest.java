@@ -9,7 +9,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.types.ContractParameterType;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;

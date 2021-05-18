@@ -5,7 +5,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.types.NeoVMStateType;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;

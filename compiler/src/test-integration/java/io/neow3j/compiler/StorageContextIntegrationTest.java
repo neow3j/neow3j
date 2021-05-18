@@ -6,7 +6,7 @@ import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.types.NeoVMStateType;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;

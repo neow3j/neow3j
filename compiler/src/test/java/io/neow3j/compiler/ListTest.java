@@ -11,8 +11,8 @@ import io.neow3j.devpack.List;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 
 import java.io.File;
 import java.io.IOException;

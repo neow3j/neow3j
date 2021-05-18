@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.protocol.core.methods.response.InvocationResult;
+import io.neow3j.protocol.core.response.InvocationResult;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

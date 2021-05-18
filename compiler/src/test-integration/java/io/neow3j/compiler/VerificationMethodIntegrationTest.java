@@ -4,7 +4,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.protocol.core.methods.response.NeoInvokeContractVerify;
+import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.Signer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

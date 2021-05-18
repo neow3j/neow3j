@@ -4,7 +4,7 @@ import io.neow3j.NeoTestContainer;
 import io.neow3j.TestProperties;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
-import io.neow3j.protocol.core.methods.response.NameState;
+import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;

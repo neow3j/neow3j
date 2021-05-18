@@ -1,4 +1,4 @@
-package io.neow3j.protocol.core.methods.response;
+package io.neow3j.protocol.core.stackitem;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Helper;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
 import org.junit.Assert;
 import org.junit.ClassRule;

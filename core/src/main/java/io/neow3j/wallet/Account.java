@@ -13,7 +13,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;

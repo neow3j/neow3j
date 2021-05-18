@@ -2,9 +2,9 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
-import io.neow3j.protocol.core.methods.response.StackItem;
-import io.neow3j.protocol.core.methods.response.NFTokenState;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.core.response.NFTokenState;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;

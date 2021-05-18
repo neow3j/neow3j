@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.ResponseTester;
-import io.neow3j.protocol.core.methods.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;

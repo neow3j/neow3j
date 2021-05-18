@@ -12,7 +12,7 @@ import io.neow3j.types.Hash256;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
-import io.neow3j.protocol.core.methods.response.TransactionSendToken;
+import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
 
 import java.math.BigInteger;

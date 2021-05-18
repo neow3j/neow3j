@@ -4,7 +4,7 @@ import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
 
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
-import io.neow3j.protocol.core.methods.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.utils.ClassUtils;
 import java.util.List;
 import java.util.Optional;

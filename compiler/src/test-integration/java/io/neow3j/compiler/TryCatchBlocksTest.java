@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.NeoVMStateType;
 import org.junit.ClassRule;
 import org.junit.Test;

@@ -1,5 +1,6 @@
 package io.neow3j.contract.exceptions;
 
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.StackItemType;
 
 import java.util.stream.Collectors;
@@ -7,7 +8,7 @@ import java.util.stream.Stream;
 
 /**
  * Is thrown when the attempt to interpret a
- * {@link io.neow3j.protocol.core.methods.response.StackItem}}
+ * {@link StackItem}}
  * fails because the item was not of an expected type. If this exception occurs it means that either
  * the called contract did not fulfill the an expected standard or the caller expected wrong return
  * types.

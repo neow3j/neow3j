@@ -17,7 +17,7 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
 

@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.contracts.NeoToken;
-import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;

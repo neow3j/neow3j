@@ -1,4 +1,4 @@
-description 'test properties for neow3j tests'
+description 'test properties and helpers for neow3j tests'
 
 dependencies {
     implementation "org.testcontainers:testcontainers:$testcontainersVersion",

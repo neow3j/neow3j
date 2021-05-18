@@ -4,7 +4,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.ContractTestHelper.setUpWireMockForCall;
+import static io.neow3j.WireMockTestHelper.setUpWireMockForCall;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;

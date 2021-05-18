@@ -1,4 +1,4 @@
-package io.neow3j.protocol.core.methods.response;
+package io.neow3j.protocol.core.stackitem;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.types.Hash160;

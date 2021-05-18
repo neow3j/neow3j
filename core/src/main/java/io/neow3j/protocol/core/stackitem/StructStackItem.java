@@ -1,4 +1,4 @@
-package io.neow3j.protocol.core.methods.response;
+package io.neow3j.protocol.core.stackitem;
 
 import io.neow3j.types.StackItemType;
 

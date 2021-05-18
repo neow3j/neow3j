@@ -8,11 +8,11 @@ import static org.hamcrest.Matchers.notNullValue;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.methods.response.NeoBlockCount;
-import io.neow3j.protocol.core.methods.response.NeoGetContractState;
-import io.neow3j.protocol.core.methods.response.NeoGetNep17Balances.Nep17Balance;
-import io.neow3j.protocol.core.methods.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.methods.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balance;
+import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.response.NeoGetWalletBalance;
 
 import java.io.IOException;
 import java.math.BigDecimal;

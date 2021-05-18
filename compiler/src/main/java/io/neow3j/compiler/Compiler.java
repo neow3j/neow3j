@@ -27,7 +27,7 @@ import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.EventInterface;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.methods.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;

@@ -13,7 +13,7 @@ import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.CallFlags;
-import io.neow3j.protocol.core.methods.response.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 
 import java.io.File;
 import java.io.IOException;
