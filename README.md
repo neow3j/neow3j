@@ -17,13 +17,14 @@ developed by the community and maintained by [AxLabs](https://axlabs.com).
 
 **Visit [neow3j.io](https://neow3j.io) for more information and technical documentation.**
 
-# Getting started
+# Quickstart
+
+Neow3j is composed of an **SDK** for dApp development and a **devpack** for smart contract
+development. The following sections describe how to get started with them! :rocket:
 
 ## SDK
 
-To make use of all neow3j SDK features, add `io.neow3j:contract` project to your dependencies.
-Neow3j is split into tow modules, so you can also depend on just the core functionality by adding
-`io.neow3j.core` to your project.
+To make use of all neow3j SDK features, add `io.neow3j:contract` to your dependencies.
 
 __Gradle__
 
@@ -44,7 +45,7 @@ __Maven__
 Releases are available for Neo Legacy and Neo N3. The example above shows the newest release of neow3j for
 Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
 
-## Smart Contract Development
+## Devpack
 
 For smart contract development you require the `io.neow3j:devpack`. It provides all the Neo-related
 utilities that are needed in a smart contracts. If you want to play around with the devpack add the
@@ -69,8 +70,6 @@ __Maven__
 > **Note:** The devpack and compiler are only available for Neo N3. Thus, Java cannot be used to
 compile smart contracts that are compatible with Neo Legacy.
 
-For help on how to compile a smart contract, check out the documentation about the neow3j compiler on [neow3j.io](https://neow3j.io/#/smart_contract_development/compilation?id=compilation).
-
 ## Donate :moneybag:
 
 Help the development of neow3j by donating to the following addresses:
@@ -85,6 +84,4 @@ Help the development of neow3j by donating to the following addresses:
 ## Thanks and Credits :pray:
 
 * [NEO Foundation](https://neo.org/contributors) & [NEO Global Development (NGD)](https://neo.org/contributors)
-* This project was strongly based on [web3j](https://web3j.io),
-a library originally developed by [Conor Svensson](http://conorsvensson.com), latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254).
-We are really thankful for it. :smiley:
+* This project was strongly based on [web3j](https://web3j.io) latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254). We are really thankful for it. :smiley:
