@@ -1,6 +1,6 @@
 package io.neow3j.contract.exceptions;
 
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;

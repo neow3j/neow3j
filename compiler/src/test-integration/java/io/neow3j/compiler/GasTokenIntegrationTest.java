@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Runtime;

@@ -1,8 +1,8 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.protocol.core.methods.response.NeoBlockCount;
 import io.neow3j.protocol.core.methods.response.NeoBlockHash;
 import io.neow3j.protocol.core.methods.response.NeoCalculateNetworkFee;

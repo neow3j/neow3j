@@ -16,6 +16,7 @@ import static org.junit.Assert.assertThat;
 import io.neow3j.NeoTestContainer;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;

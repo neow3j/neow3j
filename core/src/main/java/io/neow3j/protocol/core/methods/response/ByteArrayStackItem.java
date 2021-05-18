@@ -1,8 +1,8 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.contract.Hash160;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;

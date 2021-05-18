@@ -1,13 +1,13 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.IOUtils;
-import io.neow3j.io.NeoSerializable;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.IOUtils;
+import io.neow3j.serialization.NeoSerializable;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetBlock;

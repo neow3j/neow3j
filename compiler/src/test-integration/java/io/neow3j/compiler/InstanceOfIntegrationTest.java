@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.InteropInterface;
@@ -19,8 +19,8 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.HashMap;
 
-import static io.neow3j.contract.ContractParameter.bool;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.bool;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;

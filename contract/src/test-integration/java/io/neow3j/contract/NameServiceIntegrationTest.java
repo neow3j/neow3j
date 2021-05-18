@@ -7,6 +7,8 @@ import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.methods.response.NameState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 import org.junit.BeforeClass;
@@ -18,7 +20,7 @@ import java.math.BigInteger;
 import java.util.Date;
 
 import static io.neow3j.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;

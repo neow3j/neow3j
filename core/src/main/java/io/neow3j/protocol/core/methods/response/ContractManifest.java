@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
 
 import java.util.ArrayList;
 import java.util.HashMap;

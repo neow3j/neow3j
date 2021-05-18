@@ -4,7 +4,7 @@ import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 
 public class StackManipulationConverter implements Converter {

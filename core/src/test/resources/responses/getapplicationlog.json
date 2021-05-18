@@ -1,0 +1,44 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "txid": "0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1",
+    "executions": [
+      {
+        "trigger": "Application",
+        "vmstate": "HALT",
+        "exception": null,
+        "gasconsumed": "9007990",
+        "stack": [
+          {
+            "type": "Boolean",
+            "value": true
+          }
+        ],
+        "notifications": [
+          {
+            "contract": "0x70e2301955bf1e74cbb31d18c2f96972abadb328",
+            "eventname": "Transfer",
+            "state": {
+              "type": "Array",
+              "value": [
+                {
+                  "type": "ByteString",
+                  "value": "CJjqIZc3j2I6dnCXRFREhXbQrq8="
+                },
+                {
+                  "type": "ByteString",
+                  "value": "lBNDI5IT+g52XxAnznQvSNt3mpY="
+                },
+                {
+                  "type": "Integer",
+                  "value": "20000000000000"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

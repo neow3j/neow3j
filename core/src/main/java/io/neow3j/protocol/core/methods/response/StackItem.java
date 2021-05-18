@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 
 import java.math.BigInteger;

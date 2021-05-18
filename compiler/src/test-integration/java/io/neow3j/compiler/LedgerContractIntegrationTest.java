@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -21,8 +20,8 @@ import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.TestProperties.ledgerContractHash;
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.hash256;
+import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;

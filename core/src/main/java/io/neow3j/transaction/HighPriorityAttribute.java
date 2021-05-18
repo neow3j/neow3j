@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
 
 /**
  * A high priority attribute can be used by committee members to prioritize a

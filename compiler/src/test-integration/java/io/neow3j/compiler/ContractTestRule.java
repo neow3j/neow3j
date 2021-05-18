@@ -2,12 +2,12 @@ package io.neow3j.compiler;
 
 import io.neow3j.NeoTestContainer;
 import io.neow3j.contract.ContractManagement;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
-import io.neow3j.model.types.NeoVMStateType;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog;
 import io.neow3j.protocol.core.methods.response.NeoGetApplicationLog;
@@ -26,7 +26,6 @@ import org.junit.runners.model.Statement;
 import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static io.neow3j.TestProperties.defaultAccountWIF;

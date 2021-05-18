@@ -1,6 +1,6 @@
 package io.neow3j.protocol;
 
-import io.neow3j.contract.Hash160;
+import io.neow3j.types.Hash160;
 
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountAddress;

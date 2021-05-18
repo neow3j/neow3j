@@ -1,16 +1,16 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_DELETE;
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_FIND;
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_GET;
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_GETCONTEXT;
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_GETREADONLYCONTEXT;
-import static io.neow3j.constants.InteropService.SYSTEM_STORAGE_PUT;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_DELETE;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_FIND;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GET;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GETCONTEXT;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GETREADONLYCONTEXT;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_PUT;
 
 /**
  * Provides a set of methods to insert, query, and delete data in the persistent storage of smart

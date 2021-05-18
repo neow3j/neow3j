@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 
 import java.util.Arrays;

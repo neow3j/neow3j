@@ -1,7 +1,7 @@
 package io.neow3j.utils;
 
-import io.neow3j.exceptions.MessageDecodingException;
-import io.neow3j.exceptions.MessageEncodingException;
+import io.neow3j.utils.exceptions.MessageDecodingException;
+import io.neow3j.utils.exceptions.MessageEncodingException;
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -1,13 +1,14 @@
 package io.neow3j.transaction;
 
-import io.neow3j.constants.InteropService;
-import io.neow3j.constants.OpCode;
-import io.neow3j.contract.Hash160;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.InvocationScript;
+import io.neow3j.script.VerificationScript;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -18,9 +19,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.neow3j.constants.OpCode.PUSH2;
-import static io.neow3j.constants.OpCode.PUSHDATA1;
-import static io.neow3j.constants.OpCode.SYSCALL;
+import static io.neow3j.script.OpCode.PUSH2;
+import static io.neow3j.script.OpCode.PUSHDATA1;
+import static io.neow3j.script.OpCode.SYSCALL;
 import static io.neow3j.crypto.ECKeyPair.createEcKeyPair;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.crypto.Sign.signMessage;

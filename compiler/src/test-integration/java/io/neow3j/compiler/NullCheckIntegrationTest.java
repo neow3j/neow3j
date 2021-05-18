@@ -10,7 +10,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.contract.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.integer;
 import static org.junit.Assert.assertTrue;
 
 public class NullCheckIntegrationTest {

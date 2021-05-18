@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.Iterator.Struct;
-import io.neow3j.contract.ContractParameter;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.FindOptions;
 import io.neow3j.devpack.Iterator;
@@ -20,10 +20,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.byteArrayFromString;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.string;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;

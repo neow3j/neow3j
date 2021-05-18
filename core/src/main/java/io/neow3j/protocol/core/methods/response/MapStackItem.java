@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
 import java.io.IOException;
 import java.util.HashMap;

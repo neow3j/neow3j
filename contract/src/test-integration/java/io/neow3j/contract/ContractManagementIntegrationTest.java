@@ -17,6 +17,8 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.methods.response.ContractManifest;
 import io.neow3j.protocol.core.methods.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;

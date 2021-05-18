@@ -1,10 +1,9 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.ContractTestHelper.setUpWireMockForInvokeFunction;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
@@ -13,10 +12,12 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.methods.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
 

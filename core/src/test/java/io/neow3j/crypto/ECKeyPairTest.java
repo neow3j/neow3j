@@ -7,11 +7,10 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.TestProperties;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
 import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECPoint;

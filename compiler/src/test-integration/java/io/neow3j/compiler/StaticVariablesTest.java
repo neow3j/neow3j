@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;

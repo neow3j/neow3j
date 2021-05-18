@@ -1,8 +1,8 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static java.util.Arrays.asList;
 
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -10,6 +10,9 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.methods.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.methods.response.StackItem;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;

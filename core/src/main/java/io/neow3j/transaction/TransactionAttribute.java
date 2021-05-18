@@ -1,9 +1,9 @@
 package io.neow3j.transaction;
 
-import io.neow3j.io.BinaryReader;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializable;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.NeoSerializable;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import java.io.IOException;
 import java.util.Objects;
 

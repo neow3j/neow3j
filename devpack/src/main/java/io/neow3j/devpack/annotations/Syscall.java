@@ -1,6 +1,6 @@
 package io.neow3j.devpack.annotations;
 
-import io.neow3j.constants.InteropService;
+import io.neow3j.script.InteropService;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 
 import java.lang.annotation.ElementType;

@@ -2,7 +2,7 @@ package io.neow3j.protocol.core.methods.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 
 import java.util.List;

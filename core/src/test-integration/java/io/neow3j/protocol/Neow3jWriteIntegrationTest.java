@@ -1,9 +1,9 @@
 package io.neow3j.protocol;
 
 import io.neow3j.NeoTestContainer;
-import io.neow3j.contract.Hash160;
-import io.neow3j.contract.Hash256;
-import io.neow3j.model.types.NeoVMStateType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.protocol.core.methods.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.methods.response.NeoSendFrom;
 import io.neow3j.protocol.core.methods.response.NeoSendMany;
@@ -26,7 +26,7 @@ import java.math.BigInteger;
 import static io.neow3j.NeoTestContainer.getNodeUrl;
 import static io.neow3j.TestProperties.committeeAccountAddress;
 import static io.neow3j.TestProperties.defaultAccountAddress;
-import static io.neow3j.contract.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;

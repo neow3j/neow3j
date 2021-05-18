@@ -9,7 +9,7 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import java.util.List;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.AbstractInsnNode;

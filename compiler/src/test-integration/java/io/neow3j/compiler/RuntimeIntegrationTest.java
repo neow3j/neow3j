@@ -1,8 +1,8 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.contract.ContractParameter;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;

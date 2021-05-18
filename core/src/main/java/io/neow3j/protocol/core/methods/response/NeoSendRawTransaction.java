@@ -3,7 +3,7 @@ package io.neow3j.protocol.core.methods.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.neow3j.contract.Hash256;
+import io.neow3j.types.Hash256;
 import io.neow3j.protocol.core.Response;
 
 public class NeoSendRawTransaction extends Response<NeoSendRawTransaction.RawTransaction> {

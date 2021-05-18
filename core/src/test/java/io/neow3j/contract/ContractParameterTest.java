@@ -1,17 +1,16 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractParameter.array;
-import static io.neow3j.contract.ContractParameter.bool;
-import static io.neow3j.contract.ContractParameter.byteArray;
-import static io.neow3j.contract.ContractParameter.byteArrayFromString;
-import static io.neow3j.contract.ContractParameter.hash160;
-import static io.neow3j.contract.ContractParameter.hash256;
-import static io.neow3j.contract.ContractParameter.integer;
-import static io.neow3j.contract.ContractParameter.map;
-import static io.neow3j.contract.ContractParameter.publicKey;
-import static io.neow3j.contract.ContractParameter.signature;
-import static io.neow3j.contract.ContractParameter.string;
-import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.bool;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.hash256;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.map;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.signature;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
@@ -20,7 +19,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.model.types.ContractParameterType;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;

@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core.methods.response;
 
 import io.neow3j.crypto.Base64;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;

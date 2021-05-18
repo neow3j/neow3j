@@ -8,13 +8,14 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import io.neow3j.types.Hash256;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

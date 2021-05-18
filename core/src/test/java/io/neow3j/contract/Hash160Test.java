@@ -1,10 +1,11 @@
 package io.neow3j.contract;
 
-import io.neow3j.constants.InteropService;
-import io.neow3j.constants.OpCode;
-import io.neow3j.io.BinaryWriter;
-import io.neow3j.io.NeoSerializableInterface;
-import io.neow3j.io.exceptions.DeserializationException;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.Hash160;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;

@@ -1,11 +1,11 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.model.types.StackItemType.BUFFER_CODE;
+import static io.neow3j.types.StackItemType.BUFFER_CODE;
 import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import java.io.IOException;
 import org.junit.Test;
 

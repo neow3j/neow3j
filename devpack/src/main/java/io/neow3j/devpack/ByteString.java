@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
-import io.neow3j.constants.OpCode;
+import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.model.types.StackItemType;
+import io.neow3j.types.StackItemType;
 
 /**
  * A {@code ByteString} is an immutable byte array. Otherwise it behaves the same as a normal Java
