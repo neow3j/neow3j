@@ -39,10 +39,10 @@ public class RoleManagement extends SmartContract {
     }
 
     /**
-     * Gets the designated nodes by their role and the block index.
+     * Gets the nodes that where assigned to the given role at the given block index.
      *
      * @param role       the role.
-     * @param blockIndex the block index for which the nodes are designated.
+     * @param blockIndex the block
      * @return the {@code ECPublicKeys} of the designated nodes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -76,6 +76,9 @@ public class RoleManagement extends SmartContract {
     /**
      * Creates a transaction script to designate nodes as a {@link Role} and
      * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has
+     * to be signed by the committee members.
      *
      * @param role    the designation role.
      * @param pubKeys the public keys of the nodes that are designated.
