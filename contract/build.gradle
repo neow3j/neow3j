@@ -5,5 +5,5 @@ dependencies {
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
 
     testCompile "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
-            project(':test-properties')
+            project(':test-tools')
 }

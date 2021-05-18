@@ -10,5 +10,5 @@ dependencies {
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
             "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
-            project(':test-properties')
+            project(':test-tools')
 }
