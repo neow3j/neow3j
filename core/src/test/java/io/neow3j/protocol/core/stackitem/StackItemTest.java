@@ -1,4 +1,4 @@
-package io.neow3j.protocol.core.response;
+package io.neow3j.protocol.core.stackitem;
 
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.core.stackitem.AnyStackItem;
