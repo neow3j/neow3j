@@ -66,6 +66,45 @@ public class SwitchCaseIntegrationTest {
         assertThat(retVal.get(1).getString(), is("exceptionCaught"));
     }
 
+    @Test
+    public void switchWithStringTwoCases() throws IOException {
+        InvocationResult r = ct.callInvokeFunction(testName, string("world")).getInvocationResult();
+        List<StackItem> retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(2));
+        assertThat(retVal.get(1).getString(), is("isWorld"));
+
+        r = ct.callInvokeFunction(testName, string("defaultCase")).getInvocationResult();
+        retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(3));
+        assertThat(retVal.get(1).getString(), is("isDefault"));
+    }
+
+    @Test
+    public void switchWithStringOneCase() throws IOException {
+        InvocationResult r = ct.callInvokeFunction(testName, string("hello")).getInvocationResult();
+        List<StackItem> retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(1));
+        assertThat(retVal.get(1).getString(), is("isHello"));
+
+        r = ct.callInvokeFunction(testName, string("defaultCase")).getInvocationResult();
+        retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(2));
+        assertThat(retVal.get(1).getString(), is("isDefault"));
+    }
+
+    @Test
+    public void switchWithStringLocalVariableDeclaration() throws IOException {
+        InvocationResult r = ct.callInvokeFunction(testName, string("hello")).getInvocationResult();
+        List<StackItem> retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(100));
+        assertThat(retVal.get(1).getString(), is("isHello"));
+
+        r = ct.callInvokeFunction(testName, string("defaultCase")).getInvocationResult();
+        retVal = r.getStack().get(0).getList();
+        assertThat(retVal.get(0).getInteger().intValue(), is(200));
+        assertThat(retVal.get(1).getString(), is("isDefault"));
+    }
+
     static class SwitchCaseIntegrationTestContract {
 
         public static Object[] switchWithString(String s) {
@@ -157,6 +196,59 @@ public class SwitchCaseIntegrationTest {
                     break;
                 default:
                     localInt = 4;
+                    localString = "isDefault";
+            }
+            return new Object[]{localInt, localString};
+        }
+
+        public static Object[] switchWithStringTwoCases(String s) {
+            int localInt = 0;
+            String localString = "not set";
+            switch (s) {
+                case "hello":
+                    localInt = 1;
+                    localString = "isHello";
+                    break;
+                case "world":
+                    localInt = 2;
+                    localString = "isWorld";
+                    break;
+                default:
+                    localInt = 3;
+                    localString = "isDefault";
+            }
+            return new Object[]{localInt, localString};
+        }
+
+        public static Object[] switchWithStringOneCase(String s) {
+            int localInt = 0;
+            String localString = "not set";
+            switch (s) {
+                case "hello":
+                    localInt = 1;
+                    localString = "isHello";
+                    break;
+                default:
+                    localInt = 2;
+                    localString = "isDefault";
+            }
+            return new Object[]{localInt, localString};
+        }
+
+        public static Object[] switchWithStringLocalVariableDeclaration(String s) {
+            int localInt = 10;
+            String localString = "not set";
+            switch (s) {
+                case "hello":
+                    int i = 10;
+                    i *= localInt;
+                    localInt = i;
+                    localString = "isHello";
+                    break;
+                default:
+                    int j = 20;
+                    j *= localInt;
+                    localInt = j;
                     localString = "isDefault";
             }
             return new Object[]{localInt, localString};
