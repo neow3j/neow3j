@@ -305,7 +305,7 @@ public class MethodsConverter implements Converter {
             tableSwitchInsn = (TableSwitchInsnNode) skipToInstructionType(insn,
                     AbstractInsnNode.TABLESWITCH_INSN, callingNeoMethod);
         } catch (CompilerException e) {
-            // The string switch case has only two or less cases and therefore.
+            // The string switch case has only two or less cases.
             try {
                 secondLookupSwitchInsn = (LookupSwitchInsnNode) skipToInstructionType(insn,
                         AbstractInsnNode.LOOKUPSWITCH_INSN, callingNeoMethod);
