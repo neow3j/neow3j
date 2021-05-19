@@ -295,9 +295,25 @@ public class MethodsConverter implements Converter {
         //  initialization (in INTISLOT).
         LookupSwitchInsnNode lookupSwitchInsn = (LookupSwitchInsnNode) methodInsn.getNext();
         AbstractInsnNode insn = lookupSwitchInsn.getNext();
-        // The TABLESWITCH instruction will be needed several times in the following.
-        TableSwitchInsnNode tableSwitchInsn = (TableSwitchInsnNode)
-                skipToInstructionType(insn, AbstractInsnNode.TABLESWITCH_INSN, callingNeoMethod);
+
+        // The compiler inserts a second switch instruction after the first lookup switch. This
+        // second switch instruction is a tableswitch if there are three or more cases, and a
+        // lookupswitch if there are less than three cases.
+        TableSwitchInsnNode tableSwitchInsn = null;
+        LookupSwitchInsnNode secondLookupSwitchInsn = null;
+        try {
+            tableSwitchInsn = (TableSwitchInsnNode) skipToInstructionType(insn,
+                    AbstractInsnNode.TABLESWITCH_INSN, callingNeoMethod);
+        } catch (CompilerException e) {
+            // The string switch case has only two or less cases.
+            try {
+                secondLookupSwitchInsn = (LookupSwitchInsnNode) skipToInstructionType(insn,
+                        AbstractInsnNode.LOOKUPSWITCH_INSN, callingNeoMethod);
+            } catch (CompilerException i) {
+                throw new CompilerException(callingNeoMethod, "Error converting a string " +
+                        "switch-case statement.");
+            }
+        }
         for (int i = 0; i < lookupSwitchInsn.labels.size(); i++) {
             // First, instruction in each `case` loads the string var that is evaluated.
             insn = skipToInstructionType(insn, AbstractInsnNode.VAR_INSN, callingNeoMethod);
@@ -323,12 +339,23 @@ public class MethodsConverter implements Converter {
             // The next instruction opcode jumps to the TABLESWITCH instruction but we need
             // to replace this with a jump directly to the correct branch after the TABLESWITCH.
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
-            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPIF_L,
-                    tableSwitchInsn.labels.get(branchNr).getLabel()));
+            if (tableSwitchInsn != null) {
+                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPIF_L,
+                        tableSwitchInsn.labels.get(branchNr).getLabel()));
+            } else {
+                callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMPIF_L,
+                        secondLookupSwitchInsn.labels.get(branchNr).getLabel()));
+            }
         }
-        callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
-                tableSwitchInsn.dflt.getLabel()));
-        return tableSwitchInsn;
+        if (tableSwitchInsn != null) {
+            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                    tableSwitchInsn.dflt.getLabel()));
+            return tableSwitchInsn;
+        } else {
+            callingNeoMethod.addInstruction(new NeoJumpInstruction(OpCode.JMP_L,
+                    secondLookupSwitchInsn.dflt.getLabel()));
+            return secondLookupSwitchInsn;
+        }
     }
 
     // Checks if the given instruction is a method call to the `String.equals()` method.

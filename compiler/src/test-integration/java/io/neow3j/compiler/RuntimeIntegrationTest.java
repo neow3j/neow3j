@@ -127,7 +127,7 @@ public class RuntimeIntegrationTest {
     @Test
     public void getTime() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getInteger().intValue(), is(greaterThan(0)));
+        assertThat(res.getStack().get(0).getInteger(), is(greaterThan(BigInteger.ZERO)));
     }
 
     @Test
