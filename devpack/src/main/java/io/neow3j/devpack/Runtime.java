@@ -108,33 +108,33 @@ public class Runtime {
     public static native Object getScriptContainer();
 
     /**
-     * Gets the script hash of the currently executing contract.
+     * Gets the script hash of the currently executing contract in little-endian order.
      *
-     * @return the script hash of the executing contract.
+     * @return the script hash of the executing contract in little-endian order.
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
     public static native Hash160 getExecutingScriptHash();
 
     /**
-     * Gets the script hash of the caller of the contract.
+     * Gets the script hash of the caller of the contract in little-endian order.
      * <p>
      * If the contact was invoked directly by a transaction, then this returns the hash of that
      * transaction's script. If the contract is called by another contact as part of an invocation
      * chain, then this returns the script hash of the calling contract.
      *
-     * @return the caller's script hash.
+     * @return the caller's script hash in little-endian order.
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
     public static native Hash160 getCallingScriptHash();
 
     /**
-     * Gets the script hash of the entry context, i.e., the context at the beginning of the
-     * contract invocation chain.
+     * Gets the script hash of the entry context in little-endian order, i.e., the context at the
+     * beginning of the contract invocation chain.
      * <p>
      * In case the invocation was induced by a transaction, the hash of that transaction's script is
      * the entry script hash.
      *
-     * @return the script hash.
+     * @return the script hash in little-endian order.
      */
     @Syscall(InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
     public static native Hash160 getEntryScriptHash();
