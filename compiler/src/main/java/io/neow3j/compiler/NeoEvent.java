@@ -87,7 +87,7 @@ public class NeoEvent {
         }
 
         private ContractParameter getAsContractParameter() {
-            return new ContractParameter(name, Compiler.mapTypeToParameterType(type), null);
+            return new ContractParameter(name, Compiler.mapTypeToParameterType(type));
         }
 
     }

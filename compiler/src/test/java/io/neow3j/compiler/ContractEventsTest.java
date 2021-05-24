@@ -58,9 +58,9 @@ public class ContractEventsTest {
         assertThat(event.getAsContractManifestEvent().getName(), is(displayName));
         assertThat(event.getAsContractManifestEvent().getParameters(), hasSize(2));
         assertThat(event.getAsContractManifestEvent().getParameters().get(0),
-                is(new ContractParameter("arg1", ContractParameterType.INTEGER, null)));
+                is(new ContractParameter("arg1", ContractParameterType.INTEGER)));
         assertThat(event.getAsContractManifestEvent().getParameters().get(1),
-                is(new ContractParameter("arg2", ContractParameterType.STRING, null)));
+                is(new ContractParameter("arg2", ContractParameterType.STRING)));
 
         assertThat(event.getAsDebugInfoEvent().getName(), is("MyClass," + displayName));
         assertThat(event.getAsDebugInfoEvent().getId(), is(id));
@@ -99,16 +99,16 @@ public class ContractEventsTest {
 
         List<ContractEvent> manifestEvents = res.getManifest().getAbi().getEvents();
         assertThat(manifestEvents.get(0).getName(), is("event1"));
-        ContractParameter arg1 = new ContractParameter("arg1", ContractParameterType.STRING, null);
-        ContractParameter arg2 = new ContractParameter("arg2", ContractParameterType.INTEGER, null);
+        ContractParameter arg1 = new ContractParameter("arg1", ContractParameterType.STRING);
+        ContractParameter arg2 = new ContractParameter("arg2", ContractParameterType.INTEGER);
         assertThat(manifestEvents.get(0).getParameters(), contains(arg1, arg2));
 
         assertThat(manifestEvents.get(1).getName(), is("displayName"));
-        arg1 = new ContractParameter("arg1", ContractParameterType.STRING, null);
-        arg2 = new ContractParameter("arg2", ContractParameterType.INTEGER, null);
-        ContractParameter arg3 = new ContractParameter("arg3", ContractParameterType.BOOLEAN, null);
-        ContractParameter arg4 = new ContractParameter("arg4", ContractParameterType.STRING, null);
-        ContractParameter arg5 = new ContractParameter("arg5", ContractParameterType.ANY, null);
+        arg1 = new ContractParameter("arg1", ContractParameterType.STRING);
+        arg2 = new ContractParameter("arg2", ContractParameterType.INTEGER);
+        ContractParameter arg3 = new ContractParameter("arg3", ContractParameterType.BOOLEAN);
+        ContractParameter arg4 = new ContractParameter("arg4", ContractParameterType.STRING);
+        ContractParameter arg5 = new ContractParameter("arg5", ContractParameterType.ANY);
         assertThat(manifestEvents.get(1).getParameters(), contains(arg1, arg2, arg3, arg4, arg5));
     }
 

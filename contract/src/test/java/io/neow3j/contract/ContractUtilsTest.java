@@ -274,11 +274,8 @@ public class ContractUtilsTest {
                 new ContractMethod(
                         "main",
                         asList(
-                                new ContractParameter("param1", ContractParameterType.BOOLEAN,
-                                        null),
-                                new ContractParameter("param2", ContractParameterType.BYTE_ARRAY,
-                                        null)
-                        ),
+                                new ContractParameter("param1", ContractParameterType.BOOLEAN),
+                                new ContractParameter("param2", ContractParameterType.BYTE_ARRAY)),
                         0,
                         ContractParameterType.STRING,
                         false
