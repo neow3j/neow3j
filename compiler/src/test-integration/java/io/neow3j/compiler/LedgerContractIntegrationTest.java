@@ -177,7 +177,7 @@ public class LedgerContractIntegrationTest {
     public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(ledgerContractHash()));
+                is(Numeric.reverseHexString(ledgerContractHash())));
     }
 
     static class LedgerContractIntegrationTestContract {

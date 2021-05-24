@@ -7,6 +7,7 @@ import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -167,7 +168,7 @@ public class StdLibIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(stdLibHash()));
+                is(Numeric.reverseHexString(stdLibHash())));
     }
 
     @Test

@@ -5,6 +5,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -12,6 +13,7 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.Matchers.greaterThan;
@@ -71,10 +73,10 @@ public class FungibleTokenTest {
     public void getScriptHashOfFungibleToken() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(NeoToken.SCRIPT_HASH.toString()));
+                is(Numeric.reverseHexString(neoTokenHash())));
     }
 
-    static class FungibleTokenTestContract extends FungibleToken {
+    static class FungibleTokenTestContract {
 
         public static String callSymbolMethodOfFungibleToken() {
             return CustomNeoToken.symbol();
