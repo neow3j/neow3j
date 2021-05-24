@@ -4,6 +4,7 @@ import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -34,7 +35,7 @@ public class ContractInterfacesIntegrationTest {
     public void getScriptHashOfCustomNeoContractInterface() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(neoTokenHash()));
+                is(Numeric.reverseHexString(neoTokenHash())));
     }
 
     static class ContractInterfacesIntegrationTestContract {

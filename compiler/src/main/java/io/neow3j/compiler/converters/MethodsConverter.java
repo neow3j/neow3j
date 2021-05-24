@@ -1,5 +1,47 @@
 package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.AsmHelper;
+import io.neow3j.compiler.CompilationUnit;
+import io.neow3j.compiler.CompilerException;
+import io.neow3j.compiler.JVMOpcode;
+import io.neow3j.compiler.NeoInstruction;
+import io.neow3j.compiler.NeoJumpInstruction;
+import io.neow3j.compiler.NeoMethod;
+import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.devpack.ContractInterface;
+import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Instruction.Instructions;
+import io.neow3j.devpack.annotations.Syscall;
+import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.script.OpCode;
+import io.neow3j.types.CallFlags;
+import io.neow3j.types.Hash160;
+import io.neow3j.utils.AddressUtils;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.ClassUtils;
+import io.neow3j.utils.Numeric;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.JumpInsnNode;
+import org.objectweb.asm.tree.LookupSwitchInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
+import org.objectweb.asm.tree.MethodNode;
+import org.objectweb.asm.tree.TableSwitchInsnNode;
+import org.objectweb.asm.tree.VarInsnNode;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
@@ -20,46 +62,6 @@ import static io.neow3j.utils.Numeric.isValidHexString;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.objectweb.asm.Type.getInternalName;
-
-import io.neow3j.compiler.AsmHelper;
-import io.neow3j.compiler.CompilationUnit;
-import io.neow3j.compiler.CompilerException;
-import io.neow3j.compiler.JVMOpcode;
-import io.neow3j.compiler.NeoInstruction;
-import io.neow3j.compiler.NeoJumpInstruction;
-import io.neow3j.compiler.NeoMethod;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.Hash160;
-import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.annotations.ContractHash;
-import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.annotations.Syscall.Syscalls;
-import io.neow3j.types.CallFlags;
-import io.neow3j.utils.AddressUtils;
-import io.neow3j.utils.ArrayUtils;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.InsnNode;
-import org.objectweb.asm.tree.JumpInsnNode;
-import org.objectweb.asm.tree.LookupSwitchInsnNode;
-import org.objectweb.asm.tree.MethodInsnNode;
-import org.objectweb.asm.tree.MethodNode;
-import org.objectweb.asm.tree.TableSwitchInsnNode;
-import org.objectweb.asm.tree.VarInsnNode;
 
 public class MethodsConverter implements Converter {
 
@@ -138,9 +140,9 @@ public class MethodsConverter implements Converter {
             addSyscall(calledAsmMethod.get(), callingNeoMethod);
         } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
             addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
-        } else if (isContractCall(topLevelOwnerClass)) {
+        } else if (isContractCall(topLevelOwnerClass, compUnit)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
-        } else if (isSrtingLiteralConverter(calledAsmMethod.get(), ownerClass)) {
+        } else if (isStringLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
         } else if (isStringEqualsMethodCall(methodInsn)) {
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
@@ -221,7 +223,7 @@ public class MethodsConverter implements Converter {
                 && isOwnerPrimitiveTypeWrapper;
     }
 
-    public static boolean isSrtingLiteralConverter(MethodNode methodNode, ClassNode owner) {
+    public static boolean isStringLiteralConverter(MethodNode methodNode, ClassNode owner) {
         return owner.name.equals(Type.getInternalName(StringLiteralHelper.class))
                 && (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME)
                 || methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME)
@@ -270,10 +272,21 @@ public class MethodsConverter implements Converter {
     }
 
     /**
-     * Checks if the given class node carries the {@link ContractHash} annotation.
+     * Checks if the given class node is a ContractInterface.
      */
-    private static boolean isContractCall(ClassNode owner) {
-        return hasAnnotations(owner, ContractHash.class);
+    private static boolean isContractCall(ClassNode owner, CompilationUnit compUnit)
+            throws IOException {
+
+        while (!ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
+                .equals(Object.class.getCanonicalName())) {
+
+            if (ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
+                    .equals(ContractInterface.class.getCanonicalName())) {
+                return true;
+            }
+            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
+        }
+        return false;
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -373,6 +386,13 @@ public class MethodsConverter implements Converter {
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
             ClassNode owner, CompilationUnit compUnit) {
 
+        if (!hasAnnotations(owner, ContractHash.class)) {
+            throw new CompilerException(callingNeoMethod, "Error trying to call a method on a " +
+                    "contract interface that does not have a contract hash specified. Make sure " +
+                    "that there is a " + ContractHash.class.getCanonicalName() + " annotation on " +
+                    "the contract interface you are calling.");
+        }
+
         AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
         Hash160 scriptHash;
         try {
@@ -385,7 +405,10 @@ public class MethodsConverter implements Converter {
 
         // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
         if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
-            callingNeoMethod.addInstruction(buildPushDataInsn(scriptHash.toArray()));
+            callingNeoMethod.addInstruction(
+                    // The contract hash is pushed in little-endian ordering because the NeoVM
+                    // also returns contract hashes in little-endian ordering.
+                    buildPushDataInsn(ArrayUtils.reverseArray(scriptHash.toArray())));
             return;
         }
 

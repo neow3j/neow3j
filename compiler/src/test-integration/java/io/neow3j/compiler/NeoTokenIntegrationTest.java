@@ -9,6 +9,7 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -134,7 +135,7 @@ public class NeoTokenIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(neoTokenHash()));
+                is(Numeric.reverseHexString(neoTokenHash())));
     }
 
     @Test

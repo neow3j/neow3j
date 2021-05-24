@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.test.TestProperties;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
@@ -235,7 +236,7 @@ public class ContractManagementIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(io.neow3j.contract.ContractManagement.SCRIPT_HASH.toString()));
+                is(Numeric.reverseHexString(TestProperties.contractManagementHash())));
     }
 
     static class ContractManagementIntegrationTestContract {

@@ -20,6 +20,7 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import io.reactivex.disposables.Disposable;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -63,7 +64,7 @@ public class OracleContractIntegrationTest {
     public void getScriptHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(oracleContractHash()));
+                is(Numeric.reverseHexString(oracleContractHash())));
     }
 
     @Test

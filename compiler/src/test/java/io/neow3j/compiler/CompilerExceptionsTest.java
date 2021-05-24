@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash160;
@@ -174,6 +175,26 @@ public class CompilerExceptionsTest {
         new Compiler().compile(InstanceOfContract.class.getName());
     }
 
+    @Test
+    public void failCallingAContractInterfaceWithoutContractHashAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                "Error trying to call a method on a contract interface",
+                ContractHash.class.getCanonicalName())));
+        new Compiler().compile(ContractInterfaceWithoutHash.class.getName());
+    }
+
+    @Test
+    public void failCallingAContractInterfaceWithoutContractHashAnnotationAndMultipleInheritance()
+            throws IOException {
+
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                "Error trying to call a method on a contract interface",
+                ContractHash.class.getCanonicalName())));
+        new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -320,6 +341,25 @@ public class CompilerExceptionsTest {
             return obj instanceof Hash160;
         }
     }
+
+    static class ContractInterfaceWithoutHash {
+
+        public static String method() {
+            return FungibleToken.symbol();
+        }
+    }
+
+    static class ContractInterfaceWithoutHashAndMultipleInheritance {
+
+        public static String method() {
+            return CustomFungibleToken.symbol();
+        }
+    }
+
+    static class CustomFungibleToken extends FungibleToken {
+
+    }
+
 
 }
 
