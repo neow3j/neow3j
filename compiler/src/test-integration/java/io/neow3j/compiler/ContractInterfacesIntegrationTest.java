@@ -15,14 +15,14 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class ContractInterfacesTest {
+public class ContractInterfacesIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
 
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(
-            ContractInterfacesTestContract.class.getName());
+            ContractInterfacesIntegrationTestContract.class.getName());
 
     @Test
     public void callSymbolMethodOfCustomNeoContractInterface() throws IOException {
@@ -37,7 +37,7 @@ public class ContractInterfacesTest {
                 is(neoTokenHash()));
     }
 
-    static class ContractInterfacesTestContract {
+    static class ContractInterfacesIntegrationTestContract {
 
         public static String callSymbolMethodOfCustomNeoContractInterface() {
             return CustomNeoToken.symbol();
