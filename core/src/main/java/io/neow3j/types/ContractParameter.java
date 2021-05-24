@@ -46,7 +46,7 @@ public class ContractParameter {
     private ContractParameter() {
     }
 
-    public ContractParameter(String name, ContractParameterType paramType, Object value) {
+    protected ContractParameter(String name, ContractParameterType paramType, Object value) {
         this.paramName = name;
         this.paramType = paramType;
         this.value = value;
@@ -56,7 +56,7 @@ public class ContractParameter {
         this(name, paramType, null);
     }
 
-    private ContractParameter(ContractParameterType paramType, Object value) {
+    protected ContractParameter(ContractParameterType paramType, Object value) {
         this(null, paramType, value);
     }
 

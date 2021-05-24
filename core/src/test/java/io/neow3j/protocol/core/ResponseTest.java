@@ -939,10 +939,9 @@ public class ResponseTest extends ResponseTester {
                 new ContractMethod("currentHash", emptyList(), 0,
                         ContractParameterType.HASH256, true);
         ContractMethod method2 =
-                new ContractMethod("getTransactionHeight",
-                        singletonList(
-                                new ContractParameter("hash", ContractParameterType.HASH256, null)
-                        ), 35, ContractParameterType.INTEGER, true);
+                new ContractMethod("getTransactionHeight", singletonList(
+                        new ContractParameter("hash", ContractParameterType.HASH256)), 35,
+                        ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
         ContractPermission permission = new ContractPermission("*", singletonList("*"));
         ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),

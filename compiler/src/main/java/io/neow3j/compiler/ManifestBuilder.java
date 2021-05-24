@@ -79,7 +79,7 @@ public class ManifestBuilder {
             List<ContractParameter> contractParams = new ArrayList<>();
             for (NeoVariable var : neoMethod.getParametersByNeoIndex().values()) {
                 contractParams.add(new ContractParameter(var.getName(),
-                        Compiler.mapTypeToParameterType(Type.getType(var.getDescriptor())), null));
+                        Compiler.mapTypeToParameterType(Type.getType(var.getDescriptor()))));
             }
             ContractParameterType paramType = Compiler.mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
