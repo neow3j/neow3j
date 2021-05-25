@@ -2,6 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.constants.Role;
 
 /**
  * Represents the native contract that deals with the assignment of nodes to certain roles. A node

@@ -1,4 +1,4 @@
-package io.neow3j.devpack.contracts;
+package io.neow3j.devpack.constants;
 
 /**
  * Defines the possible roles of designates.
