@@ -248,7 +248,7 @@ public class NonFungibleTokenTest {
     @Test
     public void testBalanceOfDivisible() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("decimals", "nft_balanceof.json");
+        setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
         BigInteger balance = nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
         assertThat(balance, is(new BigInteger("244")));
     }
