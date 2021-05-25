@@ -2,9 +2,9 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "script": "",
+    "script": "wh8MDGdldFByb3Bvc2FscwwUG+dOyLwoms/WJInGuGZ+ROJMF85BYn1bUg==",
     "state": "HALT",
-    "gasconsumed": "",
+    "gasconsumed": "7403310",
     "exception": null,
     "stack": [
       {
@@ -12,11 +12,11 @@
         "iterator": [
           {
             "type": "ByteString",
-            "value": "dG9rZW5vZjE="
+            "value": "3+P+XKCduAvyPe8LgkYRtRhFrsY="
           },
           {
             "type": "ByteString",
-            "value": "dG9rZW5vZjI="
+            "value": "D4DiYhQpQwJduO+vnvo8/eUIviA="
           }
         ],
         "truncated": false
