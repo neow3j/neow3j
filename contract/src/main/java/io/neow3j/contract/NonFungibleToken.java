@@ -91,6 +91,8 @@ public class NonFungibleToken extends Token {
      * <p>
      * The token owner is set as the signer of the transaction, thus, the given wallet must
      * contain the owner account. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
      *
      * @param wallet  the wallet that holds the account of the token owner.
      * @param to      the receiver of the token.
@@ -155,12 +157,48 @@ public class NonFungibleToken extends Token {
 
     // Divisible NFT methods
 
-    public TransactionBuilder transferDivisible(Wallet wallet, Hash160 from, Hash160 to,
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The sender is set as the signer of the transaction, thus, the given wallet must
+     * contain the this account. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param wallet  the wallet that holds the account of the sender.
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Wallet wallet, Hash160 from, Hash160 to,
             BigInteger amount, byte[] tokenID) throws IOException {
-        return transferDivisible(wallet, from, to, amount, tokenID, null);
+        return transfer(wallet, from, to, amount, tokenID, null);
     }
 
-    public TransactionBuilder transferDivisible(Wallet wallet, Hash160 from, Hash160 to,
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and
+     * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * The sender is set as the signer of the transaction, thus, the given wallet must
+     * contain the this account. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param wallet  the wallet that holds the account of the sender.
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving
+     *                smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Wallet wallet, Hash160 from, Hash160 to,
             BigInteger amount, byte[] tokenID, ContractParameter data) throws IOException {
         if (!wallet.holdsAccount(from)) {
             throw new IllegalArgumentException("The provided wallet does not contain the from " +
@@ -181,6 +219,8 @@ public class NonFungibleToken extends Token {
      * <p>
      * Consider that for this RPC the returned list may be limited in size and not reveal all
      * entries that exist on the contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
      *
      * @param tokenId the token id.
      * @return a list of owners of the token.
@@ -205,6 +245,8 @@ public class NonFungibleToken extends Token {
      * <p>
      * The balance is not cached locally. Every time this method is called requests are send to
      * the Neo node.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
      *
      * @param owner the script hash of the account to fetch the balance for.
      * @return the token balance of the given account.
@@ -257,7 +299,7 @@ public class NonFungibleToken extends Token {
             Map<StackItem, StackItem> map = item.getMap();
 
             return new NFTokenState(
-                    map.get(new ByteStringStackItem("name" .getBytes(UTF_8))).getString());
+                    map.get(new ByteStringStackItem("name".getBytes(UTF_8))).getString());
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
     }

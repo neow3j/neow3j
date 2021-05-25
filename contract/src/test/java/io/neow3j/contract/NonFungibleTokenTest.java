@@ -200,7 +200,7 @@ public class NonFungibleTokenTest {
                 .toArray();
 
         Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transferDivisible(wallet, account1.getScriptHash(),
+        TransactionBuilder b = nfTestToken.transfer(wallet, account1.getScriptHash(),
                 account2.getScriptHash(), new BigInteger("25000"), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -212,7 +212,7 @@ public class NonFungibleTokenTest {
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("only intended for divisible NFTs.");
         Wallet wallet = Wallet.withAccounts(account1);
-        nfTestToken.transferDivisible(wallet, account1.getScriptHash(), account2.getScriptHash(),
+        nfTestToken.transfer(wallet, account1.getScriptHash(), account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
     }
 
@@ -221,7 +221,7 @@ public class NonFungibleTokenTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("wallet does not contain the from account.");
         Wallet wallet = Wallet.withAccounts(account2);
-        nfTestToken.transferDivisible(wallet, account1.getScriptHash(), account2.getScriptHash(),
+        nfTestToken.transfer(wallet, account1.getScriptHash(), account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
     }
 
