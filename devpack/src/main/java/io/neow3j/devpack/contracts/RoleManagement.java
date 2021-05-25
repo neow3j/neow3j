@@ -1,6 +1,5 @@
 package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.annotations.ContractHash;
 

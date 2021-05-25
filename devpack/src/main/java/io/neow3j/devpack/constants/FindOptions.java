@@ -1,4 +1,7 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.constants;
+
+import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageContext;
 
 /**
  * These options are to be used with the {@link Storage#find(StorageContext, byte[], byte)}} methods

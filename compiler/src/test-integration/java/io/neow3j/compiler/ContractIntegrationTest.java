@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.NeoToken;
-import io.neow3j.devpack.CallFlags;
+import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;

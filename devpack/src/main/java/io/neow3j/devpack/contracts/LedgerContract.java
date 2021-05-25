@@ -1,7 +1,6 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Block;
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.annotations.ContractHash;
