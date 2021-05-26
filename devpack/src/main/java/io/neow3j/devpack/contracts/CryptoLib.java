@@ -1,9 +1,9 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.constants.NamedCurve;
 
 @ContractHash("0x726cb6e0cd8628a1350a611384688911ab75f51b")
 public class CryptoLib extends ContractInterface {
@@ -26,7 +26,7 @@ public class CryptoLib extends ContractInterface {
 
     /**
      * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}.
-     * The {@code curve} can be one of the curves defined in {@link io.neow3j.devpack.NamedCurve}.
+     * The {@code curve} can be one of the curves defined in {@link NamedCurve}.
      *
      * @param message   The signed message.
      * @param publicKey The public key of the key pair used for signing.

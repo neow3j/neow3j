@@ -1,5 +1,6 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Syscall;

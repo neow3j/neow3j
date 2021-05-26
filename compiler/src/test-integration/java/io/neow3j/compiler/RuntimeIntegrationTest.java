@@ -9,7 +9,7 @@ import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
-import io.neow3j.devpack.TriggerType;
+import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;

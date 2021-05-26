@@ -8,16 +8,19 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Used to mark a class as a smart contract on the Neo blockchain, which can then be used to make
- * calls to the contract's methods.
+ * Used to set the contract hash on a {@link io.neow3j.devpack.contracts.ContractInterface},
+ * which is then usable as a gateway to the actual contract on the blockchain.
  * <p>
- * Examples of how to use this annotation can be found in {@link NeoToken}, {@link GasToken}, {@link PolicyContract}.
+ * The script hash has to be set in big-endian order.
+ * <p>
+ * Examples of how to use this annotation can be found in {@link NeoToken} and other native
+ * contract interfaces.
  */
 @Target(ElementType.TYPE)
 public @interface ContractHash {
 
     /**
-     * @return the script hash of the contract to call.
+     * @return the script hash of the contract to call in big-endian order.
      */
     String value();
 

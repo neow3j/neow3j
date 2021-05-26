@@ -8,7 +8,7 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.OracleContract;
+import io.neow3j.devpack.contracts.OracleContract;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.Role;

@@ -1,4 +1,4 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.constants;
 
 /**
  * Contains the possible respond codes that are used by Oracles.

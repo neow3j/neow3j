@@ -2,7 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.FindOptions;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;

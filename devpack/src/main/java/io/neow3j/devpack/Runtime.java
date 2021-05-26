@@ -1,5 +1,6 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.script.InteropService;
 import io.neow3j.devpack.annotations.Syscall;
 

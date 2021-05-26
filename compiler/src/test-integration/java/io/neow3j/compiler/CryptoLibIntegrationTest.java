@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.NamedCurve;
+import io.neow3j.devpack.constants.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;

@@ -4,7 +4,7 @@ import io.neow3j.types.Hash256;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.contracts.Role;
+import io.neow3j.devpack.constants.Role;
 import io.neow3j.devpack.contracts.RoleManagement;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;

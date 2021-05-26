@@ -1,4 +1,4 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.constants;
 
 /**
  * The {@code TriggerType} defines the mode in which a smart contract is invoked. This implies that
