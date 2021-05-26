@@ -4,6 +4,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.CallFlags;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
 
@@ -218,28 +219,41 @@ public class ScriptBuilder {
             return this.opCode(OpCode.PUSHINT16, bytes);
         }
         if (bytes.length <= 4) {
-            return this.opCode(OpCode.PUSHINT32, padRight(bytes, 4));
+            return this.opCode(OpCode.PUSHINT32, padNumber(v, 4));
         }
         if (bytes.length <= 8) {
-            return this.opCode(OpCode.PUSHINT64, padRight(bytes, 8));
+            return this.opCode(OpCode.PUSHINT64, padNumber(v, 8));
         }
         if (bytes.length <= 16) {
-            return this.opCode(OpCode.PUSHINT128, padRight(bytes, 16));
+            return this.opCode(OpCode.PUSHINT128, padNumber(v, 16));
         }
         if (bytes.length <= 32) {
-            return this.opCode(OpCode.PUSHINT256, padRight(bytes, 32));
+            return this.opCode(OpCode.PUSHINT256, padNumber(v, 32));
         }
-        throw new IllegalArgumentException("The given number (" + v.toString() + ") is out of "
-                + "range.");
+        throw new IllegalArgumentException("The given number (" + v + ") is out of range.");
     }
 
-    private byte[] padRight(byte[] data, int desiredLenght) {
-        if (data.length >= desiredLenght) {
-            return data;
+    private byte[] padNumber(BigInteger v, int desiredLength) {
+        if (v.toByteArray().length == desiredLength) {
+            return BigIntegers.toLittleEndianByteArray(v);
         }
-        byte[] paddedData = new byte[desiredLenght];
-        System.arraycopy(data, 0, paddedData, 0, data.length);
-        return paddedData;
+        if (v.signum() == -1) {
+            // If the number is negative we need to pad it with 1's to keep it a negative number.
+            byte[] data = v.toByteArray();
+            byte[] paddedData = new byte[desiredLength];
+            System.arraycopy(data, 0, paddedData, paddedData.length - data.length, data.length);
+            for (int i = 0; i < paddedData.length - data.length; i++) {
+                paddedData[i] = (byte) 255;
+            }
+            return ArrayUtils.reverseArray(paddedData);
+        }
+        else {
+            // If the number is positive we just pad it with zeros.
+            byte[] data = BigIntegers.toLittleEndianByteArray(v);
+            byte[] paddedData = new byte[desiredLength];
+            System.arraycopy(data, 0, paddedData, 0, data.length);
+            return paddedData;
+        }
     }
 
     public ScriptBuilder pushBoolean(boolean bool) {
