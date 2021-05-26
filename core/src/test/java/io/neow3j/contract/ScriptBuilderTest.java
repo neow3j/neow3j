@@ -16,12 +16,14 @@ import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.serialization.TestBinaryUtils;
 
+import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Before;
 import org.junit.Test;
@@ -107,6 +109,85 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     public void pushInteger_17() {
         builder.pushInteger(17);
         assertThat(copyOfRange(builder.toArray(), 0, 2), is(hexStringToByteArray("0011")));
+    }
+
+    @Test
+    public void pushInteger_minus800_000() {
+        builder.pushInteger(-800_000);
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(5)); // PUSHINT opcode plus 4 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 4); // Remove the PUSHINT opcode byte.
+        // Two's complement of -800'000 in big-endian order
+        byte[] expected = new byte[]{(byte) 0xff, (byte) 0xf3, (byte) 0xcb, 0x00};
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+    @Test
+    public void pushInteger_minus100_000_000_000() {
+        builder.pushInteger(-100_000_000_000L);
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(9)); // PUSHINT opcode plus 8 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 8); // Remove the PUSHINT opcode byte.
+        // Two's complement of -100'000'000'000 in big-endian order
+        byte[] expected = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xe8,
+                (byte) 0xb7, (byte) 0x89, 0x18, 0x00};
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+    @Test
+    public void pushInteger_plus100_000_000_000() {
+        builder.pushInteger(100_000_000_000L);
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(9)); // PUSHINT opcode plus 8 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 8); // Remove the PUSHINT opcode byte.
+        // Two's complement of -100'000'000'000 in big-endian order
+        byte[] expected = new byte[]{0x00, 0x00, 0x00, 0x17, 0x48, 0x76, (byte) 0xe8, 0x00};
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+
+    @Test
+    public void pushInteger_minus10ToThePowerOf23() {
+        builder.pushInteger(BigInteger.TEN.pow(23).negate());
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(17)); // PUSHINT opcode plus 16 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 16); // Remove the PUSHINT opcode byte.
+        // Two's complement in big-endian order.
+        byte[] expected = hexStringToByteArray("ffffffffffffead2fd381eb509800000");
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+    @Test
+    public void pushInteger_plus10ToThePowerOf23() {
+        builder.pushInteger(BigInteger.TEN.pow(23));
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(17)); // PUSHINT opcode plus 16 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 16); // Remove the PUSHINT opcode byte.
+        // Two's complement in big-endian order.
+        byte[] expected = hexStringToByteArray("000000000000152d02c7e14af6800000");
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+    @Test
+    public void pushInteger_minus10ToThePowerOf30() {
+        builder.pushInteger(BigInteger.TEN.pow(40).negate());
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(33)); // PUSHINT opcode plus 32 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 32); // Remove the PUSHINT opcode byte.
+        // Two's complement in big-endian order.
+        byte[] expected = hexStringToByteArray("0xffffffffffffffffffffffffffffffe29cd60e3ca35b4054460a9f0000000000");
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
+    }
+
+    @Test
+    public void pushInteger_plus10ToThePowerOf30() {
+        builder.pushInteger(BigInteger.TEN.pow(40));
+        byte[] bytes = builder.toArray();
+        assertThat(bytes.length, is(33)); // PUSHINT opcode plus 32 integer bytes.
+        bytes = ArrayUtils.getLastNBytes(bytes, 32); // Remove the PUSHINT opcode byte.
+        // Two's complement in big-endian order.
+        byte[] expected = hexStringToByteArray("0x0000000000000000000000000000001d6329f1c35ca4bfabb9f5610000000000");
+        assertThat(bytes, is(ArrayUtils.reverseArray(expected)));
     }
 
     @Test
