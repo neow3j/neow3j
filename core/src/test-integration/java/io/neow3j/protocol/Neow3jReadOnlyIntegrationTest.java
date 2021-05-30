@@ -665,7 +665,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
         assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
         assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0)));
+        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0L)));
     }
 
     // SmartContract Methods

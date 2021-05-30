@@ -15,7 +15,7 @@ public class Neow3jConfig {
     public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE = 86400000;
 
     private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
-    private Integer networkMagic = null;
+    private Long networkMagic = null;
     private int blockInterval = DEFAULT_BLOCK_TIME;
     private long maxValidUntilBlockIncrement = MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / blockInterval;
     private int pollingInterval = DEFAULT_BLOCK_TIME;
@@ -27,7 +27,7 @@ public class Neow3jConfig {
     public Neow3jConfig() {
     }
 
-    public Neow3jConfig(int networkMagic, int blockInterval, int pollingInterval,
+    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval,
             long maxValidUntilBlockIncrement, ScheduledExecutorService scheduledExecutorService) {
 
         this.networkMagic = networkMagic;
@@ -120,7 +120,7 @@ public class Neow3jConfig {
      * @return The network's magic number.
      * @see Neow3j#getNetworkMagicNumber()
      */
-    public Integer getNetworkMagic() {
+    public Long getNetworkMagic() {
         return networkMagic;
     }
 
@@ -133,7 +133,7 @@ public class Neow3jConfig {
      * @param magic The network magic number.
      * @return this.
      */
-    public Neow3jConfig setNetworkMagic(int magic) {
+    public Neow3jConfig setNetworkMagic(long magic) {
         networkMagic = magic;
         return this;
     }
