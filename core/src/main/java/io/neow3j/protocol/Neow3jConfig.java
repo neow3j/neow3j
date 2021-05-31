@@ -137,6 +137,10 @@ public class Neow3jConfig {
      * @return this.
      */
     public Neow3jConfig setNetworkMagic(long magic) {
+        if (magic > 0xFFFFFFFFL || magic < 0L)  {
+            throw new IllegalArgumentException("The network magic number must fit into a 32-bit " +
+                    "unsigned integer, i.e., it must be positive and not greater than 0xFFFFFFFF.");
+        }
         networkMagic = magic;
         return this;
     }
