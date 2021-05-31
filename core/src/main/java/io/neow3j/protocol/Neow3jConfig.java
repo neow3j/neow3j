@@ -116,6 +116,9 @@ public class Neow3jConfig {
      * The default value is null. Only once {@link Neow3j#getNetworkMagicNumber()} is called for
      * the first time the value is set. This is because the magic number is fetched directly from
      * the neo-node.
+     * <p>
+     * The magic number is represented as an unsigned 32-bit integer on the neo-node. Thus, it's
+     * maximum possible value is 0xffffffff or 2<sup>32</sup>-1.
      *
      * @return The network's magic number.
      * @see Neow3j#getNetworkMagicNumber()
