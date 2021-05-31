@@ -28,7 +28,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
         private String userAgent;
 
         @JsonProperty("network")
-        private int network;
+        private long network;
 
         public Result() {
         }
@@ -65,7 +65,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             this.userAgent = userAgent;
         }
 
-        public int getNetwork() {
+        public long getNetwork() {
             return network;
         }
 

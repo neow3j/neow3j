@@ -1413,7 +1413,32 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
         assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(769));
+        assertThat(getVersion.getVersion().getNetwork(), is(769L));
+    }
+
+    @Test
+    public void testGetVersion_Network_Long() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"tcpport\": 40333,\n" +
+                        "        \"wsport\": 40334,\n" +
+                        "        \"nonce\": 224036820,\n" +
+                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"network\": 4232068425\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
+        assertThat(getVersion.getVersion(), is(notNullValue()));
+        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
+        assertThat(getVersion.getVersion().getWSPort(), is(40334));
+        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(getVersion.getVersion().getNetwork(), is(4232068425L));
     }
 
     @Test

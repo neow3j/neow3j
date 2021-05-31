@@ -62,8 +62,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         if (config.getNetworkMagic() == null) {
             config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
         }
+        // transform from long to unsigned int:
+        int networkMagicAsInt = (int) (config.getNetworkMagic() & 0xFFFFFFFFL);
         byte[] array = new byte[4];
-        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(config.getNetworkMagic());
+        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicAsInt);
         return array;
     }
 
