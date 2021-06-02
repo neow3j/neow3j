@@ -6,22 +6,36 @@ package io.neow3j.devpack.constants;
  */
 public class TriggerType {
 
-    public static final byte SYSTEM = 0x01;
+    /**
+     * Indicate that the contract is triggered by the system to execute the OnPersist method of
+     * the native contracts.
+     */
+    public static final byte OnPersist = 0x01;
+
+    /**
+     * Indicate that the contract is triggered by the system to execute the PostPersist method of
+     * the native contracts.
+     */
+    public static final byte PostPersist = 0x02;
 
     /**
      * The verification trigger indicates that the contract is being invoked as a verification
-     * function. The verification function can accept multiple parameters, and should return a
-     * boolean value that indicates the validity of the transaction or block.
+     * function.
      */
-    public static final byte VERIFICATION = 0x20;
+    public static final byte Verification = 0x20;
 
     /**
-     * The application trigger indicates that the contract is being invoked as an application. The
-     * application function can accept multiple parameters, change the state of the blockchain, and
-     * return any type of value. Any function of the contract can server as the entry point with
-     * this trigger type.
+     * Indicates that the contract is triggered by the execution of a transaction.
      */
-    public static final byte APPLICATION = 0x40;
+    public static final byte Application = 0x40;
 
-    public static final byte ALL = SYSTEM | VERIFICATION | APPLICATION;
+    /**
+     * The combination of all system triggers.
+     */
+    public static final byte System = OnPersist | PostPersist;
+
+    /**
+     * The combination of all triggers.
+     */
+    public static final byte All = OnPersist | PostPersist | Verification | Application;
 }
