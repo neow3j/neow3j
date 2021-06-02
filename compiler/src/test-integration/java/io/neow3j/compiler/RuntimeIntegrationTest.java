@@ -45,7 +45,7 @@ public class RuntimeIntegrationTest {
     @Test
     public void getTriggerType() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getInteger().byteValue(), is(TriggerType.APPLICATION));
+        assertThat(res.getStack().get(0).getInteger().byteValue(), is(TriggerType.Application));
     }
 
     @Test
