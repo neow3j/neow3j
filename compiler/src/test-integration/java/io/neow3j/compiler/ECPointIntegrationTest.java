@@ -114,7 +114,7 @@ public class ECPointIntegrationTest {
         }
 
         public static ByteString ecPointAsByteString(ECPoint ecPoint) {
-            return ecPoint.asByteString();
+            return ecPoint.toByteString();
         }
     }
 

@@ -171,7 +171,7 @@ public class SwitchCaseIntegrationTest {
                                 case 100:
                                     localInt = 100;
                                     localString = "is" + "Hello" +
-                                            Runtime.getCallingScriptHash().asByteString().toString();
+                                            Runtime.getCallingScriptHash().toByteString().toString();
                                     break;
                                 default:
                                     throw new Exception();

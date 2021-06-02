@@ -26,10 +26,10 @@ public class StringLiteralHelper {
     /**
      * Converts the given hex string to a byte array.
      * <p>
-     * This method can only be applied to constant string literals.
+     * If you use this for an account or contract hash, make sure to pass the hex string in
+     * little-endian order.
      * <p>
-     * Example: hexToBytes("0102030405060708090a0b0c0d0e0faabbccddee") generates the corresponding
-     * byte array.
+     * This method can only be applied to constant string literals.
      *
      * @param hex The hex string to convert to bytes.
      * @return the byte array.
