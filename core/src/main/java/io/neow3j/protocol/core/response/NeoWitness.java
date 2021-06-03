@@ -2,6 +2,8 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.crypto.Base64;
+import io.neow3j.transaction.Witness;
 
 import java.util.Objects;
 
@@ -20,6 +22,11 @@ public class NeoWitness {
     public NeoWitness(String invocation, String verification) {
         this.invocation = invocation;
         this.verification = verification;
+    }
+
+    public NeoWitness(Witness witness) {
+        verification = Base64.encode(witness.getVerificationScript().getScript());
+        invocation = Base64.encode(witness.getInvocationScript().getScript());
     }
 
     public String getInvocation() {

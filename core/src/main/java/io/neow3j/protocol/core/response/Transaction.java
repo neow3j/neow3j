@@ -5,11 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.crypto.Base64;
 import io.neow3j.types.Hash256;
 
 import io.neow3j.types.NeoVMStateType;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
@@ -112,6 +115,24 @@ public class Transaction {
         this.confirmations = confirmations;
         this.blockTime = blockTime;
         this.vmState = vmState;
+    }
+
+    public Transaction(io.neow3j.transaction.Transaction tx) {
+        hash = tx.getTxId();
+        size = tx.getSize();
+        version = tx.getVersion();
+        nonce = tx.getNonce();
+        sender = tx.getSender().toString();
+        sysFee = Long.toString(tx.getSystemFee());
+        netFee = Long.toString(tx.getNetworkFee());
+        validUntilBlock = tx.getValidUntilBlock();
+        signers = tx.getSigners().stream().map(TransactionSigner::new).collect(Collectors.toList());
+        attributes = tx.getAttributes().stream()
+                .map(a -> TransactionAttribute.fromType(a.getType()))
+                .collect(Collectors.toList());
+        script = Base64.encode(tx.getScript());
+        witnesses = tx.getWitnesses().stream().map(NeoWitness::new).collect(Collectors.toList());
+        // The last four properties are not available.
     }
 
     public Hash256 getHash() {
