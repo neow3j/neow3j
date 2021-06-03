@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.serialization.BinaryReader;
@@ -323,6 +325,12 @@ public class Transaction extends NeoSerializable {
     @Override
     public byte[] toArray() {
         return super.toArray();
+    }
+
+    public String toJson() throws JsonProcessingException {
+        io.neow3j.protocol.core.response.Transaction dtoTx =
+                new io.neow3j.protocol.core.response.Transaction(this);
+        return ObjectMapperFactory.getObjectMapper().writeValueAsString(dtoTx);
     }
 
 }
