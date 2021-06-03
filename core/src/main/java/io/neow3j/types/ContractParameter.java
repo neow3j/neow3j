@@ -168,10 +168,20 @@ public class ContractParameter {
             return bool((Boolean) o);
         } else if (o instanceof Integer) {
             return integer((Integer) o);
+        } else if (o instanceof Long) {
+            return integer(BigInteger.valueOf((Long) o));
+        } else if (o instanceof BigInteger) {
+            return integer((BigInteger) o);
         } else if (o instanceof byte[]) {
             return byteArray((byte[]) o);
         } else if (o instanceof String) {
             return string((String) o);
+        } else if (o instanceof Hash160) {
+            return hash160((Hash160) o);
+        } else if (o instanceof Hash256) {
+            return hash256((Hash256) o);
+        } else if (o instanceof Account) {
+            return hash160((Account) o);
         } else {
             throw new IllegalArgumentException("The provided object could not be casted into " +
                     "a supported contract parameter type.");
