@@ -72,6 +72,10 @@ public class StdLib extends ContractInterface {
      *         }
      *     }
      * </pre>
+     * <p>
+     * To JSON-serialize byte strings (e.g., {@code ByteString}, {@code Hash160}) or byte arrays
+     * it is recommended to first Base64 encoded them with {@link StdLib#base64Encode(ByteString)}.
+     * Otherwise, they will be treated as UTF-8 encoded strings, which might lead to errors.
      *
      * @param obj The object to JSON-serialize.
      * @return the object as a JSON string.
