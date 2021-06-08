@@ -114,6 +114,12 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, String value);
 
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, byte[] key, Hash160 hash160);
+
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, byte[] key, Hash256 hash256);
+
     /**
      * Stores the given key-value pair.
      *
@@ -154,6 +160,12 @@ public class Storage {
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, ByteString value);
 
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, ByteString key, Hash160 hash160);
+
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, ByteString key, Hash256 hash256);
+
     /**
      * Stores the given key-value pair.
      *
@@ -193,6 +205,12 @@ public class Storage {
      */
     @Syscall(SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, ByteString value);
+
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, Hash160 hash160);
+
+    @Syscall(SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, Hash256 hash256);
 
     /**
      * Deletes the value corresponding to the given key from the storage.
