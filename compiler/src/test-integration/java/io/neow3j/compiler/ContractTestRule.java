@@ -28,6 +28,7 @@ import org.testcontainers.containers.ContainerState;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
@@ -48,6 +49,7 @@ public class ContractTestRule implements TestRule {
     private final String fullyQualifiedClassName;
     private Account defaultAccount;
     private Account committee;
+    private Account client1;
     private Wallet wallet;
     private Neow3j neow3j;
     private SmartContract contract;
@@ -83,6 +85,7 @@ public class ContractTestRule implements TestRule {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+        client1 = Account.fromWIF(client1AccountWIF());
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = neow3j.build(new HttpService(containerURL));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
@@ -127,6 +130,10 @@ public class ContractTestRule implements TestRule {
 
     public Account getCommittee() {
         return committee;
+    }
+
+    public Account getClient1() {
+        return client1;
     }
 
     public Wallet getWallet() {
