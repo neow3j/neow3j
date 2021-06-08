@@ -108,12 +108,28 @@ public class NeoToken extends FungibleToken {
      */
     public static native AccountState getAccountState(Hash160 scriptHash);
 
+    /**
+     * The state of an account regarding its NEO balance and voting target.
+     */
     public static class AccountState {
 
+        /**
+         * The NEO balance of the account.
+         */
         public final int balance;
 
+        /**
+         * The block height when the balance changed last.
+         * <p>
+         * This field is {@code 0} by default if the account does not hold any NEO.
+         */
         public final int balanceHeight;
 
+        /**
+         * The voting target of the account.
+         * <p>
+         * This field may be {@code null} if the account has no voting target.
+         */
         public final ECPoint voteTo;
 
         private AccountState() {

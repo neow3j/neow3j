@@ -134,8 +134,9 @@ public class StdLib extends ContractInterface {
     public static native ByteString base58Decode(String input);
 
     /**
-     * Encodes the given byte string to a Base58 string. The encoded string contains the checksum
-     * of the binary data.
+     * Encodes the given byte string to a Base58 string.
+     * <p>
+     * The encoded string contains the checksum of the binary data.
      *
      * @param input The bytes to encode.
      * @return the encoded string.
@@ -143,7 +144,7 @@ public class StdLib extends ContractInterface {
     public static native String base58CheckEncode(ByteString input);
 
     /**
-     * Decodes the given Base58-encoded string. The encoded string contains the checksum of the
+     * Decodes the given Base58-encoded string. Expects the input to contain the checksum of the
      * binary data.
      *
      * @param input The Base58-encoded string.
