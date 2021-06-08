@@ -149,7 +149,7 @@ public class StdLib extends ContractInterface {
      * @param input The Base58-encoded string.
      * @return the decoded bytes.
      */
-    public static native String base58CheckDecode(String input);
+    public static native ByteString base58CheckDecode(String input);
 
     /**
      * Converts the given number to its string representation.

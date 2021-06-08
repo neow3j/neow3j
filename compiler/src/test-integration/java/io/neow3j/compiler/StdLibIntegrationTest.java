@@ -333,7 +333,7 @@ public class StdLibIntegrationTest {
             return StdLib.base58CheckEncode(bytes);
         }
 
-        public static String base58CheckDecode(String encoded) {
+        public static ByteString base58CheckDecode(String encoded) {
             return StdLib.base58CheckDecode(encoded);
         }
 
