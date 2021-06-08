@@ -5,9 +5,11 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.NeoToken.Candidate;
+import io.neow3j.devpack.contracts.NeoToken.AccountState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.Signer;
+import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
@@ -24,8 +26,10 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -74,8 +78,10 @@ public class NeoTokenIntegrationTest {
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
         assertThat(l, hasSize(1));
-        assertThat(l.get(0).getList().get(0).getByteArray(),
+        List<StackItem> candidateStruct = l.get(0).getList();
+        assertThat(candidateStruct.get(0).getByteArray(),
                 is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
+        assertThat(candidateStruct.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ZERO));
     }
 
     @Test
@@ -132,7 +138,37 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
-    public void getHash() throws Throwable {
+    public void getAccountStateWithoutVote() throws Throwable {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(ct.getClient1()));
+        StackItem stateNoBalance = response.getInvocationResult().getStack().get(0);
+        assertThat(stateNoBalance.getType(), is(StackItemType.ANY));
+        assertNull(stateNoBalance.getValue());
+
+        Hash256 txHash = ct.transferNeo(ct.getClient1().getScriptHash(), BigInteger.TEN);
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
+
+        response = ct.callInvokeFunction(testName, hash160(ct.getClient1()));
+        List<StackItem> stateNoVote = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(stateNoVote.get(0).getInteger(), is(BigInteger.valueOf(10L)));
+        assertThat(stateNoVote.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertNull(stateNoVote.get(2).getValue());
+    }
+
+    @Test
+    public void registerVoteAndGetAccountState() throws IOException {
+        ct.signWithDefaultAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                hash160(ct.getDefaultAccount()),
+                publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
+        List<StackItem> stateStruct = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(stateStruct.get(0).getInteger(), is(BigInteger.valueOf(10000L)));
+        assertThat(stateStruct.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertThat(stateStruct.get(2).getByteArray(),
+                is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
+    }
+
+    @Test
+    public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(neoTokenHash())));
@@ -201,8 +237,17 @@ public class NeoTokenIntegrationTest {
             NeoToken.setRegisterPrice(registerPrice);
         }
 
+        public static AccountState getAccountStateWithoutVote(Hash160 scriptHash) {
+            return NeoToken.getAccountState(scriptHash);
+        }
+
+        public static AccountState registerVoteAndGetAccountState(Hash160 voter,
+                ECPoint publicKey) {
+            NeoToken.registerCandidate(publicKey);
+            NeoToken.vote(voter, publicKey);
+            return NeoToken.getAccountState(voter);
+        }
+
     }
 
 }
-
-
