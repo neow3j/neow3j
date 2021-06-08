@@ -757,7 +757,7 @@ public class NeoMethod {
     private void collectLocalVariables(int nextVarIdx) {
         int paramCount = Type.getArgumentTypes(asmMethod.desc).length;
         List<LocalVariableNode> locVars = asmMethod.localVariables;
-        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+        if (locVars.size() > 0 && containsThisParam(locVars)) {
             paramCount++;
         }
         int localVarCount = asmMethod.maxLocals - paramCount;
@@ -799,7 +799,7 @@ public class NeoMethod {
     private int collectMethodParameters() {
         int paramCount = 0;
         List<LocalVariableNode> locVars = asmMethod.localVariables;
-        if (locVars.size() > 0 && locVars.get(0).name.equals(THIS_KEYWORD)) {
+        if (locVars.size() > 0 && containsThisParam(locVars)) {
             paramCount++;
         }
         paramCount += Type.getArgumentTypes(asmMethod.desc).length;
@@ -835,6 +835,10 @@ public class NeoMethod {
             neoIdx++;
         }
         return jvmIdx;
+    }
+
+    private boolean containsThisParam(List<LocalVariableNode> locVars) {
+        return locVars.stream().anyMatch(v -> v.name.equals(THIS_KEYWORD));
     }
 
     private static class TryCatchFinallyBlock {
