@@ -134,6 +134,24 @@ public class StdLib extends ContractInterface {
     public static native ByteString base58Decode(String input);
 
     /**
+     * Encodes the given byte string to a Base58 string. The encoded string contains the checksum
+     * of the binary data.
+     *
+     * @param input The bytes to encode.
+     * @return the encoded string.
+     */
+    public static native String base58CheckEncode(ByteString input);
+
+    /**
+     * Decodes the given Base58-encoded string. The encoded string contains the checksum of the
+     * binary data.
+     *
+     * @param input The Base58-encoded string.
+     * @return the decoded bytes.
+     */
+    public static native String base58CheckDecode(String input);
+
+    /**
      * Converts the given number to its string representation.
      * <p>
      * The hexadecimal representation uses the 2's complement to represent negative numbers. Always
