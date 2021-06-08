@@ -7,6 +7,8 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
 
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.test.TestProperties;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.crypto.Base64;
@@ -325,6 +327,9 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeFunction() throws Exception {
+        ECKeyPair.ECPublicKey pubKey =
+                new ECKeyPair.ECPublicKey(TestProperties.defaultAccountPublicKey());
+
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
@@ -334,7 +339,10 @@ public class RequestTest extends RequestTester {
                 ),
                 new Signer.Builder()
                         .account(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
-                        .scopes(WitnessScope.CALLED_BY_ENTRY)
+                        .scopes(WitnessScope.CALLED_BY_ENTRY, WitnessScope.CUSTOM_CONTRACTS,
+                                WitnessScope.CUSTOM_GROUPS)
+                        .allowedContracts(new Hash160(TestProperties.neoTokenHash()))
+                        .allowedGroups(pubKey)
                         .build()
         ).send();
 
@@ -343,7 +351,10 @@ public class RequestTest extends RequestTester {
                 "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"balanceOf\"," +
                 "[{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}]," +
                 "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\"," +
-                "\"scopes\":[\"CalledByEntry\"],\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
+                "\"scopes\":\"CalledByEntry,CustomContracts,CustomGroups\"," +
+                "\"allowedcontracts\":[\"ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"]," +
+                "\"allowedgroups" +
+                "\":[\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"]}]" +
                 "]," +
                 "\"id\":1}"
         );
@@ -385,7 +396,7 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokescript\"," +
                 "\"params\":[\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\"," +
-                "[{\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\",\"scopes\":[\"CalledByEntry\"],\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
+                "[{\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\",\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
                 "]," +
                 "\"id\":1}"
         );
@@ -404,7 +415,7 @@ public class RequestTest extends RequestTester {
                 "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\"," +
                 "[{\"type\":\"String\",\"value\":\"a string\"}," +
                 "{\"type\":\"String\",\"value\":\"another string\"}]," +
-                "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":[\"CalledByEntry\"],\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
+                "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
                 "]," +
                 "\"id\":1}"
         );
