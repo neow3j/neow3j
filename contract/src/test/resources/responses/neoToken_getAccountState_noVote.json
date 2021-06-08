@@ -1,0 +1,28 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DBRjv+9gkFzYfFbaQGRkS+b3ro7EiBHAHwwPZ2V0QWNjb3VudFN0YXRlDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS",
+    "state": "HALT",
+    "gasconsumed": "2028330",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Struct",
+        "value": [
+          {
+            "type": "Integer",
+            "value": "12000"
+          },
+          {
+            "type": "Integer",
+            "value": "820"
+          },
+          {
+            "type": "Any"
+          }
+        ]
+      }
+    ]
+  }
+}
