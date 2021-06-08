@@ -17,8 +17,12 @@ public class StructStackItem extends ListLikeStackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof StructStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StructStackItem)) {
+            return false;
+        }
         StructStackItem other = (StructStackItem) o;
         return getType() == other.getType() &&
                 Objects.equals(getValue(), other.getValue());
