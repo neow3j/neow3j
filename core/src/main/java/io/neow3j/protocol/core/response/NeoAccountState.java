@@ -11,8 +11,8 @@ public class NeoAccountState {
     @JsonProperty(value = "balance")
     private BigInteger balance;
 
-    @JsonProperty(value = "updateHeight")
-    private BigInteger updateHeight;
+    @JsonProperty(value = "balanceHeight")
+    private BigInteger balanceHeight;
 
     @JsonProperty(value = "voteTo")
     private ECPublicKey publicKey;
@@ -20,9 +20,9 @@ public class NeoAccountState {
     public NeoAccountState() {
     }
 
-    public NeoAccountState(BigInteger balance, BigInteger updateHeight, ECPublicKey publicKey) {
+    public NeoAccountState(BigInteger balance, BigInteger balanceHeight, ECPublicKey publicKey) {
         this.balance = balance;
-        this.updateHeight = updateHeight;
+        this.balanceHeight = balanceHeight;
         this.publicKey = publicKey;
     }
 
@@ -38,8 +38,8 @@ public class NeoAccountState {
         return balance;
     }
 
-    public BigInteger getUpdateHeight() {
-        return updateHeight;
+    public BigInteger getBalanceHeight() {
+        return balanceHeight;
     }
 
     public ECPublicKey getPublicKey() {
@@ -56,20 +56,20 @@ public class NeoAccountState {
         }
         NeoAccountState that = (NeoAccountState) o;
         return Objects.equals(getBalance(), that.getBalance()) &&
-                Objects.equals(getUpdateHeight(), that.getUpdateHeight()) &&
+                Objects.equals(getBalanceHeight(), that.getBalanceHeight()) &&
                 Objects.equals(getPublicKey(), that.getPublicKey());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getBalance(), getUpdateHeight(), getPublicKey());
+        return Objects.hash(getBalance(), getBalanceHeight(), getPublicKey());
     }
 
     @Override
     public String toString() {
         return "NeoAccountState{" +
                 "balance=" + getBalance().toString() +
-                ", updateHeight=" + getUpdateHeight() +
+                ", updateHeight=" + getBalanceHeight() +
                 ", voteTo=" + getPublicKey() +
                 "}";
     }

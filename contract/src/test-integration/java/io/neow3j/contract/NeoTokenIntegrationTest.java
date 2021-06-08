@@ -179,8 +179,8 @@ public class NeoTokenIntegrationTest {
 
         NeoAccountState state = neoToken.getAccountState(account1.getScriptHash());
         assertThat(state.getBalance(), is(BigInteger.valueOf(2000)));
-        assertNotNull(state.getUpdateHeight());
-        assertThat(state.getUpdateHeight(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertNotNull(state.getBalanceHeight());
+        assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
         assertNull(state.getPublicKey());
 
         // Register client1 as candidate and vote for it with account1
@@ -198,7 +198,7 @@ public class NeoTokenIntegrationTest {
 
         NeoAccountState stateWithVote = neoToken.getAccountState(account1.getScriptHash());
         assertThat(stateWithVote.getBalance(), is(BigInteger.valueOf(2000)));
-        assertThat(state.getUpdateHeight(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
         assertThat(stateWithVote.getPublicKey(), is(CLIENT_1.getECKeyPair().getPublicKey()));
 
         // Unregister candidate

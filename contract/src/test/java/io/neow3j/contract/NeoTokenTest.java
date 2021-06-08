@@ -346,7 +346,7 @@ public class NeoTokenTest {
         setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState.json");
         NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(20000)));
-        assertThat(neoAccountState.getUpdateHeight(), is(BigInteger.valueOf(259)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(259)));
         ECPublicKey publicKey =
                 new ECPublicKey(
                         "037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
@@ -358,7 +358,7 @@ public class NeoTokenTest {
         setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_noVote.json");
         NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(12000)));
-        assertThat(neoAccountState.getUpdateHeight(), is(BigInteger.valueOf(820)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
         assertNull(neoAccountState.getPublicKey());
     }
 
@@ -368,7 +368,7 @@ public class NeoTokenTest {
                 "neoToken_getAccountState_noBalance.json");
         NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
         assertThat(neoAccountState.getBalance(), is(BigInteger.ZERO));
-        assertNull(neoAccountState.getUpdateHeight());
+        assertNull(neoAccountState.getBalanceHeight());
         assertNull(neoAccountState.getPublicKey());
     }
 
