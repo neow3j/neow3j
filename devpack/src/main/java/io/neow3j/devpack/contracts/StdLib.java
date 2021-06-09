@@ -7,6 +7,11 @@ import io.neow3j.devpack.annotations.ContractHash;
 public class StdLib extends ContractInterface {
 
     /**
+     * The maximum byte length for input values.
+     */
+    public static final int MAX_INPUT_LENGTH = 1024;
+
+    /**
      * Serialize the given object to a byte string.
      * <p>
      * As an example, the following class will be serialized to the byte string below. We assume

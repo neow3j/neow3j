@@ -7,6 +7,16 @@ import io.neow3j.devpack.annotations.ContractHash;
 public class PolicyContract extends ContractInterface {
 
     /**
+     * The maximum execution fee factor that the committee can set.
+     */
+    public static final int MAX_EXEC_FEE_FACTOR = 1000;
+
+    /**
+     * The maximum storage price that the committee can set.
+     */
+    public static final int MAX_STORAGE_PRICE = 1000;
+
+    /**
      * Gets the GAS cost per transaction byte, i.e. the fee per byte.
      *
      * @return the fee per byte.
