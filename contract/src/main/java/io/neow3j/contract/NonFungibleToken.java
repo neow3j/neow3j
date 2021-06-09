@@ -249,6 +249,7 @@ public class NonFungibleToken extends Token {
      * This method is intended to be used for divisible NFTs only.
      *
      * @param owner the script hash of the account to fetch the balance for.
+     * @param tokenId the token ID.
      * @return the token balance of the given account.
      * @throws IOException                   if there was a problem fetching information from
      *                                       the Neo node.
