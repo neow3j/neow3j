@@ -66,7 +66,7 @@ public class ByteString {
 
     /**
      * Converts this {@code ByteString} to a byte array. This incurs the GAS cost of converting
-     * the the {@code ByteString} to a byte array.
+     * the {@code ByteString} to a byte array.
      *
      * @return the byte array.
      */
