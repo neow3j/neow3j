@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.script.OpCode;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.serialization.NeoSerializableInterface;
@@ -9,10 +11,13 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -33,7 +38,10 @@ public class TransactionTest {
     private Hash160 account2;
     private Hash160 account3;
 
-    private Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
+    private final Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -208,7 +216,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void getTxId() throws IOException {
+    public void getTxId() {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
                 new Neow3jConfig().setNetworkMagic(5195086));
 
@@ -277,6 +285,54 @@ public class TransactionTest {
         byte[] expectedData = concatenate(neow.getNetworkMagicNumber(),
                 sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
+    }
+
+    @Test
+    public void testTooBigTransaction() throws IOException {
+        // The following transaction is 29 bytes without the script
+        // The script needs additional 4 bytes to specify its length.
+        byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4 + 1];
+        // This transaction exceeds the maximal allowed byte length by one.
+        Transaction tx = new Transaction(neow, (byte) 0,
+                0L,
+                0L,
+                new ArrayList<>(),
+                0L,
+                0L,
+                new ArrayList<>(),
+                scriptForTooBigTx,
+                new ArrayList<>());
+
+        assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE + 1));
+
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("The transaction exceeds the maximum transaction size.");
+        tx.send();
+    }
+
+    @Test
+    public void testMaxTransactionSize() throws IOException {
+        // The following transaction is 29 bytes without the script
+        // The script needs additional 4 bytes to specify its length.
+        byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4];
+        // This transaction has exactly the maximal allowed byte length.
+        Transaction tx = new Transaction(neow, (byte) 0,
+                0L,
+                0L,
+                new ArrayList<>(),
+                0L,
+                0L,
+                new ArrayList<>(),
+                scriptForTooBigTx,
+                new ArrayList<>());
+
+        assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
+
+        // If the transaction is sent, the check was passed successfully.
+        // No mock was setup, so the execution should just fail to connect.
+        exceptionRule.expect(ConnectException.class);
+        exceptionRule.expectMessage("Failed to connect to");
+        tx.send();
     }
 
 }
