@@ -136,6 +136,28 @@ public class StorageMap {
      * @param key   The key of the entry.
      * @param value The value of the entry.
      */
+    public void put(byte[] key, Hash160 value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(byte[] key, Hash256 value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
     public void put(ByteString key, byte[] value) {
         Storage.put(this.context, concat(this.prefix, key), value);
 
@@ -171,6 +193,28 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, String value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(ByteString key, Hash160 value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(ByteString key, Hash256 value) {
         Storage.put(this.context, concat(this.prefix, key), value);
     }
 
@@ -220,6 +264,28 @@ public class StorageMap {
     }
 
     /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, Hash160 value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code
+     * prefix + key}) into the underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    public void put(String key, Hash256 value) {
+        Storage.put(this.context, concat(this.prefix, key), value);
+    }
+
+    /**
      * Compares this {@code StorageMap} to the given object. The comparison happens by reference
      * only.
      *
@@ -246,4 +312,5 @@ public class StorageMap {
                 // does not compare Buffers (which byte[] is on the neo-vm) by value.
                 && new ByteString(prefix).equals(new ByteString(map.prefix));
     }
+
 }
