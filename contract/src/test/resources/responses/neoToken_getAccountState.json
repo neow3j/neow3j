@@ -1,0 +1,29 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DBRjv+9gkFzYfFbaQGRkS+b3ro7EiBHAHwwPZ2V0QWNjb3VudFN0YXRlDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS",
+    "state": "HALT",
+    "gasconsumed": "2028330",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Struct",
+        "value": [
+          {
+            "type": "Integer",
+            "value": "20000"
+          },
+          {
+            "type": "Integer",
+            "value": "259"
+          },
+          {
+            "type": "ByteString",
+            "value": "A3J586UHgXJRU0GBEWyzjvMEaLJQdIJ9s0y7xq3Ihzky"
+          }
+        ]
+      }
+    ]
+  }
+}

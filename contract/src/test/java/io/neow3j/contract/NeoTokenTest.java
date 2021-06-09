@@ -17,6 +17,7 @@ import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -25,6 +26,7 @@ import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.NeoAccountState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
@@ -61,6 +63,7 @@ public class NeoTokenTest {
     private static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
     private static final String GET_REGISTER_PRICE = "getRegisterPrice";
     private static final String SET_REGISTER_PRICE = "setRegisterPrice";
+    private static final String GET_ACCOUNT_STATE = "getAccountState";
 
     private Neow3j neow;
 
@@ -101,13 +104,13 @@ public class NeoTokenTest {
                 "/responses/invokefunction_unclaimedgas.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                                                  + ".*\"method\":\"invokefunction\""
-                                                  + ".*\"params\":"
-                                                  + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
-                                                  + ".*\"unclaimedGas\"" // function
-                                                  + ".*\"f68f181731a47036a99f04dad90043a744edec0f\""
-                                                  // script hash
-                                                  + ".*100.*" // block height
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
+                        + ".*\"unclaimedGas\"" // function
+                        + ".*\"f68f181731a47036a99f04dad90043a744edec0f\""
+                        // script hash
+                        + ".*100.*" // block height
                 ))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -183,10 +186,10 @@ public class NeoTokenTest {
                 "/responses/invokefunction_getcommittee.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                                                  + ".*\"method\":\"invokefunction\""
-                                                  + ".*\"params\":"
-                                                  + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
-                                                  + ".*\"getCommittee\".*" // function
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
+                        + ".*\"getCommittee\".*" // function
                 ))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -203,10 +206,10 @@ public class NeoTokenTest {
         String responseBody = loadFile("/responses/invokefunction_getnextblockvalidators.json");
         WireMock.stubFor(post(urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                                                  + ".*\"method\":\"invokefunction\""
-                                                  + ".*\"params\":"
-                                                  + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
-                                                  + ".*\"getNextBlockValidators\".*" // function
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
+                        + ".*\"getNextBlockValidators\".*" // function
                 ))
                 .willReturn(aResponse()
                         .withStatus(200)
@@ -336,6 +339,37 @@ public class NeoTokenTest {
     @Test
     public void scriptHash() {
         assertThat(new NeoToken(neow).getScriptHash().toString(), is(NEOTOKEN_SCRIPTHASH));
+    }
+
+    @Test
+    public void testGetAccountState() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+        assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(20000)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(259)));
+        ECPublicKey publicKey =
+                new ECPublicKey(
+                        "037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+        assertThat(neoAccountState.getPublicKey(), is(publicKey));
+    }
+
+    @Test
+    public void testGetAccountState_noVote() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_noVote.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+        assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(12000)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
+        assertNull(neoAccountState.getPublicKey());
+    }
+
+    @Test
+    public void testGetAccountState_noBalance() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE,
+                "neoToken_getAccountState_noBalance.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+        assertThat(neoAccountState.getBalance(), is(BigInteger.ZERO));
+        assertNull(neoAccountState.getBalanceHeight());
+        assertNull(neoAccountState.getPublicKey());
     }
 
 }
