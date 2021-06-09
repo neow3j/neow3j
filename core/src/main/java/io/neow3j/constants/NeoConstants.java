@@ -94,6 +94,11 @@ public class NeoConstants {
     public static final byte CURRENT_TX_VERSION = 0;
 
     /**
+     * The maximum size of a transaction.
+     */
+    public static final int MAX_TRANSACTION_SIZE = 102400;
+
+    /**
      * The maximum number of attributes that a transaction can have.
      */
     public static final int MAX_TRANSACTION_ATTRIBUTES = 16;
@@ -104,9 +109,9 @@ public class NeoConstants {
     public static final int MAX_SIGNER_SUBITEMS = 16;
 
     /**
-     * Max byte length for a valid contract manifest.
+     * The maximum byte length for a valid contract manifest.
      */
-    public static final int MAX_MANIFEST_SIZE = 4096;
+    public static final int MAX_MANIFEST_SIZE = 0xFFFF;
 
     //endregion
 
