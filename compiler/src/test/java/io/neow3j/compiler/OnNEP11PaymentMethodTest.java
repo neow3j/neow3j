@@ -5,14 +5,17 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -38,17 +41,18 @@ public class OnNEP11PaymentMethodTest {
         ContractParameterType[] paramTypes = methods.get(0).getParameters().stream().map(
                 ContractParameter::getParamType).toArray(ContractParameterType[]::new);
         assertThat(paramTypes, is(new Object[]{ContractParameterType.HASH160,
-                ContractParameterType.INTEGER, ContractParameterType.STRING}));
+                ContractParameterType.INTEGER, ContractParameterType.BYTE_ARRAY,
+                ContractParameterType.ANY}));
         assertThat(methods.get(0).getReturnType(), is(ContractParameterType.VOID));
-
     }
 
     @Test
     public void OnNep11PaymentMethodIllegalReturnType() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
-                String.class.getName(), void.class.getName())));
+                "onPayment", "required to have", Hash160.class.getName(),
+                int.class.getName(), ByteString.class.getName(), Object.class.getName(),
+                void.class.getName())));
         new Compiler().compile(
                 OnNep11PaymentMethodIllegalReturnTypeTestContract.class.getName());
     }
@@ -57,8 +61,9 @@ public class OnNEP11PaymentMethodTest {
     public void OnNep11PaymentMethodIllegalParameters() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "onPayment", "required to have", Hash160.class.getName(), int.class.getName(),
-                String.class.getName(), void.class.getName())));
+                "onPayment", "required to have", Hash160.class.getName(),
+                int.class.getName(), ByteString.class.getName(), Object.class.getName(),
+                void.class.getName())));
         new Compiler().compile(
                 OnNep11PaymentMethodIllegalParametersTestContract.class.getName());
     }
@@ -74,14 +79,14 @@ public class OnNEP11PaymentMethodTest {
     static class OnNep11PaymentMethodTestContract {
 
         @OnNEP11Payment
-        public static void onPayment(Hash160 hash, int i, String data) {
+        public static void onPayment(Hash160 hash, int i, ByteString tokenId, Object data) {
         }
     }
 
     static class OnNep11PaymentMethodIllegalReturnTypeTestContract {
 
         @OnNEP11Payment
-        public static int onPayment(Hash160 hash, int i, String data) {
+        public static int onPayment(Hash160 hash, int i, ByteString tokenId, Object data) {
             return i;
         }
 
@@ -98,12 +103,12 @@ public class OnNEP11PaymentMethodTest {
     static class MultipleOnNep11PaymentMethodsTestContract {
 
         @OnNEP11Payment
-        public static void onPayment1(Hash160 hash, int i, String data) {
+        public static void onPayment1(Hash160 hash, int i, ByteString tokenId, Object data) {
 
         }
 
         @OnNEP11Payment
-        public static void onPayment2(Hash160 hash, int i, String data) {
+        public static void onPayment2(Hash160 hash, int i, ByteString tokenId, Object data) {
         }
 
     }
