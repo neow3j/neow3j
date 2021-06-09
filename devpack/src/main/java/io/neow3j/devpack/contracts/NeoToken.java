@@ -104,7 +104,7 @@ public class NeoToken extends FungibleToken {
      * Gets the account state.
      *
      * @param scriptHash The script hash of the account.
-     * @return The state of the account.
+     * @return The state of the account or null if the account was not yet used on-chain.
      */
     public static native AccountState getAccountState(Hash160 scriptHash);
 
