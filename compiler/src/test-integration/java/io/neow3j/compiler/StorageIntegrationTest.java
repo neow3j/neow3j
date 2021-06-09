@@ -1,15 +1,17 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Iterator.Struct;
-import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.constants.FindOptions;
+import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -20,11 +22,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -114,6 +118,24 @@ public class StorageIntegrationTest {
     }
 
     @Test
+    public void putByteArrayKeyHash160Value() throws IOException {
+        Hash160 v = ct.getDefaultAccount().getScriptHash();
+        ContractParameter key = byteArray("02");
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putByteArrayKeyHash256Value() throws IOException {
+        Hash256 v = ct.getDeployTxHash();
+        ContractParameter key = byteArray("02");
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
+    }
+
+    @Test
     public void putByteStringKeyByteArrayValue() throws IOException {
         String v = "050607";
         ContractParameter key = byteArray("02");
@@ -147,6 +169,24 @@ public class StorageIntegrationTest {
         ContractParameter value = integer(10);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(v));
+    }
+
+    @Test
+    public void putByteStringKeyHash160Value() throws IOException {
+        Hash160 v = ct.getDefaultAccount().getScriptHash();
+        ContractParameter key = byteArray("02");
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putByteStringKeyHash256Value() throws IOException {
+        Hash256 v = ct.getDeployTxHash();
+        ContractParameter key = byteArray("02");
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
     }
 
     @Test
@@ -186,9 +226,28 @@ public class StorageIntegrationTest {
     }
 
     @Test
+    public void putStringKeyHash160Value() throws IOException {
+        io.neow3j.types.Hash160 v = ct.getDefaultAccount().getScriptHash();
+        ContractParameter key = string("key");
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putStringKeyHash256Value() throws IOException {
+        Hash256 v = ct.getDeployTxHash();
+        ContractParameter key = string("key");
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
+    }
+
+    @Test
     public void deleteByByteArrayKey() throws IOException {
         ContractParameter key = byteArray(KEY1);
-        InvocationResult res = ct.callInvokeFunction("getByByteArrayKey", key).getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction("getByByteArrayKey", key)
+                .getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA1));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
@@ -197,7 +256,8 @@ public class StorageIntegrationTest {
     @Test
     public void deleteByByteStringKey() throws IOException {
         ContractParameter key = byteArray(KEY1);
-        InvocationResult res = ct.callInvokeFunction("getByByteStringKey", key).getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction("getByByteStringKey", key)
+                .getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA1));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
@@ -295,6 +355,18 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
+        public static ByteString putByteArrayKeyHash160Value(byte[] key,
+                io.neow3j.devpack.Hash160 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString putByteArrayKeyHash256Value(byte[] key,
+                io.neow3j.devpack.Hash256 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
         public static ByteString putByteStringKeyByteArrayValue(ByteString key, byte[] value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key);
@@ -315,6 +387,18 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
+        public static ByteString putByteStringKeyHash160Value(ByteString key,
+                io.neow3j.devpack.Hash160 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString putByteStringKeyHash256Value(ByteString key,
+                io.neow3j.devpack.Hash256 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
         public static ByteString putStringKeyByteArrayValue(String key, byte[] value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key);
@@ -331,6 +415,18 @@ public class StorageIntegrationTest {
         }
 
         public static ByteString putStringKeyIntegerValue(String key, int value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString putStringKeyHash160Value(String key,
+                io.neow3j.devpack.Hash160 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString putStringKeyHash256Value(String key,
+                io.neow3j.devpack.Hash256 value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key);
         }
@@ -396,6 +492,6 @@ public class StorageIntegrationTest {
             map.put(entry.key, entry.value);
             return map;
         }
-
     }
+
 }
