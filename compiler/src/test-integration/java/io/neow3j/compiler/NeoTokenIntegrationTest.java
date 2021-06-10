@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -187,6 +188,7 @@ public class NeoTokenIntegrationTest {
         assertThat(gasPerBlock, is(new BigInteger("50000")));
     }
 
+    @Permission(contract = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
     static class NeoTokenTestContract {
 
         public static int unclaimedGas(Hash160 scriptHash, int blockHeight) {

@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.test.TestProperties;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -239,6 +240,7 @@ public class ContractManagementIntegrationTest {
                 is(Numeric.reverseHexString(TestProperties.contractManagementHash())));
     }
 
+    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
     static class ContractManagementIntegrationTestContract {
 
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
@@ -258,6 +260,7 @@ public class ContractManagementIntegrationTest {
         }
     }
 
+    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
     static class ContractManagementIntegrationTestContractToUpdateWithData {
 
         public static void updateWithData(ByteString nefFile, String manifest, Object data) {
@@ -266,6 +269,7 @@ public class ContractManagementIntegrationTest {
 
     }
 
+    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
     static class ContractManagementIntegrationTestContractToUpdateWithoutData {
 
         public static void updateWithoutData(ByteString nefFile, String manifest) {
@@ -320,6 +324,7 @@ public class ContractManagementIntegrationTest {
         }
     }
 
+    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
     static class ContractManagementIntegrationTestContractToDestroy {
 
         public static void destroy() {

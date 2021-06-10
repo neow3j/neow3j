@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -118,9 +119,7 @@ public class ManifestBuilder {
                 .collect(Collectors.toList());
 
         if (permissions.isEmpty()) {
-            ContractPermission contractPermission = new ContractPermission("*",
-                    Collections.singletonList("*"));
-            return Collections.singletonList(contractPermission);
+            return new ArrayList<>();
         } else {
             return permissions;
         }
@@ -150,8 +149,8 @@ public class ManifestBuilder {
     private static ContractPermission getContractPermission(AnnotationNode ann) {
         int i = ann.values.indexOf("contract");
         String contract = (String) ann.values.get(i + 1);
-
         throwIfNotValidContractHashOrPubKey(contract);
+        contract = Numeric.prependHexPrefix(contract); // add 0x prefix if it doesn't have one.
 
         i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();

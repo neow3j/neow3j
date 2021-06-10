@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
@@ -63,6 +64,7 @@ public class RoleManagementTest {
         assertThat(pubKeysItem.get(0).getByteArray(), is(pubKey));
     }
 
+    @Permission(contract = "49cf4e5378ffcd4dec034fd98a174c5491e395e2")
     static class RoleManagementTestContract {
 
         public static Hash160 getHash() {
