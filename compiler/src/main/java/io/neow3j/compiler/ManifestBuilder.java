@@ -4,6 +4,7 @@ import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Optional.ofNullable;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
@@ -148,9 +149,15 @@ public class ManifestBuilder {
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
         int i = ann.values.indexOf("contract");
-        String contract = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKey(contract);
-        contract = Numeric.prependHexPrefix(contract); // add 0x prefix if it doesn't have one.
+        String hashOrPubKey = (String) ann.values.get(i + 1);
+        throwIfNotValidContractHashOrPubKey(hashOrPubKey);
+
+        // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
+        if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
+            hashOrPubKey = Numeric.prependHexPrefix(hashOrPubKey);
+        } else if (hashOrPubKey.length() == 2 * NeoConstants.PUBLIC_KEY_SIZE) {
+            hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
+        }
 
         i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
@@ -165,7 +172,7 @@ public class ManifestBuilder {
             methods.addAll((List<String>) methodsValues);
         }
 
-        return new ContractPermission(contract, methods);
+        return new ContractPermission(hashOrPubKey, methods);
     }
 
     private static ContractGroup getContractGroup(AnnotationNode ann) {
