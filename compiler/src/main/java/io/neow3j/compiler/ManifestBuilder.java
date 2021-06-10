@@ -9,8 +9,6 @@ import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
-import io.neow3j.devpack.annotations.Group;
-import io.neow3j.devpack.annotations.Group.Groups;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
 import io.neow3j.devpack.annotations.Permission;
@@ -57,7 +55,7 @@ public class ManifestBuilder {
         List<String> supportedStandards = buildSupportedStandards(compUnit.getContractClass());
         ContractABI abi = buildABI(compUnit.getNeoModule());
 
-        List<ContractGroup> groups = buildGroups(compUnit.getContractClass());
+        List<ContractGroup> groups = new ArrayList<>();
         List<ContractPermission> permissions = buildPermissions(compUnit.getContractClass());
         List<String> trusts = buildTrusts(compUnit.getContractClass());
 
@@ -110,13 +108,6 @@ public class ManifestBuilder {
         return getAnnotationNode(asmClass, SupportedStandards.class)
                 .flatMap(ManifestBuilder::transformAnnotationNodeStringValue)
                 .orElse(new ArrayList<>());
-    }
-
-    private static List<ContractGroup> buildGroups(ClassNode asmClass) {
-        return checkForSingleOrMultipleAnnotations(asmClass, Groups.class, Group.class)
-                .stream()
-                .map(ManifestBuilder::getContractGroup)
-                .collect(Collectors.toList());
     }
 
     public static List<ContractPermission> buildPermissions(ClassNode asmClass) {
