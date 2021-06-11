@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
@@ -10,6 +11,7 @@ import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -18,6 +20,7 @@ import org.junit.rules.TestName;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.test.TestProperties.gasTokenHash;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -35,7 +38,7 @@ public class GasTokenIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(io.neow3j.contract.GasToken.SCRIPT_HASH.toString()));
+                is(Numeric.reverseHexString(gasTokenHash())));
     }
 
     @Test
@@ -52,6 +55,7 @@ public class GasTokenIntegrationTest {
         assertTrue(after.compareTo(before) > 0);
     }
 
+    @Permission(contract = "d2a4cff31913016155e38e474a2c06d08be276cf")
     static class GasTokenIntegrationTestContract {
 
         public static Hash160 getHash() {

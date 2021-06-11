@@ -5,21 +5,22 @@
     "script": "",
     "state": "HALT",
     "gasconsumed": "",
+    "exception": null,
     "stack": [
       {
-        "type": "Array",
-        "value": [
+        "type": "InteropInterface",
+        "iterator": [
           {
             "type": "ByteString",
-            "value": "X5S1ch/84215FAGLt1G4HefASLA="
+            "value": "dG9rZW5vZjE="
           },
           {
             "type": "ByteString",
-            "value": "MFkx9RLgbATxO+MQfuKw5P5/6UY="
+            "value": "dG9rZW5vZjI="
           }
-        ]
+        ],
+        "truncated": false
       }
-    ],
-    "tx": null
+    ]
   }
 }

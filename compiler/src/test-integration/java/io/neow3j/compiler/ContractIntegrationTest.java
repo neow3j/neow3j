@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.NeoToken;
-import io.neow3j.devpack.CallFlags;
+import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
@@ -31,7 +31,7 @@ public class ContractIntegrationTest {
     @Test
     public void callWithoutArguments() throws IOException {
         NeoInvokeFunction resp = ct.callInvokeFunction("call",
-                hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(CallFlags.ALL));
+                hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(CallFlags.All));
         assertThat(resp.getInvocationResult().getStack().get(0).getString(),
                 is("NEO"));
     }
@@ -40,7 +40,7 @@ public class ContractIntegrationTest {
     public void callWithArgument() throws IOException {
         NeoInvokeFunction resp =
                 ct.callInvokeFunction("call", hash160(NeoToken.SCRIPT_HASH), string(
-                        "balanceOf"), integer(CallFlags.ALL),
+                        "balanceOf"), integer(CallFlags.All),
                         hash160(ct.getCommittee().getScriptHash()));
         assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(100_000_000));
@@ -72,7 +72,7 @@ public class ContractIntegrationTest {
         public static Object callGasTokenSymbol() {
             Hash160 contractHash = new Hash160(StringLiteralHelper.hexToBytes(
                     "cf76e28bd0062c4a478ee35561011319f3cfa4d2")); // little-endian GAS hash
-            return Contract.call(contractHash, "symbol", CallFlags.ALL, new Object[]{});
+            return Contract.call(contractHash, "symbol", CallFlags.All, new Object[]{});
         }
 
         public static byte getCallFlags() {

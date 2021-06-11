@@ -939,10 +939,9 @@ public class ResponseTest extends ResponseTester {
                 new ContractMethod("currentHash", emptyList(), 0,
                         ContractParameterType.HASH256, true);
         ContractMethod method2 =
-                new ContractMethod("getTransactionHeight",
-                        singletonList(
-                                new ContractParameter("hash", ContractParameterType.HASH256, null)
-                        ), 35, ContractParameterType.INTEGER, true);
+                new ContractMethod("getTransactionHeight", singletonList(
+                        new ContractParameter("hash", ContractParameterType.HASH256)), 35,
+                        ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
         ContractPermission permission = new ContractPermission("*", singletonList("*"));
         ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
@@ -1079,12 +1078,19 @@ public class ResponseTest extends ResponseTester {
                         "        \"sysfee\": \"9007810\",\n" +
                         "        \"netfee\": \"1267450\",\n" +
                         "        \"validuntilblock\": 2103622,\n" +
-                        "        \"signers\": [\n" +
-                        "            {\n" +
-                        "                \"account\": \"0xf68f181731a47036a99f04dad90043a744edec0f\",\n" +
-                        "                \"scopes\": \"CalledByEntry\"\n" +
-                        "            }\n" +
-                        "        ],\n" +
+                        "        \"signers\": [" +
+                        "           {" +
+                        "               \"account\": \"0x69ecca587293047be4c59159bf8bc399985c160d\"," +
+                        "               \"scopes\": \"CustomContracts, CustomGroups\"," +
+                        "               \"allowedcontracts\": [" +
+                        "                   \"0xd2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                        "                   \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"" +
+                        "               ]," +
+                        "               \"allowedgroups\": [" +
+                        "                   \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"" +
+                        "               ]" +
+                        "           }" +
+                        "        ]," +
                         "        \"attributes\": [\n" +
                         "            {" +
                         "                \"type\": \"HighPriority\"" +
@@ -1127,10 +1133,15 @@ public class ResponseTest extends ResponseTester {
         List<TransactionSigner> signers = transaction.getSigners();
         assertThat(signers, is(notNullValue()));
         assertThat(signers, hasSize(1));
+
         assertThat(signers.get(0).getAccount(),
-                is(new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f")));
-        assertThat(signers.get(0).getScopes(), hasSize(1));
-        assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+                is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
+        assertThat(signers.get(0).getScopes(), hasSize(2));
+        assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CUSTOM_CONTRACTS));
+        assertThat(signers.get(0).getScopes().get(1), is(WitnessScope.CUSTOM_GROUPS));
+        assertThat(signers.get(0).getAllowedContracts().get(0), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
+        assertThat(signers.get(0).getAllowedContracts().get(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
+        assertThat(signers.get(0).getAllowedGroups().get(0), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
@@ -1414,7 +1425,32 @@ public class ResponseTest extends ResponseTester {
         assertThat(getVersion.getVersion().getWSPort(), is(40334));
         assertThat(getVersion.getVersion().getNonce(), is(224036820L));
         assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(769));
+        assertThat(getVersion.getVersion().getNetwork(), is(769L));
+    }
+
+    @Test
+    public void testGetVersion_Network_Long() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"tcpport\": 40333,\n" +
+                        "        \"wsport\": 40334,\n" +
+                        "        \"nonce\": 224036820,\n" +
+                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"network\": 4232068425\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
+        assertThat(getVersion.getVersion(), is(notNullValue()));
+        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
+        assertThat(getVersion.getVersion().getWSPort(), is(40334));
+        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
+        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(getVersion.getVersion().getNetwork(), is(4232068425L));
     }
 
     @Test

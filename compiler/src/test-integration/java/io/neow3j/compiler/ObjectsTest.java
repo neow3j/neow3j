@@ -86,6 +86,26 @@ public class ObjectsTest {
         assertThat(pojo2.get(11).getInteger(), is(new BigInteger("500000000")));
     }
 
+    @Test
+   public void forLoopInObjectMethodWithoutState() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.integer(5));
+        List<StackItem> ints = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(ints.get(0).getInteger().intValue(), is(0));
+        assertThat(ints.get(1).getInteger().intValue(), is(2));
+        assertThat(ints.get(2).getInteger().intValue(), is(4));
+        assertThat(ints.get(3).getInteger().intValue(), is(6));
+        assertThat(ints.get(4).getInteger().intValue(), is(8));
+   }
+
+    @Test
+    public void forLoopInObjectMethodWithState() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> strings = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(strings.get(0).getString(), is("hello"));
+        assertThat(strings.get(1).getString(), is("world"));
+        assertThat(strings.get(2).getString(), is("!"));
+    }
+
     static class ObjectsTestContract {
 
         public static byte[] instantiateObject(String s, int i) {
@@ -115,6 +135,16 @@ public class ObjectsTest {
             obj.i1 = 2_000_000_000;
             obj.i8 = 500_000_000;
             return obj;
+        }
+
+        public static int[] forLoopInObjectMethodWithoutState(int k) {
+            POJO3 obj = new POJO3();
+            return obj.method(k);
+        }
+
+        public static String[] forLoopInObjectMethodWithState() {
+            POJO4 c = new POJO4("hello", "world", "!");
+            return c.method();
         }
     }
 
@@ -162,5 +192,37 @@ public class ObjectsTest {
             this.i10 = i;
         }
     }
+
+    static class POJO3 {
+
+        public int[] method(int k) {
+            int[] ints = new int[k];
+            for (int i = 0; i < k; i++) {
+                ints[i] = i * 2;
+            }
+            return ints;
+        }
+    }
+
+    public static class POJO4 {
+
+        io.neow3j.devpack.List<String> list = new io.neow3j.devpack.List<>();
+
+        public POJO4(String... args) {
+            for (String arg : args) {
+                list.add(arg);
+            }
+        }
+
+        public String[] method() {
+            String[] copy = new String[this.list.size()];
+            for (int i = 0; i < this.list.size(); i++) {
+                copy[i] = list.get(i);
+            }
+            return copy;
+        }
+
+    }
+
 }
 

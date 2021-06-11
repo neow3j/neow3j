@@ -9,7 +9,8 @@ import java.lang.annotation.Target;
  * when the contract is deployd or updated via the ContractManagement contract.
  * <p>
  * The annotated method can have any name but needs to have the signature "{@code void methodName
- * (Object, boolean)}". The method will appear under the name {@code _deploy} in the contract
+ * (Object data, boolean isUpdate)}". The method will appear under the name {@code _deploy} in the
+ * contract
  * manifest.
  */
 

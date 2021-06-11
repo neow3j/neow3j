@@ -247,7 +247,7 @@ public class HashIntegrationTest {
         }
 
         public static ByteString hash160ToString(io.neow3j.devpack.Hash160 hash160) {
-            return hash160.asByteString();
+            return hash160.toByteString();
         }
 
         public static Hash256 getZeroHash256() {
@@ -289,7 +289,7 @@ public class HashIntegrationTest {
         }
 
         public static ByteString hash256ToString(Hash256 hash256) {
-            return hash256.asByteString();
+            return hash256.toByteString();
         }
 
         public static io.neow3j.devpack.Hash160 hash160FromStringLiteral() {

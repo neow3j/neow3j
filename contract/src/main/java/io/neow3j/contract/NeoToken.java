@@ -3,14 +3,17 @@ package io.neow3j.contract;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.types.StackItemType.STRUCT;
+import static java.util.Arrays.asList;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.NeoAccountState;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -30,7 +33,7 @@ import java.util.Map;
 public class NeoToken extends FungibleToken {
 
     public static final String NAME = "NeoToken";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public static final Hash160 SCRIPT_HASH = calcNativeContractHash(NAME);
 
     public static final int DECIMALS = 0;
     public static final String SYMBOL = "NEO";
@@ -47,6 +50,7 @@ public class NeoToken extends FungibleToken {
     private static final String GET_GAS_PER_BLOCK = "getGasPerBlock";
     private static final String SET_REGISTER_PRICE = "setRegisterPrice";
     private static final String GET_REGISTER_PRICE = "getRegisterPrice";
+    private static final String GET_ACCOUNT_STATE = "getAccountState";
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
@@ -320,6 +324,31 @@ public class NeoToken extends FungibleToken {
      */
     public TransactionBuilder setRegisterPrice(BigInteger registerPrice) {
         return invokeFunction(SET_REGISTER_PRICE, integer(registerPrice));
+    }
+
+    /**
+     * Gets the state of an account.
+     *
+     * @param account the account to get the state from.
+     * @return the account state.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public NeoAccountState getAccountState(Hash160 account) throws IOException {
+        StackItem result = callInvokeFunction(GET_ACCOUNT_STATE, asList(hash160(account)))
+                .getInvocationResult().getStack().get(0);
+        if (result.getType().equals(ANY)) {
+            return NeoAccountState.withNoBalance();
+        }
+
+        List<StackItem> state = result.getList();
+        BigInteger balance = state.get(0).getInteger();
+        BigInteger updateHeight = state.get(1).getInteger();
+        StackItem publicKeyItem = state.get(2);
+        if (publicKeyItem.getType().equals(ANY)) {
+            return NeoAccountState.withNoVote(balance, updateHeight);
+        }
+        return new NeoAccountState(balance, updateHeight,
+                new ECPublicKey(publicKeyItem.getHexString()));
     }
 
 }

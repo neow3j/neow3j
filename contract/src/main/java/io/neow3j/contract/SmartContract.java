@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.script.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.transaction.TransactionBuilder;
@@ -25,6 +26,7 @@ import static io.neow3j.types.StackItemType.BOOLEAN;
 import static io.neow3j.types.StackItemType.BUFFER;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 
@@ -193,6 +195,36 @@ public class SmartContract {
     }
 
     /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type that contains an iterator.
+     * <p>
+     * Consider that for this RPC the returned list may be limited in size and not reveal all
+     * entries that exist on the contract.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the script hash returned by the contract.
+     * @throws IOException                   if there was a problem fetching information from the
+     *                                       Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
+     *                                       script hash.
+     */
+    public List<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
+            throws IOException {
+
+        StackItem stackItem = callInvokeFunction(function, asList(params))
+                .getInvocationResult().getStack().get(0);
+        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
+        }
+        try {
+            return stackItem.getIterator();
+        } catch (StackItemCastException e) {
+            throw new UnexpectedReturnTypeException("Return did not contain an iterator.", e);
+        }
+    }
+
+    /**
      * Sends an {@code invokefunction} RPC call to the given contract function.
      *
      * @param function the function to call.
@@ -256,8 +288,8 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static Hash160 getScriptHashOfNativeContract(String contractName) {
-        return getContractHash(Hash160.ZERO, 0, contractName);
+    protected static Hash160 calcNativeContractHash(String contractName) {
+        return calcContractHash(Hash160.ZERO, 0, contractName);
     }
 
     /**
@@ -272,7 +304,7 @@ public class SmartContract {
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum, String contractName) {
+    public static Hash160 calcContractHash(Hash160 sender, long nefCheckSum, String contractName) {
         return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)

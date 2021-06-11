@@ -7,21 +7,22 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Target;
 
 /**
- * This annotation is used on contract class level to describe which contracts may be
- * invoked and which methods are called.
+ * This annotation is used on contract class level to describe which contracts and methods your
+ * contract is allowed to call. These permissions are enforced when your contract makes calls to
+ * other contracts. By default your contract has no permissions. Permissions can give more trust
+ * into a smart contract because they prevent certain misuse of a user's signature. I.e., using
+ * permissions signals some reliability of your contract.
  *
- * <ul>
- * <li>The `contract` field indicates the contract to be invoked. It can be a hash of a contract, a
- * public key of a group, or a wildcard "*".</li>
- * <li>If it specifies a hash of a contract, then the contract will be invoked; If it specifies a
- * public key of a group, then any contract in this group will be invoked; If it specifies a
- * wildcard "*", then any contract will be invoked.</li>
- * <li>The `methods` field are a set of methods to be called. It can also be assigned with a
- * wildcard "*", which means that any method can be called.</li>
- * <li>If a contract invokes a contract or method that is not declared in the manifest at runtime,
- * the invocation will fail.</li>
- * </ul>
- * Usage of this annotation is not mandatory.
+ * The {@code contract} field indicates which contract or contract group is permitted. It can
+ * be a hash of a contract, a public key of a contract group, or the wildcard "*", which includes
+ * all contracts. When specifying a public key of a group, then any contract in that group can be
+ * invoked.
+ *
+ * The {@code methods} field indicates which methods are permitted. This corresponds to the value
+ * set in the {@code contract} field. A wildcard "*" means that any method can be called.
+ *
+ * You can use this annotation multiple times if you want to set permissions for multiple contracts
+ * or groups.
  */
 @Target(ElementType.TYPE)
 @Repeatable(Permissions.class)

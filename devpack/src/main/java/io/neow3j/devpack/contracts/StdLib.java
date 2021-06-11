@@ -1,11 +1,15 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.ContractInterface;
 import io.neow3j.devpack.annotations.ContractHash;
 
 @ContractHash("0xacce6fd80d44e1796aa0c2c625e9e4e0ce39efc0")
 public class StdLib extends ContractInterface {
+
+    /**
+     * The maximum byte length for input values.
+     */
+    public static final int MAX_INPUT_LENGTH = 1024;
 
     /**
      * Serialize the given object to a byte string.
@@ -73,6 +77,10 @@ public class StdLib extends ContractInterface {
      *         }
      *     }
      * </pre>
+     * <p>
+     * To JSON-serialize byte strings (e.g., {@code ByteString}, {@code Hash160}) or byte arrays
+     * it is recommended to first Base64 encoded them with {@link StdLib#base64Encode(ByteString)}.
+     * Otherwise, they will be treated as UTF-8 encoded strings, which might lead to errors.
      *
      * @param obj The object to JSON-serialize.
      * @return the object as a JSON string.
@@ -133,6 +141,25 @@ public class StdLib extends ContractInterface {
      * @return the decoded bytes.
      */
     public static native ByteString base58Decode(String input);
+
+    /**
+     * Encodes the given byte string to a Base58 string.
+     * <p>
+     * The encoded string contains the checksum of the binary data.
+     *
+     * @param input The bytes to encode.
+     * @return the encoded string.
+     */
+    public static native String base58CheckEncode(ByteString input);
+
+    /**
+     * Decodes the given Base58-encoded string. Expects the input to contain the checksum of the
+     * binary data.
+     *
+     * @param input The Base58-encoded string.
+     * @return the decoded bytes.
+     */
+    public static native ByteString base58CheckDecode(String input);
 
     /**
      * Converts the given number to its string representation.

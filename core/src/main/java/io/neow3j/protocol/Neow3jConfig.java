@@ -15,7 +15,7 @@ public class Neow3jConfig {
     public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE = 86400000;
 
     private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
-    private Integer networkMagic = null;
+    private Long networkMagic = null;
     private int blockInterval = DEFAULT_BLOCK_TIME;
     private long maxValidUntilBlockIncrement = MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / blockInterval;
     private int pollingInterval = DEFAULT_BLOCK_TIME;
@@ -27,7 +27,7 @@ public class Neow3jConfig {
     public Neow3jConfig() {
     }
 
-    public Neow3jConfig(int networkMagic, int blockInterval, int pollingInterval,
+    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval,
             long maxValidUntilBlockIncrement, ScheduledExecutorService scheduledExecutorService) {
 
         this.networkMagic = networkMagic;
@@ -116,11 +116,14 @@ public class Neow3jConfig {
      * The default value is null. Only once {@link Neow3j#getNetworkMagicNumber()} is called for
      * the first time the value is set. This is because the magic number is fetched directly from
      * the neo-node.
+     * <p>
+     * The magic number is represented as an unsigned 32-bit integer on the neo-node. Thus, it's
+     * maximum possible value is 0xffffffff or 2<sup>32</sup>-1.
      *
      * @return The network's magic number.
      * @see Neow3j#getNetworkMagicNumber()
      */
-    public Integer getNetworkMagic() {
+    public Long getNetworkMagic() {
         return networkMagic;
     }
 
@@ -133,7 +136,11 @@ public class Neow3jConfig {
      * @param magic The network magic number.
      * @return this.
      */
-    public Neow3jConfig setNetworkMagic(int magic) {
+    public Neow3jConfig setNetworkMagic(long magic) {
+        if (magic > 0xFFFFFFFFL || magic < 0L)  {
+            throw new IllegalArgumentException("The network magic number must fit into a 32-bit " +
+                    "unsigned integer, i.e., it must be positive and not greater than 0xFFFFFFFF.");
+        }
         networkMagic = magic;
         return this;
     }

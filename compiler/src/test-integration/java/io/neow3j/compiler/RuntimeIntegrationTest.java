@@ -9,7 +9,7 @@ import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
-import io.neow3j.devpack.TriggerType;
+import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;
@@ -45,7 +45,7 @@ public class RuntimeIntegrationTest {
     @Test
     public void getTriggerType() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getInteger().byteValue(), is(TriggerType.APPLICATION));
+        assertThat(res.getStack().get(0).getInteger().byteValue(), is(TriggerType.Application));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class RuntimeIntegrationTest {
     @Test
     public void getTime() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getInteger().intValue(), is(greaterThan(0)));
+        assertThat(res.getStack().get(0).getInteger(), is(greaterThan(BigInteger.ZERO)));
     }
 
     @Test

@@ -1,13 +1,15 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.contracts.Role;
+import io.neow3j.devpack.constants.Role;
 import io.neow3j.devpack.contracts.RoleManagement;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -37,7 +39,7 @@ public class RoleManagementTest {
     public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(roleManagementHash()));
+                is(Numeric.reverseHexString(roleManagementHash())));
     }
 
     @Test
@@ -62,6 +64,7 @@ public class RoleManagementTest {
         assertThat(pubKeysItem.get(0).getByteArray(), is(pubKey));
     }
 
+    @Permission(contract = "49cf4e5378ffcd4dec034fd98a174c5491e395e2")
     static class RoleManagementTestContract {
 
         public static Hash160 getHash() {

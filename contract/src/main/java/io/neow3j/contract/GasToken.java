@@ -9,7 +9,7 @@ import io.neow3j.types.Hash160;
 public class GasToken extends FungibleToken {
 
     public final static String NAME = "GasToken";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public static final Hash160 SCRIPT_HASH = calcNativeContractHash(NAME);
 
     public final static int DECIMALS = 8;
     public final static String SYMBOL = "GAS";

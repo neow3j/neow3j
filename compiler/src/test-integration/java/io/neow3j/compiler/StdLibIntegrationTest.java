@@ -7,6 +7,7 @@ import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -96,6 +97,25 @@ public class StdLibIntegrationTest {
     }
 
     @Test
+    public void base58CheckEncode() throws IOException {
+        String bytes = "54686520717569";
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        String encoded = response.getInvocationResult().getStack().get(0).getString();
+        String expected = "MvzwCLE8dynR7Yn"; // Base58(concat(bytes, sha256(sha256(bytes))))
+        assertThat(encoded, is(expected));
+    }
+
+    @Test
+    public void base58CheckDecode() throws IOException {
+        String encoded = "MvzwCLE8dynR7Yn";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(encoded));
+        String decoded = response.getInvocationResult().getStack().get(0).getHexString();
+        String expected = "54686520717569";
+        assertThat(decoded, is(expected));
+    }
+
+    @Test
     public void base64Encode() throws IOException {
         String bytes =
                 "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
@@ -167,7 +187,7 @@ public class StdLibIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(stdLibHash()));
+                is(Numeric.reverseHexString(stdLibHash())));
     }
 
     @Test
@@ -307,6 +327,14 @@ public class StdLibIntegrationTest {
 
         public static ByteString base58Decode(String encoded) {
             return StdLib.base58Decode(encoded);
+        }
+
+        public static String base58CheckEncode(ByteString bytes) {
+            return StdLib.base58CheckEncode(bytes);
+        }
+
+        public static ByteString base58CheckDecode(String encoded) {
+            return StdLib.base58CheckDecode(encoded);
         }
 
         public static String itoa(int i, int base) {

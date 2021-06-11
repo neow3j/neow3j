@@ -426,8 +426,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQA=="));
-        assertThat(nef.getChecksum(), is(1841570703L));
+        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getChecksum(), is(588003825L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -438,13 +438,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(16));
-        ContractMethod method = abi.getMethods().get(7);
+        assertThat(abi.getMethods(), hasSize(17));
+        ContractMethod method = abi.getMethods().get(8);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getParamType(),
                 is(ContractParameterType.PUBLIC_KEY));
-        assertThat(method.getOffset(), is(49));
+        assertThat(method.getOffset(), is(56));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
@@ -665,7 +665,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
         assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
         assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0)));
+        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0L)));
     }
 
     // SmartContract Methods
@@ -1023,7 +1023,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
         assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "0x03fbe884d3715da9e39d96a5f7f3f3b06c4001f806a8ff01c12bc6e22178a311")));
+                "0x2094a27e9aa3b4ed3961b6e95b1a609242224a50382c5b1ce42dd52067c8c47b")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 

@@ -113,6 +113,7 @@ public class NeoNameServiceTest {
     @Test
     public void ownerOf() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
+        setUpWireMockForInvokeFunction(DECIMALS, "nns_invokefunction_decimals.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nns_ownerof.json");
         assertThat(nameServiceContract.ownerOf("client1.neo"),
                 is(new Hash160(TestProperties.defaultAccountScriptHash())));
@@ -587,6 +588,7 @@ public class NeoNameServiceTest {
         setUpWireMockForCall("invokescript", "nns_returnAny.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nns_invokefunction_ownerof.json");
+        setUpWireMockForInvokeFunction(DECIMALS, "nns_invokefunction_decimals.json");
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(nameServiceHash, TRANSFER,

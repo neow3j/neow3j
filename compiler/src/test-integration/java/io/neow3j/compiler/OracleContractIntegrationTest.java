@@ -3,12 +3,13 @@ package io.neow3j.compiler;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.GasToken;
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.OracleContract;
+import io.neow3j.devpack.contracts.OracleContract;
 import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.Role;
@@ -20,6 +21,7 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import io.reactivex.disposables.Disposable;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -63,7 +65,7 @@ public class OracleContractIntegrationTest {
     public void getScriptHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(oracleContractHash()));
+                is(Numeric.reverseHexString(oracleContractHash())));
     }
 
     @Test
@@ -145,6 +147,7 @@ public class OracleContractIntegrationTest {
         assertThat(eventState.get(3).getByteArray(), is(new byte[]{}));
     }
 
+    @Permission(contract = "fe924b7cfe89ddd271abaf7210a80a7e11178758")
     static class OracleContractIntegrationTestContract {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;

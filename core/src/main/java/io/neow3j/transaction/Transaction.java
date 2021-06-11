@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.serialization.BinaryReader;
@@ -23,9 +25,11 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static java.lang.String.format;
 
 public class Transaction extends NeoSerializable {
 
@@ -171,6 +175,12 @@ public class Transaction extends NeoSerializable {
                     "number of signers and witnesses. For every signer there has to be one " +
                     "witness, even if that witness is empty.");
         }
+        int size = getSize();
+        if (size > MAX_TRANSACTION_SIZE) {
+            throw new TransactionConfigurationException(format("The transaction exceeds the " +
+                    "maximum transaction size. The maximum size is {} bytes. This transaction " +
+                    "has size {}", MAX_TRANSACTION_SIZE, size));
+        }
         String hex = Numeric.toHexStringNoPrefix(toArray());
         blockCountWhenSent = neow.getBlockCount().send().getBlockCount();
         return neow.sendRawTransaction(hex).send();
@@ -257,8 +267,8 @@ public class Transaction extends NeoSerializable {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
             throw new DeserializationException("A transaction can hold at most " +
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + ". Input data had " + nrOfAttributes +
-                    " attributes.");
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes. Input data had " +
+                    nrOfAttributes + " attributes.");
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
@@ -323,6 +333,12 @@ public class Transaction extends NeoSerializable {
     @Override
     public byte[] toArray() {
         return super.toArray();
+    }
+
+    public String toJson() throws JsonProcessingException {
+        io.neow3j.protocol.core.response.Transaction dtoTx =
+                new io.neow3j.protocol.core.response.Transaction(this);
+        return ObjectMapperFactory.getObjectMapper().writeValueAsString(dtoTx);
     }
 
 }

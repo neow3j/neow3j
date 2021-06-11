@@ -55,7 +55,7 @@ public class ECPoint {
      * @return the byte string.
      */
     @Instruction
-    public native ByteString asByteString();
+    public native ByteString toByteString();
 
     /**
      * Compares this EC point to the given object. The comparison happens first by reference and

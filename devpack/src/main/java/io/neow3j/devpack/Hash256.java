@@ -87,7 +87,7 @@ public class Hash256 {
      * @return the byte string.
      */
     @Instruction
-    public native ByteString asByteString();
+    public native ByteString toByteString();
 
     /**
      * Compares this hash to the given object. The comparison happens first by reference and then by

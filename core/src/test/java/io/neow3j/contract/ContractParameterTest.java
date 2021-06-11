@@ -27,6 +27,7 @@ import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -123,22 +124,23 @@ public class ContractParameterTest {
 
     @Test
     public void testArrayParamCreationFromObjects() {
-        ContractParameter integer = integer(1);
-        ContractParameter bool = bool(true);
-        ContractParameter string = string("testString");
-        ContractParameter byteArray = byteArray(new byte[]{5, 8});
-        ContractParameter cParam =
-                hash160(new Hash160("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c"));
+        int i = 1;
+        long l = 2000000000000000000L;
+        boolean b = true;
+        String s = "testString";
+        byte[] bytes = new byte[]{5, 8};
+        Hash160 contractHash = new Hash160("0xa2b524b68dfe43a9d56af84f443c6b9843b8028c");
+        Hash256 txHash =
+                new Hash256("257d342421fb5373a4d2ee7254ee7a968da66b2179b27c855e0462434c6386fd");
+        BigInteger bigInt = BigInteger.valueOf(l);
+        Account a = Account.create();
 
-        ArrayList<ContractParameter> paramList = new ArrayList<>();
-        paramList.add(integer);
-        paramList.add(bool);
-        paramList.add(string);
-        paramList.add(byteArray);
-        paramList.add(cParam);
-        ContractParameter expected = array(paramList);
+        ContractParameter expected = array(Arrays.asList(
+                integer(1), integer(bigInt) /* the long */, bool(b), string(s), byteArray(bytes),
+                hash160(contractHash), hash256(txHash), integer(bigInt), hash160(a)));
 
-        ContractParameter arrayFromObjects = array(1, true, "testString", new byte[]{5, 8}, cParam);
+        ContractParameter arrayFromObjects = array(i, l, b, s, bytes, contractHash, txHash, bigInt,
+                a);
 
         assertThat(arrayFromObjects, is(expected));
     }
@@ -175,7 +177,7 @@ public class ContractParameterTest {
     @Test
     public void testSignatureParamCreationFromValidString() {
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
-                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
+                "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         ContractParameter p = signature(sig);
 
         assertArrayEquals(Numeric.hexStringToByteArray(sig), (byte[]) p.getValue());
@@ -185,7 +187,7 @@ public class ContractParameterTest {
     @Test
     public void testSignatureParamCreationFromValidStringStrip0x() {
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
-                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
+                "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         ContractParameter p = signature("0x" + sig);
 
         assertArrayEquals(Numeric.hexStringToByteArray(sig), (byte[]) p.getValue());
@@ -195,7 +197,7 @@ public class ContractParameterTest {
     @Test
     public void testSignatureParamCreationFromByteArray() {
         String sigString = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b" +
-                           "6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
+                "6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         byte[] sig = Numeric.hexStringToByteArray(sigString);
         ContractParameter p = signature(sig);
 
@@ -209,7 +211,7 @@ public class ContractParameterTest {
         expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 63.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
-                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f2";
+                "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f2";
         signature(sig);
     }
 
@@ -219,7 +221,7 @@ public class ContractParameterTest {
         expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 65.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
-                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213ff";
+                "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213ff";
         ContractParameter.signature(sig);
     }
 
@@ -228,7 +230,7 @@ public class ContractParameterTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("Argument is not a valid hex number.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
-                     "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
+                "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         signature(sig);
     }
 
@@ -395,7 +397,7 @@ public class ContractParameterTest {
         map.put("one", "first");
         map.put("two", 2);
         ContractParameter param = map(map);
-        Map<?,?> value = (Map<?,?>) param.getValue();
+        Map<?, ?> value = (Map<?, ?>) param.getValue();
         assertThat(value.keySet(), containsInAnyOrder(string("one"), string("two")));
         assertThat(value.values(), containsInAnyOrder(string("first"), integer(2)));
     }

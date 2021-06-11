@@ -95,9 +95,50 @@ public class NeoToken extends FungibleToken {
      * Sets the GAS price for registering a new candidate.
      * <p>
      * Only the committee can successfully invoke this method.
+     *
      * @param registerPrice The new price for registering a candidate.
      */
     public static native void setRegisterPrice(int registerPrice);
+
+    /**
+     * Gets the account state.
+     *
+     * @param scriptHash The script hash of the account.
+     * @return The state of the account or null if the account does not hold any NEO.
+     */
+    public static native AccountState getAccountState(Hash160 scriptHash);
+
+    /**
+     * The state of an account regarding its NEO balance and voting target.
+     */
+    public static class AccountState {
+
+        /**
+         * The NEO balance of the account.
+         */
+        public final int balance;
+
+        /**
+         * The block height when the balance changed last.
+         * <p>
+         * This field is {@code 0} by default if the account does not hold any NEO.
+         */
+        public final int balanceHeight;
+
+        /**
+         * The voting target of the account.
+         * <p>
+         * This field may be {@code null} if the account has no voting target.
+         */
+        public final ECPoint voteTo;
+
+        private AccountState() {
+            balance = 0;
+            balanceHeight = 0;
+            voteTo = null;
+        }
+
+    }
 
     /**
      * Represents a validator candidate.
@@ -119,4 +160,5 @@ public class NeoToken extends FungibleToken {
             votes = 0;
         }
     }
+
 }

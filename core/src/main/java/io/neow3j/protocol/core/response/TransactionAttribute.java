@@ -34,21 +34,32 @@ public abstract class TransactionAttribute {
      * if possible, and returns it.
      *
      * @return this transaction attribute as a {@link HighPriorityAttribute}.
-     * @throws IllegalStateException    if this transaction attribute is not an
-     *                                  instance of {@link HighPriorityAttribute}.
+     * @throws IllegalStateException if this transaction attribute is not an
+     *                               instance of {@link HighPriorityAttribute}.
      */
     @JsonIgnore
     public HighPriorityAttribute asHighPriority() {
         if (this instanceof HighPriorityAttribute) {
             return (HighPriorityAttribute) this;
         }
-        throw new IllegalStateException("This transaction attribute is not " +
-                "of type " +
-                TransactionAttributeType.HIGH_PRIORITY.jsonValue() +
-                " but of " + type.jsonValue());
+        throw new IllegalStateException("This transaction attribute is not of type "
+                + TransactionAttributeType.HIGH_PRIORITY.jsonValue() + " but of "
+                + type.jsonValue());
     }
 
     public TransactionAttributeType getType() {
         return type;
+    }
+
+    public static TransactionAttribute fromType(TransactionAttributeType type) {
+        switch (type) {
+            case HIGH_PRIORITY:
+                return new HighPriorityAttribute();
+            case ORACLE_RESPONSE:
+                return new OracleResponseAttribute();
+            default:
+                throw new IllegalArgumentException("No concrete class found for transaction " +
+                        "attribute type " + type.jsonValue());
+        }
     }
 }

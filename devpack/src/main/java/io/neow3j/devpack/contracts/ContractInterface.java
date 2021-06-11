@@ -1,5 +1,6 @@
-package io.neow3j.devpack;
+package io.neow3j.devpack.contracts;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.PolicyContract;
@@ -13,8 +14,8 @@ import io.neow3j.devpack.contracts.PolicyContract;
 public abstract class ContractInterface {
 
     /**
-     * Gets the contract's script hash. This requires the extending class to use the {@link
-     * ContractHash} annotation.
+     * Gets the contract's script hash in little-endian order. This requires the extending class to
+     * use the {@link ContractHash} annotation.
      *
      * @return the contract's script hash.
      */
