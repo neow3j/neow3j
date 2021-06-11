@@ -22,7 +22,7 @@ import java.math.BigInteger;
 public class ContractManagement extends SmartContract {
 
     private static final String NAME = "ContractManagement";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public static final Hash160 SCRIPT_HASH = calcNativeContractHash(NAME);
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";

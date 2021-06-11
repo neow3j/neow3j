@@ -16,7 +16,7 @@ import java.math.BigInteger;
 public class PolicyContract extends SmartContract {
 
     private static final String NAME = "PolicyContract";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public static final Hash160 SCRIPT_HASH = calcNativeContractHash(NAME);
 
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";

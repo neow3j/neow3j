@@ -83,7 +83,7 @@ public class NameServiceIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
-        return SmartContract.getContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
+        return SmartContract.calcContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
                 NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
                 "NameService");
     }

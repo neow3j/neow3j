@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
-import static io.neow3j.contract.SmartContract.getContractHash;
+import static io.neow3j.contract.SmartContract.calcContractHash;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
@@ -87,7 +87,7 @@ public class ContractManagementIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
-        Hash160 contractHash = getContractHash(
+        Hash160 contractHash = calcContractHash(
                 COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
         NeoGetContractState.ContractState contractState =
                 neow3j.getContractState(contractHash).send().getContractState();
