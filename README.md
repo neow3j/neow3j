@@ -38,7 +38,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>[3.10.0,)</version>
+    <version>[3.11.0,)</version>
 </dependency>
 ```
 
@@ -63,7 +63,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>[3.10.0,)</version>
+    <version>[3.11.0,)</version>
 </dependency>
 ```
 
