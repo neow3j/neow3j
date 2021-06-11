@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.script.OpCode;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
@@ -14,6 +16,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -312,11 +315,19 @@ public class TransactionTest {
 
     @Test
     public void testMaxTransactionSize() throws IOException {
+        HttpService mock = Mockito.mock(HttpService.class);
+        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoSendRawTransaction.class)))
+                .thenReturn(new NeoSendRawTransaction());
+        NeoBlockCount blockCount = new NeoBlockCount();
+        blockCount.setResult(BigInteger.ONE);
+        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoBlockCount.class))).thenReturn(blockCount);
+        Neow3j neow3j = Neow3j.build(mock);
+
         // The following transaction is 29 bytes without the script
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4];
         // This transaction has exactly the maximal allowed byte length.
-        Transaction tx = new Transaction(neow, (byte) 0,
+        Transaction tx = new Transaction(neow3j, (byte) 0,
                 0L,
                 0L,
                 new ArrayList<>(),
@@ -327,11 +338,6 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
-
-        // If the transaction is sent, the check was passed successfully.
-        // No mock was setup, so the execution should just fail to connect.
-        exceptionRule.expect(ConnectException.class);
-        exceptionRule.expectMessage("Failed to connect to");
         tx.send();
     }
 
