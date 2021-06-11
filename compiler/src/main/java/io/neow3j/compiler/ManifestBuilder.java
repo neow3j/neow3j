@@ -151,13 +151,7 @@ public class ManifestBuilder {
         int i = ann.values.indexOf("contract");
         String hashOrPubKey = (String) ann.values.get(i + 1);
         throwIfNotValidContractHashOrPubKey(hashOrPubKey);
-
-        // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
-        if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
-            hashOrPubKey = Numeric.prependHexPrefix(hashOrPubKey);
-        } else if (hashOrPubKey.length() == 2 * NeoConstants.PUBLIC_KEY_SIZE) {
-            hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
-        }
+        hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
 
         i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
@@ -173,6 +167,16 @@ public class ManifestBuilder {
         }
 
         return new ContractPermission(hashOrPubKey, methods);
+    }
+
+    private static String addOrClearHexPrefix(String hashOrPubKey) {
+        // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
+        if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
+            hashOrPubKey = Numeric.prependHexPrefix(hashOrPubKey);
+        } else if (hashOrPubKey.length() == 2 * NeoConstants.PUBLIC_KEY_SIZE + 2) {
+            hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
+        }
+        return hashOrPubKey;
     }
 
     private static ContractGroup getContractGroup(AnnotationNode ann) {
@@ -246,7 +250,7 @@ public class ManifestBuilder {
         int i = ann.values.indexOf("value");
         String trust = (String) ann.values.get(i + 1);
         throwIfNotValidContractHashOrPubKey(trust);
-        return trust;
+        return addOrClearHexPrefix(trust);
     }
 
     private static List<AnnotationNode> checkForSingleOrMultipleAnnotations(ClassNode asmClass,
