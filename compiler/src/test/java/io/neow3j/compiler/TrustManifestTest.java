@@ -16,10 +16,10 @@ import org.junit.rules.ExpectedException;
 
 public class TrustManifestTest {
 
-    private static final String CONTRACT_HASH_1 = "0f46dc4287b70117ce8354924b5cb3a47215ad93";
+    private static final String CONTRACT_HASH_1 = "0x0f46dc4287b70117ce8354924b5cb3a47215ad93";
     private static final String GROUP_PUBKEY_1 =
             "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
-    private static final String CONTRACT_HASH_2 = "d6c712eb53b1a130f59fd4e5864bdac27458a509";
+    private static final String CONTRACT_HASH_2 = "0xd6c712eb53b1a130f59fd4e5864bdac27458a509";
 
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
