@@ -4,6 +4,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
@@ -69,6 +70,15 @@ public class TrustManifestTest {
                         .getName());
     }
 
+    @Test
+    public void withTrustsAnnotatioWithWildcard() throws IOException {
+        CompilationUnit unit =
+                new Compiler().compile(TrustManifestTestContractWithWildcard.class.getName());
+        List<String> trusts = unit.getManifest().getTrusts();
+        assertThat(trusts, hasSize(1));
+        assertThat(trusts.get(0), is("*"));
+    }
+
     @Trust(CONTRACT_HASH_1)
     @Trust(CONTRACT_HASH_2)
     static class TrustManifestTestContract {
@@ -107,6 +117,14 @@ public class TrustManifestTest {
     @Trust(CONTRACT_HASH_1)
     @Trust("invalidContractHashOrPubKey")
     static class TrustManifestTestContractWithNotValidContractHashNorGroupKey {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust("*")
+    static class TrustManifestTestContractWithWildcard {
 
         public static void main() {
         }
