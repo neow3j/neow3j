@@ -99,15 +99,22 @@ public class PermissionManifestTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
                 "Invalid contract hash or public key:", "invalidContractHashOrPubKey")));
-        new Compiler()
-                .compile(
-                        PermissionManifestTestContractWithNotValidContractHashNorGroupKey.class
-                                .getName());
+        new Compiler().compile(
+                PermissionManifestTestContractWithNotValidContractHashNorGroupKey.class.getName());
+    }
+
+    @Test
+    public void withWildcardPermissionAnnotation() throws IOException {
+        CompilationUnit unit = new Compiler()
+                .compile(PermissionManifestWithWildCardTestContract.class.getName());
+        List<ContractPermission> permissions = unit.getManifest().getPermissions();
+        assertThat(permissions, hasSize(1));
+        assertThat(permissions.get(0).getContract(), is("*"));
+        assertThat(permissions.get(0).getMethods().get(0), is("*"));
     }
 
     @Permission(contract = CONTRACT_HASH_1)
-    @Permission(contract = CONTRACT_HASH_2,
-            methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+    @Permission(contract = CONTRACT_HASH_2, methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
     static class PermissionManifestTestContract {
 
         public static void main() {
@@ -115,8 +122,7 @@ public class PermissionManifestTest {
 
     }
 
-    @Permission(contract = CONTRACT_HASH_1,
-            methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+    @Permission(contract = CONTRACT_HASH_1, methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
     static class PermissionManifestTestContractWithSingleAnnotationContractHash {
 
         public static void main() {
@@ -124,8 +130,7 @@ public class PermissionManifestTest {
 
     }
 
-    @Permission(contract = GROUP_PUBKEY_1,
-            methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+    @Permission(contract = GROUP_PUBKEY_1, methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
     static class PermissionManifestTestContractWithSingleAnnotationGroupPubKey {
 
         public static void main() {
@@ -162,5 +167,12 @@ public class PermissionManifestTest {
 
     }
 
+    @Permission(contract = "*", methods = "*")
+    static class PermissionManifestWithWildCardTestContract{
+
+        public static void main() {
+        }
+
+    }
 
 }

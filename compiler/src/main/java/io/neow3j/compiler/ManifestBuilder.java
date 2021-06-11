@@ -28,7 +28,6 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.utils.ClassUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -150,7 +149,7 @@ public class ManifestBuilder {
     private static ContractPermission getContractPermission(AnnotationNode ann) {
         int i = ann.values.indexOf("contract");
         String hashOrPubKey = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKey(hashOrPubKey);
+        throwIfNotValidContractHashOrPubKeyOrWildcard(hashOrPubKey);
         hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
 
         i = ann.values.indexOf("methods");
@@ -222,7 +221,10 @@ public class ManifestBuilder {
         }
     }
 
-    private static void throwIfNotValidContractHashOrPubKey(String contract) {
+    private static void throwIfNotValidContractHashOrPubKeyOrWildcard(String contract) {
+        if (contract != null && contract.equals("*")) {
+            return;
+        }
         Exception notValidContractHash = null;
         try {
             throwIfNotValidContractHash(contract);
@@ -249,7 +251,7 @@ public class ManifestBuilder {
     private static String getContractTrust(AnnotationNode ann) {
         int i = ann.values.indexOf("value");
         String trust = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKey(trust);
+        throwIfNotValidContractHashOrPubKeyOrWildcard(trust);
         return addOrClearHexPrefix(trust);
     }
 
