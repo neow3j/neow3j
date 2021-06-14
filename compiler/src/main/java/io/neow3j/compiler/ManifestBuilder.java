@@ -1,12 +1,6 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
-import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static java.util.Optional.ofNullable;
-
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -18,14 +12,20 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
-import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.ClassUtils;
+import io.neow3j.utils.Numeric;
+import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -34,10 +34,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import io.neow3j.utils.Numeric;
-import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
+import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static java.util.Optional.ofNullable;
 
 /**
  * Contains all functionality required to build a contract manifest from a compilation unit.
