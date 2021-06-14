@@ -466,12 +466,6 @@ public class ContractManifest {
         public void serialize(List<String> trusts, JsonGenerator jgen, SerializerProvider provider)
                 throws IOException {
 
-            if (trusts == null) {
-                jgen.writeStartArray();
-                jgen.writeEndArray();
-                return;
-            }
-
             if (!trusts.isEmpty() && trusts.get(0).equals(WILDCARD_CHAR)) {
                 // If '*' is used for trusts, don't write an array but the '*' directly.
                 jgen.writeString(WILDCARD_CHAR);
