@@ -688,8 +688,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void transferNeoFromNormalAccount() throws Throwable {
-        setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
                 NEP17_TRANSFER, asList(
@@ -781,8 +780,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void doIfSenderCannotCoverFees() throws Throwable {
-        setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_1000000.json");
@@ -827,8 +825,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void throwIfSenderCannotCoverFees() throws Throwable {
-        setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_1000000.json",
                 GAS_TOKEN_SCRIPT_HASH.toString(),
@@ -913,8 +910,7 @@ public class TransactionBuilderTest {
     @Test
     public void buildWithInvalidScript() throws Throwable {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript",
-                "invokescript_invalidscript.json",
+        setUpWireMockForCall("invokescript", "invokescript_invalidscript.json",
                 "DAASDBSTrRVy");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))

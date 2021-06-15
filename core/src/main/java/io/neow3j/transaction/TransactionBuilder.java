@@ -393,11 +393,6 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow3j.invokeScript(
                 Base64.encode(hexStringToByteArray(script)), signers)
                 .send();
-        if (response.hasError()) {
-            throw new TransactionConfigurationException("The script is invalid. The vm returned " +
-                    "the error code " + response.getError().getCode() + " with the message: " +
-                    response.getError().getMessage());
-        }
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
                     "exception: " + response.getResult().getException());
