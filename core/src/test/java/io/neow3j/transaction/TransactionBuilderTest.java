@@ -956,17 +956,46 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void testVersion() {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .version((byte) 1);
-        assertThat(b.getVersion(), is((byte) 1));
+    public void testVersion() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new TransactionBuilder(neow)
+                .version((byte) 1)
+                .wallet(w)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .signers(calledByEntry(account1))
+                .getUnsignedTransaction();
+
+        assertThat(tx.getVersion(), is((byte) 1));
     }
 
     @Test
-    public void testAdditionalNetworkFee() {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .additionalNetworkFee(1000L);
-        assertThat(b.getAdditionalNetworkFee(), is(1000L));
+    public void testAdditionalNetworkFee() throws Throwable {
+        Wallet wallet = Wallet.create();
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .signers(feeOnly(wallet.getDefaultAccount()))
+                .buildTransaction();
+
+        long baseNetworkFee = 1230610L;
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee));
+
+        tx = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .signers(feeOnly(wallet.getDefaultAccount()))
+                .additionalNetworkFee(2000L)
+                .buildTransaction();
+
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee + 2000L));
     }
 
     @Test
