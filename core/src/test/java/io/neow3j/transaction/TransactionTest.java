@@ -20,7 +20,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -196,25 +195,27 @@ public class TransactionTest {
         assertThat(tx.getSize(), is(expectedSize));
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failDeserializingWithTooManyTransactionAttributes()
             throws DeserializationException {
         StringBuilder txString = new StringBuilder(""
-                + "00" // version
+                + "00" // version 0
                 + "62bdaa0e"  // nonce
-                + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
                 + "c272890000000000"  // system fee
                 + "a65a130000000000"  // network fee
                 + "99232000"  // valid until block
-                + "17"); // one attribute
+                + "11"); // 17 signers
         for (int i = 0; i <= 16; i++) {
-            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // signer
+            txString.append("941343239213fa0e765f1027ce742f48db779a96"); // signer script hash
+            txString.append("01"); // called by entry scope
         }
-        txString.append(""
-                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
-                + "01" // 1 witness
-                + "01000100"); /* witness*/
+        txString.append("00"); // no attributes
+        // additional bytes are not needed for this test
         byte[] txBytes = hexStringToByteArray(txString.toString());
+
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("A transaction can hold at most ");
+
         NeoSerializableInterface.from(txBytes, Transaction.class);
     }
 
