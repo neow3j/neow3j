@@ -963,6 +963,13 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void testAdditionalNetworkFee() {
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .additionalNetworkFee(1000L);
+        assertThat(b.getAdditionalNetworkFee(), is(1000L));
+    }
+
+    @Test
     public void testSetFirstSigner() {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);

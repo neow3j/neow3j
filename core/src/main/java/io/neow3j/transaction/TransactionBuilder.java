@@ -604,6 +604,11 @@ public class TransactionBuilder {
     }
 
     // Required for testability
+    protected long getAdditionalNetworkFee() {
+        return additionalNetworkFee;
+    }
+
+    // Required for testability
     public byte[] getScript() {
         return script;
     }
