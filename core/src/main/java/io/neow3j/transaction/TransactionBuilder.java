@@ -202,8 +202,16 @@ public class TransactionBuilder {
                     "fee-only witness scope. Only one signer can be used to cover the " +
                     "transaction fees.");
         }
+        checkAndThrowIfMaxAttributesExceeded(signers.length, attributes.size());
         this.signers = new ArrayList<>(asList(signers));
         return this;
+    }
+
+    private void checkAndThrowIfMaxAttributesExceeded(int totalSigners, int totalAttributes) {
+        if (totalSigners + totalAttributes > MAX_TRANSACTION_ATTRIBUTES) {
+            throw new TransactionConfigurationException("A transaction cannot have more than " +
+                    MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers).");
+        }
     }
 
     /**
@@ -244,10 +252,8 @@ public class TransactionBuilder {
      *                                           attributes.
      */
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
-        if (this.attributes.size() + attributes.length > MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than " +
-                    MAX_TRANSACTION_ATTRIBUTES + " attributes.");
-        }
+        checkAndThrowIfMaxAttributesExceeded(signers.size(),
+                this.attributes.size() + attributes.length);
         Arrays.stream(attributes).forEach(attr -> {
             if (attr.getType() == HIGH_PRIORITY) {
                 safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
