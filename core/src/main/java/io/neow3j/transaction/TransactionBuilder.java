@@ -202,8 +202,16 @@ public class TransactionBuilder {
                     "fee-only witness scope. Only one signer can be used to cover the " +
                     "transaction fees.");
         }
+        checkAndThrowIfMaxAttributesExceeded(signers.length, attributes.size());
         this.signers = new ArrayList<>(asList(signers));
         return this;
+    }
+
+    private void checkAndThrowIfMaxAttributesExceeded(int totalSigners, int totalAttributes) {
+        if (totalSigners + totalAttributes > MAX_TRANSACTION_ATTRIBUTES) {
+            throw new TransactionConfigurationException("A transaction cannot have more than " +
+                    MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers).");
+        }
     }
 
     /**
@@ -244,10 +252,8 @@ public class TransactionBuilder {
      *                                           attributes.
      */
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
-        if (this.attributes.size() + attributes.length > MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than " +
-                    MAX_TRANSACTION_ATTRIBUTES + " attributes.");
-        }
+        checkAndThrowIfMaxAttributesExceeded(signers.size(),
+                this.attributes.size() + attributes.length);
         Arrays.stream(attributes).forEach(attr -> {
             if (attr.getType() == HIGH_PRIORITY) {
                 safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
@@ -387,11 +393,6 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow3j.invokeScript(
                 Base64.encode(hexStringToByteArray(script)), signers)
                 .send();
-        if (response.hasError()) {
-            throw new TransactionConfigurationException("The script is invalid. The vm returned " +
-                    "the error code " + response.getError().getCode() + " with the message: " +
-                    response.getError().getMessage());
-        }
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
                     "exception: " + response.getResult().getException());
@@ -595,11 +596,6 @@ public class TransactionBuilder {
 
     private boolean canSenderCoverFees(BigInteger fees) throws IOException {
         return fees.compareTo(getSenderGasBalance()) < 0;
-    }
-
-    // Required for testability
-    protected byte getVersion() {
-        return version;
     }
 
     // Required for testability

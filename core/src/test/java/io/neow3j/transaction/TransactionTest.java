@@ -20,7 +20,6 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -137,7 +136,7 @@ public class TransactionTest {
                 + "99232000"  // valid until block
                 + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
                 // one called by entry signer
-                + "00"
+                + "01" + "01" // one attribute - high priority
                 + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
                 + "01000100"); /* witness*/
@@ -149,7 +148,8 @@ public class TransactionTest {
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
-        assertThat(tx.getAttributes(), hasSize(0));
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
@@ -196,25 +196,27 @@ public class TransactionTest {
         assertThat(tx.getSize(), is(expectedSize));
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failDeserializingWithTooManyTransactionAttributes()
             throws DeserializationException {
         StringBuilder txString = new StringBuilder(""
-                + "00" // version
+                + "00" // version 0
                 + "62bdaa0e"  // nonce
-                + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
                 + "c272890000000000"  // system fee
                 + "a65a130000000000"  // network fee
                 + "99232000"  // valid until block
-                + "17"); // one attribute
+                + "11"); // 17 signers
         for (int i = 0; i <= 16; i++) {
-            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // signer
+            txString.append("941343239213fa0e765f1027ce742f48db779a96"); // signer script hash
+            txString.append("01"); // called by entry scope
         }
-        txString.append(""
-                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
-                + "01" // 1 witness
-                + "01000100"); /* witness*/
+        txString.append("00"); // no attributes
+        // additional bytes are not needed for this test
         byte[] txBytes = hexStringToByteArray(txString.toString());
+
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("A transaction can hold at most ");
+
         NeoSerializableInterface.from(txBytes, Transaction.class);
     }
 

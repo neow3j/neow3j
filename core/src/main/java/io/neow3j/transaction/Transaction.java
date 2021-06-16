@@ -265,10 +265,10 @@ public class Transaction extends NeoSerializable {
     private void readTransactionAttributes(BinaryReader reader)
             throws IOException, DeserializationException {
         long nrOfAttributes = reader.readVarInt();
-        if (nrOfAttributes > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
+        if (nrOfAttributes + this.signers.size() > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
             throw new DeserializationException("A transaction can hold at most " +
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes. Input data had " +
-                    nrOfAttributes + " attributes.");
+                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers). " +
+                    "Input data had " + nrOfAttributes + " attributes.");
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
