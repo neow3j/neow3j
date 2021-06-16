@@ -58,7 +58,7 @@ public class CryptoLibIntegrationTest {
 
         message = "0102030406"; // small change in message.
         response = ct.callInvokeFunction(testName, byteArray(message), publicKey(pubKey),
-                byteArray(signature), integer(NamedCurve.secp256r1));
+                byteArray(signature), integer(NamedCurve.Secp256r1));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
