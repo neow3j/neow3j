@@ -36,9 +36,9 @@ public class Hash160 {
      * Checks if this {@code Hash160} is valid, i.e. is 20 bytes long.
      * <p>
      * This method is useful when a contract method takes a {@code Hash160} as a parameter and
-     * you want to make sure that the underlying value really is a valid hash. The contract does
-     * not include or enforce this check automatically, because that would consume extra GAS even
-     * if you don't require that check.
+     * you want to make sure that the underlying value really is a valid hash. The compiler and
+     * NeoVM don't include or enforce this check automatically, because that would consume extra
+     * GAS even if you don't require that check.
      *
      * @return true if this {@code Hash160} is valid. False, otherwise.
      */
