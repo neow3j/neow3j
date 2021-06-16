@@ -48,7 +48,7 @@ public class RoleManagementTest {
         ct.signWithCommitteeAccount();
 
         Hash256 txHash = ct.invokeFunctionAndAwaitExecution("designateAsRole",
-                integer(Role.STATE_VALIDATOR), array(publicKey(pubKey)));
+                integer(Role.StateValidator), array(publicKey(pubKey)));
         int blockIndex = ct.getNeow3j().getTransactionHeight(txHash).send().getHeight().intValue();
 
         // Check if the role has been successfully assigned.
@@ -59,7 +59,7 @@ public class RoleManagementTest {
 
         // Test if the designate can be fetched via a smart contract call.
         NeoInvokeFunction response = ct.callInvokeFunction("getDesignatedByRole",
-                integer(Role.STATE_VALIDATOR), integer(blockIndex + 1));
+                integer(Role.StateValidator), integer(blockIndex + 1));
         List<StackItem> pubKeysItem = response.getInvocationResult().getStack().get(0).getList();
         assertThat(pubKeysItem.get(0).getByteArray(), is(pubKey));
     }

@@ -5,22 +5,22 @@ package io.neow3j.devpack.constants;
  */
 public class OracleResponseCode {
 
-    public static final byte SUCCESS = 0;
+    public static final byte Success = 0;
 
-    public static final byte PROTOCOL_NOT_SUPPORTED = 0x10;
+    public static final byte ProtocolNotSupported = 0x10;
 
-    public static final byte CONSENSUS_UNREACHABLE = 0x12;
+    public static final byte ConsensusUnreachable = 0x12;
 
-    public static final byte NOT_FOUND = 0x14;
+    public static final byte NotFound = 0x14;
 
-    public static final byte TIMEOUT = 0x16;
+    public static final byte Timeout = 0x16;
 
-    public static final byte FORBIDDEN = 0x18;
+    public static final byte Forbidden = 0x18;
 
-    public static final byte RESPONSE_TOO_LARGE = 0x1a;
+    public static final byte ResponseTooLarge = 0x1a;
 
-    public static final byte INSUFFICIENT_FUNDS = 0x1c;
+    public static final byte InsufficientFunds = 0x1c;
 
-    public static final byte ERROR = (byte) 0xff;
+    public static final byte Error = (byte) 0xff;
 
 }

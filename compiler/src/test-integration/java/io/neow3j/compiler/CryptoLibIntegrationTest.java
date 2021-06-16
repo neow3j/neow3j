@@ -53,12 +53,12 @@ public class CryptoLibIntegrationTest {
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
-                publicKey(pubKey), byteArray(signature), integer(NamedCurve.SECP256R1));
+                publicKey(pubKey), byteArray(signature), integer(NamedCurve.secp256r1));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         message = "0102030406"; // small change in message.
         response = ct.callInvokeFunction(testName, byteArray(message), publicKey(pubKey),
-                byteArray(signature), integer(NamedCurve.SECP256R1));
+                byteArray(signature), integer(NamedCurve.secp256r1));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 

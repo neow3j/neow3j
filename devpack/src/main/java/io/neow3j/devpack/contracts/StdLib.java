@@ -9,7 +9,7 @@ public class StdLib extends ContractInterface {
     /**
      * The maximum byte length for input values.
      */
-    public static final int MAX_INPUT_LENGTH = 1024;
+    public static final int MaxInputLength = 1024;
 
     /**
      * Serialize the given object to a byte string.
