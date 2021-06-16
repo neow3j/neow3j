@@ -7,6 +7,8 @@ import io.neow3j.types.StackItemType;
 /**
  * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this
  * class when working with transaction and block hashes.
+ *
+ * The underlying bytes of a {@code Hash256} are always handled in little-endian order.
  */
 public class Hash256 {
 
@@ -32,6 +34,11 @@ public class Hash256 {
 
     /**
      * Checks if this {@code Hash256} is valid, i.e. is 32 bytes long.
+     * <p>
+     * This method is useful when a contract method takes a {@code Hash256} as a parameter and
+     * you want to make sure that the underlying value really is a valid hash. The compiler and
+     * NeoVM don't include or enforce this check automatically, because that would consume extra
+     * GAS even if you don't require that check.
      *
      * @return true if this {@code Hash256} is valid. False, otherwise.
      */
@@ -45,10 +52,13 @@ public class Hash256 {
     public native boolean isValid();
 
     /**
-     * Creates a {@code Hash256} from the given byte array. Checks if it is valid and fails if it is
-     * not.
+     * Creates a {@code Hash256} from the given byte array.
+     * <p>
+     * Checks if the value is a valid hash. Fails if it is not.
+     * <p>
+     * The hash has to be passed in little-endian order.
      *
-     * @param value The hash byte array.
+     * @param value The hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     @Instruction(opcode = OpCode.DUP)
@@ -60,9 +70,13 @@ public class Hash256 {
     }
 
     /**
-     * Creates a {@code Hash256} from the given bytes. Checks if it is valid and fails if it is not.
+     * Creates a {@code Hash256} from the given bytes.
+     * <p>
+     * Checks if the value is a valid hash. Fails if it is not.
+     * <p>
+     * The hash has to be passed in little-endian order.
      *
-     * @param value The hash string.
+     * @param value The hash as a byte string.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.SIZE)
