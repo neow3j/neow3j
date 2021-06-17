@@ -35,8 +35,21 @@ public class NeoModule {
     // in CALLT instructions.
     private List<MethodToken> methodTokens = new ArrayList<>();
 
+    // Holds this module's static field variables, i.e. all the static variables found on the
+    // contract class.
+    private List<NeoContractVariable> contractVariables = new ArrayList<>();
+
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
+    }
+
+    /**
+     * Gets the contract (static) variables of this module.
+     *
+     * @return the
+     */
+    public List<NeoContractVariable> getContractVariables() {
+        return contractVariables;
     }
 
     /**
@@ -106,6 +119,15 @@ public class NeoModule {
                     + "sure that every event has a different name.", event.getDisplayName()));
         }
         events.put(event.getDisplayName(), event);
+    }
+
+    /**
+     * Adds the given variable to this module's contract variables.
+     *
+     * @param var the contract variable.
+     */
+    public void addContractVariable(NeoContractVariable var) {
+        contractVariables.add(var);
     }
 
     void finalizeModule() {

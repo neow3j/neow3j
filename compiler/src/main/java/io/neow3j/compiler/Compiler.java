@@ -260,7 +260,7 @@ public class Compiler {
     private CompilationUnit compile(ClassNode classNode) throws IOException {
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
-        checkFieldVariables(classNode);
+        collectContractVariables(classNode);
         collectSmartContractEvents(classNode);
         compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
@@ -274,7 +274,7 @@ public class Compiler {
         return compUnit;
     }
 
-    private void checkFieldVariables(ClassNode asmClass) {
+    private void collectContractVariables(ClassNode asmClass) {
         if (asmClass.fields == null) {
             return;
         }
@@ -288,6 +288,13 @@ public class Compiler {
                             + "fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
+
+        int i = 0;
+        for (FieldNode f : asmClass.fields) {
+            NeoContractVariable var = new NeoContractVariable(i++, f);
+            compUnit.getNeoModule().addContractVariable(var);
+        }
+
     }
 
     private void finalizeCompilation() {
@@ -361,7 +368,7 @@ public class Compiler {
         List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
-                continue; // Handled in method `collectAndInitializeStaticFields()`.
+                continue; // Handled in method `createInitsslotMethod()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
                 throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
