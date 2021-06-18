@@ -3,12 +3,12 @@ package io.neow3j.contract;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
@@ -28,13 +28,13 @@ import java.nio.file.Paths;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.constants.NeoConstants.MAX_MANIFEST_SIZE;
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
-import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
@@ -47,9 +47,9 @@ public class ContractManagementTest {
     private static final String CONTRACTMANAGEMENT_SCRIPTHASH =
             "fffdc93764dbaddd97c48f252a53ea4643faa3fd";
 
-    private final static Path TESTCONTRACT_NEF_FILE = Paths.get("/contracts", "TestContract.nef");
+    private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE =
-            Paths.get("/contracts", "TestContract.manifest.json");
+            Paths.get("contracts", "TestContract.manifest.json");
 
     private Neow3j neow3j;
 
@@ -118,11 +118,12 @@ public class ContractManagementTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
-        File nefFile = new File(getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(getClass().getClassLoader()
+                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
-        File manifestFile = new File(
-                getClass().getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
+        File manifestFile = new File(getClass().getClassLoader()
+                .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
         ContractManifest manifest =
                 getObjectMapper().readValue(manifestFile, ContractManifest.class);
         byte[] manifestBytes = getObjectMapper().writeValueAsBytes(manifest);
@@ -147,11 +148,11 @@ public class ContractManagementTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
-        File nefFile = new File(
-                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(this.getClass().getClassLoader()
+                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
-        File manifestFile = new File(this.getClass()
+        File manifestFile = new File(this.getClass().getClassLoader()
                 .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
         ContractManifest manifest = getObjectMapper()
                 .readValue(manifestFile, ContractManifest.class);
@@ -186,8 +187,8 @@ public class ContractManagementTest {
             URISyntaxException {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("The manifest cannot be null.");
-        File nefFile = new File(
-                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(this.getClass().getClassLoader()
+                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
         new ContractManagement(neow3j)
                 .deploy(nef, null, null);
@@ -199,8 +200,8 @@ public class ContractManagementTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("The given contract manifest is too long.");
 
-        File nefFile = new File(
-                this.getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(this.getClass().getClassLoader()
+                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
         ContractManifest tooBigManifest = getTooBigManifest();
