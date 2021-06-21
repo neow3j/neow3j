@@ -10,6 +10,9 @@ public class CryptoLib extends ContractInterface {
 
     /**
      * Calculates the SHA-256 hash of the given value.
+     * <p>
+     * Note, if you use this method twice to generate a hash256 byte string, that byte string
+     * will be in big-endian ordering.
      *
      * @param value The bytes to hash.
      * @return the 256-bit hash.
@@ -18,6 +21,9 @@ public class CryptoLib extends ContractInterface {
 
     /**
      * Calculates a 160-bit RIPE message digest (RIPEMD) of the given value.
+     * <p>
+     * Note, if you use this method in combination with {@link CryptoLib#sha256(ByteString)} to
+     * generate a hash160 byte string, that byte string will be in big-endian ordering.
      *
      * @param value The bytes to hash.
      * @return the 160-bit hash.

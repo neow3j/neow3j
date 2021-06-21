@@ -8,7 +8,10 @@ import io.neow3j.types.StackItemType;
  * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this
  * class when working with transaction and block hashes.
  *
- * The underlying bytes of a {@code Hash256} are always handled in little-endian order.
+ * Note that the underlying bytes might have varying endianness. When calling a method from a
+ * native contract or the devpack that returns a {@code Hash256}, the bytes will be little-endian.
+ * But if you construct a {@code Hash256} by yourself the ordering is according to whatever you
+ * used as input.
  */
 public class Hash256 {
 
@@ -55,8 +58,6 @@ public class Hash256 {
      * Creates a {@code Hash256} from the given byte array.
      * <p>
      * Checks if the value is a valid hash. Fails if it is not.
-     * <p>
-     * The hash has to be passed in little-endian order.
      *
      * @param value The hash as a byte array.
      */
@@ -73,8 +74,6 @@ public class Hash256 {
      * Creates a {@code Hash256} from the given bytes.
      * <p>
      * Checks if the value is a valid hash. Fails if it is not.
-     * <p>
-     * The hash has to be passed in little-endian order.
      *
      * @param value The hash as a byte string.
      */
