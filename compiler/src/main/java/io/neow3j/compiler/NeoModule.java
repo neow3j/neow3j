@@ -1,10 +1,8 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.annotations.MethodSignature;
+import io.neow3j.script.OpCode;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+
+import static java.lang.String.format;
 
 public class NeoModule {
 
@@ -50,6 +50,19 @@ public class NeoModule {
      */
     public List<NeoContractVariable> getContractVariables() {
         return contractVariables;
+    }
+
+    /**
+     * Gets the contract variable with the given JVM index
+     *
+     * @param jvmIdx the index.
+     * @return the contract variable or null if not found.
+     */
+    public NeoContractVariable getContractVariable(int jvmIdx) {
+        return contractVariables.stream()
+                .filter(v -> v.getJvmIdx() == jvmIdx)
+                .findFirst()
+                .orElse(null);
     }
 
     /**

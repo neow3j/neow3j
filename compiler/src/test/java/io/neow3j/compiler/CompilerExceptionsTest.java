@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.contracts.FungibleToken;
+import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.Hash160;
@@ -195,6 +196,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName());
     }
 
+    @Test
+    public void failUsingConstructorOnAnEvent() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains("Events must not be initialized by " +
+                "calling their constructor."));
+        new Compiler().compile(EventConstructorMisuse.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -359,6 +368,18 @@ public class CompilerExceptionsTest {
     static class CustomFungibleToken extends FungibleToken {
 
     }
+
+    static class EventConstructorMisuse {
+
+        static Event1Arg<String> event = new Event1Arg<>();
+
+        public static void method() {
+            String s;
+            event.fire("test");
+        }
+
+    }
+
 
 
 }

@@ -33,7 +33,6 @@ import java.util.List;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getFieldIndex;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addConstructorSyscall;
@@ -65,14 +64,14 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod);
+                addStoreStaticField(insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-                if (isEvent(getInternalNameForDescriptor(fieldInsn.desc))) {
+                if (isEvent(fieldInsn.desc)) {
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
                 } else {
-                    addLoadStaticField(fieldInsn, neoMethod);
+                    addLoadStaticField(fieldInsn, neoMethod, compUnit);
                 }
                 break;
             case CHECKCAST:
@@ -143,15 +142,19 @@ public class ObjectsConverter implements Converter {
                 || typeName.equals(Iterator.Struct.class.getTypeName());
     }
 
-    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod) {
+    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
+            CompilationUnit compUnit) {
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
-    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
+    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }
 
     public static AbstractInsnNode handleNew(AbstractInsnNode insn, NeoMethod callingNeoMethod,

@@ -30,9 +30,8 @@ public class StaticVariablesTest {
         assertThat(staticVars.get(4), is("i,Integer,4"));
         assertThat(staticVars.get(5), is("byteArray,ByteArray,5"));
         assertThat(staticVars.get(6), is("map,Map,6"));
-        assertThat(staticVars.get(7), is("event,Any,7"));
-        assertThat(staticVars.get(8), is("obj,Any,8"));
-        assertThat(staticVars.get(9), is("list,Array,9"));
+        assertThat(staticVars.get(7), is("obj,Any,7"));
+        assertThat(staticVars.get(8), is("list,Array,8"));
     }
 
     public static class StaticVariablesTestContract {
