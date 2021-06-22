@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -403,20 +404,27 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer that is available in the wallet and has a verification script, we add
-        // a witness to a temporary transaction object that is serialized and sent to the
-        // `getnetworkfee` RPC method. Signers that are contract's do not need a verification
-        // script. Instead, their `verify` method will be consulted by the neo-node. We simply
-        // add an empty witness for such signers, resp. signers that don't have a verification
-        // script in the wallet.
+        // For each signer that is available in the wallet, we add a witness to a temporary
+        // transaction object that is serialized and sent to the `getnetworkfee` RPC method.
+        // Signers that are contracts do not need a verification script. Instead, their `verify`
+        // method will be consulted by the neo-node. We use the static method
+        // createContractWitness to instantiate a witness with the parameters for the verify
+        // method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
-            Account a = wallet.getAccount(signer.getScriptHash());
-            if (a != null && a.getVerificationScript() != null) {
-                tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
-                hasAtLeastOneSigningAccount = true;
+            if (signer.isContract()) {
+                tx.addWitness(createContractWitness(signer.getVerifyParams()));
             } else {
-                tx.addWitness(new Witness());
+                Account a = wallet.getAccount(signer.getScriptHash());
+                if (a != null && a.getVerificationScript() != null) {
+                    tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
+                    hasAtLeastOneSigningAccount = true;
+                } else {
+                    throw new TransactionConfigurationException("The wallet does not hold the " +
+                            "verification script of the signer with script hash '" +
+                            signer.getScriptHash() + "'. If this signer is a contract, use the " +
+                            "method 'asContract' in the class Signer.");
+                }
             }
         }
         if (!hasAtLeastOneSigningAccount) {

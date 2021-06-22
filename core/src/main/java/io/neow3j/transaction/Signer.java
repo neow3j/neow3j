@@ -1,6 +1,7 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.serialization.BinaryReader;
@@ -43,11 +44,24 @@ public class Signer extends NeoSerializable {
      */
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
+    /**
+     * The parameters for the verify method.
+     * <p>
+     * This field is only used for contract signers.
+     */
+    private List<ContractParameter> verifyParams;
+
+    /**
+     * Whether this signer is a contract.
+     */
+    private boolean isContract = false;
+
     public Signer() {
         this.account = new Hash160();
         this.scopes = new ArrayList<>();
         this.allowedContracts = new ArrayList<>();
         this.allowedGroups = new ArrayList<>();
+        this.verifyParams = new ArrayList<>();
     }
 
     private Signer(Builder builder) {
@@ -55,6 +69,7 @@ public class Signer extends NeoSerializable {
         this.scopes = builder.scopes;
         this.allowedContracts = builder.allowedContracts;
         this.allowedGroups = builder.allowedGroups;
+        this.verifyParams = new ArrayList<>();
     }
 
     /**
@@ -132,6 +147,34 @@ public class Signer extends NeoSerializable {
                 .build();
     }
 
+    public Signer asContract() {
+        this.isContract = true;
+        return this;
+    }
+
+    /**
+     * Sets the parameters for the contract's verify method.
+     * <p>
+     * This method is intended to be used if the signer is a contract.
+     *
+     * @param verifyParams the parameters of the contract's verify method.
+     * @return the signer.
+     */
+    public Signer asContract(List<ContractParameter> verifyParams) {
+        this.isContract = true;
+        this.verifyParams = verifyParams;
+        return this;
+    }
+
+    /**
+     * Checks whether this signer is a contract.
+     *
+     * @return true if {@code verifyParams} is not empty, false otherwise.
+     */
+    public boolean isContract() {
+        return isContract;
+    }
+
     public Hash160 getScriptHash() {
         return account;
     }
@@ -146,6 +189,17 @@ public class Signer extends NeoSerializable {
 
     public List<ECKeyPair.ECPublicKey> getAllowedGroups() {
         return allowedGroups;
+    }
+
+    /**
+     * Gets the parameters that are consumed by the verify method.
+     * <p>
+     * This should only be used for signers that are contracts.
+     *
+     * @return the verify parameters of this contract signer.
+     */
+    public List<ContractParameter> getVerifyParams() {
+        return verifyParams;
     }
 
     @Override
