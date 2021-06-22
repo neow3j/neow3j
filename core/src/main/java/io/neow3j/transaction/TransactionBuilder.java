@@ -478,14 +478,18 @@ public class TransactionBuilder {
         transaction = buildTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
-            // There's no need to check if every signer has its account in the wallet here.
-            // This check has already been executed within building the transaction above
-            // when calculating the network fees.
-            Account signerAcc = wallet.getAccount(signer.getScriptHash());
-            if (signerAcc.isMultiSig()) {
-                signWithMultiSigAccount(txBytes, signerAcc);
+            if (signer.isContract()) {
+                transaction.addWitness(createContractWitness(signer.getVerifyParams()));
             } else {
-                signWithNormalAccount(txBytes, signerAcc);
+                // There's no need to check if every signer has its account in the wallet here.
+                // This check has already been executed within building the transaction above
+                // when calculating the network fees.
+                Account signerAcc = wallet.getAccount(signer.getScriptHash());
+                if (signerAcc.isMultiSig()) {
+                    signWithMultiSigAccount(txBytes, signerAcc);
+                } else {
+                    signWithNormalAccount(txBytes, signerAcc);
+                }
             }
         });
         return transaction;
