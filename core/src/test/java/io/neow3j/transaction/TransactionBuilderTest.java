@@ -51,6 +51,7 @@ import static io.neow3j.transaction.Signer.global;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
@@ -60,6 +61,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -624,7 +626,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(calledByEntry(signer))
+                .signers(calledByEntry(signer).asContract())
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("No signers were set for which an account " +
@@ -653,6 +655,25 @@ public class TransactionBuilderTest {
         exceptionRule.expectMessage(new StringContains("The transaction does not have the same " +
                 "number of signers and witnesses."));
         tx.send();
+    }
+
+    @Test
+    public void testContractWitness() throws Throwable {
+        Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
+        Account signer = Account.create();
+        Wallet w = Wallet.withAccounts(signer);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(w)
+                .signers(global(contractHash).asContract(asList(string("iamgroot"), integer(2))),
+                        calledByEntry(signer))
+                .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
+        Transaction tx = b.sign();
+
+        byte[] invocScript = new ScriptBuilder().pushData("iamgroot").pushInteger(2).toArray();
+        assertThat(tx.getWitnesses(), hasItem(new Witness(invocScript, new byte[]{})));
     }
 
     @Test
