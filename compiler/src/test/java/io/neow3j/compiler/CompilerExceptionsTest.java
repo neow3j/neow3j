@@ -195,6 +195,33 @@ public class CompilerExceptionsTest {
         new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName());
     }
 
+    @Test
+    public void throwOnTokenContractInterfaceMissingHashAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                TokenContractWithoutHashAnnotation.class.getSimpleName(),
+                ContractHash.class.getSimpleName())));
+        new Compiler().compile(TokenContractMissingHashAnnotation.class.getName());
+    }
+
+    @Test
+    public void throwOnContractInterfaceMissingHashAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithoutHashAnnotation.class.getSimpleName(),
+                ContractHash.class.getSimpleName())));
+        new Compiler().compile(ContractMissingHashAnnotation.class.getName());
+    }
+
+    @Test
+    public void throwOnContractMissingContractInterface() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithoutContractInterface.class.getSimpleName(),
+                ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName())));
+        new Compiler().compile(ContractMissingContractInterface.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -358,6 +385,36 @@ public class CompilerExceptionsTest {
 
     static class CustomFungibleToken extends FungibleToken {
 
+    }
+
+    static class TokenContractMissingHashAnnotation {
+        public static String method() {
+            return TokenContractWithoutHashAnnotation.symbol();
+        }
+    }
+
+    static class TokenContractWithoutHashAnnotation extends FungibleToken {
+    }
+
+    static class ContractMissingHashAnnotation {
+        public static String method() {
+            return ContractWithoutHashAnnotation.symbol();
+        }
+    }
+
+    static class ContractWithoutHashAnnotation extends ContractInterface {
+        public static native String symbol();
+    }
+
+    static class ContractMissingContractInterface {
+        public static String method() {
+            return ContractWithoutContractInterface.symbol();
+        }
+    }
+
+    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // some hash
+    static class ContractWithoutContractInterface {
+        public static native String symbol();
     }
 
 
