@@ -7,6 +7,8 @@ import static io.neow3j.devpack.Helper.concat;
 
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
+ * <p>
+ * Note that the storage size limit is 64 bytes for prefix + key and 65535 bytes for the value.
  */
 public class StorageMap {
 

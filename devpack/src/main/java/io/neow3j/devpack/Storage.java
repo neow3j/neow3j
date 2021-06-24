@@ -16,6 +16,8 @@ import static io.neow3j.script.InteropService.SYSTEM_STORAGE_PUT;
 /**
  * Provides a set of methods to insert, query, and delete data in the persistent storage of smart
  * contracts.
+ * <p>
+ * Note that the size limit for storage keys and values is 64 bytes and 65535 bytes, respectively.
  */
 public class Storage {
 
