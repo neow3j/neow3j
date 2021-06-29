@@ -16,11 +16,12 @@ public abstract class FungibleToken extends Token {
      * The {@code data} is passed along with the call. For example, if the {@code to} account is a
      * contract it is provided as an argument to the contract's {@code onPayment} method.
      *
-     * @param from The hash of the payment originator.
-     * @param to The hash of the receiver.
+     * @param from   The hash of the payment originator.
+     * @param to     The hash of the receiver.
      * @param amount The token amount to transfer.
-     * @param data The data to pass along with the transfer.
+     * @param data   The data to pass along with the transfer.
      * @return True, if the transfer was successful. False, otherwise.
      */
     public static native boolean transfer(Hash160 from, Hash160 to, int amount, Object data);
+
 }
