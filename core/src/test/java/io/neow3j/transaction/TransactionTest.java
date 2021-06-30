@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.transaction.Signer.feeOnly;
+import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.contains;
@@ -55,7 +55,7 @@ public class TransactionTest {
     @Test
     public void serializeWithoutAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account1));
+        signers.add(AccountSigner.calledByEntry(account1));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -90,8 +90,8 @@ public class TransactionTest {
     @Test
     public void serializeWithAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.global(account1));
-        signers.add(Signer.calledByEntry(account2));
+        signers.add(AccountSigner.global(account1));
+        signers.add(AccountSigner.calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -162,8 +162,8 @@ public class TransactionTest {
     @Test
     public void getSize() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.global(account1));
-        signers.add(Signer.calledByEntry(account2));
+        signers.add(AccountSigner.global(account1));
+        signers.add(AccountSigner.calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -226,7 +226,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account3));
+        signers.add(AccountSigner.calledByEntry(account3));
 
         Transaction tx = new Transaction(neow,
                 (byte) 0,
@@ -250,7 +250,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account3));
+        signers.add(AccountSigner.calledByEntry(account3));
         Transaction tx = new Transaction(neow,
                 (byte) 0,
                 226292130L,
@@ -274,7 +274,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(feeOnly(account1));
+        signers.add(AccountSigner.none(account1));
         Transaction tx = new Transaction(neow, (byte) 0,
                 0L,
                 0L,

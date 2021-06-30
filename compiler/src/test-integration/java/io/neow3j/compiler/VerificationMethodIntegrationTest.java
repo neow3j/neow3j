@@ -5,6 +5,7 @@ import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -37,7 +38,7 @@ public class VerificationMethodIntegrationTest {
         NeoInvokeContractVerify response = ct.getNeow3j()
                 .invokeContractVerify(ct.getContract().getScriptHash(),
                         singletonList(string("hello, world!")),
-                        Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                        AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .send();
 
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -48,7 +49,7 @@ public class VerificationMethodIntegrationTest {
         NeoInvokeContractVerify response = ct.getNeow3j().invokeContractVerify(
                 ct.getContract().getScriptHash(),
                 singletonList(string("hello, world!")),
-                Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .send();
 
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());

@@ -412,8 +412,9 @@ public class TransactionBuilder {
         // method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
-            if (signer.isContract()) {
-                tx.addWitness(createContractWitness(signer.getVerifyParams()));
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
                 Account a = wallet.getAccount(signer.getScriptHash());
                 if (a != null && a.getVerificationScript() != null) {
@@ -478,8 +479,9 @@ public class TransactionBuilder {
         transaction = buildTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
-            if (signer.isContract()) {
-                transaction.addWitness(createContractWitness(signer.getVerifyParams()));
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                transaction.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
                 // There's no need to check if every signer has its account in the wallet here.
                 // This check has already been executed within building the transaction above
@@ -497,7 +499,6 @@ public class TransactionBuilder {
 
     /**
      * Builds the transaction without signing it.
-     *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the
