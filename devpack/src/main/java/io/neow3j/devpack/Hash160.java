@@ -70,7 +70,7 @@ public class Hash160 {
      * Checks if the given object is a valid Hash160, i.e., if it is either a ByteString or Buffer
      * and 20 bytes long.
      *
-     * @return true if this {@code Hash160} is valid. False, otherwise.
+     * @return true if this the given object is a valid Hash160. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)

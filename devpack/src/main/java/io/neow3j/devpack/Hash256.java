@@ -67,16 +67,11 @@ public class Hash256 {
     public native boolean isZero();
 
     /**
-     * Checks if this {@code Hash256} is valid, i.e. is 32 bytes long.
-     * <p>
-     * This method is useful when a contract method takes a {@code Hash256} as a parameter and
-     * you want to make sure that the underlying value really is a valid hash. The compiler and
-     * NeoVM don't include or enforce this check automatically, because that would consume extra
-     * GAS even if you don't require that check.
+     * Checks if the given object is a valid Hash256, i.e., if it is either a ByteString or Buffer
+     * and 32 bytes long.
      *
-     * @return true if this {@code Hash256} is valid. False, otherwise.
+     * @return true if this the given object is a valid Hash256. False, otherwise.
      */
-
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
