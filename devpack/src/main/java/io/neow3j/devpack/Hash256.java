@@ -76,14 +76,19 @@ public class Hash256 {
      *
      * @return true if this {@code Hash256} is valid. False, otherwise.
      */
+
+    @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.BOOLOR)
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.SIZE)
     @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.BOOLAND)
-    public native boolean isValid();
+    public static native boolean isValid(Object data);
 
     /**
      * Returns this {@code Hash256} as a byte array.
