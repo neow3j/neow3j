@@ -12,17 +12,6 @@ import io.neow3j.devpack.annotations.ContractHash;
 public abstract class NonDivisibleNonFungibleToken extends NonFungibleToken {
 
     /**
-     * Transfers the token with {@code tokenId}.
-     *
-     * @param to      The receiver of the token.
-     * @param tokenId The token id.
-     * @param data    The data that is passed to the {@code onNEP11Payment} method if the receiver
-     *                is a deployed contract.
-     * @return whether the transfer was successful.
-     */
-    public static native boolean transfer(Hash160 to, ByteString tokenId, Object data);
-
-    /**
      * Gets the owner of the token with {@code tokenId}.
      *
      * @param tokenId The token id.

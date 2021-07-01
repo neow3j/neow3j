@@ -2,7 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.List;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.ContractHash;
 
 /**
@@ -10,15 +10,7 @@ import io.neow3j.devpack.annotations.ContractHash;
  * NEP-11 standard. Extend this class in combination with the {@link ContractHash} annotation to
  * create an "interface" to a NEP-11 (divisible) token contract on the Neo blockchain.
  */
-public class DivisibleNonFungibleToken extends NonFungibleToken {
-
-    /**
-     * Gets the owners of the token with {@code tokenId}.
-     *
-     * @param tokenId The token id.
-     * @return a list of owners of the token.
-     */
-    public static native List<Hash160> ownersOf(ByteString tokenId);
+public abstract class DivisibleNonFungibleToken extends NonFungibleToken {
 
     /**
      * Transfers an amount of the token with {@code tokenId}.
@@ -33,6 +25,14 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
      */
     public static native boolean transfer(Hash160 from, Hash160 to, int amount,
             ByteString tokenId, Object data);
+
+    /**
+     * Returns an iterator that contains all owners of the token with {@code tokenId}.
+     *
+     * @param tokenId The token id.
+     * @return a list of owners of the token.
+     */
+    public static native Iterator<Hash160> ownerOf(ByteString tokenId);
 
     /**
      * Gets the balance of the token with {@code tokenId} for the given account.

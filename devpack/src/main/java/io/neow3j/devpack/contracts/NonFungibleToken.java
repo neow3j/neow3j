@@ -3,7 +3,6 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
-import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
 
 public abstract class NonFungibleToken extends Token {
@@ -35,7 +34,7 @@ public abstract class NonFungibleToken extends Token {
      *
      * @return a list of tokens that are minted on this contract.
      */
-    public static native List<ByteString> tokens();
+    public static native Iterator<ByteString> tokens();
 
     /**
      * Gets the properties of the token with {@code tokenId}.
