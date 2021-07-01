@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.test.TestProperties;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
@@ -124,7 +125,7 @@ public class ContractManagementIntegrationTest {
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(compUnit.getNefFile(), compUnit.getManifest())
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
@@ -147,7 +148,7 @@ public class ContractManagementIntegrationTest {
                 new SmartContract(contractHash, ct.getNeow3j()).invokeFunction("updateWithoutData",
                         byteArray(compUnit.getNefFile().toArray()), string(manifestString))
                         .wallet(ct.getWallet())
-                        .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                        .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                         .sign()
                         .send()
                         .getSendRawTransaction()
@@ -168,7 +169,7 @@ public class ContractManagementIntegrationTest {
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(compUnit.getNefFile(), compUnit.getManifest())
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
@@ -192,7 +193,7 @@ public class ContractManagementIntegrationTest {
                         byteArray(compUnit.getNefFile().toArray()), string(manifestString),
                         string("hello, world!"))
                         .wallet(ct.getWallet())
-                        .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                        .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                         .sign()
                         .send()
                         .getSendRawTransaction()
@@ -211,7 +212,7 @@ public class ContractManagementIntegrationTest {
         NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
@@ -221,7 +222,7 @@ public class ContractManagementIntegrationTest {
         SmartContract sc = new SmartContract(contractHash, ct.getNeow3j());
         Hash256 txHash = sc.invokeFunction("destroy")
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction()

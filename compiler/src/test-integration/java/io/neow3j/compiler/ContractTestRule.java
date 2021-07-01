@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.contract.ContractManagement;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -99,7 +100,7 @@ public class ContractTestRule implements TestRule {
         NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .wallet(wallet)
-                .signers(Signer.calledByEntry(committee.getScriptHash()))
+                .signers(AccountSigner.calledByEntry(committee.getScriptHash()))
                 .sign()
                 .send();
         if (response.hasError()) {
@@ -187,11 +188,11 @@ public class ContractTestRule implements TestRule {
 
         if (signAsCommittee) {
             return contract.callInvokeFunction(function, asList(params),
-                    Signer.global(committee.getScriptHash()));
+                    AccountSigner.global(committee.getScriptHash()));
         }
         if (signWithDefaultAccount) {
             return contract.callInvokeFunction(function, asList(params),
-                    Signer.global(defaultAccount.getScriptHash()));
+                    AccountSigner.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, asList(params));
     }
@@ -272,9 +273,9 @@ public class ContractTestRule implements TestRule {
 
         Signer signer;
         if (signAsCommittee) {
-            signer = Signer.global(committee.getScriptHash());
+            signer = AccountSigner.global(committee.getScriptHash());
         } else {
-            signer = Signer.global(defaultAccount.getScriptHash());
+            signer = AccountSigner.global(defaultAccount.getScriptHash());
         }
         NeoSendRawTransaction response = contract.invokeFunction(function, params)
                 .wallet(wallet)

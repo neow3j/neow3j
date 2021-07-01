@@ -4,11 +4,13 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.script.InvocationScript;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.ContractParameter;
 
 import java.io.IOException;
 import java.util.List;
@@ -108,6 +110,26 @@ public class Witness extends NeoSerializable {
         return new Witness(
                 InvocationScript.fromSignatures(signatures.subList(0, signingThreshold)),
                 verificationScript);
+    }
+
+    /**
+     * Constructs a witness with an invocation script based on the provided parameters for the
+     * contract's verify method.
+     * <p>
+     * This method is used if no signature is present, i.e. if the signer is a contract. In that
+     * case the invocation script is built based on the parameters of its verify method. No
+     * verification script is needed.
+     *
+     * @param verifyParams the parameters for the contract's verify method.
+     * @return the witness.
+     */
+    public static Witness createContractWitness(List<ContractParameter> verifyParams) {
+        if (verifyParams.isEmpty()) {
+            return new Witness();
+        }
+        ScriptBuilder invocationScript = new ScriptBuilder();
+        verifyParams.forEach(invocationScript::pushParam);
+        return new Witness(invocationScript.toArray(), new byte[]{});
     }
 
     public InvocationScript getInvocationScript() {
