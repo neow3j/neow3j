@@ -18,6 +18,37 @@ public class Hash256 {
     private static final byte LENGTH = 0x20;
 
     /**
+     * Creates a {@code Hash256} from the given byte array.
+     * <p>
+     * Checks if the value is a valid hash. Fails if it is not.
+     *
+     * @param value The hash as a byte array.
+     */
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.SIZE)
+    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    @Instruction(opcode = OpCode.ASSERT)
+    public Hash256(byte[] value) {
+    }
+
+    /**
+     * Creates a {@code Hash256} from the given bytes.
+     * <p>
+     * Checks if the value is a valid hash. Fails if it is not.
+     *
+     * @param value The hash as a byte string.
+     */
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.SIZE)
+    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    @Instruction(opcode = OpCode.ASSERT)
+    public Hash256(ByteString value) {
+    }
+
+    /**
      * Provides a zero-valued {@code Hash256}.
      *
      * @return the zero-valued {@code Hash256}.
@@ -53,37 +84,6 @@ public class Hash256 {
     @Instruction(opcode = OpCode.NUMEQUAL)
     @Instruction(opcode = OpCode.BOOLAND)
     public native boolean isValid();
-
-    /**
-     * Creates a {@code Hash256} from the given byte array.
-     * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
-     *
-     * @param value The hash as a byte array.
-     */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
-    public Hash256(byte[] value) {
-    }
-
-    /**
-     * Creates a {@code Hash256} from the given bytes.
-     * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
-     *
-     * @param value The hash as a byte string.
-     */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
-    public Hash256(ByteString value) {
-    }
 
     /**
      * Returns this {@code Hash256} as a byte array.
