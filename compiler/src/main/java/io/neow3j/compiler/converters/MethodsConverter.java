@@ -284,7 +284,7 @@ public class MethodsConverter implements Converter {
                 isContractInterface = true;
                 break;
             }
-            clazz = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
+            clazz = getAsmClassForInternalName(clazz.superName, compUnit.getClassLoader());
         }
         if (hasContractHash && !isContractInterface) {
             throw new CompilerException(format("The class '%s' annotated with '%s' needs to " +
