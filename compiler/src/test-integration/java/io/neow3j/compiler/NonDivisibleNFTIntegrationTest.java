@@ -6,8 +6,6 @@ import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NonDivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -15,7 +13,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
-import java.math.BigInteger;
 
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static org.hamcrest.Matchers.is;

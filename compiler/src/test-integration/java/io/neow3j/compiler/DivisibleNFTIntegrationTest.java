@@ -4,6 +4,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
@@ -13,8 +14,6 @@ import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.contracts.DivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -23,7 +22,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
-import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
@@ -73,7 +72,19 @@ public class DivisibleNFTIntegrationTest {
                 is(38));
     }
 
-    @Permission(contract = "b76b9a9512cdc1a47737973f936c1d0341e7ae18")
+    @Test
+    public void testProperties() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArrayFromString("id1"));
+        java.util.Map<StackItem, StackItem> map =
+                response.getInvocationResult().getStack().get(0).getMap();
+        ArrayList<java.util.Map.Entry<StackItem, StackItem>> list = new ArrayList<>(map.entrySet());
+        assertThat(list.get(0).getKey().getString(), is("hello"));
+        assertThat(list.get(0).getValue().getString(), is("world"));
+        assertThat(list.get(1).getKey().getString(), is("not"));
+        assertThat(list.get(1).getValue().getString(), is("today"));
+    }
+
+    @Permission(contract = "894107f2ef2b4692e84101461090cdcfac977091")
     static class DivisibleNFTTestContract {
 
         public static boolean testTransfer(Hash160 from, Hash160 to, int amount,
@@ -88,6 +99,10 @@ public class DivisibleNFTIntegrationTest {
 
         public static int testBalanceOf(Hash160 account, ByteString tokenId) {
             return CustomDivisibleNFT.balanceOf(account, tokenId);
+        }
+
+        public static Map<String, String> testProperties(ByteString tokenId) {
+            return CustomDivisibleNFT.properties(tokenId);
         }
 
     }
@@ -109,18 +124,23 @@ public class DivisibleNFTIntegrationTest {
             map.put(Helper.toByteArray((byte) 2),
                     addressToScriptHash("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
 
-            return (Iterator<ByteString>) Storage.find(ctx,
-                    mapPrefix,
-                    FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
         }
 
         public static int balanceOf(Hash160 account, ByteString tokenId) {
             return 38;
         }
 
+        public static Map<String, String> properties(ByteString tokenId) {
+            Map<String, String> map = new Map<>();
+            map.put("hello", "world");
+            map.put("not", "today");
+            return map;
+        }
+
     }
 
-    @ContractHash("b76b9a9512cdc1a47737973f936c1d0341e7ae18")
+    @ContractHash("894107f2ef2b4692e84101461090cdcfac977091")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 
