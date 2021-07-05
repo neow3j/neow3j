@@ -202,7 +202,8 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContains("Events must not be initialized by " +
                 "calling their constructor."));
         new Compiler().compile(EventConstructorMisuse.class.getName());
-  
+    }
+
     public void throwOnTokenContractInterfaceMissingHashAnnotation() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
