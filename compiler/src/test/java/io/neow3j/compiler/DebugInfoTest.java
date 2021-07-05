@@ -33,6 +33,11 @@ public class DebugInfoTest {
         assertThat(dbgnfo.getHash(), is("0xf798b2b69bfb380573787c6e177e4571643993c4"));
         assertThat(dbgnfo.getEvents(), hasSize(1));
 
+        List<String> staticVariables = dbgnfo.getStaticVariables();
+        assertThat(staticVariables, hasSize(2));
+        assertThat(staticVariables.get(0), is("owner,Hash160,0"));
+        assertThat(staticVariables.get(1), is("ctx,InteropInterface,1"));
+
         List<Method> methods = dbgnfo.getMethods();
         assertThat(methods, hasSize(10));
         Method method = methods.get(0);

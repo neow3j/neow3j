@@ -1,45 +1,27 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.AsmHelper.getAsmClass;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
-import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
-import io.neow3j.script.InteropService;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.NefFile;
-import io.neow3j.script.ScriptBuilder;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
+import io.neow3j.devpack.InteropInterface;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.EventInterface;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.utils.Numeric;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -51,6 +33,22 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
@@ -260,7 +258,7 @@ public class Compiler {
     private CompilationUnit compile(ClassNode classNode) throws IOException {
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
-        checkFieldVariables(classNode);
+        collectContractVariables(classNode);
         collectSmartContractEvents(classNode);
         compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
@@ -274,7 +272,7 @@ public class Compiler {
         return compUnit;
     }
 
-    private void checkFieldVariables(ClassNode asmClass) {
+    private void collectContractVariables(ClassNode asmClass) {
         if (asmClass.fields == null) {
             return;
         }
@@ -288,6 +286,19 @@ public class Compiler {
                             + "fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
+
+        int neoIdx = 0;
+        int jvmIdx = 0;
+        for (FieldNode f : asmClass.fields) {
+            if (isEvent(f.desc)) {
+                // Don't add events to the NeoVM variables.
+                jvmIdx++;
+                continue;
+            }
+            NeoContractVariable var = new NeoContractVariable(neoIdx++, jvmIdx++, f);
+            compUnit.getNeoModule().addContractVariable(var);
+        }
+
     }
 
     private void finalizeCompilation() {
@@ -306,16 +317,13 @@ public class Compiler {
         }
         List<FieldNode> eventFields = asmClass.fields
                 .stream()
-                .filter(field -> isEvent(getInternalNameForDescriptor(field.desc)))
+                .filter(field -> isEvent(field.desc))
                 .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
             return;
         }
-
-        eventFields.forEach(field -> {
-            compUnit.getNeoModule().addEvent(new NeoEvent(field, asmClass));
-        });
+        eventFields.forEach(f -> compUnit.getNeoModule().addEvent(new NeoEvent(f, asmClass)));
     }
 
     // Checks if there are any instructions in the given classes <init> method (the instance
@@ -361,7 +369,7 @@ public class Compiler {
         List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
-                continue; // Handled in method `collectAndInitializeStaticFields()`.
+                continue; // Handled in method `createInitsslotMethod()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
                 throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
@@ -631,14 +639,15 @@ public class Compiler {
     /**
      * Checks if the given class is an event.
      *
-     * @param classInternalName instructions under inspection.
+     * @param classDesc the descriptor of the class to check.
      * @return true, if the given class is an event. False, otherwise.
      */
-    public static boolean isEvent(String classInternalName) {
-
+    public static boolean isEvent(String classDesc) {
+        String fqn = getFullyQualifiedNameForInternalName(
+                AsmHelper.stripObjectDescriptor(classDesc));
         Class<?> clazz;
         try {
-            clazz = Class.forName(getFullyQualifiedNameForInternalName(classInternalName));
+            clazz = Class.forName(fqn);
         } catch (ClassNotFoundException e) {
             return false;
         }

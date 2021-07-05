@@ -18,14 +18,14 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertThat;
 
-public class StaticVariablesTest {
+public class StaticVariablesIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
 
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(
-            StaticVariables.class.getName());
+            StaticVariablesIntegrationTestContract.class.getName());
 
     @Test
     public void putToStaticStorageMap() throws Throwable {
@@ -46,7 +46,7 @@ public class StaticVariablesTest {
                 StringEndsWith.endsWith("NEO"));
     }
 
-    static class StaticVariables {
+    static class StaticVariablesIntegrationTestContract {
 
         private static final StorageMap map = Storage.getStorageContext().createMap(new ByteString(
                 "data"));
