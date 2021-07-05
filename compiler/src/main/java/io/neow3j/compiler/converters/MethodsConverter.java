@@ -276,16 +276,28 @@ public class MethodsConverter implements Converter {
     private static boolean isContractCall(ClassNode owner, CompilationUnit compUnit)
             throws IOException {
 
-        while (!ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
-                .equals(Object.class.getCanonicalName())) {
-
-            if (ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
-                    .equals(ContractInterface.class.getCanonicalName())) {
-                return true;
+        boolean hasContractHash = hasAnnotations(owner, ContractHash.class);
+        boolean isContractInterface = false;
+        ClassNode clazz = owner;
+        while (clazz.superName != null) {
+            if (clazz.superName.equals(Type.getType(ContractInterface.class).getInternalName())) {
+                isContractInterface = true;
+                break;
             }
-            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
+            clazz = getAsmClassForInternalName(clazz.superName, compUnit.getClassLoader());
         }
-        return false;
+        if (hasContractHash && !isContractInterface) {
+            throw new CompilerException(format("The class '%s' annotated with '%s' needs to " +
+                            "extend '%s' to be usable.", owner.name,
+                    ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName()));
+        }
+        if (isContractInterface && !hasContractHash) {
+            throw new CompilerException(format("Contract interface '%s' needs to be annotated " +
+                            "with the '%s' annotation to be usable.",
+                    ClassUtils.getClassNameForInternalName(owner.name),
+                    ContractHash.class.getSimpleName()));
+        }
+        return hasContractHash;
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -384,13 +396,6 @@ public class MethodsConverter implements Converter {
 
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
             ClassNode owner, CompilationUnit compUnit) {
-
-        if (!hasAnnotations(owner, ContractHash.class)) {
-            throw new CompilerException(callingNeoMethod, "Error trying to call a method on a " +
-                    "contract interface that does not have a contract hash specified. Make sure " +
-                    "that there is a " + ContractHash.class.getCanonicalName() + " annotation on " +
-                    "the contract interface you are calling.");
-        }
 
         AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
         Hash160 scriptHash;
