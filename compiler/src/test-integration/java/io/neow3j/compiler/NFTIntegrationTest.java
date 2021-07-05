@@ -13,6 +13,7 @@ import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.contracts.NonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
@@ -24,13 +25,22 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class NFTIntegrationTest {
+
+    private static final io.neow3j.types.Hash160 dummyScriptHash =
+            new io.neow3j.types.Hash160("3e2b5b33a98bdcf205c848dd3b2a3613d7e4b957");
 
     @Rule
     public TestName testName = new TestName();
@@ -71,21 +81,28 @@ public class NFTIntegrationTest {
 
     @Test
     public void testBalanceOf() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(42));
     }
 
     @Test
     public void testTokensOf() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash));
         List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
-        // TODO: 01.07.21 Michael: Assert correct return
+        assertThat(iter, hasItems(
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "token1".getBytes(StandardCharsets.UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "token2".getBytes(StandardCharsets.UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "token3".getBytes(StandardCharsets.UTF_8)))));
     }
 
     @Test
     public void testTransfer() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash),
+                byteArrayFromString("anyId"), any(null));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -93,18 +110,30 @@ public class NFTIntegrationTest {
     public void testTokens() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
-        // TODO: 01.07.21 Michael: Assert correct return
+        assertThat(iter, hasItems(
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "tokenOne".getBytes(StandardCharsets.UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "tokenTwo".getBytes(StandardCharsets.UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "tokenThree".getBytes(StandardCharsets.UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix(
+                        "tokenFour".getBytes(StandardCharsets.UTF_8)))));
     }
 
     @Test
     public void testProperties() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArrayFromString("anyId"));
         java.util.Map<StackItem, StackItem> map =
                 response.getInvocationResult().getStack().get(0).getMap();
-        assertThat(map.get("name"), is("neow3jToken1"));
+        ByteStringStackItem nameKey = new ByteStringStackItem(
+                toHexStringNoPrefix("name".getBytes(StandardCharsets.UTF_8)));
+        ByteStringStackItem nameValue = new ByteStringStackItem(
+                toHexStringNoPrefix("neow3jToken1".getBytes(StandardCharsets.UTF_8)));
+        assertThat(map.get(nameKey), is(nameValue));
     }
 
-    @Permission(contract = "0df34998dc7d4beeece4ebaa09268c6c78c99564")
+    @Permission(contract = "312c35c610daa32cfa9f225fe692ccc388c0cd70")
     static class NonFungibleTokenTestContract {
         static final StorageContext ctx = Storage.getStorageContext();
         static final byte mapPrefix = (byte) 1;
@@ -129,7 +158,7 @@ public class NFTIntegrationTest {
             return CustomNonFungibleToken.tokensOf(account);
         }
 
-        public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
+        public static boolean testTransfer(Hash160 to, ByteString tokenId, Object data) {
             return CustomNonFungibleToken.transfer(to, tokenId, data);
         }
 
@@ -140,7 +169,6 @@ public class NFTIntegrationTest {
         public static Map<String, String> testProperties(ByteString tokenId) {
             return CustomNonFungibleToken.properties(tokenId);
         }
-
     }
 
     static class ConcreteNonFungibleToken {
@@ -165,9 +193,9 @@ public class NFTIntegrationTest {
 
         public static Iterator<ByteString> tokensOf(io.neow3j.devpack.Hash160 account) {
             StorageMap map = ctx.createMap(mapPrefix);
-            map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("tokenOne"));
-            map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("tokenTwo"));
-            map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("tokenThree"));
+            map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("token1"));
+            map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("token2"));
+            map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("token3"));
             return (Iterator<ByteString>) Storage.find(ctx,
                     mapPrefix,
                     FindOptions.ValuesOnly);
@@ -195,7 +223,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("0df34998dc7d4beeece4ebaa09268c6c78c99564")
+    @ContractHash("312c35c610daa32cfa9f225fe692ccc388c0cd70")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 
