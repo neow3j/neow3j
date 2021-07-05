@@ -32,12 +32,6 @@ public class NonDivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(),
-                new BigInteger("10000"));
-        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(),
-                new BigInteger("10000"));
-        Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
-        Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
         ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
