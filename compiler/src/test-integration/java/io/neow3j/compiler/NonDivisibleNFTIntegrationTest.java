@@ -38,7 +38,6 @@ public class NonDivisibleNFTIntegrationTest {
                 new BigInteger("10000"));
         Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
-        System.out.println("funded - deploying concrete nft");
         ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
@@ -50,7 +49,7 @@ public class NonDivisibleNFTIntegrationTest {
         assertThat(owner, is(io.neow3j.types.Hash160.ZERO));
     }
 
-    @Permission(contract = "6e8c4c2bd2f0d020e78eff3fe4a204e31fdac99d")
+    @Permission(contract = "d7f96d30f3871ff2e576e8a3309dabfa36559add")
     static class NonDivisibleNFTTestContract {
 
         public static Hash160 testOwnerOf(ByteString tokenId) {
@@ -67,7 +66,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("6e8c4c2bd2f0d020e78eff3fe4a204e31fdac99d")
+    @ContractHash("d7f96d30f3871ff2e576e8a3309dabfa36559add")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 
