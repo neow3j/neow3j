@@ -178,9 +178,9 @@ public class CompilerExceptionsTest {
     @Test
     public void failCallingAContractInterfaceWithoutContractHashAnnotation() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Error trying to call a method on a contract interface",
-                ContractHash.class.getCanonicalName())));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Contract interface",
+                FungibleToken.class.getSimpleName(),
+                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
         new Compiler().compile(ContractInterfaceWithoutHash.class.getName());
     }
 
@@ -189,9 +189,9 @@ public class CompilerExceptionsTest {
             throws IOException {
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Error trying to call a method on a contract interface",
-                ContractHash.class.getCanonicalName())));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Contract interface",
+                CustomFungibleToken.class.getSimpleName(),
+                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
         new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName());
     }
 

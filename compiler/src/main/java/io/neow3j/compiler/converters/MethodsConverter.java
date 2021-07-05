@@ -397,13 +397,6 @@ public class MethodsConverter implements Converter {
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
             ClassNode owner, CompilationUnit compUnit) {
 
-        if (!hasAnnotations(owner, ContractHash.class)) {
-            throw new CompilerException(callingNeoMethod, "Error trying to call a method on a " +
-                    "contract interface that does not have a contract hash specified. Make sure " +
-                    "that there is a " + ContractHash.class.getCanonicalName() + " annotation on " +
-                    "the contract interface you are calling.");
-        }
-
         AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
         Hash160 scriptHash;
         try {
