@@ -25,7 +25,7 @@ public class Contract {
     public final int updateCounter;
 
     /**
-     * The contract's hash.
+     * The contract's hash in little-endian order.
      */
     public final Hash160 hash;
 

@@ -37,24 +37,4 @@ public class Crypto {
     @Syscall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
     public static native boolean checkMultisig(ECPoint[] publicKeys, ByteString[] signatures);
 
-    /**
-     * Applies SHA-256 twice to the given value.
-     *
-     * @param value The bytes to hash.
-     * @return the 256 bit long hash.
-     */
-    public static Hash256 hash256(ByteString value) {
-        return new Hash256(CryptoLib.sha256(CryptoLib.sha256(value)));
-    }
-
-    /**
-     * First applies SHA-256 then RIPEMD-160 to the given value.
-     *
-     * @param value The bytes to hash.
-     * @return the 160 bit long hash.
-     */
-    public static Hash160 hash160(ByteString value) {
-        return new Hash160(CryptoLib.ripemd160(CryptoLib.sha256(value)));
-    }
-
 }

@@ -40,7 +40,7 @@ public class Neow3jPluginUtilsTest {
         outDir.toFile().deleteOnExit();
 
         String zipFilePath = Neow3jPluginUtils.writeDebugInfoZip(dbgnfo, contractName, outDir);
-        assertThat(zipFilePath, is(outDir.toFile().getAbsolutePath() + "/" + contractName
+        assertThat(zipFilePath, is(outDir.toFile().getAbsolutePath() + File.separator + contractName
                 + NEFDBGNFO_SUFFIX));
         ZipFile generatedZipFile = new ZipFile(zipFilePath);
         Enumeration<? extends ZipEntry> entries = generatedZipFile.entries();

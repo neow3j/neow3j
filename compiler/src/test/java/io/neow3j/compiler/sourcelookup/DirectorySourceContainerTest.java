@@ -26,7 +26,7 @@ public class DirectorySourceContainerTest {
         // The sources directory is not the original java sources because when this test is ran
         // the runtime will not know the sources location. Therefore, we mocked a
         // `SourceLookupTest` class in the "resources" folder under the "sources" directory.
-        File sourcesDir = new File(this.getClass().getResource(File.separator + "sources").toURI());
+        File sourcesDir = new File(this.getClass().getClassLoader().getResource("sources").toURI());
         ISourceContainer c = new DirectorySourceContainer(sourcesDir, true);
         CompilationUnit res = new Compiler().compile(
                 Contract1.class.getName(), asList(c));
@@ -54,7 +54,7 @@ public class DirectorySourceContainerTest {
         // The sources directory is not the original java sources because when this test is ran
         // the runtime will not know the sources location. Therefore, we mocked a
         // `SourceLookupTest` class in the "resources" folder under the "sources" directory.
-        File sourcesDir = new File(this.getClass().getResource(File.separator + "sources").toURI());
+        File sourcesDir = new File(this.getClass().getClassLoader().getResource("sources").toURI());
         ISourceContainer c = new DirectorySourceContainer(sourcesDir, true);
         CompilationUnit res = new Compiler().compile(
                 Contract2.class.getName(), asList(c));
@@ -85,7 +85,7 @@ public class DirectorySourceContainerTest {
         // The sources directory is not the original java sources because when this test is ran
         // the runtime will not know the sources location. Therefore, we mocked a
         // `SourceLookupTest` class in the "resources" folder under the "sources" directory.
-        File sourcesDir = new File(this.getClass().getResource(File.separator + "sources").toURI());
+        File sourcesDir = new File(this.getClass().getClassLoader().getResource("sources").toURI());
         ISourceContainer c = new DirectorySourceContainer(sourcesDir, true);
         CompilationUnit res = new Compiler().compile(
                 SourceLookupTestContract3.class.getName(), asList(c));

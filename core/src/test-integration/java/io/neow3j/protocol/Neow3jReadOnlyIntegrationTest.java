@@ -1,56 +1,6 @@
 package io.neow3j.protocol;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.test.TestProperties.committeeAccountAddress;
-import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
-import static io.neow3j.test.TestProperties.contractManagementHash;
-import static io.neow3j.test.TestProperties.defaultAccountAddress;
-import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
-import static io.neow3j.test.TestProperties.defaultAccountWIF;
-import static io.neow3j.test.TestProperties.gasTokenName;
-import static io.neow3j.test.TestProperties.neoTokenHash;
-import static io.neow3j.test.TestProperties.oracleContractHash;
-import static io.neow3j.types.ContractParameter.any;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
-import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.isEmptyOrNullString;
-import static org.hamcrest.Matchers.isEmptyString;
-import static org.hamcrest.Matchers.isOneOf;
-import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.hamcrest.Matchers.not;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import io.neow3j.test.NeoTestContainer;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-import io.neow3j.script.ScriptBuilder;
 import io.neow3j.crypto.Base64;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.NeoVMStateType;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
@@ -76,11 +26,22 @@ import io.neow3j.protocol.core.response.NeoListPlugins.Plugin;
 import io.neow3j.protocol.core.response.NeoNetworkFee;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
-import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.response.Transaction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.WitnessScope;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.types.StackItemType;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -88,9 +49,47 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.test.TestProperties.contractManagementHash;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
+import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.TestProperties.gasTokenName;
+import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.test.TestProperties.oracleContractHash;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyOrNullString;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.isOneOf;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 // This test class uses a static container which is started once for the whole class and reused in
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
@@ -712,11 +711,8 @@ public class Neow3jReadOnlyIntegrationTest {
                 hash160(new Hash160(defaultAccountScriptHash())),
                 integer(1),
                 integer(1));
-        Signer signer = new Signer.Builder()
-                .account(new Hash160(committeeAccountScriptHash()))
-                .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .allowedContracts(NEO_HASH)
-                .build();
+        Signer signer = AccountSigner.calledByEntry(new Hash160(committeeAccountScriptHash()))
+                .setAllowedContracts(NEO_HASH);
 
         InvocationResult invoc = getNeow3j()
                 .invokeFunction(NEO_HASH, "transfer", params, signer)
@@ -743,7 +739,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .contractCall(new Hash160(neoTokenHash()), "transfer", params)
                 .toArray();
 
-        Signer signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
+        AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
                 .invokeScript(Base64.encode(script), signer)
                 .send()
@@ -1014,7 +1010,7 @@ public class Neow3jReadOnlyIntegrationTest {
     // StateService
 
     @Test
-    public void testGetStateRoot() throws IOException{
+    public void testGetStateRoot() throws IOException {
         StateRoot stateRoot = getNeow3j()
                 .getStateRoot(BigInteger.ZERO)
                 .send()

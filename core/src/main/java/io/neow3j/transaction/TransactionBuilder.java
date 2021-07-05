@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -403,20 +404,28 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer that is available in the wallet and has a verification script, we add
-        // a witness to a temporary transaction object that is serialized and sent to the
-        // `getnetworkfee` RPC method. Signers that are contract's do not need a verification
-        // script. Instead, their `verify` method will be consulted by the neo-node. We simply
-        // add an empty witness for such signers, resp. signers that don't have a verification
-        // script in the wallet.
+        // For each signer that is available in the wallet, we add a witness to a temporary
+        // transaction object that is serialized and sent to the `getnetworkfee` RPC method.
+        // Signers that are contracts do not need a verification script. Instead, their `verify`
+        // method will be consulted by the neo-node. We use the static method
+        // createContractWitness to instantiate a witness with the parameters for the verify
+        // method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
-            Account a = wallet.getAccount(signer.getScriptHash());
-            if (a != null && a.getVerificationScript() != null) {
-                tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
-                hasAtLeastOneSigningAccount = true;
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                tx.addWitness(new Witness());
+                Account a = wallet.getAccount(signer.getScriptHash());
+                if (a != null && a.getVerificationScript() != null) {
+                    tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
+                    hasAtLeastOneSigningAccount = true;
+                } else {
+                    throw new TransactionConfigurationException("The wallet does not hold the " +
+                            "verification script of the signer with script hash '" +
+                            signer.getScriptHash() + "'. If this signer is a contract, use the " +
+                            "method 'asContract' in the class Signer.");
+                }
             }
         }
         if (!hasAtLeastOneSigningAccount) {
@@ -470,14 +479,19 @@ public class TransactionBuilder {
         transaction = buildTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
-            // There's no need to check if every signer has its account in the wallet here.
-            // This check has already been executed within building the transaction above
-            // when calculating the network fees.
-            Account signerAcc = wallet.getAccount(signer.getScriptHash());
-            if (signerAcc.isMultiSig()) {
-                signWithMultiSigAccount(txBytes, signerAcc);
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                transaction.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                signWithNormalAccount(txBytes, signerAcc);
+                // There's no need to check if every signer has its account in the wallet here.
+                // This check has already been executed within building the transaction above
+                // when calculating the network fees.
+                Account signerAcc = wallet.getAccount(signer.getScriptHash());
+                if (signerAcc.isMultiSig()) {
+                    signWithMultiSigAccount(txBytes, signerAcc);
+                } else {
+                    signWithNormalAccount(txBytes, signerAcc);
+                }
             }
         });
         return transaction;
@@ -485,7 +499,6 @@ public class TransactionBuilder {
 
     /**
      * Builds the transaction without signing it.
-     *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the

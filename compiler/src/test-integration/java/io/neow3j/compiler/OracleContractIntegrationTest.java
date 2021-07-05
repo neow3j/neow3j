@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.GasToken;
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
@@ -82,7 +83,7 @@ public class OracleContractIntegrationTest {
         ECKeyPair.ECPublicKey publicKey = ct.getDefaultAccount().getECKeyPair().getPublicKey();
         NeoSendRawTransaction response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
@@ -90,7 +91,7 @@ public class OracleContractIntegrationTest {
         response = new RoleManagement(ct.getNeow3j()).designateAsRole(Role.ORACLE,
                 Arrays.asList(publicKey))
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getCommittee().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());

@@ -10,7 +10,7 @@ import io.neow3j.script.OpCode;
 public class Block {
 
     /**
-     * The hash of this block.
+     * The hash of this block in little-endian order.
      */
     public final Hash256 hash;
 
