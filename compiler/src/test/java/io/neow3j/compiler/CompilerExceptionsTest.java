@@ -88,7 +88,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "223344", "3", OpCode.PUSHINT16.name(), "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "Operand prefix", "1", "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -135,7 +135,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test

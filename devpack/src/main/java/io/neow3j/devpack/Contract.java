@@ -3,7 +3,6 @@ package io.neow3j.devpack;
 import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
@@ -65,7 +64,7 @@ public class Contract {
      *                   Passing null will make the contract fail at runtime.
      * @return the value returned by the contract method call.
      */
-    @Syscall(SYSTEM_CONTRACT_CALL)
+    @Instruction(interopService = SYSTEM_CONTRACT_CALL)
     public static native Object call(Hash160 scriptHash, String method, byte callFlags,
             Object[] arguments);
 
@@ -75,7 +74,7 @@ public class Contract {
      *
      * @return the call flags encoded in one byte.
      */
-    @Syscall(SYSTEM_CONTRACT_GETCALLFLAGS)
+    @Instruction(interopService = SYSTEM_CONTRACT_GETCALLFLAGS)
     public static native byte getCallFlags();
 
     /**

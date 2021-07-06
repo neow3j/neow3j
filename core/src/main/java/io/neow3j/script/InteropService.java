@@ -49,9 +49,10 @@ public enum InteropService {
     SYSTEM_STORAGE_ASREADONLY("System.Storage.AsReadOnly", 1 << 4),
     SYSTEM_STORAGE_GET("System.Storage.Get", 1 << 15),
     SYSTEM_STORAGE_FIND("System.Storage.Find", 1 << 15),
-    SYSTEM_STORAGE_PUT("System.Storage.Put", 0),
-    SYSTEM_STORAGE_PUTEX("System.Storage.PutEx", 0),
-    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 0);
+    SYSTEM_STORAGE_PUT("System.Storage.Put", 1 << 15),
+    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 1 << 15),
+
+    DUMMY("Dummy", 0);
 
     private final String name;
 

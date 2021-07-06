@@ -17,11 +17,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import io.neow3j.script.InteropService;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
 import java.io.IOException;
@@ -96,14 +95,13 @@ public class AsmHelperTest {
         MethodNode method = asmClass.methods.stream()
                 .filter(m -> m.name.contains("annotatedMethod"))
                 .findFirst().get();
-        assertTrue(hasAnnotations(method, Syscall.class));
         assertTrue(hasAnnotations(method, Instruction.class));
-        assertTrue(hasAnnotations(method, Syscall.class, Instruction.class));
+        assertTrue(hasAnnotations(method, OnNEP11Payment.class));
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
     @Instruction
+    @OnNEP11Payment
     private void annotatedMethod() {
 
     }

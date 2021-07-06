@@ -1,8 +1,7 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.InteropService;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.contracts.CryptoLib;
 
 /**
  * Offers cryptographic functions for use in smart contracts.
@@ -20,7 +19,7 @@ public class Crypto {
      * @param signature The signature.
      * @return True if the signature is valid. False otherwise.
      */
-    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
+    @Instruction(interopService = InteropService.SYSTEM_CRYPTO_CHECKSIG)
     public static native boolean checkSig(ECPoint publicKey, ByteString signature);
 
     /**
@@ -34,7 +33,7 @@ public class Crypto {
      * @param publicKeys The public keys.
      * @return True if the signatures are valid. False otherwise.
      */
-    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
+    @Instruction(interopService = InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
     public static native boolean checkMultisig(ECPoint[] publicKeys, ByteString[] signatures);
 
 }

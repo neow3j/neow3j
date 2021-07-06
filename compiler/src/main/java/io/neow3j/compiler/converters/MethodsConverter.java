@@ -8,13 +8,11 @@ import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.CallFlags;
 import io.neow3j.types.Hash160;
@@ -44,12 +42,11 @@ import java.util.Optional;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
-import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
+import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.script.OpCode.CALLT;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
@@ -135,11 +132,8 @@ public class MethodsConverter implements Converter {
                     compUnit.getClassLoader());
             calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
-        if (hasSyscallAnnotation(calledAsmMethod.get())) {
-            addSyscall(calledAsmMethod.get(), callingNeoMethod);
-        } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
-            addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
-        } else if (isContractCall(topLevelOwnerClass, compUnit)) {
+        processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
+        if (isContractCall(topLevelOwnerClass, compUnit)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isStringLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);
@@ -264,10 +258,6 @@ public class MethodsConverter implements Converter {
             }
         }
         callingNeoMethod.replaceLastInstruction(newInsn);
-    }
-
-    public static boolean hasSyscallAnnotation(MethodNode asmMethod) {
-        return hasAnnotations(asmMethod, Syscalls.class, Syscall.class);
     }
 
     /**
