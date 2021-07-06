@@ -132,8 +132,9 @@ public class MethodsConverter implements Converter {
                     compUnit.getClassLoader());
             calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
-        processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
-        if (isContractCall(topLevelOwnerClass, compUnit)) {
+        if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) {
+            processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
+        } else if (isContractCall(topLevelOwnerClass, compUnit)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isStringLiteralConverter(calledAsmMethod.get(), ownerClass)) {
             handleStringLiteralsConverter(calledAsmMethod.get(), callingNeoMethod);

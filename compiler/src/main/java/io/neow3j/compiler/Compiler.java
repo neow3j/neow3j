@@ -65,9 +65,9 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     public static final String THIS_KEYWORD = "this";
 
-    public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
-    public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
-    public static final String INSTRUCTION_ANNOTATION_INTEROPSERVICE = "interopService";
+    public static final String INSN_ANNOTATION_OPERAND = "operand";
+    public static final String INSN_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
+    public static final String INSN_ANNOTATION_INTEROPSERVICE = "interopService";
 
     private final CompilationUnit compUnit;
 
@@ -413,9 +413,6 @@ public class Compiler {
      * @param caller The calling method.
      */
     public static void processInstructionAnnotations(MethodNode callee, NeoMethod caller) {
-        if (!hasAnnotations(callee, Instruction.class, Instructions.class)) {
-            return;
-        }
         List<AnnotationNode> nodes = getAnnotations(callee, Instruction.class, Instructions.class);
         if (isSingleSyscallInstruction(nodes)) {
             // Needs special treatment because syscall arguments have to be reversed.
@@ -442,9 +439,9 @@ public class Compiler {
         if (annotations.size() != 1) {
             return false;
         }
-        String name = getStringAnnotationProperty(annotations.get(0),
-                INSTRUCTION_ANNOTATION_INTEROPSERVICE);
-        return !InteropService.valueOf(name).equals(InteropService.DUMMY);
+        String name = getStringAnnotationProperty(
+                annotations.get(0), INSN_ANNOTATION_INTEROPSERVICE);
+        return name != null && !InteropService.valueOf(name).equals(InteropService.DUMMY);
     }
 
     /**
@@ -494,12 +491,14 @@ public class Compiler {
         }
 
         // First check if the `interopService` property was used and if yes set the SYSCALL.
-        InteropService interopService = InteropService.valueOf(
-                getStringAnnotationProperty(annotation, INSTRUCTION_ANNOTATION_INTEROPSERVICE));
-        if (!interopService.equals(InteropService.DUMMY)) {
-            byte[] hash = Numeric.hexStringToByteArray(interopService.getHash());
-            neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
-            return;
+        String name = getStringAnnotationProperty(annotation, INSN_ANNOTATION_INTEROPSERVICE);
+        if (name != null) {
+            InteropService interopService = InteropService.valueOf(name);
+            if (!interopService.equals(InteropService.DUMMY)) {
+                byte[] hash = Numeric.hexStringToByteArray(interopService.getHash());
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
+                return;
+            }
         }
 
         String insnName = ((String[]) annotation.values.get(1))[1];
@@ -510,14 +509,14 @@ public class Compiler {
         }
 
         byte[] operandPrefix = new byte[]{};
-        if (annotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND_PREFIX)) {
+        if (annotation.values.contains(INSN_ANNOTATION_OPERAND_PREFIX)) {
             operandPrefix = getByteArrayAnnotationProperty(
-                    annotation, INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
+                    annotation, INSN_ANNOTATION_OPERAND_PREFIX);
         }
         byte[] operand = new byte[]{};
-        if (annotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND)) {
+        if (annotation.values.contains(INSN_ANNOTATION_OPERAND)) {
             operand = getByteArrayAnnotationProperty(
-                    annotation, INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
+                    annotation, INSN_ANNOTATION_OPERAND_PREFIX);
         }
         // Correctness of operand prefix and operand are checked in the NeoInstruction.
         neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));

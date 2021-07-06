@@ -247,8 +247,11 @@ public class AsmHelper {
     public static String getStringAnnotationProperty(AnnotationNode annotation,
             String propertyName) {
 
-        String[] prop = (String[]) getAnnotationProperty(annotation, propertyName);
-        return prop[1];
+        Object property = getAnnotationProperty(annotation, propertyName);
+        if (property == null) {
+            return null;
+        }
+        return ((String[])property)[1];
     }
 
     /**

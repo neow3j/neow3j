@@ -12,6 +12,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
@@ -31,6 +32,7 @@ import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
@@ -185,7 +187,9 @@ public class ObjectsConverter implements Converter {
                 insn = insn.getNext();
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
-            processInstructionAnnotations(ctorMethod, callingNeoMethod);
+            if (!hasAnnotations(ctorMethod, Instruction.class, Instruction.Instructions.class)) {
+                processInstructionAnnotations(ctorMethod, callingNeoMethod);
+            }
             return insn;
         }
     }
