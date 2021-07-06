@@ -18,43 +18,6 @@ public class Hash256 {
     private static final byte LENGTH = 0x20;
 
     /**
-     * Provides a zero-valued {@code Hash256}.
-     *
-     * @return the zero-valued {@code Hash256}.
-     */
-    @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = LENGTH, operand = {0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
-    public static native Hash256 zero();
-
-    /**
-     * Checks if this {@code Hash256} is zero-valued.
-     *
-     * @return true if this {@code Hash256} is zero-valued. False, otherwise.
-     */
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    public native boolean isZero();
-
-    /**
-     * Checks if this {@code Hash256} is valid, i.e. is 32 bytes long.
-     * <p>
-     * This method is useful when a contract method takes a {@code Hash256} as a parameter and
-     * you want to make sure that the underlying value really is a valid hash. The compiler and
-     * NeoVM don't include or enforce this check automatically, because that would consume extra
-     * GAS even if you don't require that check.
-     *
-     * @return true if this {@code Hash256} is valid. False, otherwise.
-     */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.BOOLAND)
-    public native boolean isValid();
-
-    /**
      * Creates a {@code Hash256} from the given byte array.
      * <p>
      * Checks if the value is a valid hash. Fails if it is not.
@@ -84,6 +47,43 @@ public class Hash256 {
     @Instruction(opcode = OpCode.ASSERT)
     public Hash256(ByteString value) {
     }
+
+    /**
+     * Provides a zero-valued {@code Hash256}.
+     *
+     * @return the zero-valued {@code Hash256}.
+     */
+    @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = LENGTH, operand = {0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+    public static native Hash256 zero();
+
+    /**
+     * Checks if this {@code Hash256} is zero-valued.
+     *
+     * @return true if this {@code Hash256} is zero-valued. False, otherwise.
+     */
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    public native boolean isZero();
+
+    /**
+     * Checks if the given object is a valid Hash256, i.e., if it is either a ByteString or Buffer
+     * and 32 bytes long.
+     *
+     * @return true if this the given object is a valid Hash256. False, otherwise.
+     */
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.BOOLOR)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.SIZE)
+    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    @Instruction(opcode = OpCode.BOOLAND)
+    public static native boolean isValid(Object data);
 
     /**
      * Returns this {@code Hash256} as a byte array.
