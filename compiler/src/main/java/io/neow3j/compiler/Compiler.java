@@ -1,5 +1,11 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
@@ -22,6 +28,15 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -34,25 +49,14 @@ import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
-import static io.neow3j.compiler.AsmHelper.getAsmClass;
-import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j-3.11.2";
+
+    // Check the following table for a complete version list:
+    // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
+    // 52 = Java 1.8
+    public static final int CLASS_VERSION_SUPPORTED = 52;
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -255,7 +259,8 @@ public class Compiler {
      * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compile(ClassNode classNode) throws IOException {
+    protected CompilationUnit compile(ClassNode classNode) throws IOException {
+        checkForClassCompatibility(classNode);
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
         collectContractVariables(classNode);
@@ -348,6 +353,22 @@ public class Compiler {
                 }
                 insn = insn.getNext();
             }
+        }
+    }
+
+    // Checks the min. version of class compatibility.
+    // At the moment, only 'target compatibility' for 1.8 is supported.
+    private void checkForClassCompatibility(ClassNode asmClass) {
+        if (asmClass.version != CLASS_VERSION_SUPPORTED) {
+            throw new CompilerException(
+                    format("Class %s was compiled with JVM version %d, "
+                                    + "which is not supported. Please, change your environment "
+                                    + "to compile the class to version %d.",
+                            getFullyQualifiedNameForInternalName(asmClass.name),
+                            asmClass.version,
+                            CLASS_VERSION_SUPPORTED
+                    )
+            );
         }
     }
 

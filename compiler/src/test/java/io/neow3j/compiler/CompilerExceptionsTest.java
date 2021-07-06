@@ -1,15 +1,21 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.contracts.FungibleToken;
-import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.script.OpCode;
-import io.neow3j.devpack.contracts.ContractInterface;
+import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
+import static java.util.Arrays.asList;
+
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
+import io.neow3j.devpack.contracts.ContractInterface;
+import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.devpack.events.Event1Arg;
+import io.neow3j.script.OpCode;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -17,13 +23,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -204,6 +203,7 @@ public class CompilerExceptionsTest {
         new Compiler().compile(EventConstructorMisuse.class.getName());
     }
 
+    @Test
     public void throwOnTokenContractInterfaceMissingHashAnnotation() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(asList(
@@ -228,6 +228,18 @@ public class CompilerExceptionsTest {
                 ContractWithoutContractInterface.class.getSimpleName(),
                 ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName())));
         new Compiler().compile(ContractMissingContractInterface.class.getName());
+    }
+
+    @Test
+    public void throwOnWrongClassCompatibility() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithWrongClassCompatibility.class.getSimpleName(), "51",
+                Integer.toString(CLASS_VERSION_SUPPORTED))));
+        ClassNode c = new ClassNode();
+        c.name = ContractWithWrongClassCompatibility.class.getSimpleName();
+        c.version = 51;
+        new Compiler().compile(c);
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -434,6 +446,9 @@ public class CompilerExceptionsTest {
     @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // some hash
     static class ContractWithoutContractInterface {
         public static native String symbol();
+    }
+
+    static class ContractWithWrongClassCompatibility {
     }
 
 }
