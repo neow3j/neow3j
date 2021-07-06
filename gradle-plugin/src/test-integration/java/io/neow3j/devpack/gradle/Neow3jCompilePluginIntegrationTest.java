@@ -57,6 +57,29 @@ public class Neow3jCompilePluginIntegrationTest {
     }
 
     @Test
+    public void testTaskHappyPath_wrongJavaTargetCompatibility() throws IOException {
+        String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_7" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_7" + "\n" +
+                "neow3jCompiler {" + "\n" +
+                "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+                "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+                .withDefaultDependencies()
+                .appendToBuildFile(buildFileContent)
+                .withContractName("ContractTest")
+                .withContractSourceFileName("ContractTest.java")
+                .runBuild();
+
+        BuildResult buildResult = testCase.getGradleBuildResult();
+
+        // build success/failure check
+        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
+    }
+
+    @Test
     public void testTaskWithDebugSetToFalse() throws IOException {
         String buildFileContent = "" +
                 "neow3jCompiler {" + "\n" +
