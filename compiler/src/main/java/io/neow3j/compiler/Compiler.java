@@ -45,7 +45,6 @@ import java.util.stream.Collectors;
 import static io.neow3j.compiler.AsmHelper.getAnnotations;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getByteArrayAnnotationProperty;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getStringAnnotationProperty;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
@@ -55,6 +54,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class Compiler {
 
     public static final String COMPILER_NAME = "neow3j-3.11.2";
+
+    // Check the following table for a complete version list:
+    // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
+    // 52 = Java 1.8
+    public static final int CLASS_VERSION_SUPPORTED = 52;
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -259,10 +263,11 @@ public class Compiler {
      * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
      */
-    private CompilationUnit compile(ClassNode classNode) throws IOException {
+    protected CompilationUnit compile(ClassNode classNode) throws IOException {
+        checkForClassCompatibility(classNode);
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
-        checkFieldVariables(classNode);
+        collectContractVariables(classNode);
         collectSmartContractEvents(classNode);
         compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
@@ -276,7 +281,7 @@ public class Compiler {
         return compUnit;
     }
 
-    private void checkFieldVariables(ClassNode asmClass) {
+    private void collectContractVariables(ClassNode asmClass) {
         if (asmClass.fields == null) {
             return;
         }
@@ -290,6 +295,19 @@ public class Compiler {
                             + "fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
+
+        int neoIdx = 0;
+        int jvmIdx = 0;
+        for (FieldNode f : asmClass.fields) {
+            if (isEvent(f.desc)) {
+                // Don't add events to the NeoVM variables.
+                jvmIdx++;
+                continue;
+            }
+            NeoContractVariable var = new NeoContractVariable(neoIdx++, jvmIdx++, f);
+            compUnit.getNeoModule().addContractVariable(var);
+        }
+
     }
 
     private void finalizeCompilation() {
@@ -308,15 +326,13 @@ public class Compiler {
         }
         List<FieldNode> eventFields = asmClass.fields
                 .stream()
-                .filter(field -> isEvent(getInternalNameForDescriptor(field.desc)))
+                .filter(field -> isEvent(field.desc))
                 .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
             return;
         }
-
-        eventFields.forEach(field -> compUnit.getNeoModule().addEvent(
-                new NeoEvent(field, asmClass)));
+        eventFields.forEach(f -> compUnit.getNeoModule().addEvent(new NeoEvent(f, asmClass)));
     }
 
     // Checks if there are any instructions in the given classes <init> method (the instance
@@ -344,6 +360,22 @@ public class Compiler {
         }
     }
 
+    // Checks the min. version of class compatibility.
+    // At the moment, only 'target compatibility' for 1.8 is supported.
+    private void checkForClassCompatibility(ClassNode asmClass) {
+        if (asmClass.version != CLASS_VERSION_SUPPORTED) {
+            throw new CompilerException(
+                    format("Class %s was compiled with JVM version %d, "
+                                    + "which is not supported. Please, change your environment "
+                                    + "to compile the class to version %d.",
+                            getFullyQualifiedNameForInternalName(asmClass.name),
+                            asmClass.version,
+                            CLASS_VERSION_SUPPORTED
+                    )
+            );
+        }
+    }
+
     // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
@@ -362,7 +394,7 @@ public class Compiler {
         List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
-                continue; // Handled in method `collectAndInitializeStaticFields()`.
+                continue; // Handled in method `createInitsslotMethod()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
                 throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
@@ -614,14 +646,15 @@ public class Compiler {
     /**
      * Checks if the given class is an event.
      *
-     * @param classInternalName instructions under inspection.
+     * @param classDesc the descriptor of the class to check.
      * @return true, if the given class is an event. False, otherwise.
      */
-    public static boolean isEvent(String classInternalName) {
-
+    public static boolean isEvent(String classDesc) {
+        String fqn = getFullyQualifiedNameForInternalName(
+                AsmHelper.stripObjectDescriptor(classDesc));
         Class<?> clazz;
         try {
-            clazz = Class.forName(getFullyQualifiedNameForInternalName(classInternalName));
+            clazz = Class.forName(fqn);
         } catch (ClassNotFoundException e) {
             return false;
         }

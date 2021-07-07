@@ -370,12 +370,17 @@ public class AsmHelper {
     }
 
     /**
-     * Gets the internal name for the given descriptor.
+     * Strips the given object descriptor of the starting 'L' and ending ';' characters if they are
+     * present. Sometimes object descriptors come with those characters but not always. If those
+     * characters are not present, the unchanged string is returned.
      *
-     * @param descriptor The descriptor to convert.
-     * @return return the internal name.
+     * @param desc The object descriptor to strip.
+     * @return the stripped object descriptor.
      */
-    public static String getInternalNameForDescriptor(String descriptor) {
-        return Type.getType(descriptor).getInternalName();
+    public static String stripObjectDescriptor(String desc) {
+        if (desc.charAt(0) == 'L') {
+            return desc.substring(1, desc.length() - 1);
+        }
+        return desc;
     }
 }

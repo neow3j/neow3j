@@ -96,7 +96,7 @@ public class ContractEventsIntegrationTest {
         private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
-        private static Event5Args<String, Integer, Boolean, String, Object> event2 = new Event5Args<>();
+        private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
         private static Event3Args<byte[], byte[], int[]> event3;
 

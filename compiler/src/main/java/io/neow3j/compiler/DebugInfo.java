@@ -29,6 +29,11 @@ public class DebugInfo {
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> documents;
 
+    @JsonProperty("static-variables")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> staticVariables;
+
     @JsonProperty("methods")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -43,11 +48,12 @@ public class DebugInfo {
     }
 
     public DebugInfo(Hash160 hash, List<String> documents,
-            List<Method> methods, List<Event> events) {
+            List<Method> methods, List<Event> events, List<String> staticVariables) {
         this.hash = hash.toString();
         this.documents = documents;
         this.methods = methods;
         this.events = events;
+        this.staticVariables = staticVariables;
     }
 
     public String getHash() {
@@ -64,6 +70,10 @@ public class DebugInfo {
 
     public List<Event> getEvents() {
         return events;
+    }
+
+    public List<String> getStaticVariables() {
+        return staticVariables;
     }
 
     public static DebugInfo buildDebugInfo(CompilationUnit compUnit) {
@@ -98,8 +108,12 @@ public class DebugInfo {
                 .map(NeoEvent::getAsDebugInfoEvent)
                 .collect(Collectors.toList());
 
+        List<String> contractVars = compUnit.getNeoModule().getContractVariables().stream()
+                .map(NeoContractVariable::getAsDebugInfoVariable)
+                .collect(Collectors.toList());
+
         Hash160 hash160 = Hash160.fromScript(compUnit.getNefFile().getScript());
-        return new DebugInfo(hash160, documents, methods, events);
+        return new DebugInfo(hash160, documents, methods, events, contractVars);
     }
 
     private static List<String> collectSequencePoints(NeoMethod neoMethod, int documentIndex) {
