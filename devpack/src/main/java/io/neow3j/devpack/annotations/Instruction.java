@@ -40,6 +40,25 @@ public @interface Instruction {
      * If the OpCode is a {@link OpCode#SYSCALL}, set this property to an {@link InteropService}
      * and ignore {@link Instruction#opcode()}, {@link Instruction#operand()} and
      * {@link Instruction#operandPrefix()}.
+     * <p>
+     * When calling an interop service, the required arguments have to be passed in the reverse
+     * order as they appear in the interop service's method signature. E.g., for
+     * {@link InteropService#SYSTEM_RUNTIME_NOTIFY}, the parameters are an event name and an
+     * array that represents the state to be passed with the call. To successfully do this
+     * syscall the Instructions have to be ordered like this:
+     * <pre>{@code
+     * @Instruction(opcode = OpCode.NEWARRAY0)
+     * @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = {0x02}, operand = {0x01, 0x02})
+     * @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)
+     * public static void method() {...}
+     * }</pre>
+     * If you only use an instruction with a syscall, the compiler will take care of reversing the
+     * arguments automatically. E.g., the following will work without having to add an
+     * instruction for reversing the parameters.
+     * <pre>{@code
+     * @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)
+     * public static void method(String eventName, Object[] state) {...}
+     * }</pre>
      */
     InteropService interopService() default InteropService.DUMMY;
 
