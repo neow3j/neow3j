@@ -65,6 +65,7 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     public static final String THIS_KEYWORD = "this";
 
+    public static final String INSN_ANNOTATION_OPCODE = "opcode";
     public static final String INSN_ANNOTATION_OPERAND = "operand";
     public static final String INSN_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
     public static final String INSN_ANNOTATION_INTEROPSERVICE = "interopService";
@@ -482,11 +483,9 @@ public class Compiler {
     }
 
     private static void addInstruction(AnnotationNode annotation, NeoMethod neoMethod) {
-        // Setting a default value on the Instruction annotation does not have an effect on ASM.
-        // The default value does not show up in the ASM annotation node. I.e. the annotation
-        // values can be null if the default values were used.
+        // If the Instruction annotation was used without setting any of its properties the
+        // annotations values will be null. This can be treated as no operation.
         if (annotation.values == null) {
-            // In this case the default value OpCode.NOP was used, so there is nothing to do.
             return;
         }
 
@@ -501,22 +500,20 @@ public class Compiler {
             }
         }
 
-        String insnName = ((String[]) annotation.values.get(1))[1];
-        OpCode opcode = OpCode.valueOf(insnName);
+        String opcodeName = getStringAnnotationProperty(annotation, INSN_ANNOTATION_OPCODE);
+        OpCode opcode = OpCode.valueOf(opcodeName);
         if (opcode.equals(OpCode.NOP)) {
-            // The default value OpCode.NOP was set explicitly. Nothing to do.
             return;
         }
 
         byte[] operandPrefix = new byte[]{};
         if (annotation.values.contains(INSN_ANNOTATION_OPERAND_PREFIX)) {
-            operandPrefix = getByteArrayAnnotationProperty(
-                    annotation, INSN_ANNOTATION_OPERAND_PREFIX);
+            operandPrefix = getByteArrayAnnotationProperty(annotation,
+                    INSN_ANNOTATION_OPERAND_PREFIX);
         }
         byte[] operand = new byte[]{};
         if (annotation.values.contains(INSN_ANNOTATION_OPERAND)) {
-            operand = getByteArrayAnnotationProperty(
-                    annotation, INSN_ANNOTATION_OPERAND_PREFIX);
+            operand = getByteArrayAnnotationProperty(annotation, INSN_ANNOTATION_OPERAND);
         }
         // Correctness of operand prefix and operand are checked in the NeoInstruction.
         neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));
