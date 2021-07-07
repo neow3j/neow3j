@@ -187,7 +187,7 @@ public class ObjectsConverter implements Converter {
                 insn = insn.getNext();
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
-            if (!hasAnnotations(ctorMethod, Instruction.class, Instruction.Instructions.class)) {
+            if (hasAnnotations(ctorMethod, Instruction.class, Instruction.Instructions.class)) {
                 processInstructionAnnotations(ctorMethod, callingNeoMethod);
             }
             return insn;

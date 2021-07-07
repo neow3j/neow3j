@@ -47,7 +47,6 @@ import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getByteArrayAnnotationProperty;
 import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getStringAnnotationProperty;
-import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -440,8 +439,8 @@ public class Compiler {
         if (annotations.size() != 1) {
             return false;
         }
-        String name = getStringAnnotationProperty(
-                annotations.get(0), INSN_ANNOTATION_INTEROPSERVICE);
+        String name = getStringAnnotationProperty(annotations.get(0),
+                INSN_ANNOTATION_INTEROPSERVICE);
         return name != null && !InteropService.valueOf(name).equals(InteropService.DUMMY);
     }
 
@@ -449,7 +448,7 @@ public class Compiler {
      * Adds an instruction that reverses the ordering of the parameters on the evaluation stack
      * according to the number of parameters the called method takes.
      *
-     * @param calledAsmMethod The method that is being called.
+     * @param calledAsmMethod  The method that is being called.
      * @param callingNeoMethod The calling method that will be extended with the instruction.
      */
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {

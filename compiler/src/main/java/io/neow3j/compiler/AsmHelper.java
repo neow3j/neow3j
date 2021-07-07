@@ -183,6 +183,7 @@ public class AsmHelper {
      * @param multiClass  The multi instance annotation class.
      * @return The matching annotations found on the method.
      */
+    @SuppressWarnings("unchecked")
     public static List<AnnotationNode> getAnnotations(MethodNode method, Class<?> singleClass,
             Class<?> multiClass) {
 
@@ -205,6 +206,9 @@ public class AsmHelper {
      * @return the property value or null if the property was not found on the annotation.
      */
     public static Object getAnnotationProperty(AnnotationNode annotation, String propertyName) {
+        if (annotation.values == null) {
+            return null;
+        }
         int idx = annotation.values.indexOf(propertyName);
         if (idx == -1) {
             return null;
