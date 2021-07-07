@@ -16,6 +16,12 @@ import java.lang.annotation.Target;
  * <p>
  * If a method has this annotation its body is ignored, thus, it makes sense to use the
  * {@code native} qualifier in such a method's signature.
+ * <p>
+ * This annotation can only be used on methods and constructors of classes that are not main
+ * contract classes. I.e., you contract class cannot have empty methods that are annotated with
+ * this. Your contract class can make use of other classes that have annotated methods. Those
+ * methods, or rather the instructions given in the annotations, are then inlined in the code
+ * that called them.
  */
 @Repeatable(Instructions.class)
 @Target({ElementType.METHOD, ElementType.CONSTRUCTOR})
