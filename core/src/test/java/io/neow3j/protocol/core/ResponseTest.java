@@ -22,7 +22,9 @@ import static org.junit.Assert.assertTrue;
 import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -2771,6 +2773,35 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(stateHeight.getLocalRootIndex(), is(212L));
         assertThat(stateHeight.getValidatedRootIndex(), is(211L));
+    }
+
+    // Neo-express related tests
+
+    @Test
+    public void testExpressGetPopulatedBlocks() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"cacheId\": \"637613615288087170\",\n" +
+                "        \"blocks\": [\n" +
+                "            1129,\n" +
+                "            1127,\n" +
+                "            0\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoExpressGetPopulatedBlocks expressGetPopulatedBlocks =
+                deserialiseResponse(NeoExpressGetPopulatedBlocks.class);
+        PopulatedBlocks populatedBlocks = expressGetPopulatedBlocks.getPopulatedBlocks();
+
+        assertThat(populatedBlocks.getCacheId(), is("637613615288087170"));
+        assertThat(populatedBlocks.getBlocks(), hasSize(3));
+        assertThat(populatedBlocks.getBlocks().get(0), is(1129));
+        assertThat(populatedBlocks.getBlocks().get(1), is(1127));
+        assertThat(populatedBlocks.getBlocks().get(2), is(0));
     }
 
 }

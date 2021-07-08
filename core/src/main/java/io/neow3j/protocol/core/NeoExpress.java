@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 
@@ -11,7 +12,7 @@ public interface NeoExpress {
 
     Request<?, NeoBlockHash> expressShutdown();
 
-    Request<?, NeoGetBlock> expressGetPopulatedBlocks();
+    Request<?, NeoExpressGetPopulatedBlocks> expressGetPopulatedBlocks();
 
     Request<?, NeoGetBlock> getApplicationLog();
 

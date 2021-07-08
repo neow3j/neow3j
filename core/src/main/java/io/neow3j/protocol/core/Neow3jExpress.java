@@ -3,6 +3,7 @@ package io.neow3j.protocol.core;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 
@@ -42,8 +43,12 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     @Override
-    public Request<?, NeoGetBlock> expressGetPopulatedBlocks() {
-        return null;
+    public Request<?, NeoExpressGetPopulatedBlocks> expressGetPopulatedBlocks() {
+        return new Request<>(
+                "expressgetpopulatedblocks",
+                emptyList(),
+                neow3jService,
+                NeoExpressGetPopulatedBlocks.class);
     }
 
     @Override
