@@ -15,15 +15,16 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -2802,6 +2803,45 @@ public class ResponseTest extends ResponseTester {
         assertThat(populatedBlocks.getBlocks().get(0), is(1129));
         assertThat(populatedBlocks.getBlocks().get(1), is(1127));
         assertThat(populatedBlocks.getBlocks().get(2), is(0));
+    }
+
+    @Test
+    public void testExpressGetNep17Contracts() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"scriptHash\": \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\",\n" +
+                "            \"symbol\": \"NEO\",\n" +
+                "            \"decimals\": 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"scriptHash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
+                "            \"symbol\": \"GAS\",\n" +
+                "            \"decimals\": 8\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressGetNep17Contracts expressGetNep17Contracts =
+                deserialiseResponse(NeoExpressGetNep17Contracts.class);
+
+        List<Nep17Contract> nep17Contracts = expressGetNep17Contracts.getNep17Contracts();
+        assertThat(nep17Contracts, hasSize(2));
+        assertThat(nep17Contracts.get(0).getScriptHash(),
+                is(new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")));
+        assertThat(nep17Contracts.get(0).getSymbol(), is("NEO"));
+        assertThat(nep17Contracts.get(0).getDecimals(), is(0));
+        assertThat(nep17Contracts.get(1).getScriptHash(),
+                is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
+        assertThat(nep17Contracts.get(1).getSymbol(), is("GAS"));
+        assertThat(nep17Contracts.get(1).getDecimals(), is(8));
+
+        assertThat(nep17Contracts.get(0),
+                is(new Nep17Contract(
+                        new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"), "NEO", 0)));
     }
 
 }

@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoGetBlock;
@@ -16,7 +17,7 @@ public interface NeoExpress {
 
     Request<?, NeoGetBlock> getApplicationLog();
 
-    Request<?, NeoGetBlock> expressGetNep17Contracts();
+    Request<?, NeoExpressGetNep17Contracts> expressGetNep17Contracts();
 
     Request<?, NeoGetBlock> getNep17Balances();
 
