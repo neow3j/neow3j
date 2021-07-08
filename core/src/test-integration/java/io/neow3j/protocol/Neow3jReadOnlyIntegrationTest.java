@@ -7,11 +7,12 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEve
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -324,15 +325,14 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNativeContracts() throws IOException {
-        List<ContractState> nativeContracts = getNeow3j()
+        List<NativeContractState> nativeContracts = getNeow3j()
                 .getNativeContracts()
                 .send()
                 .getNativeContracts();
 
         assertThat(nativeContracts, hasSize(9));
-        ContractState contractState1 = nativeContracts.get(0);
+        NativeContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId(), is(-1));
-        assertNull(contractState1.getUpdateCounter());
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -368,9 +368,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
 
-        ContractState contractState8 = nativeContracts.get(8);
+        NativeContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId(), is(-9));
-        assertNull(contractState8.getUpdateCounter());
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
         ContractNef nef8 = contractState8.getNef();

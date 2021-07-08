@@ -19,6 +19,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -50,7 +54,6 @@ import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetContractState;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -92,6 +95,7 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -762,11 +766,10 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
-        List<ContractState> nativeContracts = getNativeContracts.getNativeContracts();
+        List<NativeContractState> nativeContracts = getNativeContracts.getNativeContracts();
         assertThat(nativeContracts, hasSize(3));
-        ContractState c1 = nativeContracts.get(0);
+        NativeContractState c1 = nativeContracts.get(0);
         assertThat(c1.getId(), is(-6));
-        assertNull(c1.getUpdateCounter());
         assertThat(c1.getHash(), is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
@@ -784,7 +787,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(c1.getUpdateHistory(), hasSize(1));
         assertThat(c1.getUpdateHistory(), contains(0));
 
-        ContractState c2 = nativeContracts.get(1);
+        NativeContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId(), is(-8));
         assertThat(c2.getHash(), is(new Hash160("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")));
         ContractNef nef2 = c2.getNef();
@@ -801,7 +804,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
         assertThat(c2.getUpdateHistory(), contains(0));
 
-        ContractState c3 = nativeContracts.get(2);
+        NativeContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId(), is(-9));
         assertThat(c3.getHash(), is(new Hash160("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")));
         ContractNef nef3 = c3.getNef();
@@ -881,6 +884,7 @@ public class ResponseTest extends ResponseTester {
         ContractState contractState = getContractState.getContractState();
         assertThat(contractState, is(notNullValue()));
         assertThat(contractState.getId(), is(-4));
+        assertThat(contractState.getUpdateCounter(), is(0));
         assertThat(contractState.getHash(),
                 is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
         assertThat(contractState.getNef().getMagic(), is(860243278L));
@@ -909,8 +913,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(),
-                is("hash"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("hash"));
         assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
                 is(ContractParameterType.HASH256));
         assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
@@ -947,8 +950,65 @@ public class ResponseTest extends ResponseTester {
         ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
                 null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
         ContractState expectedEqual =
-                new ContractState(id, updateCounter, hash, nef, contractManifest, null);
+                new ContractState(id, updateCounter, hash, nef, contractManifest);
         assertThat(contractState, is(expectedEqual));
+    }
+
+    @Test
+    public void testExpressListContracts() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"hash\": \"0xda65b600f7124ce6c79950c1772a36403104f2be\",\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"LedgerContract\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"features\": {},\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"currentHash\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Hash256\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": []\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            }\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressListContracts listContracts = deserialiseResponse(NeoExpressListContracts.class);
+
+        List<ExpressContractState> contracts = listContracts.getContracts();
+        assertThat(contracts.size(), is(1));
+
+        ExpressContractState expressContractState = contracts.get(0);
+        assertThat(expressContractState.getHash(),
+                is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
+
+        List<ContractMethod> methods = asList(new ContractMethod("currentHash", emptyList(), 0,
+                ContractParameterType.HASH256, true));
+        ContractABI abi = new ContractABI(methods, emptyList());
+        ContractManifest manifest = new ContractManifest("LedgerContract", emptyList(),
+                new HashMap<>(), emptyList(), abi, asList(new ContractPermission("*", asList("*"))),
+                emptyList(), null);
+        assertThat(expressContractState.getManifest(), is(manifest));
     }
 
     @Test
