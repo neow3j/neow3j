@@ -1,8 +1,8 @@
 package io.neow3j.devpack.annotations;
 
+import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
-import io.neow3j.devpack.annotations.Instruction.Instructions;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
@@ -29,16 +29,22 @@ public @interface Instruction {
 
     /**
      * The NeoVM opcode to use in this instruction.
+     *
+     * @return the opcode set for this instruction
      */
     OpCode opcode() default OpCode.NOP;
 
     /**
      * If the operand can have a variable size, this specifies the operand size.
+     *
+     * @return the operand prefix set for this instruction
      */
     byte[] operandPrefix() default {};
 
     /**
      * The instruction's operand.
+     *
+     * @return the operand set for this instruction
      */
     byte[] operand() default {};
 
@@ -52,19 +58,21 @@ public @interface Instruction {
      * {@link InteropService#SYSTEM_RUNTIME_NOTIFY}, the parameters are an event name and an
      * array that represents the state to be passed with the call. To successfully do this
      * syscall the Instructions have to be ordered like this:
-     * <pre>{@code
-     * @Instruction(opcode = OpCode.NEWARRAY0)
-     * @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = {0x02}, operand = {0x01, 0x02})
-     * @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)
-     * public static void method() {...}
-     * }</pre>
+     * <pre>
+     * {@code @Instruction(opcode = OpCode.NEWARRAY0)}
+     * {@code @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = {0x02}, operand = {0x01, 0x02})}
+     * {@code @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)}
+     * {@code public static void method() {...}}
+     * </pre>
      * If you only use an instruction with a syscall, the compiler will take care of reversing the
      * arguments automatically. E.g., the following will work without having to add an
      * instruction for reversing the parameters.
-     * <pre>{@code
-     * @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)
-     * public static void method(String eventName, Object[] state) {...}
-     * }</pre>
+     * <pre>
+     * {@code @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)}
+     * {@code public static void method(String eventName, Object[] state) {...}}
+     * </pre>
+     *
+     * @return the interop service set for this instruction.
      */
     InteropService interopService() default InteropService.DUMMY;
 

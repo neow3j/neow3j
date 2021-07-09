@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
@@ -70,6 +70,7 @@ public class Hash160 {
      * Checks if the given object is a valid Hash160, i.e., if it is either a ByteString or Buffer
      * and 20 bytes long.
      *
+     * @param data The object to check.
      * @return true if this the given object is a valid Hash160. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)

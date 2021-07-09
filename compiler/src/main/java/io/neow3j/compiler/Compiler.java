@@ -262,6 +262,7 @@ public class Compiler {
      *
      * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException when reading class files runs into an error.
      */
     protected CompilationUnit compile(ClassNode classNode) throws IOException {
         checkForClassCompatibility(classNode);
