@@ -6,6 +6,7 @@ import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.types.Hash160;
 
@@ -13,8 +14,6 @@ import io.neow3j.types.Hash160;
  * NEO JSON-RPC API specific for Neo-express.
  */
 public interface NeoExpress {
-
-    Request<?, NeoBlockHash> expressShutdown();
 
     Request<?, NeoExpressGetPopulatedBlocks> expressGetPopulatedBlocks();
 
@@ -28,7 +27,7 @@ public interface NeoExpress {
 
     Request<?, NeoExpressCreateCheckpoint> expressCreateCheckpoint(String filename);
 
-    Request<?, NeoGetBlock> expressListOracleRequests();
+    Request<?, NeoExpressListOracleRequests> expressListOracleRequests();
 
     Request<?, NeoGetBlock> expressCreateOracleResponseTx();
 

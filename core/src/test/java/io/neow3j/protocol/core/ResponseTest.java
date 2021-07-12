@@ -27,7 +27,9 @@ import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -2910,6 +2912,50 @@ public class ResponseTest extends ResponseTester {
 
         String filename = expressCreateCheckpoint.getFilename();
         assertThat(filename, is("checkpoint-1.neoxp-checkpoint"));
+    }
+
+    @Test
+    public void testExpressListOracleRequests() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"requestid\": 0,\n" +
+                "            \"originaltxid\": \"0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a\",\n" +
+                "            \"gasforresponse\": 1000000000,\n" +
+                "            \"url\": \"https://www.neow3j.io\",\n" +
+                "            \"filter\": \"$.nftinfo\",\n" +
+                "            \"callbackcontract\": \"0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f\",\n" +
+                "            \"callbackmethod\": \"storeResponse\",\n" +
+                "            \"userdata\": \"KAA=\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressListOracleRequests neoExpressListOracleRequests =
+                deserialiseResponse(NeoExpressListOracleRequests.class);
+        List<OracleRequest> oracleRequests = neoExpressListOracleRequests.getOracleRequests();
+
+        assertThat(oracleRequests, hasSize(1));
+        OracleRequest expectedRequest = new OracleRequest(BigInteger.ZERO,
+                new Hash256("0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a"),
+                BigInteger.valueOf(1000000000), "https://www.neow3j.io", "$.nftinfo",
+                new Hash160("0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f"), "storeResponse", "KAA=");
+
+        OracleRequest oracleRequest = oracleRequests.get(0);
+        assertThat(oracleRequest, is(expectedRequest));
+        assertThat(oracleRequest.getRequestId(), is(BigInteger.ZERO));
+        assertThat(oracleRequest.getOriginalTransactionHash(),
+                is(new Hash256("0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a")));
+        assertThat(oracleRequest.getGasForResponse(), is(BigInteger.valueOf(1000000000)));
+        assertThat(oracleRequest.getUrl(), is("https://www.neow3j.io"));
+        assertThat(oracleRequest.getFilter(), is("$.nftinfo"));
+        assertThat(oracleRequest.getCallbackContract(),
+                is(new Hash160("0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f")));
+        assertThat(oracleRequest.getCallbackMethod(), is("storeResponse"));
+        assertThat(oracleRequest.getUserData(), is("KAA="));
     }
 
 }

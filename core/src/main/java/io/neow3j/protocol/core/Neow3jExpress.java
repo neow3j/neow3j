@@ -8,8 +8,11 @@ import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.types.Hash160;
+
+import java.nio.charset.StandardCharsets;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -40,11 +43,6 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      */
     public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) {
         return new Neow3jExpress(neow3jService, config);
-    }
-
-    @Override
-    public Request<?, NeoBlockHash> expressShutdown() {
-        return null;
     }
 
     @Override
@@ -98,8 +96,12 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     @Override
-    public Request<?, NeoGetBlock> expressListOracleRequests() {
-        return null;
+    public Request<?, NeoExpressListOracleRequests> expressListOracleRequests() {
+        return new Request<>(
+                "expresslistoraclerequests",
+                emptyList(),
+                neow3jService,
+                NeoExpressListOracleRequests.class);
     }
 
     @Override
