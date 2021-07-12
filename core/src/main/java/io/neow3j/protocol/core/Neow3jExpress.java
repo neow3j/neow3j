@@ -2,21 +2,23 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
-import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
+import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
-
-import java.nio.charset.StandardCharsets;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
+/**
+ * JSON-RPC 2.0 factory implementation specific to Neo-express nodes.
+ */
 public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
 
     private Neow3jExpress(Neow3jService neow3jService, Neow3jConfig config) {
@@ -24,10 +26,10 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     /**
-     * Constructs a new Neow3j instance with the default configuration.
+     * Constructs a new Neow3jExpress instance with the default configuration.
      *
      * @param neow3jService neow3j service instance - i.e. HTTP or IPC
-     * @return new Neow3j instance
+     * @return new Neow3jExpress instance
      */
     public static Neow3jExpress build(Neow3jService neow3jService) {
         return new Neow3jExpress(neow3jService, new Neow3jConfig()) {
@@ -35,11 +37,11 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     /**
-     * Constructs a new Neow3j instance using the given configuration.
+     * Constructs a new Neow3jExpress instance using the given configuration.
      *
      * @param neow3jService neow3j service instance - i.e. HTTP or IPC
      * @param config        The configuration to use.
-     * @return new Neow3j instance.
+     * @return new Neow3jExpress instance.
      */
     public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) {
         return new Neow3jExpress(neow3jService, config);
@@ -59,6 +61,13 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
         return null;
     }
 
+    /**
+     * Gets all deployed contracts that follow the NEP-17 standard.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @return the request object.
+     */
     @Override
     public Request<?, NeoExpressGetNep17Contracts> expressGetNep17Contracts() {
         return new Request<>(
@@ -68,6 +77,14 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 NeoExpressGetNep17Contracts.class);
     }
 
+    /**
+     * Gets the contract storage.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @param contractHash The contract hash.
+     * @return the request object.
+     */
     @Override
     public Request<?, NeoExpressGetContractStorage> expressGetContractStorage(Hash160 contractHash) {
         return new Request<>(
@@ -77,6 +94,13 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 NeoExpressGetContractStorage.class);
     }
 
+    /**
+     * Gets a list of all deployed contracts.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @return the request object.
+     */
     @Override
     public Request<?, NeoExpressListContracts> expressListContracts() {
         return new Request<>(
@@ -86,6 +110,15 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 NeoExpressListContracts.class);
     }
 
+    /**
+     * Creates a checkpoint of the Neo-express node and writes it to a file in the root of the
+     * Neo-express instance.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @param filename the filename of the checkpoint file.
+     * @return the request object.
+     */
     @Override
     public Request<?, NeoExpressCreateCheckpoint> expressCreateCheckpoint(String filename) {
         return new Request<>(
@@ -95,6 +128,13 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 NeoExpressCreateCheckpoint.class);
     }
 
+    /**
+     * Gets a list of all current oracle requests.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @return the request object.
+     */
     @Override
     public Request<?, NeoExpressListOracleRequests> expressListOracleRequests() {
         return new Request<>(
@@ -104,9 +144,21 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 NeoExpressListOracleRequests.class);
     }
 
+    /**
+     * Creates an oracle response transaction.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @param response the oracle response object.
+     * @return the request object.
+     */
     @Override
-    public Request<?, NeoGetBlock> expressCreateOracleResponseTx() {
-        return null;
+    public Request<?, NeoExpressCreateOracleResponseTx> expressCreateOracleResponseTx(OracleResponse response) {
+        return new Request<>(
+                "expresscreateoracleresponsetx",
+                asList(response),
+                neow3jService,
+                NeoExpressCreateOracleResponseTx.class);
     }
 
 }

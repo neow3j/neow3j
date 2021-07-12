@@ -23,6 +23,7 @@ import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
+import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
@@ -30,6 +31,7 @@ import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
+import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -1216,7 +1218,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(attributes.get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
         assertThat(attributes.get(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
-        OracleResponseAttribute oracleResp = (OracleResponseAttribute) attributes.get(1);
+        OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
+        OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(),
                 is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
@@ -2956,6 +2959,20 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash160("0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f")));
         assertThat(oracleRequest.getCallbackMethod(), is("storeResponse"));
         assertThat(oracleRequest.getUserData(), is("KAA="));
+    }
+
+    @Test
+    public void testExpressCreateOracleResponseTx() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6\"\n" +
+                "}");
+
+        NeoExpressCreateOracleResponseTx neoExpressCreateOracleResponseTx =
+                deserialiseResponse(NeoExpressCreateOracleResponseTx.class);
+        String oracleResponseTx = neoExpressCreateOracleResponseTx.getOracleResponseTx();
+        assertThat(oracleResponseTx, is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
     }
 
 }
