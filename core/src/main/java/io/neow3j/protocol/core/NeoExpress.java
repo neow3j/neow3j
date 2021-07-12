@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
@@ -25,7 +26,7 @@ public interface NeoExpress {
 
     Request<?, NeoExpressListContracts> expressListContracts();
 
-    Request<?, NeoGetBlock> expressCreateCheckpoint();
+    Request<?, NeoExpressCreateCheckpoint> expressCreateCheckpoint(String filename);
 
     Request<?, NeoGetBlock> expressListOracleRequests();
 

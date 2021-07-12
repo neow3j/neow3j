@@ -3,6 +3,7 @@ package io.neow3j.protocol.core;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
@@ -88,8 +89,12 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     @Override
-    public Request<?, NeoGetBlock> expressCreateCheckpoint() {
-        return null;
+    public Request<?, NeoExpressCreateCheckpoint> expressCreateCheckpoint(String filename) {
+        return new Request<>(
+                "expresscreatecheckpoint",
+                asList(filename),
+                neow3jService,
+                NeoExpressCreateCheckpoint.class);
     }
 
     @Override

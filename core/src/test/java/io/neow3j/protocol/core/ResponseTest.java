@@ -22,6 +22,7 @@ import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
@@ -2893,6 +2894,22 @@ public class ResponseTest extends ResponseTester {
         ContractStorageEntry storageEntry6 = contractStorage.get(5);
         assertThat(storageEntry6.getKey(), is("1d00000000"));
         assertThat(storageEntry6.getValue(), is("0065cd1d"));
+    }
+
+    @Test
+    public void testExpressCreateCheckpoint() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"checkpoint-1.neoxp-checkpoint\"\n" +
+                "}"
+        );
+
+        NeoExpressCreateCheckpoint expressCreateCheckpoint =
+                deserialiseResponse(NeoExpressCreateCheckpoint.class);
+
+        String filename = expressCreateCheckpoint.getFilename();
+        assertThat(filename, is("checkpoint-1.neoxp-checkpoint"));
     }
 
 }
