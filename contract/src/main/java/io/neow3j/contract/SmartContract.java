@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;

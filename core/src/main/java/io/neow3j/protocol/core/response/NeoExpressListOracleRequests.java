@@ -4,9 +4,9 @@ import io.neow3j.protocol.core.Response;
 
 import java.util.List;
 
-public class NeoGetNativeContracts extends Response<List<NativeContractState>> {
+public class NeoExpressListOracleRequests extends Response<List<OracleRequest>> {
 
-    public List<NativeContractState> getNativeContracts() {
+    public List<OracleRequest> getOracleRequests() {
         return getResult();
     }
 

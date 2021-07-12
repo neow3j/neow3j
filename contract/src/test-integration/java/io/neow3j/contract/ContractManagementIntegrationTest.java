@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.Hash160;
@@ -90,7 +90,7 @@ public class ContractManagementIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, neow3j);
         Hash160 contractHash = calcContractHash(
                 COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
-        NeoGetContractState.ContractState contractState =
+        ContractState contractState =
                 neow3j.getContractState(contractHash).send().getContractState();
         assertThat(contractState.getManifest(), is(manifest));
         assertThat(contractState.getNef().getScript(), is(Base64.encode(nef.getScript())));
