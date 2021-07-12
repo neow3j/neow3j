@@ -7,18 +7,15 @@ import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
-import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
 
 /**
- * NEO JSON-RPC API specific for Neo-express.
+ * NEO JSON-RPC API specific for Neo-express nodes.
  */
 public interface NeoExpress {
 
     Request<?, NeoExpressGetPopulatedBlocks> expressGetPopulatedBlocks();
-
-    Request<?, NeoGetBlock> getApplicationLog();
 
     Request<?, NeoExpressGetNep17Contracts> expressGetNep17Contracts();
 

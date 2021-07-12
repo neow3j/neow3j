@@ -9,7 +9,6 @@ import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
-import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
 
@@ -54,11 +53,6 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 emptyList(),
                 neow3jService,
                 NeoExpressGetPopulatedBlocks.class);
-    }
-
-    @Override
-    public Request<?, NeoGetBlock> getApplicationLog() {
-        return null;
     }
 
     /**
