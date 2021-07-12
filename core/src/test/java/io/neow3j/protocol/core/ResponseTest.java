@@ -19,8 +19,10 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
@@ -2842,6 +2844,55 @@ public class ResponseTest extends ResponseTester {
         assertThat(nep17Contracts.get(0),
                 is(new Nep17Contract(
                         new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"), "NEO", 0)));
+    }
+
+    @Test
+    public void testGetContractStorage() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"key\": \"01\",\n" +
+                "            \"value\": \"\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0b\",\n" +
+                "            \"value\": \"00e1f505\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0d\",\n" +
+                "            \"value\": \"00e8764817\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0e\",\n" +
+                "            \"value\": \"40014102282102c2f3870c8805f83881e93cddaac2b2130ad4a2ca44a327ac64e18322862b19ee2100\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"14b65d362f086196286c2cd6868afbe0cf75f732a3\",\n" +
+                "            \"value\": \"4103210400e1f505210000\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"1d00000000\",\n" +
+                "            \"value\": \"0065cd1d\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressGetContractStorage expressGetContractStorage =
+                deserialiseResponse(NeoExpressGetContractStorage.class);
+
+        List<ContractStorageEntry> contractStorage = expressGetContractStorage.getContractStorage();
+        assertThat(contractStorage, hasSize(6));
+
+        ContractStorageEntry storageEntry3 = contractStorage.get(2);
+        assertThat(storageEntry3.getKey(), is("0d"));
+        assertThat(storageEntry3.getValue(), is("00e8764817"));
+
+        ContractStorageEntry storageEntry6 = contractStorage.get(5);
+        assertThat(storageEntry6.getKey(), is("1d00000000"));
+        assertThat(storageEntry6.getValue(), is("0065cd1d"));
     }
 
 }

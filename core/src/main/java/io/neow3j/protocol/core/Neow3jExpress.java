@@ -3,11 +3,14 @@ package io.neow3j.protocol.core;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
 import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.types.Hash160;
 
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
 public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
@@ -67,18 +70,12 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     }
 
     @Override
-    public Request<?, NeoGetBlock> getNep17Balances() {
-        return null;
-    }
-
-    @Override
-    public Request<?, NeoGetBlock> getNep17Transfers() {
-        return null;
-    }
-
-    @Override
-    public Request<?, NeoGetBlock> expressGetContractStorage() {
-        return null;
+    public Request<?, NeoExpressGetContractStorage> expressGetContractStorage(Hash160 contractHash) {
+        return new Request<>(
+                "expressgetcontractstorage",
+                asList(contractHash),
+                neow3jService,
+                NeoExpressGetContractStorage.class);
     }
 
     @Override
