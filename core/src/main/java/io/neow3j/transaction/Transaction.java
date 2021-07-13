@@ -39,7 +39,7 @@ public class Transaction extends NeoSerializable {
             8 +  // Network fee int64
             4; // Valid until block uint32
 
-    protected Neow3j neow;
+    protected Neow3j neow3j;
 
     private byte version;
     /**
@@ -69,10 +69,10 @@ public class Transaction extends NeoSerializable {
         witnesses = new ArrayList<>();
     }
 
-    public Transaction(Neow3j neow, byte version, long nonce, long validUntilBlock,
+    public Transaction(Neow3j neow3j, byte version, long nonce, long validUntilBlock,
             List<Signer> signers, long systemFee, long networkFee,
             List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
-        this.neow = neow;
+        this.neow3j = neow3j;
         this.version = version;
         this.nonce = nonce;
         this.validUntilBlock = validUntilBlock;
@@ -84,18 +84,47 @@ public class Transaction extends NeoSerializable {
         this.witnesses = witnesses;
     }
 
+    /**
+     * Sets the {@code Neow3j} instance of this transaction.
+     *
+     * @param neow3j The Neow3j instance.
+     */
+    public void setNeow3j(Neow3j neow3j) {
+        this.neow3j = neow3j;
+    }
+
+    /**
+     * Gets the version of this transaction.
+     *
+     * @return the version.
+     */
     public byte getVersion() {
         return version;
     }
 
+    /**
+     * Gets the nonce of this transaction.
+     *
+     * @return the nonce.
+     */
     public long getNonce() {
         return nonce;
     }
 
+    /**
+     * Gets the validity period of this transaction.
+     *
+     * @return the validity period.
+     */
     public long getValidUntilBlock() {
         return validUntilBlock;
     }
 
+    /**
+     * Gets the signers of this transaction.
+     *
+     * @return the transaction signers.
+     */
     public List<Signer> getSigners() {
         return signers;
     }
@@ -135,18 +164,38 @@ public class Transaction extends NeoSerializable {
         return networkFee;
     }
 
+    /**
+     * Get the attributes of this transaction.
+     *
+     * @return the attributes.
+     */
     public List<TransactionAttribute> getAttributes() {
         return attributes;
     }
 
+    /**
+     * Get the script of this transaction.
+     *
+     * @return the script of this transaction.
+     */
     public byte[] getScript() {
         return script;
     }
 
+    /**
+     * Get the witnesses of this transaction.
+     *
+     * @return the witnesses of this transaction.
+     */
     public List<Witness> getWitnesses() {
         return witnesses;
     }
 
+    /**
+     * Adds a witness to this transaction.
+     *
+     * @param witness The transaction witness.
+     */
     public void addWitness(Witness witness) {
         this.witnesses.add(witness);
     }
@@ -182,8 +231,8 @@ public class Transaction extends NeoSerializable {
                     "has size {}", MAX_TRANSACTION_SIZE, size));
         }
         String hex = Numeric.toHexStringNoPrefix(toArray());
-        blockCountWhenSent = neow.getBlockCount().send().getBlockCount();
-        return neow.sendRawTransaction(hex).send();
+        blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();
+        return neow3j.sendRawTransaction(hex).send();
     }
 
     /**
@@ -207,7 +256,7 @@ public class Transaction extends NeoSerializable {
                         neoGetBlock.getBlock().getTransactions().stream()
                                 .anyMatch(tx -> tx.getHash().equals(getTxId()));
 
-        return neow.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
+        return neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
                 .takeUntil(pred)
                 .filter(pred)
                 .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
@@ -230,7 +279,7 @@ public class Transaction extends NeoSerializable {
         }
         NeoApplicationLog applicationLog = null;
         try {
-            applicationLog = neow.getApplicationLog(getTxId()).send().getApplicationLog();
+            applicationLog = neow3j.getApplicationLog(getTxId()).send().getApplicationLog();
         } catch (IOException ignore) {
         }
         return applicationLog;
@@ -322,7 +371,7 @@ public class Transaction extends NeoSerializable {
      * @throws IOException if an error occurs when fetching the network's magic number
      */
     public byte[] getHashData() throws IOException {
-        return concatenate(neow.getNetworkMagicNumber(), sha256(toArrayWithoutWitnesses()));
+        return concatenate(neow3j.getNetworkMagicNumber(), sha256(toArrayWithoutWitnesses()));
     }
 
     /**
