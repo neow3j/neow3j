@@ -14,10 +14,8 @@ public class AccountSigner extends Signer {
     }
 
     /**
-     * Creates a signer for the given account with no witness scope ({@link WitnessScope#NONE}),
-     * also called the fee only witness scope.
-     * <p>
-     * With this scope the witness is only used for paying the fees of a transaction.
+     * Creates a signer for the given account with no witness scope ({@link WitnessScope#NONE}).
+     * The signature of this signer is only used for transactions and is disabled in contracts.
      *
      * @param account The signer account.
      * @return the signer.
@@ -27,10 +25,8 @@ public class AccountSigner extends Signer {
     }
 
     /**
-     * Creates a signer for the given account with no witness scope ({@link WitnessScope#NONE}),
-     * also called the fee only witness scope.
-     * <p>
-     * With this scope the witness is only used for paying the fees of a transaction.
+     * Creates a signer for the given account with no witness scope ({@link WitnessScope#NONE}).
+     * The signature of this signer is only used for transactions and is disabled in contracts.
      *
      * @param account The script hash of the signer account.
      * @return the signer.
