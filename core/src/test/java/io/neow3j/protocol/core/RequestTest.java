@@ -3,6 +3,7 @@ package io.neow3j.protocol.core;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jExpress;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseCode;

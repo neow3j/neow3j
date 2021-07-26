@@ -1,6 +1,5 @@
 package io.neow3j.protocol;
 
-import io.neow3j.protocol.core.Neow3jExpress;
 import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;

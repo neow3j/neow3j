@@ -1,7 +1,8 @@
-package io.neow3j.protocol.core;
+package io.neow3j.protocol;
 
-import io.neow3j.protocol.Neow3jConfig;
-import io.neow3j.protocol.Neow3jService;
+import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
+import io.neow3j.protocol.core.NeoExpress;
+import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
 import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
 import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
