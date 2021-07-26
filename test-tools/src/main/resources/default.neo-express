@@ -1,0 +1,82 @@
+{
+  "magic": 5195086,
+  "address-version": 53,
+  "consensus-nodes": [
+    {
+      "tcp-port": 40333,
+      "ws-port": 40334,
+      "rpc-port": 40332,
+      "wallet": {
+        "name": "consensus-node1",
+        "accounts": [
+          {
+            "private-key": "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5",
+            "script-hash": "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP",
+            "label": null,
+            "is-default": true,
+            "contract": {
+              "script": "0c21033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b4156e7b327",
+              "parameters": [
+                "Signature"
+              ]
+            }
+          },
+          {
+            "private-key": "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5",
+            "script-hash": "NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3",
+            "label": "Consensus MultiSigContract",
+            "is-default": false,
+            "contract": {
+              "script": "110c21033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b11419ed0dc3a",
+              "parameters": [
+                "Signature"
+              ]
+            }
+          }
+        ]
+      },
+      "settings": {
+        "rpc.MaxGasInvoke": 100000,
+        "rpc.MaxFee": 0.2
+      }
+    }
+  ],
+  "wallets": [
+    {
+      "name": "Alice",
+      "accounts": [
+        {
+          "name": "Alice-account",
+          "private-key": "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5",
+          "script-hash": "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP",
+          "label": "CommitteeMember",
+          "is-default": true,
+          "contract": {
+            "script": "0c21033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b4156e7b327",
+            "parameters": [
+              "Signature"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bob",
+      "accounts": [
+        {
+          "name": "Bob-account",
+          "private-key": "beae38739915555a75a9281a5928b10ebc265f9c881aa21e963610a6c606a3dc",
+          "script-hash": "NV1Q1dTdvzPbThPbSFz7zudTmsmgnCwX6c",
+          "label": "client1",
+          "is-default": true,
+          "contract": {
+            "script": "0c2102607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f4156e7b327",
+            "parameters": [
+              "Signature"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
