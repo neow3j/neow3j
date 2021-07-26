@@ -198,11 +198,6 @@ public class TransactionBuilder {
             throw new TransactionConfigurationException("Can't add multiple signers concerning " +
                     "the same account.");
         }
-        if (containsMultipleFeeOnlySigners(signers)) {
-            throw new TransactionConfigurationException("Can't add multiple signers with the " +
-                    "fee-only witness scope. Only one signer can be used to cover the " +
-                    "transaction fees.");
-        }
         checkAndThrowIfMaxAttributesExceeded(signers.length, attributes.size());
         this.signers = new ArrayList<>(asList(signers));
         return this;
@@ -275,12 +270,6 @@ public class TransactionBuilder {
                 .collect(Collectors.toList());
         Set<Hash160> signerSet = new HashSet<>(signerList);
         return signerList.size() != signerSet.size();
-    }
-
-    private boolean containsMultipleFeeOnlySigners(Signer... signers) {
-        return Stream.of(signers)
-                .filter(s -> s.getScopes().contains(WitnessScope.NONE))
-                .count() > 1;
     }
 
     // package-private visible for testability purpose.
