@@ -3,10 +3,10 @@ package io.neow3j.protocol;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.protocol.core.response.ContractStorageEntry;
@@ -35,7 +35,6 @@ public class Neow3jExpressIntegrationTest {
     @BeforeClass
     public static void setUp() {
         neow3jExpress = Neow3jExpress.build(new HttpService(getNodeUrl(neoTestContainer)));
-//        waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3jExpress());
     }
 
     private static Neow3jExpress getNeow3jExpress() {
@@ -49,7 +48,7 @@ public class Neow3jExpressIntegrationTest {
                 .send()
                 .getPopulatedBlocks();
 
-        assertThat(populatedBlocks.getCacheId(), is("637628968740743949"));
+        assertNotNull(populatedBlocks.getCacheId());
         assertThat(populatedBlocks.getBlocks(), is(asList(0)));
     }
 
@@ -76,10 +75,10 @@ public class Neow3jExpressIntegrationTest {
 
         assertThat(contractStorage, hasSize(3));
         assertThat(contractStorage.get(0).getKey(), is("0b"));
-        assertThat(contractStorage.get(0).getValue(), is("004c52b37da80a"));
+        assertThat(contractStorage.get(0).getValue(), is("00e1ca5e5f7912"));
         assertThat(contractStorage.get(2).getKey(),
                 is("147f65d434362708b255f0e06856bdcb5ce99d8505"));
-        assertThat(contractStorage.get(2).getValue(), is("41012107008053ee7ba80a"));
+        assertThat(contractStorage.get(2).getValue(), is("410121070000d5585f7912"));
     }
 
     @Test
@@ -91,7 +90,7 @@ public class Neow3jExpressIntegrationTest {
 
         assertThat(contracts, hasSize(9));
         assertThat(contracts.get(0).getManifest().getAbi().getMethods().get(2).getName(),
-                is("setPrice"));
+                is("request"));
         assertThat(contracts.get(3).getManifest().getName(), is("GasToken"));
         assertThat(contracts.get(8).getHash(),
                 is(new Hash160("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")));
