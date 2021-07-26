@@ -41,6 +41,9 @@
       }
     }
   ],
+  "settings": {
+    "rpc.BindAddress": "0.0.0.0"
+  },
   "wallets": [
     {
       "name": "Alice",
