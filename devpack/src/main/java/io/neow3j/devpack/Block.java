@@ -35,6 +35,12 @@ public class Block {
     public final int timestamp;
 
     /**
+     * The nonce of this block.
+     */
+
+    public final int nonce;
+
+    /**
      * The block height (counted from 0).
      */
     public final int index;
@@ -65,6 +71,7 @@ public class Block {
         primaryIndex = 0;
         nextConsensus = new Hash160(new byte[0]);
         index = 0;
+        nonce = 0;
     }
 
     /**
@@ -95,7 +102,8 @@ public class Block {
                 && hash.equals(block.hash)
                 && prevHash.equals(block.prevHash)
                 && merkleRoot.equals(block.merkleRoot)
-                && nextConsensus.equals(block.nextConsensus);
+                && nextConsensus.equals(block.nextConsensus)
+                && nonce == block.nonce;
     }
 
 }

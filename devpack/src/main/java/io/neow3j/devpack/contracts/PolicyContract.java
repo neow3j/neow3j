@@ -9,12 +9,12 @@ public class PolicyContract extends ContractInterface {
     /**
      * The maximum execution fee factor that the committee can set.
      */
-    public static final int MaxExecFeeFactor = 1000;
+    public static final int MaxExecFeeFactor = 100;
 
     /**
      * The maximum storage price that the committee can set.
      */
-    public static final int MaxStoragePrice = 1000;
+    public static final int MaxStoragePrice = 10000000;
 
     /**
      * Gets the GAS cost per transaction byte, i.e. the fee per byte.

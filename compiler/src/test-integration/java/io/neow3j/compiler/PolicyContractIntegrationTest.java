@@ -81,12 +81,12 @@ public class PolicyContractIntegrationTest {
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(300));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(99));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(),
                 is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
-        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(300)));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(99)));
     }
 
     @Test

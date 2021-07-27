@@ -58,7 +58,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return The network's magic number.
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
-    public byte[] getNetworkMagicNumber() throws IOException {
+    public byte[] getNetworkMagicNumberBytes() throws IOException {
         if (config.getNetworkMagic() == null) {
             config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
         }
@@ -67,6 +67,24 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         byte[] array = new byte[4];
         ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicAsInt);
         return array;
+    }
+
+    /**
+     * Gets the configured network magic number as an integer.
+     * <p>
+     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
+     * <p>
+     * The default value is null. Only once this method is called for the first time the value is
+     * fetched from the connected Neo node.
+     *
+     * @return The network's magic number.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
+     */
+    public long getNetworkMagicNumber() throws IOException {
+        if (config.getNetworkMagic() == null) {
+            config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
+        }
+        return config.getNetworkMagic();
     }
 
     /**
