@@ -344,7 +344,7 @@ public class ECKeyPair {
          *
          * @param ecPoint The EC point (x,y) to construct the public key.
          */
-        public ECPublicKey(ECPoint ecPoint) {
+        private ECPublicKey(ECPoint ecPoint) {
             if (!ecPoint.getCurve().equals(NeoConstants.curveParams().getCurve())) {
                 throw new IllegalArgumentException("Given EC point is not of the required curve.");
             }
