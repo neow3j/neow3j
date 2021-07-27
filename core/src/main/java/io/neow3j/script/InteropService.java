@@ -44,6 +44,7 @@ public enum InteropService {
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
     SYSTEM_RUNTIME_BURNGAS("System.Runtime.BurnGas", 1 << 4),
     SYSTEM_RUNTIME_GETNETWORK("System.Runtime.GetNetwork", 1 << 3),
+    SYSTEM_RUNTIME_GETRANDOM("System.Runtime.GetRandom", 1 << 4),
 
     SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 1 << 4),
     SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 1 << 4),

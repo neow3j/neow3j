@@ -157,4 +157,12 @@ public class Runtime {
      */
     @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETNETWORK)
     public static native int getNetwork();
+
+    /**
+     * Gets the 128-bit random number generated from the verifiable random function.
+     *
+     * @return the random number.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETRANDOM)
+    public static native int getRandom();
 }
