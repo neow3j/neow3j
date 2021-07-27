@@ -130,7 +130,7 @@ subprojects {
     }
 
     dependencies {
-        testCompile "junit:junit:$junitVersion",
+        testImplementation "junit:junit:$junitVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
                 "org.hamcrest:hamcrest-all:$hamcrestVersion",
                 "org.testcontainers:testcontainers:$testcontainersVersion"

@@ -1,7 +1,7 @@
 description 'neow3j: Java Development Package for Neo Smart Contracts'
 
 dependencies {
-    compile project(':contract')
+    implementation project(':contract')
 }
 
 compileJava {

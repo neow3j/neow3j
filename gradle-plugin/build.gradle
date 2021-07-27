@@ -47,8 +47,8 @@ task createClasspathManifest {
 }
 
 dependencies {
-    compile project(':compiler')
-    compile gradleApi()
+    implementation project(':compiler')
+    implementation gradleApi()
     testImplementation gradleTestKit()
     testRuntime files(createClasspathManifest)
 }
