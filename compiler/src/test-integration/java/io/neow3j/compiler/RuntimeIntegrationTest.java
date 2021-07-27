@@ -30,6 +30,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -157,6 +158,14 @@ public class RuntimeIntegrationTest {
         assertTrue(new BigInteger(usedGas).compareTo(gasToBurn) >= 0);
     }
 
+    @Test
+    public void getNetwork() throws Throwable {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        BigInteger magic1 = res.getStack().get(0).getInteger();
+        long magic2 = ct.getNeow3j().getNetworkMagicNumber();
+        assertEquals(magic1.longValue(), magic2);
+    }
+
     static class RuntimeIntegrationTestContract {
 
         public static byte getTriggerType() {
@@ -214,6 +223,10 @@ public class RuntimeIntegrationTest {
 
         public static void burnGas() {
             Runtime.burnGas(Helper.pow(10, 10)); // burn 100 GAS
+        }
+
+        public static int getNetwork() {
+            return Runtime.getNetwork();
         }
 
     }

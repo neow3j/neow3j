@@ -149,4 +149,12 @@ public class Runtime {
      */
     @Instruction(interopService = InteropService.SYSTEM_RUNTIME_BURNGAS)
     public static native void burnGas(int gas);
+
+    /**
+     * Gets the magic number of the network the contract is deployed on.
+     *
+     * @return the magic number.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETNETWORK)
+    public static native int getNetwork();
 }
