@@ -371,7 +371,7 @@ public class Transaction extends NeoSerializable {
      * @throws IOException if an error occurs when fetching the network's magic number
      */
     public byte[] getHashData() throws IOException {
-        return concatenate(neow3j.getNetworkMagicNumber(), sha256(toArrayWithoutWitnesses()));
+        return concatenate(neow3j.getNetworkMagicNumberBytes(), sha256(toArrayWithoutWitnesses()));
     }
 
     /**
