@@ -118,12 +118,12 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
-    private static final Hash256 BLOCK_0_HASH =
-            new Hash256("0x6e18850de40f63719b96a60f1700b71236b33ab80df9aa0f8b3ce2c2aa8d0a9c");
+    private static Hash256 BLOCK_0_HASH =
+            new Hash256("442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014");
     protected static final String BLOCK_0_HEADER_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAf2XUNDYnCLJV8OBoVr3LXOmdhQUBAAER";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAARE=";
     protected static final String BLOCK_0_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAf2XUNDYnCLJV8OBoVr3LXOmdhQUBAAERAA==";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAAREA";
 
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
@@ -1019,7 +1019,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
         assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "0x2094a27e9aa3b4ed3961b6e95b1a609242224a50382c5b1ce42dd52067c8c47b")));
+                "6c72cd3171922509bca520ba510dcd9fa8515121a40ba780e44ee6ebf5af7ba3")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 
