@@ -1,8 +1,7 @@
 description 'neow3j: Smart Contracts'
 
 dependencies {
-    implementation project(':core'),
-            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion"
+    compile project(':core')
 
     testImplementation "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
             project(':test-tools')

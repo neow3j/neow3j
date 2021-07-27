@@ -1,12 +1,12 @@
 description 'neow3j: Java/Kotlin/Android Development Toolkit for the Neo Blockchain'
 
 dependencies {
-    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion"
-    implementation "com.squareup.okhttp3:okhttp:$okhttpVersion",
-            "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
-            "io.reactivex.rxjava2:rxjava:$rxjavaVersion",
-            "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
+    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion",
+            "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
+            "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "org.slf4j:slf4j-api:$slf4jVersion",
             "org.awaitility:awaitility:$awaitility"
     testImplementation "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",

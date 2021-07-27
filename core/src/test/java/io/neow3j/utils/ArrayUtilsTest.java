@@ -23,7 +23,7 @@ public class ArrayUtilsTest {
         byte b1 = 0x01;
         byte b2 = 0x02;
         byte b3 = 0x03;
-        Byte[] testArray = new Byte[]{new Byte(b1), new Byte(b2), new Byte(b3)};
+        Byte[] testArray = new Byte[]{b1, b2, b3};
         byte[] arrayOfBytesPrimitive = toPrimitive(testArray);
         assertThat(arrayOfBytesPrimitive[0], is(b1));
         assertThat(arrayOfBytesPrimitive[1], is(b2));
