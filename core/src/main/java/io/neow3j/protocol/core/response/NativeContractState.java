@@ -35,7 +35,7 @@ public class NativeContractState extends CoreContractState {
 
     @Override
     public String toString() {
-        return "NativeContractState{" +
+        return "ContractState{" +
                 "id=" + getId() +
                 ", hash='" + getHash() + '\'' +
                 ", nef=" + getNef() +
