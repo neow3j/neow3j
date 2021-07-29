@@ -15,6 +15,7 @@ import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.utils.Await;
+import org.hamcrest.Matchers;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -28,8 +29,10 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -157,6 +160,21 @@ public class RuntimeIntegrationTest {
         assertTrue(new BigInteger(usedGas).compareTo(gasToBurn) >= 0);
     }
 
+    @Test
+    public void getNetwork() throws Throwable {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        BigInteger magic1 = res.getStack().get(0).getInteger();
+        long magic2 = ct.getNeow3j().getNetworkMagicNumber();
+        assertEquals(magic1.longValue(), magic2);
+    }
+
+    @Test
+    public void getRandom() throws Throwable {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        BigInteger random = res.getStack().get(0).getInteger();
+        assertThat(random, is(greaterThanOrEqualTo(BigInteger.ZERO)));
+    }
+
     static class RuntimeIntegrationTestContract {
 
         public static byte getTriggerType() {
@@ -216,6 +234,13 @@ public class RuntimeIntegrationTest {
             Runtime.burnGas(Helper.pow(10, 10)); // burn 100 GAS
         }
 
+        public static int getNetwork() {
+            return Runtime.getNetwork();
+        }
+
+        public static int getRandom() {
+            return Runtime.getRandom();
+        }
     }
 }
 

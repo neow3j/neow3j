@@ -241,15 +241,6 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failAddingMultipleFeeOnlySigners() {
-        TransactionBuilder b = new TransactionBuilder(neow);
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(
-                new StringContains("Can't add multiple signers with the fee-only witness scope"));
-        b.signers(none(account1), none(account2));
-    }
-
-    @Test
     public void attributes_highPriority() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");

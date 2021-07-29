@@ -131,10 +131,11 @@ public class LedgerContractIntegrationTest {
         assertThat(block.get(3).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
-        assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
-        assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(8).getInteger().intValue(),
+        assertThat(block.get(5).getInteger(), is(greaterThanOrEqualTo(BigInteger.ZERO)));
+        assertThat(block.get(6).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
+        assertThat(block.get(7).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(8).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(9).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 
@@ -152,10 +153,11 @@ public class LedgerContractIntegrationTest {
         assertThat(block.get(3).getHexString(),
                 is(Numeric.reverseHexString(blockOfDeployTx.getMerkleRootHash().toString())));
         assertThat(block.get(4).getInteger().longValue(), is(blockOfDeployTx.getTime()));
-        assertThat(block.get(5).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
-        assertThat(block.get(6).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
-        assertThat(block.get(7).getAddress(), is(blockOfDeployTx.getNextConsensus()));
-        assertThat(block.get(8).getInteger().intValue(),
+        assertThat(block.get(5).getInteger(), is(greaterThanOrEqualTo(BigInteger.ZERO)));
+        assertThat(block.get(6).getInteger().longValue(), is(blockOfDeployTx.getIndex()));
+        assertThat(block.get(7).getInteger().intValue(), is(blockOfDeployTx.getPrimary()));
+        assertThat(block.get(8).getAddress(), is(blockOfDeployTx.getNextConsensus()));
+        assertThat(block.get(9).getInteger().intValue(),
                 is(blockOfDeployTx.getTransactions().size()));
     }
 

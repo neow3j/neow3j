@@ -4,9 +4,8 @@ import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.script.InteropService;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -98,14 +97,13 @@ public class AsmHelperTest {
         MethodNode method = asmClass.methods.stream()
                 .filter(m -> m.name.contains("annotatedMethod"))
                 .findFirst().get();
-        assertTrue(hasAnnotations(method, Syscall.class));
         assertTrue(hasAnnotations(method, Instruction.class));
-        assertTrue(hasAnnotations(method, Syscall.class, Instruction.class));
+        assertTrue(hasAnnotations(method, OnNEP11Payment.class));
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
     @Instruction
+    @OnNEP11Payment
     private void annotatedMethod() {
 
     }

@@ -1,13 +1,13 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
  * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this
  * class when working with transaction and block hashes.
- *
+ * <p>
  * Note that the underlying bytes might have varying endianness. When calling a method from a
  * native contract or the devpack that returns a {@code Hash256}, the bytes will be little-endian.
  * But if you construct a {@code Hash256} by yourself the ordering is according to whatever you
@@ -70,6 +70,7 @@ public class Hash256 {
      * Checks if the given object is a valid Hash256, i.e., if it is either a ByteString or Buffer
      * and 32 bytes long.
      *
+     * @param data The object to check.
      * @return true if this the given object is a valid Hash256. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)

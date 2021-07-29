@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.script.InteropService;
-import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_CHECKWITNESS;
 import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GASLEFT;
@@ -23,7 +23,7 @@ public class Runtime {
      *
      * @return the {@link TriggerType}.
      */
-    @Syscall(SYSTEM_RUNTIME_GETTRIGGER)
+    @Instruction(interopService = SYSTEM_RUNTIME_GETTRIGGER)
     public static native byte getTrigger();
 
     /**
@@ -31,7 +31,7 @@ public class Runtime {
      *
      * @return the platform information.
      */
-    @Syscall(SYSTEM_RUNTIME_PLATFORM)
+    @Instruction(interopService = SYSTEM_RUNTIME_PLATFORM)
     public static native String getPlatform();
 
     /**
@@ -39,7 +39,7 @@ public class Runtime {
      *
      * @return the timestamp
      */
-    @Syscall(SYSTEM_RUNTIME_GETTIME)
+    @Instruction(interopService = SYSTEM_RUNTIME_GETTIME)
     public static native int getTime();
 
     /**
@@ -47,7 +47,7 @@ public class Runtime {
      *
      * @return the invocation counter.
      */
-    @Syscall(SYSTEM_RUNTIME_GETINVOCATIONCOUNTER)
+    @Instruction(interopService = SYSTEM_RUNTIME_GETINVOCATIONCOUNTER)
     public static native int getInvocationCounter();
 
     /**
@@ -55,7 +55,7 @@ public class Runtime {
      *
      * @return the amount in fractions of GAS.
      */
-    @Syscall(SYSTEM_RUNTIME_GASLEFT)
+    @Instruction(interopService = SYSTEM_RUNTIME_GASLEFT)
     public static native int getGasLeft();
 
     /**
@@ -65,7 +65,7 @@ public class Runtime {
      * @param hash The sender script hash to get the notifications for.
      * @return an array of all notifications matching the given script hash.
      */
-    @Syscall(SYSTEM_RUNTIME_GETNOTIFICATIONS)
+    @Instruction(interopService = SYSTEM_RUNTIME_GETNOTIFICATIONS)
     public static native Notification[] getNotifications(Hash160 hash);
 
     /**
@@ -75,7 +75,7 @@ public class Runtime {
      * @param pubKey The public key to check.
      * @return true if the given public key is the signer of the transaction. False, otherwise.
      */
-    @Syscall(SYSTEM_RUNTIME_CHECKWITNESS)
+    @Instruction(interopService = SYSTEM_RUNTIME_CHECKWITNESS)
     public static native boolean checkWitness(ECPoint pubKey);
 
     /**
@@ -85,7 +85,7 @@ public class Runtime {
      * @param scriptHash The script hash to check.
      * @return true if the given script hash is the signer of the transaction. False, otherwise.
      */
-    @Syscall(SYSTEM_RUNTIME_CHECKWITNESS)
+    @Instruction(interopService = SYSTEM_RUNTIME_CHECKWITNESS)
     public static native boolean checkWitness(Hash160 scriptHash);
 
     /**
@@ -93,7 +93,7 @@ public class Runtime {
      *
      * @param message The message to log.
      */
-    @Syscall(SYSTEM_RUNTIME_LOG)
+    @Instruction(interopService = SYSTEM_RUNTIME_LOG)
     public static native void log(String message);
 
     /**
@@ -105,7 +105,7 @@ public class Runtime {
      *
      * @return the script container.
      */
-    @Syscall(InteropService.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETSCRIPTCONTAINER)
     public static native Object getScriptContainer();
 
     /**
@@ -113,7 +113,7 @@ public class Runtime {
      *
      * @return the script hash of the executing contract in little-endian order.
      */
-    @Syscall(InteropService.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH)
     public static native Hash160 getExecutingScriptHash();
 
     /**
@@ -125,7 +125,7 @@ public class Runtime {
      *
      * @return the caller's script hash in little-endian order.
      */
-    @Syscall(InteropService.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH)
     public static native Hash160 getCallingScriptHash();
 
     /**
@@ -137,7 +137,7 @@ public class Runtime {
      *
      * @return the script hash in little-endian order.
      */
-    @Syscall(InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETENTRYSCRIPTHASH)
     public static native Hash160 getEntryScriptHash();
 
     /**
@@ -147,6 +147,22 @@ public class Runtime {
      *
      * @param gas The amount of GAS to burn (in GAS fractions).
      */
-    @Syscall(InteropService.SYSTEM_RUNTIME_BURNGAS)
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_BURNGAS)
     public static native void burnGas(int gas);
+
+    /**
+     * Gets the magic number of the network the contract is deployed on.
+     *
+     * @return the magic number.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETNETWORK)
+    public static native int getNetwork();
+
+    /**
+     * Gets the 128-bit random number generated from the verifiable random function.
+     *
+     * @return the random number.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETRANDOM)
+    public static native int getRandom();
 }
