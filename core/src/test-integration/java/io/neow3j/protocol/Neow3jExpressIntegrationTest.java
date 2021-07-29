@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.neoExpressTestContainer;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -34,17 +35,16 @@ public class Neow3jExpressIntegrationTest {
     protected static Neow3jExpress neow3jExpress;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer = new NeoTestContainer(true);
+    public static NeoTestContainer neoTestContainer = neoExpressTestContainer(1);
 
     @BeforeClass
     public static void setUp() throws IOException {
         neow3jExpress = Neow3jExpress.build(new HttpService(getNodeUrl(neoTestContainer)));
-        fundDefaultAccount();
         deployContractAndCreateOracleRequest();
     }
 
-    private static void fundDefaultAccount() {
-
+    private static Neow3jExpress getNeow3jExpress() {
+        return neow3jExpress;
     }
 
     private static void deployContractAndCreateOracleRequest() throws IOException {
@@ -70,10 +70,6 @@ public class Neow3jExpressIntegrationTest {
         txHash = response.getSendRawTransaction()
                 .getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3jExpress);
-    }
-
-    private static Neow3jExpress getNeow3jExpress() {
-        return neow3jExpress;
     }
 
     @Test
