@@ -1,14 +1,5 @@
 package io.neow3j.protocol;
 
-import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.test.NeoTestContainer.neoExpressTestContainer;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -25,10 +16,23 @@ import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.testcontainers.containers.Container;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+
+import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.test.NeoTestContainer.neoExpressTestContainer;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.isEmptyString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class Neow3jExpressIntegrationTest {
 
@@ -79,7 +83,7 @@ public class Neow3jExpressIntegrationTest {
 
         assertNotNull(populatedBlocks.getCacheId());
         // genesis block, contract deployment and contract invocation
-        assertThat(populatedBlocks.getBlocks(), hasSize(3));
+        assertThat(populatedBlocks.getBlocks(), hasSize(greaterThanOrEqualTo(3)));
     }
 
     @Test
@@ -106,7 +110,7 @@ public class Neow3jExpressIntegrationTest {
         assertThat(contractStorage, hasSize(4));
         assertThat(contractStorage.get(3).getKey(),
                 is("147f65d434362708b255f0e06856bdcb5ce99d8505"));
-        assertThat(contractStorage.get(3).getValue(), is("4101210764b045de5e7912"));
+        assertThat(contractStorage.get(3).getValue(), is(not(isEmptyString())));
     }
 
     @Test
@@ -168,7 +172,8 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
-    public void testExpressCreateOracleResponseTx() throws IOException {
+    public void testExpressCreateOracleResponseTx() throws Exception {
+        Await.waitUntilTransactionIsExecuted(enableOracle(), getNeow3jExpress());
         String oracleResponseTx = getNeow3jExpress()
                 .expressCreateOracleResponseTx(
                         new OracleResponse(0, OracleResponseCode.SUCCESS, "bmVvdzNq"))
@@ -176,8 +181,18 @@ public class Neow3jExpressIntegrationTest {
                 .getOracleResponseTx();
 
         assertThat(oracleResponseTx,
-                is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS" +
-                        "/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
+                is("AAAAAAD+KXk7AAAAAAKgIQAAAAAAg1EBAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gB" +
+                        "/ZdQ0NicIslXw4GhWvctc6Z2FBQABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6"));
+    }
+
+    private static Hash256 enableOracle() throws Exception {
+        Container.ExecResult execResult = neoTestContainer.execInContainer(
+                "neoxp", "oracle", "enable", "genesis");
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return new Hash256(execResult.getStdout().split(" ")[3]);
     }
 
 }
