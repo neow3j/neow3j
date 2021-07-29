@@ -34,32 +34,51 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     }
 
     public NeoTestContainer(String configFileSource) {
-        super(DockerImageName.parse(neo3PrivateNetContainerImg()));
-        withClasspathResourceMapping(configFileSource, CONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY);
-        withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                WALLET_FILE_DESTINATION);
-        withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY);
-        withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY);
-        withExposedPorts(EXPOSED_JSONRPC_PORT);
-        waitingFor(Wait.forListeningPort());
-        try {
-            withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
-                    BindMode.READ_ONLY);
-        } catch (IllegalArgumentException e) {
-            System.out.println("OracleService config file not found at "
-                    + ORACLECONFIG_FILE_SOURCE);
-        }
+        this(neo3PrivateNetContainerImg(), null, configFileSource);
     }
 
-    public NeoTestContainer(boolean expressNode) {
-        super(DockerImageName.parse(neo3ExpressPrivateNetContainerImg()));
-        withCopyFileToContainer(MountableFile.forClasspathResource(DEFAULT_NEO_EXPRESS_SOURCE, 777),
-                DEFAULT_NEO_EXPRESS_DESTINATION);
-        withExposedPorts(EXPOSED_JSONRPC_PORT);
-        waitingFor(Wait.forListeningPort());
+    public static NeoTestContainer neoExpressTestContainer(Integer secondsPerBlock) {
+        return new NeoTestContainer(neo3ExpressPrivateNetContainerImg(), secondsPerBlock, null);
+    }
+
+    private NeoTestContainer(String fullImageName, Integer secondsPerBlock,
+            String configFileSource) {
+
+        super(DockerImageName.parse(fullImageName));
+        if (fullImageName.equals(neo3ExpressPrivateNetContainerImg())) {
+            withCopyFileToContainer(MountableFile.forClasspathResource(DEFAULT_NEO_EXPRESS_SOURCE,
+                    777),
+                    DEFAULT_NEO_EXPRESS_DESTINATION);
+            withExposedPorts(EXPOSED_JSONRPC_PORT);
+            if (secondsPerBlock != null) {
+                withCommand("--seconds-per-block " + secondsPerBlock);
+            }
+            waitingFor(Wait.forListeningPort());
+        } else {
+            if (configFileSource != null) {
+                withClasspathResourceMapping(configFileSource, CONFIG_FILE_DESTINATION,
+                        BindMode.READ_ONLY);
+            } else {
+                withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                        BindMode.READ_ONLY);
+            }
+            withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
+                    WALLET_FILE_DESTINATION);
+            withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY);
+            withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY);
+            withExposedPorts(EXPOSED_JSONRPC_PORT);
+            waitingFor(Wait.forListeningPort());
+            try {
+                withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE,
+                        ORACLECONFIG_FILE_DESTINATION,
+                        BindMode.READ_ONLY);
+            } catch (IllegalArgumentException e) {
+                System.out.println("OracleService config file not found at "
+                        + ORACLECONFIG_FILE_SOURCE);
+            }
+        }
     }
 
     public static String getResultFilePath(String testClassName, String methodName) {
