@@ -9,8 +9,7 @@ import java.util.List;
 public enum WitnessScope {
 
     /**
-     * This scope is used when a witness is meant for only paying transaction fees.
-     * A witness with this scope is invalid for contract invocations.
+     * A witness with this scope is only used for transactions and is disabled in contracts.
      */
     NONE("None", 0x00),
 

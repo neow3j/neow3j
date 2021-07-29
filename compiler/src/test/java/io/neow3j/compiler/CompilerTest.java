@@ -167,7 +167,7 @@ public class CompilerTest {
         MethodNode method = asmClass.methods.get(1);
 
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
 
         NeoInstruction insn = neoMethod.getInstructions().values().toArray(
                 new NeoInstruction[]{})[0];

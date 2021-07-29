@@ -119,8 +119,8 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
-    private static final Hash256 BLOCK_0_HASH =
-            new Hash256("0x442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014");
+    private static Hash256 BLOCK_0_HASH =
+            new Hash256("442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014");
     protected static final String BLOCK_0_HEADER_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAARE=";
     protected static final String BLOCK_0_RAW_STRING =
@@ -1018,7 +1018,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
         assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "0x6c72cd3171922509bca520ba510dcd9fa8515121a40ba780e44ee6ebf5af7ba3")));
+                "6c72cd3171922509bca520ba510dcd9fa8515121a40ba780e44ee6ebf5af7ba3")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 

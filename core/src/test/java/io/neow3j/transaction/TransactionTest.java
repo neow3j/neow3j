@@ -32,6 +32,8 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class TransactionTest {
@@ -157,6 +159,11 @@ public class TransactionTest {
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
                 Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+
+        assertNull(tx.neow3j);
+        Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
+        tx.setNeow3j(neow3j);
+        assertThat(tx.neow3j, is(neow3j));
     }
 
     @Test
@@ -287,7 +294,7 @@ public class TransactionTest {
 
         byte[] txHexWithoutWitness = hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = concatenate(neow.getNetworkMagicNumber(),
+        byte[] expectedData = concatenate(neow.getNetworkMagicNumberBytes(),
                 sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }
