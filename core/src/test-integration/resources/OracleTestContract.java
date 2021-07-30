@@ -19,7 +19,7 @@ public class OracleTestContract {
     // Note: This method is not relevant for the test, since the response tx is never executed.
     public static List<String> callback(String url, String userData, byte code, String result) {
         List<String> list = new List<>();
-        if (code == OracleResponseCode.SUCCESS) {
+        if (code == OracleResponseCode.Success) {
             list.add(url);
             list.add(userData);
             list.add(result);
