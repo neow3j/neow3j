@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
@@ -15,7 +16,9 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.testcontainers.containers.Container;
 
 import java.io.IOException;
@@ -34,6 +37,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neow3jExpressIntegrationTest {
 
     protected static Neow3jExpress neow3jExpress;
@@ -193,6 +197,15 @@ public class Neow3jExpressIntegrationTest {
                     execResult.getStderr());
         }
         return new Hash256(execResult.getStdout().split(" ")[3]);
+    }
+
+    @Test
+    public void testShutdown() throws IOException {
+        // This test must be executed last!
+        // If more tests are added, make sure that the name of this test is the last in
+        // lexicographic order (according to the test order by FixMethodOrder).
+        NeoExpressShutdown expressShutdown = getNeow3jExpress().expressShutdown().send();
+        assertThat(expressShutdown.getExpressShutdown().getProcessId(), is(1));
     }
 
 }

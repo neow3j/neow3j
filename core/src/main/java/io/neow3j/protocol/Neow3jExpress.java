@@ -10,6 +10,7 @@ import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
 
@@ -154,6 +155,22 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
                 asList(response),
                 neow3jService,
                 NeoExpressCreateOracleResponseTx.class);
+    }
+
+    /**
+     * Shuts down the neo-express instance.
+     * <p>
+     * Can only be used on a Neo-express node.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoExpressShutdown> expressShutdown() {
+        return new Request<>(
+                "expressshutdown",
+                emptyList(),
+                neow3jService,
+                NeoExpressShutdown.class);
     }
 
 }

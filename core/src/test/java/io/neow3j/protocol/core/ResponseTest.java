@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
 import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
@@ -2973,6 +2974,20 @@ public class ResponseTest extends ResponseTester {
                 deserialiseResponse(NeoExpressCreateOracleResponseTx.class);
         String oracleResponseTx = neoExpressCreateOracleResponseTx.getOracleResponseTx();
         assertThat(oracleResponseTx, is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
+    }
+
+    @Test
+    public void testExpressShutdown() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"process-id\": 73625\n" +
+                "    }\n" +
+                "}");
+
+        NeoExpressShutdown neoExpressShutdown = deserialiseResponse(NeoExpressShutdown.class);
+        assertThat(neoExpressShutdown.getExpressShutdown().getProcessId(), is(73625));
     }
 
 }

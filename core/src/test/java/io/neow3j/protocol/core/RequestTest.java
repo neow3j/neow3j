@@ -917,4 +917,16 @@ public class RequestTest extends RequestTester {
                 "}");
     }
 
+    @Test
+    public void testExpressShutdown() throws Exception {
+        neow3jExpress.expressShutdown().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expressshutdown\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
 }
