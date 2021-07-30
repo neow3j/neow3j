@@ -41,6 +41,30 @@ public class OracleResponseAttribute extends TransactionAttribute {
         super(TransactionAttributeType.ORACLE_RESPONSE);
     }
 
+    /**
+     * Gets the ID of the oracle request/response.
+     * @return the ID of the oracle request/response.
+     */
+    public BigInteger getId() {
+        return id;
+    }
+
+    /**
+     * Gets the response code.
+     * @return the response code of oracle response.
+     */
+    public OracleResponseCode getCode() {
+        return code;
+    }
+
+    /**
+     * Gets the result bytes.
+     * @return the result bytes of the oracle response.
+     */
+    public byte[] getResult() {
+        return result;
+    }
+
     @Override
     protected int getSizeWithoutType() {
         return 8 // Id: 64 bit, 8 byte
