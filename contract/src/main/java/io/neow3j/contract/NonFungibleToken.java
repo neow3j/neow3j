@@ -20,7 +20,7 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.StackItemType.MAP;
-import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Numeric.toHexString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;

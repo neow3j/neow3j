@@ -15,7 +15,7 @@ public class RoleManagement extends ContractInterface {
     /**
      * Gets the nodes with the given {@link Role}.
      *
-     * @param role The {@link Role} to get the nodes for.
+     * @param role  The {@link Role} to get the nodes for.
      * @param index The block index at which to get the designated nodes for.
      * @return the public keys of the nodes with the given role.
      */

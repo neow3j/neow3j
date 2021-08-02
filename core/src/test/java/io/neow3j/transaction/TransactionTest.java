@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.script.OpCode;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
@@ -14,22 +16,24 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.transaction.Signer.feeOnly;
+import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class TransactionTest {
@@ -53,7 +57,7 @@ public class TransactionTest {
     @Test
     public void serializeWithoutAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account1));
+        signers.add(AccountSigner.calledByEntry(account1));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -88,8 +92,8 @@ public class TransactionTest {
     @Test
     public void serializeWithAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.global(account1));
-        signers.add(Signer.calledByEntry(account2));
+        signers.add(AccountSigner.global(account1));
+        signers.add(AccountSigner.calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -134,7 +138,7 @@ public class TransactionTest {
                 + "99232000"  // valid until block
                 + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
                 // one called by entry signer
-                + "00"
+                + "01" + "01" // one attribute - high priority
                 + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
                 + "01000100"); /* witness*/
@@ -146,7 +150,8 @@ public class TransactionTest {
         assertThat(tx.getSystemFee(), is(9007810L));
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
-        assertThat(tx.getAttributes(), hasSize(0));
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
@@ -154,13 +159,18 @@ public class TransactionTest {
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
                 Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+
+        assertNull(tx.neow3j);
+        Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
+        tx.setNeow3j(neow3j);
+        assertThat(tx.neow3j, is(neow3j));
     }
 
     @Test
     public void getSize() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.global(account1));
-        signers.add(Signer.calledByEntry(account2));
+        signers.add(AccountSigner.global(account1));
+        signers.add(AccountSigner.calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -193,25 +203,27 @@ public class TransactionTest {
         assertThat(tx.getSize(), is(expectedSize));
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failDeserializingWithTooManyTransactionAttributes()
             throws DeserializationException {
         StringBuilder txString = new StringBuilder(""
-                + "00" // version
+                + "00" // version 0
                 + "62bdaa0e"  // nonce
-                + "941343239213fa0e765f1027ce742f48db779a96"// account script hash
                 + "c272890000000000"  // system fee
                 + "a65a130000000000"  // network fee
                 + "99232000"  // valid until block
-                + "17"); // one attribute
+                + "11"); // 17 signers
         for (int i = 0; i <= 16; i++) {
-            txString.append("01941343239213fa0e765f1027ce742f48db779a9601"); // signer
+            txString.append("941343239213fa0e765f1027ce742f48db779a96"); // signer script hash
+            txString.append("01"); // called by entry scope
         }
-        txString.append(""
-                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
-                + "01" // 1 witness
-                + "01000100"); /* witness*/
+        txString.append("00"); // no attributes
+        // additional bytes are not needed for this test
         byte[] txBytes = hexStringToByteArray(txString.toString());
+
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("A transaction can hold at most ");
+
         NeoSerializableInterface.from(txBytes, Transaction.class);
     }
 
@@ -221,7 +233,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account3));
+        signers.add(AccountSigner.calledByEntry(account3));
 
         Transaction tx = new Transaction(neow,
                 (byte) 0,
@@ -245,7 +257,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(Signer.calledByEntry(account3));
+        signers.add(AccountSigner.calledByEntry(account3));
         Transaction tx = new Transaction(neow,
                 (byte) 0,
                 226292130L,
@@ -269,7 +281,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(feeOnly(account1));
+        signers.add(AccountSigner.none(account1));
         Transaction tx = new Transaction(neow, (byte) 0,
                 0L,
                 0L,
@@ -282,7 +294,7 @@ public class TransactionTest {
 
         byte[] txHexWithoutWitness = hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = concatenate(neow.getNetworkMagicNumber(),
+        byte[] expectedData = concatenate(neow.getNetworkMagicNumberBytes(),
                 sha256(txHexWithoutWitness));
         assertThat(tx.getHashData(), is(expectedData));
     }
@@ -312,11 +324,19 @@ public class TransactionTest {
 
     @Test
     public void testMaxTransactionSize() throws IOException {
+        HttpService mock = Mockito.mock(HttpService.class);
+        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoSendRawTransaction.class)))
+                .thenReturn(new NeoSendRawTransaction());
+        NeoBlockCount blockCount = new NeoBlockCount();
+        blockCount.setResult(BigInteger.ONE);
+        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoBlockCount.class))).thenReturn(blockCount);
+        Neow3j neow3j = Neow3j.build(mock);
+
         // The following transaction is 29 bytes without the script
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4];
         // This transaction has exactly the maximal allowed byte length.
-        Transaction tx = new Transaction(neow, (byte) 0,
+        Transaction tx = new Transaction(neow3j, (byte) 0,
                 0L,
                 0L,
                 new ArrayList<>(),
@@ -327,11 +347,6 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
-
-        // If the transaction is sent, the check was passed successfully.
-        // No mock was setup, so the execution should just fail to connect.
-        exceptionRule.expect(ConnectException.class);
-        exceptionRule.expectMessage("Failed to connect to");
         tx.send();
     }
 

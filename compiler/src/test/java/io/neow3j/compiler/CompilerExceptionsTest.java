@@ -1,14 +1,21 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.contracts.FungibleToken;
-import io.neow3j.script.OpCode;
-import io.neow3j.devpack.contracts.ContractInterface;
+import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
+import static java.util.Arrays.asList;
+
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Safe;
+import io.neow3j.devpack.contracts.ContractInterface;
+import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.devpack.events.Event1Arg;
+import io.neow3j.script.OpCode;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -16,13 +23,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -88,7 +88,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "223344", "3", OpCode.PUSHINT16.name(), "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -103,7 +103,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "Operand prefix", "1", "2")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -135,7 +135,7 @@ public class CompilerExceptionsTest {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 "1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
-        Compiler.addInstructionsFromAnnotation(method, neoMethod);
+        Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
     @Test
@@ -178,9 +178,9 @@ public class CompilerExceptionsTest {
     @Test
     public void failCallingAContractInterfaceWithoutContractHashAnnotation() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Error trying to call a method on a contract interface",
-                ContractHash.class.getCanonicalName())));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Contract interface",
+                FungibleToken.class.getSimpleName(),
+                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
         new Compiler().compile(ContractInterfaceWithoutHash.class.getName());
     }
 
@@ -189,10 +189,57 @@ public class CompilerExceptionsTest {
             throws IOException {
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "Error trying to call a method on a contract interface",
-                ContractHash.class.getCanonicalName())));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Contract interface",
+                CustomFungibleToken.class.getSimpleName(),
+                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
         new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName());
+    }
+
+    @Test
+    public void failUsingConstructorOnAnEvent() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains("Events must not be initialized by " +
+                "calling their constructor."));
+        new Compiler().compile(EventConstructorMisuse.class.getName());
+    }
+
+    @Test
+    public void throwOnTokenContractInterfaceMissingHashAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                TokenContractWithoutHashAnnotation.class.getSimpleName(),
+                ContractHash.class.getSimpleName())));
+        new Compiler().compile(TokenContractMissingHashAnnotation.class.getName());
+    }
+
+    @Test
+    public void throwOnContractInterfaceMissingHashAnnotation() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithoutHashAnnotation.class.getSimpleName(),
+                ContractHash.class.getSimpleName())));
+        new Compiler().compile(ContractMissingHashAnnotation.class.getName());
+    }
+
+    @Test
+    public void throwOnContractMissingContractInterface() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithoutContractInterface.class.getSimpleName(),
+                ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName())));
+        new Compiler().compile(ContractMissingContractInterface.class.getName());
+    }
+
+    @Test
+    public void throwOnWrongClassCompatibility() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+                ContractWithWrongClassCompatibility.class.getSimpleName(), "51",
+                Integer.toString(CLASS_VERSION_SUPPORTED))));
+        ClassNode c = new ClassNode();
+        c.name = ContractWithWrongClassCompatibility.class.getSimpleName();
+        c.version = 51;
+        new Compiler().compile(c);
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -360,6 +407,49 @@ public class CompilerExceptionsTest {
 
     }
 
+    static class EventConstructorMisuse {
+
+        static Event1Arg<String> event = new Event1Arg<>();
+
+        public static void method() {
+            String s;
+            event.fire("test");
+        }
+
+    }
+
+    static class TokenContractMissingHashAnnotation {
+        public static String method() {
+            return TokenContractWithoutHashAnnotation.symbol();
+        }
+    }
+
+    static class TokenContractWithoutHashAnnotation extends FungibleToken {
+    }
+
+    static class ContractMissingHashAnnotation {
+        public static String method() {
+            return ContractWithoutHashAnnotation.symbol();
+        }
+    }
+
+    static class ContractWithoutHashAnnotation extends ContractInterface {
+        public static native String symbol();
+    }
+
+    static class ContractMissingContractInterface {
+        public static String method() {
+            return ContractWithoutContractInterface.symbol();
+        }
+    }
+
+    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // some hash
+    static class ContractWithoutContractInterface {
+        public static native String symbol();
+    }
+
+    static class ContractWithWrongClassCompatibility {
+    }
 
 }
 

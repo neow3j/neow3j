@@ -3,8 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Hash256;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
@@ -65,20 +63,6 @@ public class CryptoIntegrationTest {
         assertFalse(executions.get(0).getStack().get(0).getBoolean());
     }
 
-    @Test
-    public void hash256() throws IOException {
-        NeoInvokeFunction res = ct.callInvokeFunction(testName, byteArray("0102030405"));
-        assertThat(res.getInvocationResult().getStack().get(0).getHexString(),
-                is("a26baf5a9a07d9eb7ba10f43924dcdf3f75f0abf066cd9f0c76f983121302e01"));
-    }
-
-    @Test
-    public void hash160() throws IOException {
-        NeoInvokeFunction res = ct.callInvokeFunction(testName, byteArray("0102030405"));
-        assertThat(res.getInvocationResult().getStack().get(0).getHexString(),
-                is("1fcc83c91e862661592480531afa87c3e2f59332"));
-    }
-
     static class CryptoIntegrationTestContract {
 
         public static boolean checkSig(ECPoint pubKey, ByteString signature) {
@@ -87,14 +71,6 @@ public class CryptoIntegrationTest {
 
         public static boolean checkMultiSig(ECPoint[] pubKeys, ByteString[] signatures) {
             return Crypto.checkMultisig(pubKeys, signatures);
-        }
-
-        public static Hash256 hash256(ByteString value) {
-            return Crypto.hash256(value);
-        }
-
-        public static Hash160 hash160(ByteString value) {
-            return Crypto.hash160(value);
         }
     }
 

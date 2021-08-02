@@ -33,7 +33,7 @@ import java.util.Map;
 public class NeoToken extends FungibleToken {
 
     public static final String NAME = "NeoToken";
-    public static final Hash160 SCRIPT_HASH = getScriptHashOfNativeContract(NAME);
+    public static final Hash160 SCRIPT_HASH = calcNativeContractHash(NAME);
 
     public static final int DECIMALS = 0;
     public static final String SYMBOL = "NEO";

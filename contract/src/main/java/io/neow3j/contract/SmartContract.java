@@ -1,20 +1,20 @@
 package io.neow3j.contract;
 
-import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.transaction.TransactionBuilder;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Strings;
 
 import java.io.IOException;
@@ -288,8 +288,8 @@ public class SmartContract {
         return getManifest().getName();
     }
 
-    protected static Hash160 getScriptHashOfNativeContract(String contractName) {
-        return getContractHash(Hash160.ZERO, 0, contractName);
+    protected static Hash160 calcNativeContractHash(String contractName) {
+        return calcContractHash(Hash160.ZERO, 0, contractName);
     }
 
     /**
@@ -304,7 +304,7 @@ public class SmartContract {
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
-    public static Hash160 getContractHash(Hash160 sender, long nefCheckSum, String contractName) {
+    public static Hash160 calcContractHash(Hash160 sender, long nefCheckSum, String contractName) {
         return Hash160.fromScript(
                 new ScriptBuilder()
                         .opCode(OpCode.ABORT)

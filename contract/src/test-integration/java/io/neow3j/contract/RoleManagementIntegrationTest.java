@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
-import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;

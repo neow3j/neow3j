@@ -1,8 +1,5 @@
 package io.neow3j.protocol.core;
 
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
@@ -56,6 +53,9 @@ import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
 import io.neow3j.transaction.Signer;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.reactivex.Observable;
 
 import java.io.IOException;

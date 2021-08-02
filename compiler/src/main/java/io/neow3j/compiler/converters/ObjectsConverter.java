@@ -8,16 +8,13 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Type;
@@ -33,17 +30,15 @@ import java.util.List;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getFieldIndex;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.Compiler.addConstructorSyscall;
-import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.handleInsn;
 import static io.neow3j.compiler.Compiler.isCallToCtor;
 import static io.neow3j.compiler.Compiler.isEvent;
+import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.Compiler.skipToCtorCall;
 import static io.neow3j.compiler.Compiler.skipToSuperCtorCall;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
@@ -65,14 +60,14 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod);
+                addStoreStaticField(insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-                if (isEvent(getInternalNameForDescriptor(fieldInsn.desc))) {
+                if (isEvent(fieldInsn.desc)) {
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
                 } else {
-                    addLoadStaticField(fieldInsn, neoMethod);
+                    addLoadStaticField(fieldInsn, neoMethod, compUnit);
                 }
                 break;
             case CHECKCAST:
@@ -143,15 +138,19 @@ public class ObjectsConverter implements Converter {
                 || typeName.equals(Iterator.Struct.class.getTypeName());
     }
 
-    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod) {
+    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
+            CompilationUnit compUnit) {
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.LDSFLD));
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
-    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod) {
+    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) {
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
         int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(idx, OpCode.STSFLD));
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }
 
     public static AbstractInsnNode handleNew(AbstractInsnNode insn, NeoMethod callingNeoMethod,
@@ -182,21 +181,17 @@ public class ObjectsConverter implements Converter {
                 || ctorMethod.invisibleAnnotations.size() == 0) {
             // It's a generic constructor without any Neo-specific annotations.
             return convertConstructorCall(typeInsn, ctorMethod, owner, callingNeoMethod, compUnit);
-        } else {
-            // The constructor has some Neo-specific annotation. No NEWARRAY/NEWSTRUCT or DUP is
-            // needed here.
-            // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
-            // follow. Those are handled in the following while.
+        } else { // The constructor has some Neo-specific annotation.
+            // skip NEW and DUP.
             insn = insn.getNext().getNext();
+            // Process possible arguments passed to INVOKESPECIAL.
             while (!isCallToCtor(insn, owner.name)) {
                 insn = handleInsn(insn, callingNeoMethod, compUnit);
                 insn = insn.getNext();
             }
             // Now we're at the INVOKESPECIAL call and can convert the ctor method.
-            if (hasAnnotations(ctorMethod, Syscall.class, Syscalls.class)) {
-                addConstructorSyscall(ctorMethod, callingNeoMethod);
-            } else if (hasAnnotations(ctorMethod, Instruction.class, Instructions.class)) {
-                addInstructionsFromAnnotation(ctorMethod, callingNeoMethod);
+            if (hasAnnotations(ctorMethod, Instruction.class, Instruction.Instructions.class)) {
+                processInstructionAnnotations(ctorMethod, callingNeoMethod);
             }
             return insn;
         }

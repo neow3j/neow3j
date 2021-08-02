@@ -1,22 +1,11 @@
 package io.neow3j.contract;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
-import static io.neow3j.contract.SmartContract.getContractHash;
-import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
-import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.test.NeoTestContainer;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import org.junit.BeforeClass;
@@ -28,14 +17,25 @@ import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.SmartContract.calcContractHash;
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
+import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 public class ContractManagementIntegrationTest {
 
     private static Neow3j neow3j;
     private static ContractManagement contractManagement;
 
-    private final static Path TESTCONTRACT_NEF_FILE = Paths.get("/contracts", "TestContract.nef");
+    private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE =
-            Paths.get("/contracts", "TestContract.manifest.json");
+            Paths.get("contracts", "TestContract.manifest.json");
 
     @ClassRule
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
@@ -71,11 +71,12 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void testDeploy() throws Throwable {
-        File nefFile = new File(getClass().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+        File nefFile = new File(getClass().getClassLoader()
+                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
-        File manifestFile = new File(
-                getClass().getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
+        File manifestFile = new File(getClass().getClassLoader()
+                .getResource(TESTCONTRACT_MANIFEST_FILE.toString()).toURI());
         ContractManifest manifest = getObjectMapper()
                 .readValue(manifestFile, ContractManifest.class);
 
@@ -87,7 +88,7 @@ public class ContractManagementIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
-        Hash160 contractHash = getContractHash(
+        Hash160 contractHash = calcContractHash(
                 COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
         NeoGetContractState.ContractState contractState =
                 neow3j.getContractState(contractHash).send().getContractState();

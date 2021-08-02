@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -8,7 +9,7 @@ import io.neow3j.devpack.contracts.NeoToken.Candidate;
 import io.neow3j.devpack.contracts.NeoToken.AccountState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
@@ -123,7 +124,7 @@ public class NeoTokenIntegrationTest {
         Hash256 txHash = new io.neow3j.contract.NeoToken(ct.getNeow3j())
                 .registerCandidate(ct.getDefaultAccount().getECKeyPair().getPublicKey())
                 .wallet(ct.getWallet())
-                .signers(Signer.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -187,6 +188,7 @@ public class NeoTokenIntegrationTest {
         assertThat(gasPerBlock, is(new BigInteger("50000")));
     }
 
+    @Permission(contract = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
     static class NeoTokenTestContract {
 
         public static int unclaimedGas(Hash160 scriptHash, int blockHeight) {

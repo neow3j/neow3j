@@ -1,45 +1,25 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.AsmHelper.getAsmClass;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
-import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import io.neow3j.compiler.converters.Converter;
 import io.neow3j.compiler.converters.ConverterMap;
-import io.neow3j.script.InteropService;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.NefFile;
-import io.neow3j.script.ScriptBuilder;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
+import io.neow3j.devpack.InteropInterface;
+import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.annotations.Syscall.Syscalls;
 import io.neow3j.devpack.events.EventInterface;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.utils.Numeric;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
@@ -52,9 +32,33 @@ import org.objectweb.asm.tree.LineNumberNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import static io.neow3j.compiler.AsmHelper.getAnnotations;
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.AsmHelper.getByteArrayAnnotationProperty;
+import static io.neow3j.compiler.AsmHelper.getStringAnnotationProperty;
+import static io.neow3j.compiler.DebugInfo.buildDebugInfo;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.10.0";
+    public static final String COMPILER_NAME = "neow3j-3.11.2";
+
+    // Check the following table for a complete version list:
+    // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
+    // 52 = Java 1.8
+    public static final int CLASS_VERSION_SUPPORTED = 52;
 
     public static final int MAX_PARAMS_COUNT = 255;
     public static final int MAX_LOCAL_VARIABLES = 255;
@@ -64,8 +68,10 @@ public class Compiler {
     private static final String CLASS_CTOR = "<clinit>";
     public static final String THIS_KEYWORD = "this";
 
-    public static final String INSTRUCTION_ANNOTATION_OPERAND = "operand";
-    public static final String INSTRUCTION_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
+    public static final String INSN_ANNOTATION_OPCODE = "opcode";
+    public static final String INSN_ANNOTATION_OPERAND = "operand";
+    public static final String INSN_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
+    public static final String INSN_ANNOTATION_INTEROPSERVICE = "interopService";
 
     private final CompilationUnit compUnit;
 
@@ -256,11 +262,13 @@ public class Compiler {
      *
      * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException when reading class files runs into an error.
      */
-    private CompilationUnit compile(ClassNode classNode) throws IOException {
+    protected CompilationUnit compile(ClassNode classNode) throws IOException {
+        checkForClassCompatibility(classNode);
         compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
-        checkFieldVariables(classNode);
+        collectContractVariables(classNode);
         collectSmartContractEvents(classNode);
         compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
@@ -274,7 +282,7 @@ public class Compiler {
         return compUnit;
     }
 
-    private void checkFieldVariables(ClassNode asmClass) {
+    private void collectContractVariables(ClassNode asmClass) {
         if (asmClass.fields == null) {
             return;
         }
@@ -288,6 +296,19 @@ public class Compiler {
                             + "fields are supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(asmClass.name)));
         }
+
+        int neoIdx = 0;
+        int jvmIdx = 0;
+        for (FieldNode f : asmClass.fields) {
+            if (isEvent(f.desc)) {
+                // Don't add events to the NeoVM variables.
+                jvmIdx++;
+                continue;
+            }
+            NeoContractVariable var = new NeoContractVariable(neoIdx++, jvmIdx++, f);
+            compUnit.getNeoModule().addContractVariable(var);
+        }
+
     }
 
     private void finalizeCompilation() {
@@ -306,16 +327,13 @@ public class Compiler {
         }
         List<FieldNode> eventFields = asmClass.fields
                 .stream()
-                .filter(field -> isEvent(getInternalNameForDescriptor(field.desc)))
+                .filter(field -> isEvent(field.desc))
                 .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
             return;
         }
-
-        eventFields.forEach(field -> {
-            compUnit.getNeoModule().addEvent(new NeoEvent(field, asmClass));
-        });
+        eventFields.forEach(f -> compUnit.getNeoModule().addEvent(new NeoEvent(f, asmClass)));
     }
 
     // Checks if there are any instructions in the given classes <init> method (the instance
@@ -343,6 +361,22 @@ public class Compiler {
         }
     }
 
+    // Checks the min. version of class compatibility.
+    // At the moment, only 'target compatibility' for 1.8 is supported.
+    private void checkForClassCompatibility(ClassNode asmClass) {
+        if (asmClass.version != CLASS_VERSION_SUPPORTED) {
+            throw new CompilerException(
+                    format("Class %s was compiled with JVM version %d, "
+                                    + "which is not supported. Please, change your environment "
+                                    + "to compile the class to version %d.",
+                            getFullyQualifiedNameForInternalName(asmClass.name),
+                            asmClass.version,
+                            CLASS_VERSION_SUPPORTED
+                    )
+            );
+        }
+    }
+
     // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
     // script. This only looks at the <clinit> method of the class. The <clinit> method
     // contains static variable initialization instructions that happen right at the definition
@@ -361,7 +395,7 @@ public class Compiler {
         List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
-                continue; // Handled in method `collectAndInitializeStaticFields()`.
+                continue; // Handled in method `createInitsslotMethod()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
                 throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
@@ -404,30 +438,117 @@ public class Compiler {
         return converter.convert(insn, neoMethod, compUnit);
     }
 
-    public static void addSyscall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
-        // Before doing the syscall the arguments have to be reversed.
-        addReverseArguments(calledAsmMethod, callingNeoMethod);
-        addSyscallInternal(calledAsmMethod, callingNeoMethod);
+    /**
+     * Checks if the {@code callee} has the {@link Instruction} or {@link Instructions} annotation
+     * and, if yes, processes it.
+     *
+     * @param callee The method being called by {@code caller}.
+     * @param caller The calling method.
+     */
+    public static void processInstructionAnnotations(MethodNode callee, NeoMethod caller) {
+        List<AnnotationNode> nodes = getAnnotations(callee, Instruction.class, Instructions.class);
+        if (isSingleSyscallInstruction(nodes)) {
+            // Needs special treatment because syscall arguments have to be reversed.
+            int paramsCount = Type.getMethodType(callee.desc).getArgumentTypes().length;
+            if ((callee.access & Opcodes.ACC_STATIC) == 0 && !callee.name.equals(INSTANCE_CTOR)) {
+                // The called method has a `this` parameter and is not a constructor.
+                paramsCount++;
+            }
+            addReverseArguments(caller, paramsCount);
+        }
+        // Otherwise, it's a mix of any kind of instructions. Even if a syscall is included, the
+        // reversal of its arguments is up to the developer of the annotated method.
+        nodes.forEach(a -> addInstruction(a, caller));
     }
 
-    private static void addSyscallInternal(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
-        // Annotation has to be either Syscalls or Syscall.
-        AnnotationNode syscallAnnotation = calledAsmMethod.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Syscalls.class))
-                        || a.desc.equals(Type.getDescriptor(Syscall.class)))
-                .findFirst().get();
-        if (syscallAnnotation.desc.equals(Type.getDescriptor(Syscalls.class))) {
-            for (Object a : (List<?>) syscallAnnotation.values.get(1)) {
-                addSingleSyscall((AnnotationNode) a, callingNeoMethod);
-            }
-        } else {
-            addSingleSyscall(syscallAnnotation, callingNeoMethod);
+    /**
+     * Checks if the list of annotations only contains one annotation that represents a
+     * {@link OpCode#SYSCALL} instruction.
+     *
+     * @param annotations The list to check.
+     * @return return true if the annotations only contain one syscall instruction.
+     */
+    private static boolean isSingleSyscallInstruction(List<AnnotationNode> annotations) {
+        if (annotations.size() != 1) {
+            return false;
+        }
+        String name = getStringAnnotationProperty(annotations.get(0),
+                INSN_ANNOTATION_INTEROPSERVICE);
+        return name != null && !InteropService.valueOf(name).equals(InteropService.DUMMY);
+    }
+
+    /**
+     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack
+     * according to the number of parameters the called method takes.
+     *
+     * @param calledAsmMethod  The method that is being called.
+     * @param callingNeoMethod The calling method that will be extended with the instruction.
+     */
+    public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
+        int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
+        if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
+            // The called method is an instance method, i.e., the instance itself ("this") is
+            // also an argument.
+            paramsCount++;
+        }
+        addReverseArguments(callingNeoMethod, paramsCount);
+    }
+
+    /**
+     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack
+     * according to the given number of parameters.
+     *
+     * @param callingNeoMethod The calling method that will be extended with the instruction.
+     * @param paramsCount      The number of parameters passed to the called method.
+     */
+    public static void addReverseArguments(NeoMethod callingNeoMethod, int paramsCount) {
+        if (paramsCount == 2) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
+        } else if (paramsCount == 3) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3));
+        } else if (paramsCount == 4) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4));
+        } else if (paramsCount > 4) {
+            addPushNumber(paramsCount, callingNeoMethod);
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN));
         }
     }
 
-    public static void addConstructorSyscall(MethodNode calledAsmMethod,
-            NeoMethod callingNeoMethod) {
-        addSyscallInternal(calledAsmMethod, callingNeoMethod);
+    private static void addInstruction(AnnotationNode annotation, NeoMethod neoMethod) {
+        // If the Instruction annotation was used without setting any of its properties the
+        // annotations values will be null. This can be treated as no operation.
+        if (annotation.values == null) {
+            return;
+        }
+
+        // First check if the `interopService` property was used and if yes set the SYSCALL.
+        String name = getStringAnnotationProperty(annotation, INSN_ANNOTATION_INTEROPSERVICE);
+        if (name != null) {
+            InteropService interopService = InteropService.valueOf(name);
+            if (!interopService.equals(InteropService.DUMMY)) {
+                byte[] hash = Numeric.hexStringToByteArray(interopService.getHash());
+                neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
+                return;
+            }
+        }
+
+        String opcodeName = getStringAnnotationProperty(annotation, INSN_ANNOTATION_OPCODE);
+        OpCode opcode = OpCode.valueOf(opcodeName);
+        if (opcode.equals(OpCode.NOP)) {
+            return;
+        }
+
+        byte[] operandPrefix = new byte[]{};
+        if (annotation.values.contains(INSN_ANNOTATION_OPERAND_PREFIX)) {
+            operandPrefix = getByteArrayAnnotationProperty(annotation,
+                    INSN_ANNOTATION_OPERAND_PREFIX);
+        }
+        byte[] operand = new byte[]{};
+        if (annotation.values.contains(INSN_ANNOTATION_OPERAND)) {
+            operand = getByteArrayAnnotationProperty(annotation, INSN_ANNOTATION_OPERAND);
+        }
+        // Correctness of operand prefix and operand are checked in the NeoInstruction.
+        neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));
     }
 
     public static void addLoadConstant(AbstractInsnNode insn, NeoMethod neoMethod) {
@@ -511,111 +632,6 @@ public class Compiler {
                 && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
     }
 
-    // Adds an opcode that reverses the ordering of the arguments on the evaluation stack
-    // according to the number of arguments the called method takes.
-    public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
-        int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
-        if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
-            // The called method is an instance method, i.e., the instance itself ("this") is
-            // also an argument.
-            paramsCount++;
-        }
-        addReverseArguments(callingNeoMethod, paramsCount);
-    }
-
-    public static void addReverseArguments(NeoMethod callingNeoMethod, int paramsCount) {
-        if (paramsCount == 2) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SWAP));
-        } else if (paramsCount == 3) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE3));
-        } else if (paramsCount == 4) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSE4));
-        } else if (paramsCount > 4) {
-            addPushNumber(paramsCount, callingNeoMethod);
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.REVERSEN));
-        }
-    }
-
-    private static void addSingleSyscall(AnnotationNode syscallAnnotation, NeoMethod neoMethod) {
-        String syscallName = ((String[]) syscallAnnotation.values.get(1))[1];
-        InteropService syscall = InteropService.valueOf(syscallName);
-        byte[] hash = Numeric.hexStringToByteArray(syscall.getHash());
-        neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, hash));
-    }
-
-    /**
-     * Assumes that the given ASM method has one or more {@link Instruction} annotations and adds
-     * those instructions to the given {@code NeoMethod}.
-     *
-     * @param asmMethod The ASM method with the annotation(s).
-     * @param neoMethod The {@code NeoMethod} that the instructions will be added to.
-     */
-    public static void addInstructionsFromAnnotation(MethodNode asmMethod, NeoMethod neoMethod) {
-        AnnotationNode insnAnnotation = asmMethod.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(Instructions.class))
-                        || a.desc.equals(Type.getDescriptor(Instruction.class)))
-                .findFirst().get();
-        if (insnAnnotation.desc.equals(Type.getDescriptor(Instructions.class))) {
-            for (Object a : (List<?>) insnAnnotation.values.get(1)) {
-                addSingleInstruction((AnnotationNode) a, neoMethod);
-            }
-        } else {
-            addSingleInstruction(insnAnnotation, neoMethod);
-        }
-    }
-
-    private static void addSingleInstruction(AnnotationNode insnAnnotation, NeoMethod neoMethod) {
-        // Setting a default value on the Instruction annotation does not have an effect on ASM.
-        // The default value does not show up in the ASM annotation node. I.e. the annotation
-        // values can be null if the default values were used.
-        if (insnAnnotation.values == null) {
-            // In this case the default value OpCode.NOP was used, so there is nothing to do.
-            return;
-        }
-        String insnName = ((String[]) insnAnnotation.values.get(1))[1];
-        OpCode opcode = OpCode.valueOf(insnName);
-        if (opcode.equals(OpCode.NOP)) {
-            // The default value OpCode.NOP was set explicitly. Nothing to do.
-            return;
-        }
-
-        byte[] operandPrefix = new byte[]{};
-        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND_PREFIX)) {
-            operandPrefix = getOperandPrefix(insnAnnotation);
-        }
-        byte[] operand = new byte[]{};
-        if (insnAnnotation.values.contains(INSTRUCTION_ANNOTATION_OPERAND)) {
-            operand = getOperand(insnAnnotation);
-        }
-        // Correctness of operand prefix and operand are checked in the NeoInstruction.
-        neoMethod.addInstruction(new NeoInstruction(opcode, operandPrefix, operand));
-    }
-
-    private static byte[] getOperandPrefix(AnnotationNode insnAnnotation) {
-        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND_PREFIX);
-    }
-
-    private static byte[] getOperand(AnnotationNode insnAnnotation) {
-        return getInstructionOperandBytes(insnAnnotation, INSTRUCTION_ANNOTATION_OPERAND);
-    }
-
-    private static byte[] getInstructionOperandBytes(AnnotationNode insnAnnotation,
-            String instructionAnnotationOperandPrefix) {
-        byte[] operandPrefix = new byte[]{};
-        int idx = insnAnnotation.values.indexOf(instructionAnnotationOperandPrefix);
-        Object prefixObj = insnAnnotation.values.get(idx + 1);
-        if (prefixObj instanceof byte[]) {
-            operandPrefix = (byte[]) prefixObj;
-        } else if (prefixObj instanceof List) {
-            List<?> prefixObjAsList = (List<?>) prefixObj;
-            operandPrefix = new byte[prefixObjAsList.size()];
-            int i = 0;
-            for (Object element : prefixObjAsList) {
-                operandPrefix[i++] = (byte) element;
-            }
-        }
-        return operandPrefix;
-    }
 
     public static void addPushNumber(long number, NeoMethod neoMethod) {
         neoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(number)));
@@ -631,14 +647,15 @@ public class Compiler {
     /**
      * Checks if the given class is an event.
      *
-     * @param classInternalName instructions under inspection.
+     * @param classDesc the descriptor of the class to check.
      * @return true, if the given class is an event. False, otherwise.
      */
-    public static boolean isEvent(String classInternalName) {
-
+    public static boolean isEvent(String classDesc) {
+        String fqn = getFullyQualifiedNameForInternalName(
+                AsmHelper.stripObjectDescriptor(classDesc));
         Class<?> clazz;
         try {
-            clazz = Class.forName(getFullyQualifiedNameForInternalName(classInternalName));
+            clazz = Class.forName(fqn);
         } catch (ClassNotFoundException e) {
             return false;
         }

@@ -76,6 +76,8 @@ public class ByteString {
     /**
      * Converts this {@code ByteString} to an integer. The bytes are read in little-endian format.
      * E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * If this byte string is null, the integer value 0 is returned.
      *
      * @return the integer.
      */

@@ -19,6 +19,7 @@ import java.util.List;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
+import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -54,14 +55,17 @@ public class HashIntegrationTest {
     }
 
     @Test
-    public void isHash160Valid() throws IOException {
+    public void isObjectValidHash160() throws IOException {
         String validHash = "0000000000000000000000000000000000000001";
         String invalidHash = "00000000000000000000000000000000000001"; // One byte short.
+        int otherValue = 10;
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(validHash),
-                byteArray(invalidHash));
+                byteArray(invalidHash), integer(otherValue));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(array.get(0).getBoolean());
         assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
     }
 
     @Test
@@ -130,15 +134,18 @@ public class HashIntegrationTest {
     }
 
     @Test
-    public void isHash256Valid() throws IOException {
+    public void isObjectValidHash256() throws IOException {
         String validHash = "0000000000000000000000000000000000000000000000000000000000000001";
         // One byte to short.
         String invalidHash = "00000000000000000000000000000000000000000000000000000000000001";
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, hash256(validHash), byteArray(invalidHash));
+        int otherValue = 10;
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(validHash),
+                byteArray(invalidHash), integer(otherValue));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(array.get(0).getBoolean());
         assertFalse(array.get(1).getBoolean());
+        assertFalse(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
     }
 
     @Test
@@ -203,7 +210,6 @@ public class HashIntegrationTest {
                 is("03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000"));
     }
 
-
     static class HashIntegrationTestContract {
 
         public static io.neow3j.devpack.Hash160 getZeroHash160() {
@@ -218,11 +224,14 @@ public class HashIntegrationTest {
             return b;
         }
 
-        public static boolean[] isHash160Valid(io.neow3j.devpack.Hash160 h1,
-                io.neow3j.devpack.Hash160 h2) {
-            boolean[] b = new boolean[2];
-            b[0] = h1.isValid();
-            b[1] = h2.isValid();
+        public static boolean[] isObjectValidHash160(Object validHash, Object invalidHash,
+                Object integer) {
+            boolean[] b = new boolean[4];
+            b[0] = io.neow3j.devpack.Hash160.isValid(validHash);
+            b[1] = io.neow3j.devpack.Hash160.isValid(invalidHash);
+            b[2] = io.neow3j.devpack.Hash160.isValid(integer);
+            byte[] buffer = ((ByteString) validHash).toByteArray();
+            b[3] = io.neow3j.devpack.Hash160.isValid(buffer);
             return b;
         }
 
@@ -261,10 +270,14 @@ public class HashIntegrationTest {
             return b;
         }
 
-        public static boolean[] isHash256Valid(Hash256 hash256_1, Hash256 hash256_2) {
-            boolean[] b = new boolean[2];
-            b[0] = hash256_1.isValid();
-            b[1] = hash256_2.isValid();
+        public static boolean[] isObjectValidHash256(Object validHash, Object invalidHash,
+                Object integer) {
+            boolean[] b = new boolean[4];
+            b[0] = io.neow3j.devpack.Hash256.isValid(validHash);
+            b[1] = io.neow3j.devpack.Hash256.isValid(invalidHash);
+            b[2] = io.neow3j.devpack.Hash256.isValid(integer);
+            byte[] buffer = ((ByteString) validHash).toByteArray();
+            b[3] = io.neow3j.devpack.Hash256.isValid(buffer);
             return b;
         }
 

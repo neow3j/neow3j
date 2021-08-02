@@ -173,6 +173,92 @@ public class AsmHelper {
     }
 
     /**
+     * Gets the annotations specified by {@code singleClass} and {@code multiClass} from the
+     * given method. This only works for annotations that have a single instance and
+     * multi-instance version, e.g., {@link io.neow3j.devpack.annotations.Instruction} and
+     * {@link io.neow3j.devpack.annotations.Instruction.Instructions}.
+     *
+     * @param method      The method to get the annotations from.
+     * @param singleClass The single instance annotation class.
+     * @param multiClass  The multi instance annotation class.
+     * @return The matching annotations found on the method.
+     */
+    @SuppressWarnings("unchecked")
+    public static List<AnnotationNode> getAnnotations(MethodNode method, Class<?> singleClass,
+            Class<?> multiClass) {
+
+        AnnotationNode node = method.invisibleAnnotations.stream()
+                .filter(a -> a.desc.equals(Type.getDescriptor(multiClass))
+                        || a.desc.equals(Type.getDescriptor(singleClass)))
+                .findFirst().get();
+
+        if (node.desc.equals(Type.getDescriptor(singleClass))) {
+            return Arrays.asList(node);
+        }
+        return (List<AnnotationNode>) node.values.get(1);
+    }
+
+    /**
+     * Gets the property's value on the given annotation.
+     *
+     * @param annotation   The annotation to look for the property on.
+     * @param propertyName The property's name.
+     * @return the property value or null if the property was not found on the annotation.
+     */
+    public static Object getAnnotationProperty(AnnotationNode annotation, String propertyName) {
+        if (annotation.values == null) {
+            return null;
+        }
+        int idx = annotation.values.indexOf(propertyName);
+        if (idx == -1) {
+            return null;
+        }
+        return annotation.values.get(idx + 1);
+    }
+
+    /**
+     * Gets the byte array property with {@code propertyName} from the given annotation.
+     * Expects the property to be a byte array or a list of bytes.
+     *
+     * @param annotation   The annotation to get the property from.
+     * @param propertyName The property's name.
+     * @return the property's value.
+     */
+    public static byte[] getByteArrayAnnotationProperty(AnnotationNode annotation,
+            String propertyName) {
+        Object property = getAnnotationProperty(annotation, propertyName);
+        byte[] bytes = new byte[]{};
+        if (property instanceof byte[]) {
+            bytes = (byte[]) property;
+        } else if (property instanceof List) {
+            List<?> prefixObjAsList = (List<?>) property;
+            bytes = new byte[prefixObjAsList.size()];
+            int i = 0;
+            for (Object element : prefixObjAsList) {
+                bytes[i++] = (byte) element;
+            }
+        }
+        return bytes;
+    }
+
+    /**
+     * Gets the value of a string property with {@code propertyName} on the given annotation.
+     *
+     * @param annotation   The annotation to get the property from.
+     * @param propertyName The name of the string property.
+     * @return The property value;
+     */
+    public static String getStringAnnotationProperty(AnnotationNode annotation,
+            String propertyName) {
+
+        Object property = getAnnotationProperty(annotation, propertyName);
+        if (property == null) {
+            return null;
+        }
+        return ((String[])property)[1];
+    }
+
+    /**
      * Prints the JVM instructions for the given class.
      *
      * @param fullyQualifiedClassName The fully qualified name of the class to print the
@@ -284,12 +370,17 @@ public class AsmHelper {
     }
 
     /**
-     * Gets the internal name for the given descriptor.
+     * Strips the given object descriptor of the starting 'L' and ending ';' characters if they are
+     * present. Sometimes object descriptors come with those characters but not always. If those
+     * characters are not present, the unchanged string is returned.
      *
-     * @param descriptor The descriptor to convert.
-     * @return return the internal name.
+     * @param desc The object descriptor to strip.
+     * @return the stripped object descriptor.
      */
-    public static String getInternalNameForDescriptor(String descriptor) {
-        return Type.getType(descriptor).getInternalName();
+    public static String stripObjectDescriptor(String desc) {
+        if (desc.charAt(0) == 'L') {
+            return desc.substring(1, desc.length() - 1);
+        }
+        return desc;
     }
 }

@@ -1,28 +1,26 @@
 package io.neow3j.protocol.core;
 
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.test.TestProperties;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
 import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.TestProperties;
+import io.neow3j.transaction.AccountSigner;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Date;
 
-import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.WitnessScope;
-import org.junit.Test;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.string;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 public class RequestTest extends RequestTester {
 
@@ -337,13 +335,9 @@ public class RequestTest extends RequestTester {
                         hash160(new Hash160(
                                 "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
-                new Signer.Builder()
-                        .account(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
-                        .scopes(WitnessScope.CALLED_BY_ENTRY, WitnessScope.CUSTOM_CONTRACTS,
-                                WitnessScope.CUSTOM_GROUPS)
-                        .allowedContracts(new Hash160(TestProperties.neoTokenHash()))
-                        .allowedGroups(pubKey)
-                        .build()
+                AccountSigner.calledByEntry(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .setAllowedContracts(new Hash160(TestProperties.neoTokenHash()))
+                        .setAllowedGroups(pubKey)
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +

@@ -3,7 +3,6 @@ package io.neow3j.devpack;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.types.StackItemType;
 
 import static io.neow3j.script.InteropService.SYSTEM_STORAGE_DELETE;
@@ -16,6 +15,8 @@ import static io.neow3j.script.InteropService.SYSTEM_STORAGE_PUT;
 /**
  * Provides a set of methods to insert, query, and delete data in the persistent storage of smart
  * contracts.
+ * <p>
+ * Note that the size limit for storage keys and values is 64 bytes and 65535 bytes, respectively.
  */
 public class Storage {
 
@@ -24,7 +25,7 @@ public class Storage {
      *
      * @return the storage context.
      */
-    @Syscall(SYSTEM_STORAGE_GETCONTEXT)
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
     public static native StorageContext getStorageContext();
 
     /**
@@ -32,7 +33,7 @@ public class Storage {
      *
      * @return the read-only storage context.
      */
-    @Syscall(SYSTEM_STORAGE_GETREADONLYCONTEXT)
+    @Instruction(interopService = SYSTEM_STORAGE_GETREADONLYCONTEXT)
     public static native StorageContext getReadOnlyContext();
 
     /**
@@ -42,7 +43,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key.
      */
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, byte[] key);
 
     /**
@@ -55,7 +56,7 @@ public class Storage {
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native byte[] getByteArray(StorageContext context, byte[] key);
 
     /**
@@ -68,7 +69,7 @@ public class Storage {
      * @return the value corresponding to the given key as a string.
      */
     @Instruction()
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native String getString(StorageContext context, byte[] key);
 
     /**
@@ -89,7 +90,7 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, byte[] key);
 
     /**
@@ -99,7 +100,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key.
      */
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, String key);
 
     /**
@@ -112,7 +113,7 @@ public class Storage {
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native byte[] getByteArray(StorageContext context, String key);
 
     /**
@@ -125,7 +126,7 @@ public class Storage {
      * @return the value corresponding to the given key as a string.
      */
     @Instruction()
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native String getString(StorageContext context, String key);
 
     /**
@@ -146,7 +147,7 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, String key);
 
     /**
@@ -156,7 +157,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key.
      */
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, ByteString key);
 
     /**
@@ -169,7 +170,7 @@ public class Storage {
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native byte[] getByteArray(StorageContext context, ByteString key);
 
     /**
@@ -182,7 +183,7 @@ public class Storage {
      * @return the value corresponding to the given key as a string.
      */
     @Instruction()
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native String getString(StorageContext context, ByteString key);
 
     /**
@@ -203,7 +204,7 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Syscall(SYSTEM_STORAGE_GET)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, ByteString key);
 
     /**
@@ -213,7 +214,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, byte[] value);
 
     /**
@@ -223,7 +224,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, int value);
 
     /**
@@ -233,7 +234,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, ByteString value);
 
     /**
@@ -243,7 +244,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, String value);
 
     /**
@@ -253,7 +254,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, Hash160 value);
 
     /**
@@ -263,7 +264,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, Hash256 value);
 
     /**
@@ -273,7 +274,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, byte[] value);
 
     /**
@@ -283,7 +284,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, int value);
 
     /**
@@ -293,7 +294,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, String value);
 
     /**
@@ -303,7 +304,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, ByteString value);
 
     /**
@@ -313,7 +314,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, Hash160 value);
 
     /**
@@ -323,7 +324,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, Hash256 value);
 
     /**
@@ -333,7 +334,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, byte[] value);
 
     /**
@@ -343,7 +344,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, int value);
 
     /**
@@ -353,7 +354,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, String value);
 
     /**
@@ -363,7 +364,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, ByteString value);
 
     /**
@@ -373,7 +374,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, Hash160 value);
 
     /**
@@ -383,7 +384,7 @@ public class Storage {
      * @param key     The key.
      * @param value   The value to store.
      */
-    @Syscall(SYSTEM_STORAGE_PUT)
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, Hash256 value);
 
     /**
@@ -392,7 +393,7 @@ public class Storage {
      * @param context The storage context to delete from.
      * @param key     The key to delete.
      */
-    @Syscall(SYSTEM_STORAGE_DELETE)
+    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, byte[] key);
 
     /**
@@ -401,7 +402,7 @@ public class Storage {
      * @param context The storage context to delete from.
      * @param key     The key to delete.
      */
-    @Syscall(SYSTEM_STORAGE_DELETE)
+    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, ByteString key);
 
     /**
@@ -410,7 +411,7 @@ public class Storage {
      * @param context The storage context to delete from.
      * @param key     The key to delete.
      */
-    @Syscall(SYSTEM_STORAGE_DELETE)
+    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, String key);
 
     /**
@@ -447,7 +448,7 @@ public class Storage {
      *                    {@link FindOptions}.
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
-    @Syscall(SYSTEM_STORAGE_FIND)
+    @Instruction(interopService = SYSTEM_STORAGE_FIND)
     public static native Iterator find(StorageContext context, byte[] prefix, byte findOptions);
 
     /**
@@ -484,7 +485,7 @@ public class Storage {
      *                    {@link FindOptions}.
      * @return an iterator over key, values, or key-value pairs found under the given prefix.
      */
-    @Syscall(SYSTEM_STORAGE_FIND)
+    @Instruction(interopService = SYSTEM_STORAGE_FIND)
     public static native Iterator find(StorageContext context, ByteString prefix, byte findOptions);
 
     /**
@@ -521,7 +522,7 @@ public class Storage {
      *                    {@link FindOptions}.
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
-    @Syscall(SYSTEM_STORAGE_FIND)
+    @Instruction(interopService = SYSTEM_STORAGE_FIND)
     public static native Iterator find(StorageContext context, String prefix, byte findOptions);
 
 }

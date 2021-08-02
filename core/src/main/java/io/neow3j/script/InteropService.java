@@ -43,15 +43,18 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 8),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
     SYSTEM_RUNTIME_BURNGAS("System.Runtime.BurnGas", 1 << 4),
+    SYSTEM_RUNTIME_GETNETWORK("System.Runtime.GetNetwork", 1 << 3),
+    SYSTEM_RUNTIME_GETRANDOM("System.Runtime.GetRandom", 1 << 4),
 
     SYSTEM_STORAGE_GETCONTEXT("System.Storage.GetContext", 1 << 4),
     SYSTEM_STORAGE_GETREADONLYCONTEXT("System.Storage.GetReadOnlyContext", 1 << 4),
     SYSTEM_STORAGE_ASREADONLY("System.Storage.AsReadOnly", 1 << 4),
     SYSTEM_STORAGE_GET("System.Storage.Get", 1 << 15),
     SYSTEM_STORAGE_FIND("System.Storage.Find", 1 << 15),
-    SYSTEM_STORAGE_PUT("System.Storage.Put", 0),
-    SYSTEM_STORAGE_PUTEX("System.Storage.PutEx", 0),
-    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 0);
+    SYSTEM_STORAGE_PUT("System.Storage.Put", 1 << 15),
+    SYSTEM_STORAGE_DELETE("System.Storage.Delete", 1 << 15),
+
+    DUMMY("Dummy", 0);
 
     private final String name;
 

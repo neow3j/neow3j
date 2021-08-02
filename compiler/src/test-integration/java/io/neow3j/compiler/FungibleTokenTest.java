@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -76,6 +77,7 @@ public class FungibleTokenTest {
                 is(Numeric.reverseHexString(neoTokenHash())));
     }
 
+    @Permission(contract = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5", methods = "*")
     static class FungibleTokenTestContract {
 
         public static String callSymbolMethodOfFungibleToken() {

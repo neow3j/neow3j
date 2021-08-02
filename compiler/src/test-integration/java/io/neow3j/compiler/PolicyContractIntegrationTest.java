@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
@@ -80,12 +81,12 @@ public class PolicyContractIntegrationTest {
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(300));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(99));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(),
                 is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
-        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(300)));
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(99)));
     }
 
     @Test
@@ -106,6 +107,7 @@ public class PolicyContractIntegrationTest {
                 is(Numeric.reverseHexString(policyContractHash())));
     }
 
+    @Permission(contract = "0xcc5e4edd9f5f8dba8bb65734541df7a1c081c67b", methods = "*")
     static class PolicyContractIntegrationTestContract {
 
         public static int[] setAndGetFeePerByte(int newFee) {
