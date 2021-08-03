@@ -1,0 +1,3 @@
+oracle enable genesis
+contract deploy ./OracleTestContract.nef genesis
+contract invoke oracle-request-invoke.json genesis
