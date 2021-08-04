@@ -13,8 +13,6 @@ import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.contracts.DivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -23,7 +21,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
@@ -73,7 +70,7 @@ public class DivisibleNFTIntegrationTest {
                 is(38));
     }
 
-    @Permission(contract = "b76b9a9512cdc1a47737973f936c1d0341e7ae18")
+    @Permission(contract = "*")
     static class DivisibleNFTTestContract {
 
         public static boolean testTransfer(Hash160 from, Hash160 to, int amount,
@@ -120,7 +117,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("b76b9a9512cdc1a47737973f936c1d0341e7ae18")
+    @ContractHash("60d6e924d7dfe4dc6c4ec9ad56e5e437324c8536")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

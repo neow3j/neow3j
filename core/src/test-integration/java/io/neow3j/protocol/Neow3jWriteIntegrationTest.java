@@ -1,9 +1,5 @@
 package io.neow3j.protocol;
 
-import io.neow3j.test.NeoTestContainer;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-import io.neow3j.types.NeoVMStateType;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
@@ -14,6 +10,10 @@ import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.NeoTestContainer;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -23,15 +23,14 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.test.TestProperties.committeeAccountAddress;
-import static io.neow3j.test.TestProperties.defaultAccountAddress;
-import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.types.ContractParameter.hash160;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -58,7 +57,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Before
     public void setUp() throws IOException {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests

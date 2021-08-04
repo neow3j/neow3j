@@ -40,7 +40,7 @@ public class NonDivisibleNFTIntegrationTest {
         assertThat(owner, is(io.neow3j.types.Hash160.ZERO));
     }
 
-    @Permission(contract = "d7f96d30f3871ff2e576e8a3309dabfa36559add")
+    @Permission(contract = "*")
     static class NonDivisibleNFTTestContract {
 
         public static Hash160 testOwnerOf(ByteString tokenId) {
@@ -57,7 +57,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("d7f96d30f3871ff2e576e8a3309dabfa36559add")
+    @ContractHash("3bd33b8f823eebaed33e27dd33536b38ef7b6909")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

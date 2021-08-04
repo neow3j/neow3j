@@ -1,6 +1,16 @@
 package io.neow3j.contract;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.NeoTestContainer;
+import io.neow3j.types.Hash256;
+import io.neow3j.wallet.Account;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.math.BigInteger;
+
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
@@ -14,17 +24,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-import io.neow3j.test.NeoTestContainer;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.types.Hash256;
-import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
-
-import java.math.BigInteger;
-
 public class PolicyContractIntegrationTest {
 
     private static Neow3j neow3j;
@@ -35,7 +34,7 @@ public class PolicyContractIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         policyContract = new PolicyContract(neow3j);
         // make a transaction that can be used for the tests

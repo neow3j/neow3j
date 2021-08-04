@@ -1,7 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.ClassUtils;
+import org.objectweb.asm.Type;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.objectweb.asm.Type;
+import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DebugInfo {
@@ -126,9 +125,9 @@ public class DebugInfo {
                     .append(neoMethod.getStartAddress() + insn.getAddress())
                     .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
-                    .append(":0-")
+                    .append(":1-")
                     .append(insn.getLineNr())
-                    .append(":0")
+                    .append(":1")
                     .toString());
         }
         return sequencePoints;

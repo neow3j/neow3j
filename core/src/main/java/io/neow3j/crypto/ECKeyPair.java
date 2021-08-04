@@ -34,7 +34,6 @@ import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
 
-
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
  */
@@ -49,7 +48,8 @@ public class ECKeyPair {
 
     public ECKeyPair(ECPrivateKey privateKey, ECPublicKey publicKey) {
         if (privateKey == null) {
-            throw new IllegalArgumentException("A ECKeyPair cannot be created without a private key.");
+            throw new IllegalArgumentException("A ECKeyPair cannot be created without a private " +
+                    "key.");
         }
         this.privateKey = privateKey;
         this.publicKey = publicKey;
@@ -330,12 +330,13 @@ public class ECKeyPair {
 
         /**
          * Creates a new instance from the given encoded public key in hex format. The public key
-         * must be encoded as defined in section 2.3.3 of <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
+         * must be encoded as defined in section 2.3.3 of
+         * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
          * It can be in compressed or uncompressed format.
          *
          * @param publicKey The public key in hex format.
          */
-        public ECPublicKey (String publicKey) {
+        public ECPublicKey(String publicKey) {
             this(hexStringToByteArray(publicKey));
         }
 
