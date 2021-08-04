@@ -4,9 +4,9 @@ import io.neow3j.protocol.core.Response;
 
 import java.util.List;
 
-public class NeoGetNativeContracts extends Response<List<NativeContractState>> {
+public class NeoExpressGetNep17Contracts extends Response<List<Nep17Contract>> {
 
-    public List<NativeContractState> getNativeContracts() {
+    public List<Nep17Contract> getNep17Contracts() {
         return getResult();
     }
 

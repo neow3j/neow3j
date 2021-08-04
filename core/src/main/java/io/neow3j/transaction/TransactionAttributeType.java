@@ -14,9 +14,7 @@ public enum TransactionAttributeType {
      * This attribute is used by oracle nodes to append oracle responses to a transaction.
      */
     ORACLE_RESPONSE(TransactionAttributeType.ORACLE_RESPONSE_VALUE, 0x11,
-            // We don't support the OracleResponse attribute for transaction building, therefore,
-            // the generic `TransactionAttribute` class is used here.
-            TransactionAttribute.class);
+            OracleResponseAttribute.class);
 
     public static final String HIGH_PRIORITY_VALUE = "HighPriority";
     public static final String ORACLE_RESPONSE_VALUE = "OracleResponse";

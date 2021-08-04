@@ -6,8 +6,6 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import static io.neow3j.test.TestProperties.neo3PrivateNetContainerImg;
-
 public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
     static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
@@ -30,9 +28,14 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     }
 
     public NeoTestContainer(String configFileSource) {
-        super(DockerImageName.parse(neo3PrivateNetContainerImg()));
-        withClasspathResourceMapping(configFileSource, CONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY);
+        super(DockerImageName.parse(TestProperties.neo3PrivateNetContainerImg()));
+        if (configFileSource != null) {
+            withClasspathResourceMapping(configFileSource, CONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY);
+        } else {
+            withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION,
+                    BindMode.READ_ONLY);
+        }
         withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
                 WALLET_FILE_DESTINATION);
         withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
@@ -42,7 +45,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         withExposedPorts(EXPOSED_JSONRPC_PORT);
         waitingFor(Wait.forListeningPort());
         try {
-            withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION,
+            withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE,
+                    ORACLECONFIG_FILE_DESTINATION,
                     BindMode.READ_ONLY);
         } catch (IllegalArgumentException e) {
             System.out.println("OracleService config file not found at "
@@ -54,8 +58,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         return "responses/" + testClassName + "/" + methodName + ".json";
     }
 
-    public static String getNodeUrl(NeoTestContainer container) {
-        return "http://" + container.getContainerIpAddress() +
-                ":" + container.getMappedPort(EXPOSED_JSONRPC_PORT);
+    public String getNodeUrl() {
+        return "http://" + getContainerIpAddress() + ":" + getMappedPort(EXPOSED_JSONRPC_PORT);
     }
+
 }

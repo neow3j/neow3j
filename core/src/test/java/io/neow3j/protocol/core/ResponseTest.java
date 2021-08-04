@@ -15,10 +15,25 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ContractStorageEntry;
+import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
+import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
+import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
+import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
+import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
+import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.OracleRequest;
+import io.neow3j.protocol.core.response.OracleResponse;
+import io.neow3j.protocol.core.response.PopulatedBlocks;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -50,7 +65,6 @@ import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
 import io.neow3j.protocol.core.response.NeoGetWalletBalance;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetContractState;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -92,6 +106,7 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 
 import org.junit.Test;
@@ -762,11 +777,10 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
-        List<ContractState> nativeContracts = getNativeContracts.getNativeContracts();
+        List<NativeContractState> nativeContracts = getNativeContracts.getNativeContracts();
         assertThat(nativeContracts, hasSize(3));
-        ContractState c1 = nativeContracts.get(0);
+        NativeContractState c1 = nativeContracts.get(0);
         assertThat(c1.getId(), is(-6));
-        assertNull(c1.getUpdateCounter());
         assertThat(c1.getHash(), is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
@@ -784,7 +798,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(c1.getUpdateHistory(), hasSize(1));
         assertThat(c1.getUpdateHistory(), contains(0));
 
-        ContractState c2 = nativeContracts.get(1);
+        NativeContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId(), is(-8));
         assertThat(c2.getHash(), is(new Hash160("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")));
         ContractNef nef2 = c2.getNef();
@@ -801,7 +815,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
         assertThat(c2.getUpdateHistory(), contains(0));
 
-        ContractState c3 = nativeContracts.get(2);
+        NativeContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId(), is(-9));
         assertThat(c3.getHash(), is(new Hash160("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")));
         ContractNef nef3 = c3.getNef();
@@ -881,6 +895,7 @@ public class ResponseTest extends ResponseTester {
         ContractState contractState = getContractState.getContractState();
         assertThat(contractState, is(notNullValue()));
         assertThat(contractState.getId(), is(-4));
+        assertThat(contractState.getUpdateCounter(), is(0));
         assertThat(contractState.getHash(),
                 is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
         assertThat(contractState.getNef().getMagic(), is(860243278L));
@@ -909,8 +924,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(),
-                is("hash"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("hash"));
         assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
                 is(ContractParameterType.HASH256));
         assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
@@ -947,8 +961,65 @@ public class ResponseTest extends ResponseTester {
         ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
                 null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
         ContractState expectedEqual =
-                new ContractState(id, updateCounter, hash, nef, contractManifest, null);
+                new ContractState(id, updateCounter, hash, nef, contractManifest);
         assertThat(contractState, is(expectedEqual));
+    }
+
+    @Test
+    public void testExpressListContracts() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"hash\": \"0xda65b600f7124ce6c79950c1772a36403104f2be\",\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"LedgerContract\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"features\": {},\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"currentHash\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Hash256\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": []\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            }\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressListContracts listContracts = deserialiseResponse(NeoExpressListContracts.class);
+
+        List<ExpressContractState> contracts = listContracts.getContracts();
+        assertThat(contracts.size(), is(1));
+
+        ExpressContractState expressContractState = contracts.get(0);
+        assertThat(expressContractState.getHash(),
+                is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
+
+        List<ContractMethod> methods = asList(new ContractMethod("currentHash", emptyList(), 0,
+                ContractParameterType.HASH256, true));
+        ContractABI abi = new ContractABI(methods, emptyList());
+        ContractManifest manifest = new ContractManifest("LedgerContract", emptyList(),
+                new HashMap<>(), emptyList(), abi, asList(new ContractPermission("*", asList("*"))),
+                emptyList(), null);
+        assertThat(expressContractState.getManifest(), is(manifest));
     }
 
     @Test
@@ -1148,7 +1219,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(attributes.get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
         assertThat(attributes.get(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
-        OracleResponseAttribute oracleResp = (OracleResponseAttribute) attributes.get(1);
+        OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
+        OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(),
                 is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
@@ -2711,6 +2783,211 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(stateHeight.getLocalRootIndex(), is(212L));
         assertThat(stateHeight.getValidatedRootIndex(), is(211L));
+    }
+
+    // Neo-express related tests
+
+    @Test
+    public void testExpressGetPopulatedBlocks() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"cacheId\": \"637613615288087170\",\n" +
+                "        \"blocks\": [\n" +
+                "            1129,\n" +
+                "            1127,\n" +
+                "            0\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoExpressGetPopulatedBlocks expressGetPopulatedBlocks =
+                deserialiseResponse(NeoExpressGetPopulatedBlocks.class);
+        PopulatedBlocks populatedBlocks = expressGetPopulatedBlocks.getPopulatedBlocks();
+
+        assertThat(populatedBlocks.getCacheId(), is("637613615288087170"));
+        assertThat(populatedBlocks.getBlocks(), hasSize(3));
+        assertThat(populatedBlocks.getBlocks().get(0), is(1129));
+        assertThat(populatedBlocks.getBlocks().get(1), is(1127));
+        assertThat(populatedBlocks.getBlocks().get(2), is(0));
+    }
+
+    @Test
+    public void testExpressGetNep17Contracts() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"scriptHash\": \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\",\n" +
+                "            \"symbol\": \"NEO\",\n" +
+                "            \"decimals\": 0\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"scriptHash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
+                "            \"symbol\": \"GAS\",\n" +
+                "            \"decimals\": 8\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressGetNep17Contracts expressGetNep17Contracts =
+                deserialiseResponse(NeoExpressGetNep17Contracts.class);
+
+        List<Nep17Contract> nep17Contracts = expressGetNep17Contracts.getNep17Contracts();
+        assertThat(nep17Contracts, hasSize(2));
+        assertThat(nep17Contracts.get(0).getScriptHash(),
+                is(new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")));
+        assertThat(nep17Contracts.get(0).getSymbol(), is("NEO"));
+        assertThat(nep17Contracts.get(0).getDecimals(), is(0));
+        assertThat(nep17Contracts.get(1).getScriptHash(),
+                is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
+        assertThat(nep17Contracts.get(1).getSymbol(), is("GAS"));
+        assertThat(nep17Contracts.get(1).getDecimals(), is(8));
+
+        assertThat(nep17Contracts.get(0),
+                is(new Nep17Contract(
+                        new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"), "NEO", 0)));
+    }
+
+    @Test
+    public void testGetContractStorage() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"key\": \"01\",\n" +
+                "            \"value\": \"\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0b\",\n" +
+                "            \"value\": \"00e1f505\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0d\",\n" +
+                "            \"value\": \"00e8764817\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"0e\",\n" +
+                "            \"value\": \"40014102282102c2f3870c8805f83881e93cddaac2b2130ad4a2ca44a327ac64e18322862b19ee2100\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"14b65d362f086196286c2cd6868afbe0cf75f732a3\",\n" +
+                "            \"value\": \"4103210400e1f505210000\"\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"key\": \"1d00000000\",\n" +
+                "            \"value\": \"0065cd1d\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressGetContractStorage expressGetContractStorage =
+                deserialiseResponse(NeoExpressGetContractStorage.class);
+
+        List<ContractStorageEntry> contractStorage = expressGetContractStorage.getContractStorage();
+        assertThat(contractStorage, hasSize(6));
+
+        ContractStorageEntry storageEntry3 = contractStorage.get(2);
+        assertThat(storageEntry3.getKey(), is("0d"));
+        assertThat(storageEntry3.getValue(), is("00e8764817"));
+
+        ContractStorageEntry storageEntry6 = contractStorage.get(5);
+        assertThat(storageEntry6.getKey(), is("1d00000000"));
+        assertThat(storageEntry6.getValue(), is("0065cd1d"));
+    }
+
+    @Test
+    public void testExpressCreateCheckpoint() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"checkpoint-1.neoxp-checkpoint\"\n" +
+                "}"
+        );
+
+        NeoExpressCreateCheckpoint expressCreateCheckpoint =
+                deserialiseResponse(NeoExpressCreateCheckpoint.class);
+
+        String filename = expressCreateCheckpoint.getFilename();
+        assertThat(filename, is("checkpoint-1.neoxp-checkpoint"));
+    }
+
+    @Test
+    public void testExpressListOracleRequests() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"requestid\": 0,\n" +
+                "            \"originaltxid\": \"0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a\",\n" +
+                "            \"gasforresponse\": 1000000000,\n" +
+                "            \"url\": \"https://www.neow3j.io\",\n" +
+                "            \"filter\": \"$.nftinfo\",\n" +
+                "            \"callbackcontract\": \"0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f\",\n" +
+                "            \"callbackmethod\": \"storeResponse\",\n" +
+                "            \"userdata\": \"KAA=\"\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
+        );
+
+        NeoExpressListOracleRequests neoExpressListOracleRequests =
+                deserialiseResponse(NeoExpressListOracleRequests.class);
+        List<OracleRequest> oracleRequests = neoExpressListOracleRequests.getOracleRequests();
+
+        assertThat(oracleRequests, hasSize(1));
+        OracleRequest expectedRequest = new OracleRequest(BigInteger.ZERO,
+                new Hash256("0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a"),
+                BigInteger.valueOf(1000000000), "https://www.neow3j.io", "$.nftinfo",
+                new Hash160("0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f"), "storeResponse", "KAA=");
+
+        OracleRequest oracleRequest = oracleRequests.get(0);
+        assertThat(oracleRequest, is(expectedRequest));
+        assertThat(oracleRequest.getRequestId(), is(BigInteger.ZERO));
+        assertThat(oracleRequest.getOriginalTransactionHash(),
+                is(new Hash256("0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a")));
+        assertThat(oracleRequest.getGasForResponse(), is(BigInteger.valueOf(1000000000)));
+        assertThat(oracleRequest.getUrl(), is("https://www.neow3j.io"));
+        assertThat(oracleRequest.getFilter(), is("$.nftinfo"));
+        assertThat(oracleRequest.getCallbackContract(),
+                is(new Hash160("0xf18a0ccda4947ba1cbeaf5a7f579c385ed2cf87f")));
+        assertThat(oracleRequest.getCallbackMethod(), is("storeResponse"));
+        assertThat(oracleRequest.getUserData(), is("KAA="));
+    }
+
+    @Test
+    public void testExpressCreateOracleResponseTx() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6\"\n" +
+                "}");
+
+        NeoExpressCreateOracleResponseTx neoExpressCreateOracleResponseTx =
+                deserialiseResponse(NeoExpressCreateOracleResponseTx.class);
+        String oracleResponseTx = neoExpressCreateOracleResponseTx.getOracleResponseTx();
+        assertThat(oracleResponseTx, is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
+    }
+
+    @Test
+    public void testExpressShutdown() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"process-id\": 73625\n" +
+                "    }\n" +
+                "}");
+
+        NeoExpressShutdown neoExpressShutdown = deserialiseResponse(NeoExpressShutdown.class);
+        assertThat(neoExpressShutdown.getExpressShutdown().getProcessId(), is(73625));
     }
 
 }
