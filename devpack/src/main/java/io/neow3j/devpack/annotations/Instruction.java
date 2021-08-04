@@ -64,9 +64,9 @@ public @interface Instruction {
      * {@code @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)}
      * {@code public static void method() {...}}
      * </pre>
-     * If you only use an instruction with a syscall, the compiler will take care of reversing the
-     * arguments automatically. E.g., the following will work without having to add an
-     * instruction for reversing the parameters.
+     * If you only use one single instruction annotation that holds a syscall, the compiler will
+     * take care of reversing the arguments automatically. E.g., the following will work without
+     * having to add an instruction for reversing the parameters.
      * <pre>
      * {@code @Instruction(interopService = InteropService.SYSTEM_RUNTIME_NOTIFY)}
      * {@code public static void method(String eventName, Object[] state) {...}}
