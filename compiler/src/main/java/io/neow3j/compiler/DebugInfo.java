@@ -1,7 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
-
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.ClassUtils;
+import org.objectweb.asm.Type;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -16,7 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.objectweb.asm.Type;
+import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DebugInfo {
@@ -28,6 +27,11 @@ public class DebugInfo {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> documents;
+
+    @JsonProperty("static-variables")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<String> staticVariables;
 
     @JsonProperty("methods")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -43,11 +47,12 @@ public class DebugInfo {
     }
 
     public DebugInfo(Hash160 hash, List<String> documents,
-            List<Method> methods, List<Event> events) {
+            List<Method> methods, List<Event> events, List<String> staticVariables) {
         this.hash = hash.toString();
         this.documents = documents;
         this.methods = methods;
         this.events = events;
+        this.staticVariables = staticVariables;
     }
 
     public String getHash() {
@@ -64,6 +69,10 @@ public class DebugInfo {
 
     public List<Event> getEvents() {
         return events;
+    }
+
+    public List<String> getStaticVariables() {
+        return staticVariables;
     }
 
     public static DebugInfo buildDebugInfo(CompilationUnit compUnit) {
@@ -98,8 +107,12 @@ public class DebugInfo {
                 .map(NeoEvent::getAsDebugInfoEvent)
                 .collect(Collectors.toList());
 
+        List<String> contractVars = compUnit.getNeoModule().getContractVariables().stream()
+                .map(NeoContractVariable::getAsDebugInfoVariable)
+                .collect(Collectors.toList());
+
         Hash160 hash160 = Hash160.fromScript(compUnit.getNefFile().getScript());
-        return new DebugInfo(hash160, documents, methods, events);
+        return new DebugInfo(hash160, documents, methods, events, contractVars);
     }
 
     private static List<String> collectSequencePoints(NeoMethod neoMethod, int documentIndex) {
@@ -112,9 +125,9 @@ public class DebugInfo {
                     .append(neoMethod.getStartAddress() + insn.getAddress())
                     .append("[").append(documentIndex).append("]")
                     .append(insn.getLineNr())
-                    .append(":0-")
+                    .append(":1-")
                     .append(insn.getLineNr())
-                    .append(":0")
+                    .append(":1")
                     .toString());
         }
         return sequencePoints;

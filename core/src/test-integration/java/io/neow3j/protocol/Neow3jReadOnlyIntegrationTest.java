@@ -1,6 +1,60 @@
 package io.neow3j.protocol;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import io.neow3j.crypto.Base64;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoAddress;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
+import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
+import io.neow3j.protocol.core.response.NeoGetNep17Transfers.Nep17TransferWrapper;
+import io.neow3j.protocol.core.response.NeoGetNextBlockValidators.Validator;
+import io.neow3j.protocol.core.response.NeoGetPeers.Peers;
+import io.neow3j.protocol.core.response.NeoGetStateHeight.StateHeight;
+import io.neow3j.protocol.core.response.NeoGetStateRoot.StateRoot;
+import io.neow3j.protocol.core.response.NeoGetUnclaimedGas.GetUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoListPlugins.Plugin;
+import io.neow3j.protocol.core.response.NeoNetworkFee;
+import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.Transaction;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.Signer;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.types.StackItemType;
+import org.junit.BeforeClass;
+import org.junit.ClassRule;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.List;
+
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.contractManagementHash;
@@ -10,15 +64,10 @@ import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
-import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.transaction.Signer.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
@@ -41,56 +90,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.test.NeoTestContainer;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-import io.neow3j.script.ScriptBuilder;
-import io.neow3j.crypto.Base64;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.NeoVMStateType;
-import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
-import io.neow3j.protocol.core.response.ContractNef;
-import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.protocol.core.response.NeoAddress;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoBlock;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
-import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
-import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
-import io.neow3j.protocol.core.response.NeoGetNep17Transfers.Nep17TransferWrapper;
-import io.neow3j.protocol.core.response.NeoGetNextBlockValidators.Validator;
-import io.neow3j.protocol.core.response.NeoGetPeers.Peers;
-import io.neow3j.protocol.core.response.NeoGetStateHeight.StateHeight;
-import io.neow3j.protocol.core.response.NeoGetStateRoot.StateRoot;
-import io.neow3j.protocol.core.response.NeoGetUnclaimedGas.GetUnclaimedGas;
-import io.neow3j.protocol.core.response.NeoGetVersion;
-import io.neow3j.protocol.core.response.NeoListPlugins.Plugin;
-import io.neow3j.protocol.core.response.NeoNetworkFee;
-import io.neow3j.protocol.core.response.NeoSendToAddress;
-import io.neow3j.protocol.core.response.NeoValidateAddress;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.protocol.http.HttpService;
-import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.WitnessScope;
-
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
 
 // This test class uses a static container which is started once for the whole class and reused in
 // every test. Therefore only tests that don't need a new and clean blockchain should be added here.
@@ -119,12 +118,12 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String INVOKE_BALANCE = "balanceOf";
 
     protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
-    private static final Hash256 BLOCK_0_HASH =
-            new Hash256("0x6e18850de40f63719b96a60f1700b71236b33ab80df9aa0f8b3ce2c2aa8d0a9c");
+    private static Hash256 BLOCK_0_HASH =
+            new Hash256("442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014");
     protected static final String BLOCK_0_HEADER_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAf2XUNDYnCLJV8OBoVr3LXOmdhQUBAAER";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAARE=";
     protected static final String BLOCK_0_RAW_STRING =
-            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAAAAAAAAf2XUNDYnCLJV8OBoVr3LXOmdhQUBAAERAA==";
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAAREA";
 
     // Total supply of NEO tokens.
     static final int NEO_TOTAL_SUPPLY = 100000000;
@@ -139,7 +138,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
@@ -325,15 +324,14 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNativeContracts() throws IOException {
-        List<ContractState> nativeContracts = getNeow3j()
+        List<NativeContractState> nativeContracts = getNeow3j()
                 .getNativeContracts()
                 .send()
                 .getNativeContracts();
 
         assertThat(nativeContracts, hasSize(9));
-        ContractState contractState1 = nativeContracts.get(0);
+        NativeContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId(), is(-1));
-        assertNull(contractState1.getUpdateCounter());
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -369,9 +367,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
 
-        ContractState contractState8 = nativeContracts.get(8);
+        NativeContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId(), is(-9));
-        assertNull(contractState8.getUpdateCounter());
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
         ContractNef nef8 = contractState8.getNef();
@@ -712,11 +709,8 @@ public class Neow3jReadOnlyIntegrationTest {
                 hash160(new Hash160(defaultAccountScriptHash())),
                 integer(1),
                 integer(1));
-        Signer signer = new Signer.Builder()
-                .account(new Hash160(committeeAccountScriptHash()))
-                .scopes(WitnessScope.CALLED_BY_ENTRY)
-                .allowedContracts(NEO_HASH)
-                .build();
+        Signer signer = AccountSigner.calledByEntry(new Hash160(committeeAccountScriptHash()))
+                .setAllowedContracts(NEO_HASH);
 
         InvocationResult invoc = getNeow3j()
                 .invokeFunction(NEO_HASH, "transfer", params, signer)
@@ -743,7 +737,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .contractCall(new Hash160(neoTokenHash()), "transfer", params)
                 .toArray();
 
-        Signer signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
+        AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
                 .invokeScript(Base64.encode(script), signer)
                 .send()
@@ -1014,7 +1008,7 @@ public class Neow3jReadOnlyIntegrationTest {
     // StateService
 
     @Test
-    public void testGetStateRoot() throws IOException{
+    public void testGetStateRoot() throws IOException {
         StateRoot stateRoot = getNeow3j()
                 .getStateRoot(BigInteger.ZERO)
                 .send()
@@ -1023,7 +1017,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
         assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "0x2094a27e9aa3b4ed3961b6e95b1a609242224a50382c5b1ce42dd52067c8c47b")));
+                "6c72cd3171922509bca520ba510dcd9fa8515121a40ba780e44ee6ebf5af7ba3")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 

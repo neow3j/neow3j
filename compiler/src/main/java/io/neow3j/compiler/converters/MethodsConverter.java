@@ -8,13 +8,11 @@ import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.contract.NefFile.MethodToken;
-import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.devpack.annotations.Syscall;
-import io.neow3j.devpack.annotations.Syscall.Syscalls;
+import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.CallFlags;
 import io.neow3j.types.Hash160;
@@ -44,12 +42,11 @@ import java.util.Optional;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.Compiler.addInstructionsFromAnnotation;
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
-import static io.neow3j.compiler.Compiler.addSyscall;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
+import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.script.OpCode.CALLT;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
@@ -135,10 +132,8 @@ public class MethodsConverter implements Converter {
                     compUnit.getClassLoader());
             calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
-        if (hasSyscallAnnotation(calledAsmMethod.get())) {
-            addSyscall(calledAsmMethod.get(), callingNeoMethod);
-        } else if (hasInstructionAnnotation(calledAsmMethod.get())) {
-            addInstructionsFromAnnotation(calledAsmMethod.get(), callingNeoMethod);
+        if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) {
+            processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(topLevelOwnerClass, compUnit)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod, topLevelOwnerClass, compUnit);
         } else if (isStringLiteralConverter(calledAsmMethod.get(), ownerClass)) {
@@ -266,26 +261,34 @@ public class MethodsConverter implements Converter {
         callingNeoMethod.replaceLastInstruction(newInsn);
     }
 
-    public static boolean hasSyscallAnnotation(MethodNode asmMethod) {
-        return hasAnnotations(asmMethod, Syscalls.class, Syscall.class);
-    }
-
     /**
      * Checks if the given class node is a ContractInterface.
      */
     private static boolean isContractCall(ClassNode owner, CompilationUnit compUnit)
             throws IOException {
 
-        while (!ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
-                .equals(Object.class.getCanonicalName())) {
-
-            if (ClassUtils.getFullyQualifiedNameForInternalName(owner.superName)
-                    .equals(ContractInterface.class.getCanonicalName())) {
-                return true;
+        boolean hasContractHash = hasAnnotations(owner, ContractHash.class);
+        boolean isContractInterface = false;
+        ClassNode clazz = owner;
+        while (clazz.superName != null) {
+            if (clazz.superName.equals(Type.getType(ContractInterface.class).getInternalName())) {
+                isContractInterface = true;
+                break;
             }
-            owner = getAsmClassForInternalName(owner.superName, compUnit.getClassLoader());
+            clazz = getAsmClassForInternalName(clazz.superName, compUnit.getClassLoader());
         }
-        return false;
+        if (hasContractHash && !isContractInterface) {
+            throw new CompilerException(format("The class '%s' annotated with '%s' needs to " +
+                            "extend '%s' to be usable.", owner.name,
+                    ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName()));
+        }
+        if (isContractInterface && !hasContractHash) {
+            throw new CompilerException(format("Contract interface '%s' needs to be annotated " +
+                            "with the '%s' annotation to be usable.",
+                    ClassUtils.getClassNameForInternalName(owner.name),
+                    ContractHash.class.getSimpleName()));
+        }
+        return hasContractHash;
     }
 
     private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
@@ -384,13 +387,6 @@ public class MethodsConverter implements Converter {
 
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
             ClassNode owner, CompilationUnit compUnit) {
-
-        if (!hasAnnotations(owner, ContractHash.class)) {
-            throw new CompilerException(callingNeoMethod, "Error trying to call a method on a " +
-                    "contract interface that does not have a contract hash specified. Make sure " +
-                    "that there is a " + ContractHash.class.getCanonicalName() + " annotation on " +
-                    "the contract interface you are calling.");
-        }
 
         AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
         Hash160 scriptHash;

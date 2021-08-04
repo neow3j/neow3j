@@ -18,9 +18,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.transaction.Signer.calledByEntry;
 import static java.util.Arrays.asList;
 
 /**
@@ -301,7 +301,10 @@ public class FungibleToken extends Token {
 
     /**
      * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
+     * token amount. I.e., the default account is the signer of the transaction.
+     * <p>
+     * The scope of the signer's witness is set to
+     * {@link io.neow3j.transaction.WitnessScope#CALLED_BY_ENTRY}.
      *
      * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
@@ -317,6 +320,9 @@ public class FungibleToken extends Token {
     /**
      * Creates a transfer transaction that uses only the wallet's default account to cover the
      * token amount.
+     * <p>
+     * The scope of the signer's witness is set to
+     * {@link io.neow3j.transaction.WitnessScope#CALLED_BY_ENTRY}.
      * <p>
      * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
      * additional fees. Otherwise, use the method without a contract parameter for data.

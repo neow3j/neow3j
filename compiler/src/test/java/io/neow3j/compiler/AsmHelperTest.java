@@ -1,34 +1,11 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
-import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
-import static io.neow3j.compiler.AsmHelper.getAsmClass;
-import static io.neow3j.compiler.AsmHelper.getAsmClassForDescriptor;
-import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
-import static io.neow3j.compiler.AsmHelper.getFieldIndex;
-import static io.neow3j.compiler.AsmHelper.getInternalNameForDescriptor;
-import static io.neow3j.compiler.AsmHelper.getMethodNode;
-import static io.neow3j.compiler.AsmHelper.hasAnnotations;
-import static io.neow3j.compiler.JVMOpcode.PUTSTATIC;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import io.neow3j.script.InteropService;
-import io.neow3j.devpack.annotations.DisplayName;
-import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.devpack.annotations.Syscall;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnNEP11Payment;
+import io.neow3j.devpack.annotations.OnVerification;
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Type;
@@ -39,11 +16,35 @@ import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
+import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForDescriptor;
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
+import static io.neow3j.compiler.AsmHelper.getFieldIndex;
+import static io.neow3j.compiler.AsmHelper.getMethodNode;
+import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static io.neow3j.compiler.AsmHelper.stripObjectDescriptor;
+import static io.neow3j.compiler.JVMOpcode.PUTSTATIC;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 public class AsmHelperTest {
 
     @Test
     public void gettingMethodShouldReturnCorrectMethodNode() throws IOException {
-        String desc = "(Lio/neow3j/devpack/StorageContext;Lio/neow3j/devpack/ByteString;)Lio/neow3j/devpack/ByteString;";
+        String desc = "(Lio/neow3j/devpack/StorageContext;Lio/neow3j/devpack/ByteString;)" +
+                "Lio/neow3j/devpack/ByteString;";
         String name = "get";
         MethodInsnNode insn = new MethodInsnNode(JVMOpcode.INVOKESTATIC.getOpcode(),
                 "io/neow3j/devpack/neo/Storage", "get", desc);
@@ -96,14 +97,13 @@ public class AsmHelperTest {
         MethodNode method = asmClass.methods.stream()
                 .filter(m -> m.name.contains("annotatedMethod"))
                 .findFirst().get();
-        assertTrue(hasAnnotations(method, Syscall.class));
         assertTrue(hasAnnotations(method, Instruction.class));
-        assertTrue(hasAnnotations(method, Syscall.class, Instruction.class));
+        assertTrue(hasAnnotations(method, OnNEP11Payment.class));
     }
 
     // This method is used to test annotations.
-    @Syscall(InteropService.SYSTEM_CRYPTO_CHECKSIG)
     @Instruction
+    @OnNEP11Payment
     private void annotatedMethod() {
 
     }
@@ -138,7 +138,7 @@ public class AsmHelperTest {
 
         // One event parameter with a generic type parameter, i.e., List<Integer>.
         field = new FieldNode(0, null, null, "Lio/neow3j/devpack/events/Event1Arg<"
-                        + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;>;", null);
+                + "Lio/neow3j/devpack/List<Ljava/lang/Integer;>;>;", null);
         types = extractTypeParametersFromSignature(field);
         assertThat(types.get(0), is("Lio/neow3j/devpack/List;"));
 
@@ -238,8 +238,11 @@ public class AsmHelperTest {
     }
 
     @Test
-    public void gettingInternalNameForDescriptorShouldReturnCorrectDescriptor() {
+    public void strippinObjectDescriptorShouldReturnCorrectDescriptor() {
         String descriptor = "Lio/neow3j/devpack/neo/Storage;";
-        assertThat(getInternalNameForDescriptor(descriptor), is("io/neow3j/devpack/neo/Storage"));
+        assertThat(stripObjectDescriptor(descriptor), is("io/neow3j/devpack/neo/Storage"));
+
+        descriptor = "io/neow3j/devpack/neo/Storage";
+        assertThat(stripObjectDescriptor(descriptor), is("io/neow3j/devpack/neo/Storage"));
     }
 }

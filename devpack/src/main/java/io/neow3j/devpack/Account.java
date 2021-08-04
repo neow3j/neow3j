@@ -1,6 +1,6 @@
 package io.neow3j.devpack;
 
-import io.neow3j.devpack.annotations.Syscall;
+import io.neow3j.devpack.annotations.Instruction;
 
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT;
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
@@ -19,7 +19,7 @@ public class Account {
      * @param pubKey The public key to get the script hash for.
      * @return the script hash.
      */
-    @Syscall(SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
+    @Instruction(interopService = SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
     public static native Hash160 createStandardAccount(ECPoint pubKey);
 
     /**
@@ -33,7 +33,7 @@ public class Account {
      * @param pubKeys The public key to get the script hash for.
      * @return the script hash.
      */
-    @Syscall(SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT)
+    @Instruction(interopService = SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT)
     public static native Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys);
 
 }

@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -197,13 +198,16 @@ public class TransactionBuilder {
             throw new TransactionConfigurationException("Can't add multiple signers concerning " +
                     "the same account.");
         }
-        if (containsMultipleFeeOnlySigners(signers)) {
-            throw new TransactionConfigurationException("Can't add multiple signers with the " +
-                    "fee-only witness scope. Only one signer can be used to cover the " +
-                    "transaction fees.");
-        }
+        checkAndThrowIfMaxAttributesExceeded(signers.length, attributes.size());
         this.signers = new ArrayList<>(asList(signers));
         return this;
+    }
+
+    private void checkAndThrowIfMaxAttributesExceeded(int totalSigners, int totalAttributes) {
+        if (totalSigners + totalAttributes > MAX_TRANSACTION_ATTRIBUTES) {
+            throw new TransactionConfigurationException("A transaction cannot have more than " +
+                    MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers).");
+        }
     }
 
     /**
@@ -244,10 +248,8 @@ public class TransactionBuilder {
      *                                           attributes.
      */
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
-        if (this.attributes.size() + attributes.length > MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than " +
-                    MAX_TRANSACTION_ATTRIBUTES + " attributes.");
-        }
+        checkAndThrowIfMaxAttributesExceeded(signers.size(),
+                this.attributes.size() + attributes.length);
         Arrays.stream(attributes).forEach(attr -> {
             if (attr.getType() == HIGH_PRIORITY) {
                 safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
@@ -268,12 +270,6 @@ public class TransactionBuilder {
                 .collect(Collectors.toList());
         Set<Hash160> signerSet = new HashSet<>(signerList);
         return signerList.size() != signerSet.size();
-    }
-
-    private boolean containsMultipleFeeOnlySigners(Signer... signers) {
-        return Stream.of(signers)
-                .filter(s -> s.getScopes().contains(WitnessScope.NONE))
-                .count() > 1;
     }
 
     // package-private visible for testability purpose.
@@ -387,11 +383,6 @@ public class TransactionBuilder {
         NeoInvokeScript response = neow3j.invokeScript(
                 Base64.encode(hexStringToByteArray(script)), signers)
                 .send();
-        if (response.hasError()) {
-            throw new TransactionConfigurationException("The script is invalid. The vm returned " +
-                    "the error code " + response.getError().getCode() + " with the message: " +
-                    response.getError().getMessage());
-        }
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
                     "exception: " + response.getResult().getException());
@@ -402,20 +393,28 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer that is available in the wallet and has a verification script, we add
-        // a witness to a temporary transaction object that is serialized and sent to the
-        // `getnetworkfee` RPC method. Signers that are contract's do not need a verification
-        // script. Instead, their `verify` method will be consulted by the neo-node. We simply
-        // add an empty witness for such signers, resp. signers that don't have a verification
-        // script in the wallet.
+        // For each signer that is available in the wallet, we add a witness to a temporary
+        // transaction object that is serialized and sent to the `getnetworkfee` RPC method.
+        // Signers that are contracts do not need a verification script. Instead, their `verify`
+        // method will be consulted by the neo-node. We use the static method
+        // createContractWitness to instantiate a witness with the parameters for the verify
+        // method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
-            Account a = wallet.getAccount(signer.getScriptHash());
-            if (a != null && a.getVerificationScript() != null) {
-                tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
-                hasAtLeastOneSigningAccount = true;
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                tx.addWitness(new Witness());
+                Account a = wallet.getAccount(signer.getScriptHash());
+                if (a != null && a.getVerificationScript() != null) {
+                    tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
+                    hasAtLeastOneSigningAccount = true;
+                } else {
+                    throw new TransactionConfigurationException("The wallet does not hold the " +
+                            "verification script of the signer with script hash '" +
+                            signer.getScriptHash() + "'. If this signer is a contract, use the " +
+                            "method 'asContract' in the class Signer.");
+                }
             }
         }
         if (!hasAtLeastOneSigningAccount) {
@@ -469,14 +468,19 @@ public class TransactionBuilder {
         transaction = buildTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
-            // There's no need to check if every signer has its account in the wallet here.
-            // This check has already been executed within building the transaction above
-            // when calculating the network fees.
-            Account signerAcc = wallet.getAccount(signer.getScriptHash());
-            if (signerAcc.isMultiSig()) {
-                signWithMultiSigAccount(txBytes, signerAcc);
+            if (signer instanceof ContractSigner) {
+                ContractSigner contractSigner = (ContractSigner) signer;
+                transaction.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                signWithNormalAccount(txBytes, signerAcc);
+                // There's no need to check if every signer has its account in the wallet here.
+                // This check has already been executed within building the transaction above
+                // when calculating the network fees.
+                Account signerAcc = wallet.getAccount(signer.getScriptHash());
+                if (signerAcc.isMultiSig()) {
+                    signWithMultiSigAccount(txBytes, signerAcc);
+                } else {
+                    signWithNormalAccount(txBytes, signerAcc);
+                }
             }
         });
         return transaction;
@@ -484,7 +488,6 @@ public class TransactionBuilder {
 
     /**
      * Builds the transaction without signing it.
-     *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the
@@ -595,11 +598,6 @@ public class TransactionBuilder {
 
     private boolean canSenderCoverFees(BigInteger fees) throws IOException {
         return fees.compareTo(getSenderGasBalance()) < 0;
-    }
-
-    // Required for testability
-    protected byte getVersion() {
-        return version;
     }
 
     // Required for testability

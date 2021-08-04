@@ -10,7 +10,7 @@ import io.neow3j.devpack.annotations.Instruction;
 public class Transaction {
 
     /**
-     * The hash of the transaction.
+     * The hash of this transaction in little-endian order.
      */
     public final Hash256 hash;
 

@@ -1,20 +1,20 @@
 package io.neow3j.contract;
 
-import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.exceptions.StackItemCastException;
-import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Strings;
 
 import java.io.IOException;

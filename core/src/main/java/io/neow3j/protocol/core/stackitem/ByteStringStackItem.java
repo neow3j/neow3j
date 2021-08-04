@@ -17,8 +17,8 @@ public class ByteStringStackItem extends ByteArrayStackItem {
         super(value, StackItemType.BYTE_STRING);
     }
 
-    public ByteStringStackItem(String value) {
-        this(Numeric.hexStringToByteArray(value));
+    public ByteStringStackItem(String hexValue) {
+        this(Numeric.hexStringToByteArray(hexValue));
     }
 
     @Override

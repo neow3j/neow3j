@@ -32,7 +32,7 @@ import org.hamcrest.Matchers;
  */
 public class Await {
 
-    private final static int MAX_WAIT_TIME = 30;
+    private final static int MAX_WAIT_TIME = 60;
 
     /**
      * Checks and waits until the token balance of the given script hash is greater than zero.

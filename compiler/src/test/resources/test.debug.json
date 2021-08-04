@@ -10,6 +10,10 @@
     "/templates/Template.NEP17.CSharp/Storage/TotalSupplyStorage.cs",
     "/templates/Template.NEP17.CSharp/Storage/AssetStorage.cs"
   ],
+  "static-variables": [
+    "owner,Hash160,0",
+    "ctx,InteropInterface,1"
+  ],
   "methods":
   [
     {

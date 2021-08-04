@@ -6,6 +6,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.script.InvocationScript;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
@@ -26,11 +27,16 @@ import static io.neow3j.crypto.ECKeyPair.createEcKeyPair;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 public class WitnessTest {
 
@@ -211,6 +217,20 @@ public class WitnessTest {
                 hexStringToByteArray("35b20010db73bf86371075ddfba4e6596f1ff35d"),
                 witness.getVerificationScript().getScriptHash().toLittleEndianArray()
         );
+    }
+
+    @Test
+    public void testCreateContractWitness_withoutParams() {
+        Witness witness = Witness.createContractWitness(asList());
+        assertEquals(witness, new Witness());
+    }
+
+    @Test
+    public void testCreateContractWitness() {
+        Witness witness = Witness.createContractWitness(asList(integer(20), string("test")));
+        byte[] invocationScript = new ScriptBuilder().pushInteger(20).pushData("test").toArray();
+        assertThat(witness.getInvocationScript().getScript(), is(invocationScript));
+        assertThat(witness.getVerificationScript().getScript(), is(new byte[]{}));
     }
 
 }

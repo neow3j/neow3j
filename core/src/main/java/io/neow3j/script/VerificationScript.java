@@ -287,4 +287,11 @@ public class VerificationScript extends NeoSerializable {
     public int hashCode() {
         return Objects.hash(getScript());
     }
+
+    @Override
+    public String toString() {
+        return "VerificationScript{" +
+                "script=" + Numeric.toHexStringNoPrefix(script) + '}';
+    }
+
 }

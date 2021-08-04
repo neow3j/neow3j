@@ -1,36 +1,39 @@
 package io.neow3j.protocol.core;
 
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.test.TestProperties;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
 import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jExpress;
 import io.neow3j.protocol.RequestTester;
+import io.neow3j.protocol.core.response.OracleResponse;
+import io.neow3j.protocol.core.response.OracleResponseCode;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.TestProperties;
+import io.neow3j.transaction.AccountSigner;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import org.junit.Test;
 
 import java.math.BigInteger;
 import java.util.Date;
 
-import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.WitnessScope;
-import org.junit.Test;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.string;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
 public class RequestTest extends RequestTester {
 
     private Neow3j neow3j;
+    private Neow3jExpress neow3jExpress;
 
     @Override
     protected void initWeb3Client(HttpService httpService) {
         neow3j = Neow3j.build(httpService);
+        neow3jExpress = Neow3jExpress.build(httpService);
     }
 
     // Blockchain Methods
@@ -337,13 +340,9 @@ public class RequestTest extends RequestTester {
                         hash160(new Hash160(
                                 "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
-                new Signer.Builder()
-                        .account(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
-                        .scopes(WitnessScope.CALLED_BY_ENTRY, WitnessScope.CUSTOM_CONTRACTS,
-                                WitnessScope.CUSTOM_GROUPS)
-                        .allowedContracts(new Hash160(TestProperties.neoTokenHash()))
-                        .allowedGroups(pubKey)
-                        .build()
+                AccountSigner.calledByEntry(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .setAllowedContracts(new Hash160(TestProperties.neoTokenHash()))
+                        .setAllowedGroups(pubKey)
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -822,6 +821,112 @@ public class RequestTest extends RequestTester {
                 "\"method\": \"getstateheight\"," +
                 "\"params\": []," +
                 "\"id\": 1}");
+    }
+
+    // Neo-express related tests
+
+    @Test
+    public void testExpressGetPopulatedBlocks() throws Exception {
+        neow3jExpress.expressGetPopulatedBlocks().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expressgetpopulatedblocks\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressGetNep17Contracts() throws Exception {
+        neow3jExpress.expressGetNep17Contracts().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expressgetnep17contracts\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressGetContractStorage() throws Exception {
+        neow3jExpress.expressGetContractStorage(
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")).send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expressgetcontractstorage\",\n" +
+                " \"params\":[\"d2a4cff31913016155e38e474a2c06d08be276cf\"],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressListContracts() throws Exception {
+        neow3jExpress.expressListContracts().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expresslistcontracts\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressCreateCheckpoint() throws Exception {
+        neow3jExpress.expressCreateCheckpoint("checkpoint-1.neoxp-checkpoint").send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expresscreatecheckpoint\",\n" +
+                " \"params\":[\"checkpoint-1.neoxp-checkpoint\"],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressListOracleRequests() throws Exception {
+        neow3jExpress.expressListOracleRequests().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expresslistoraclerequests\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressCreateOracleResponseTx() throws Exception {
+        neow3jExpress.expressCreateOracleResponseTx(
+                new OracleResponse(3, OracleResponseCode.SUCCESS, "bmVvdzNq")).send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expresscreateoracleresponsetx\",\n" +
+                " \"params\":[\n" +
+                "    {\n" +
+                "        \"id\": 3,\n" +
+                "        \"code\": \"Success\",\n" +
+                "        \"result\": \"bmVvdzNq\"\n" +
+                "    }\n" +
+                " ],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testExpressShutdown() throws Exception {
+        neow3jExpress.expressShutdown().send();
+
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"expressshutdown\",\n" +
+                " \"params\":[],\n" +
+                " \"id\": 1\n" +
+                "}");
     }
 
 }

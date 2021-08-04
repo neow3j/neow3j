@@ -5,6 +5,7 @@ on:
     inputs:
       snapshot:
         description: 'Publish snapshot?'
+        required: false
         default: 'false'
   push:
 
@@ -23,6 +24,8 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 1.8
+      - name: Compile
+        run: ./gradlew compileJava compileTestJava compileIntegrationTestJava
       - name: Build with Unit Tests
         run: ./gradlew --info --warning-mode=all check jacocoRootTestReport
       - name: Test Results to CodeCov

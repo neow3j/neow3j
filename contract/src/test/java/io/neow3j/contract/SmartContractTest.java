@@ -23,7 +23,7 @@ import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
@@ -139,7 +139,7 @@ public class SmartContractTest {
                 hash160(recipient),
                 integer(5))
                 .wallet(w)
-                .signers(Signer.feeOnly(w.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.none(w.getDefaultAccount().getScriptHash()))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));

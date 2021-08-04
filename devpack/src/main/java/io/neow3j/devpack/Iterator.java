@@ -2,7 +2,6 @@ package io.neow3j.devpack;
 
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.Syscall;
 
 import static io.neow3j.script.InteropService.SYSTEM_ITERATOR_NEXT;
 import static io.neow3j.script.InteropService.SYSTEM_ITERATOR_VALUE;
@@ -17,7 +16,7 @@ public class Iterator<V> implements InteropInterface {
      *
      * @return true if there is a next element. False, otherwise.
      */
-    @Syscall(SYSTEM_ITERATOR_NEXT)
+    @Instruction(interopService = SYSTEM_ITERATOR_NEXT)
     public native boolean next();
 
     /**
@@ -25,7 +24,7 @@ public class Iterator<V> implements InteropInterface {
      *
      * @return the value.
      */
-    @Syscall(SYSTEM_ITERATOR_VALUE)
+    @Instruction(interopService = SYSTEM_ITERATOR_VALUE)
     public native V get();
 
     /**

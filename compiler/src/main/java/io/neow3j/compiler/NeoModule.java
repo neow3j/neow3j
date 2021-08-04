@@ -1,10 +1,8 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-
-import io.neow3j.script.OpCode;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.annotations.MethodSignature;
+import io.neow3j.script.OpCode;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -16,6 +14,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+
+import static java.lang.String.format;
 
 public class NeoModule {
 
@@ -35,8 +35,34 @@ public class NeoModule {
     // in CALLT instructions.
     private List<MethodToken> methodTokens = new ArrayList<>();
 
+    // Holds this module's static field variables, i.e. all the static variables found on the
+    // contract class.
+    private List<NeoContractVariable> contractVariables = new ArrayList<>();
+
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
+    }
+
+    /**
+     * Gets the contract (static) variables of this module.
+     *
+     * @return the
+     */
+    public List<NeoContractVariable> getContractVariables() {
+        return contractVariables;
+    }
+
+    /**
+     * Gets the contract variable with the given JVM index
+     *
+     * @param jvmIdx the index.
+     * @return the contract variable or null if not found.
+     */
+    public NeoContractVariable getContractVariable(int jvmIdx) {
+        return contractVariables.stream()
+                .filter(v -> v.getJvmIdx() == jvmIdx)
+                .findFirst()
+                .orElse(null);
     }
 
     /**
@@ -106,6 +132,15 @@ public class NeoModule {
                     + "sure that every event has a different name.", event.getDisplayName()));
         }
         events.put(event.getDisplayName(), event);
+    }
+
+    /**
+     * Adds the given variable to this module's contract variables.
+     *
+     * @param var the contract variable.
+     */
+    public void addContractVariable(NeoContractVariable var) {
+        contractVariables.add(var);
     }
 
     void finalizeModule() {

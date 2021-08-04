@@ -10,7 +10,7 @@ import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.test.WireMockTestHelper.loadFile;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.transaction.Signer.calledByEntry;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -29,7 +29,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoAccountState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
@@ -139,7 +139,7 @@ public class NeoTokenTest {
         TransactionBuilder b = new NeoToken(neow).registerCandidate(
                 account1.getECKeyPair().getPublicKey())
                 .wallet(w)
-                .signers(Signer.global(account1.getScriptHash()));
+                .signers(AccountSigner.global(account1.getScriptHash()));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
@@ -160,7 +160,7 @@ public class NeoTokenTest {
         TransactionBuilder b = new NeoToken(neow).unregisterCandidate(
                 account1.getECKeyPair().getPublicKey())
                 .wallet(w)
-                .signers(Signer.global(account1.getScriptHash()));
+                .signers(AccountSigner.global(account1.getScriptHash()));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.GLOBAL));
@@ -237,7 +237,7 @@ public class NeoTokenTest {
         TransactionBuilder b = new NeoToken(neow)
                 .vote(account1, new ECPublicKey(pubKey))
                 .wallet(Wallet.withAccounts(account1))
-                .signers(Signer.global(account1.getScriptHash()));
+                .signers(AccountSigner.global(account1.getScriptHash()));
 
         assertThat(b.getScript(), is(expectedScript));
     }
@@ -259,7 +259,7 @@ public class NeoTokenTest {
         TransactionBuilder b = new NeoToken(neow)
                 .vote(account1.getScriptHash(), new ECPublicKey(pubKey))
                 .wallet(w)
-                .signers(Signer.global(account1.getScriptHash()));
+                .signers(AccountSigner.global(account1.getScriptHash()));
 
         assertThat(b.getScript(), is(expectedScript));
     }

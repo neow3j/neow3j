@@ -2,8 +2,6 @@ package io.neow3j.transaction;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.test.WireMockTestHelper;
-import io.neow3j.test.TestProperties;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -18,6 +16,7 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -43,12 +42,16 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.transaction.Signer.calledByEntry;
-import static io.neow3j.transaction.Signer.feeOnly;
-import static io.neow3j.transaction.Signer.global;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.AccountSigner.none;
+import static io.neow3j.transaction.AccountSigner.global;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
@@ -56,7 +59,9 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
@@ -110,8 +115,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void buildTransactionWithCorrectNonce() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_necessary_mock.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_necessary_mock.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Long nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         TransactionBuilder b = new TransactionBuilder(neow)
@@ -189,9 +194,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void automaticallySetNonce() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_necessary_mock.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_necessary_mock.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction transaction = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))
@@ -236,20 +241,11 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failAddingMultipleFeeOnlySigners() {
-        TransactionBuilder b = new TransactionBuilder(neow);
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(
-                new StringContains("Can't add multiple signers with the fee-only witness scope"));
-        b.signers(feeOnly(account1), feeOnly(account2));
-    }
-
-    @Test
     public void attributes_highPriority() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForCall("getcommittee", "getcommittee.json");
-        WireMockTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
 
         Wallet wallet = Wallet.withAccounts(account1);
         HighPriorityAttribute attr = new HighPriorityAttribute();
@@ -258,7 +254,7 @@ public class TransactionBuilderTest {
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .buildTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
@@ -268,10 +264,10 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_highPriority_multiSigContainingCommitteeMember() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForCall("getcommittee", "getcommittee.json");
-        WireMockTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
 
         Account multiSigAccount = createMultiSigAccount(
                 asList(account2.getECKeyPair().getPublicKey(),
@@ -284,7 +280,7 @@ public class TransactionBuilderTest {
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(feeOnly(multiSigAccount))
+                .signers(none(multiSigAccount))
                 .buildTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
@@ -294,8 +290,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_highPriority_noCommitteeMember() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("getcommittee", "getcommittee.json");
-        WireMockTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
 
         Wallet wallet = Wallet.withAccounts(account2);
         HighPriorityAttribute attr = new HighPriorityAttribute();
@@ -308,16 +304,16 @@ public class TransactionBuilderTest {
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
                 .attributes(attr)
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .buildTransaction();
     }
 
     @Test
     public void attributes_highPriority_onlyAddedOnce() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForCall("getcommittee", "getcommittee.json");
-        WireMockTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
 
         Wallet wallet = Wallet.withAccounts(account1);
         HighPriorityAttribute attr1 = new HighPriorityAttribute();
@@ -325,7 +321,7 @@ public class TransactionBuilderTest {
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .wallet(wallet)
                 .attributes(attr1)
                 .attributes(attr2)
@@ -344,9 +340,47 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("A transaction cannot have more than " +
-                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes.");
+                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
 
         new TransactionBuilder(neow).attributes(attrArray);
+    }
+
+    @Test
+    public void attributes_failAddingMoreThanMaxToTxBuilder_attributes() {
+        List<TransactionAttribute> attrs = new ArrayList<>();
+        TransactionBuilder b = new TransactionBuilder(neow);
+        b.signers(calledByEntry(Account.create()), calledByEntry(Account.create()),
+                calledByEntry(Account.create()));
+
+        for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES - 3; i++) {
+            attrs.add(new HighPriorityAttribute());
+        }
+        TransactionAttribute[] attrArray = attrs.toArray(new TransactionAttribute[0]);
+
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("A transaction cannot have more than " +
+                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
+
+        b.attributes(attrArray);
+    }
+
+    @Test
+    public void attributes_failAddingMoreThanMaxToTxBuilder_signers() {
+        TransactionBuilder b = new TransactionBuilder(neow);
+        b.attributes(new HighPriorityAttribute());
+
+        List<Signer> signers = new ArrayList<>();
+        for (int i = 0; i < NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {
+            signers.add(calledByEntry(Account.create()));
+        }
+        Signer[] signerArr = signers.toArray(new Signer[0]);
+
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("A transaction cannot have more than " +
+                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
+
+        assertThat(signerArr.length + 1, greaterThan(NeoConstants.MAX_TRANSACTION_ATTRIBUTES));
+        b.signers(signerArr);
     }
 
     @Test
@@ -360,14 +394,14 @@ public class TransactionBuilderTest {
     @Test
     public void testAutomaticSettingOfValidUntilBlockVariable() throws Throwable {
         Wallet wallet = Wallet.create();
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .buildTransaction();
 
         assertThat(tx.getValidUntilBlock(), is(neow.getMaxValidUntilBlockIncrement() + 1000 - 1));
@@ -376,13 +410,13 @@ public class TransactionBuilderTest {
     @Test
     public void testAutomaticSettingOfSystemFeeAndNetworkFee() throws Throwable {
         Wallet wallet = Wallet.create();
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -393,12 +427,12 @@ public class TransactionBuilderTest {
     @Test
     public void failTryingToSignTransactionWithAccountMissingAPrivateKey() throws Throwable {
         Wallet w = Wallet.create("neo");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         TransactionBuilder builder = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
-                .signers(feeOnly(w.getAccounts().get(0)))
+                .signers(none(w.getAccounts().get(0)))
                 .wallet(w)
                 .validUntilBlock(1000);
 
@@ -417,13 +451,13 @@ public class TransactionBuilderTest {
         w.addAccounts(a2);
         w.addAccounts(multiSigAcc);
         a2.encryptPrivateKey("neo");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(feeOnly(multiSigAcc))
+                .signers(none(multiSigAcc))
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
@@ -434,9 +468,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void signMultiSigTransaction_continueAfterNotFindingFirstSigningAccount() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         // Dummy multi-sig that only requires one signature.
         Account dummyMultiSig = createMultiSigAccount(asList(
                 account1.getECKeyPair().getPublicKey(),
@@ -446,7 +480,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(feeOnly(dummyMultiSig));
+                .signers(none(dummyMultiSig));
         // The first signing account for the multi-sig is not in the wallet.
         // The sign method should execute normally and ignore the absence.
         b.sign();
@@ -459,13 +493,13 @@ public class TransactionBuilderTest {
     @Test
     public void addDefaultAccountSignerIfNotExplicitlySet() throws Throwable {
         Wallet wallet = Wallet.create();
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(feeOnly(wallet.getDefaultAccount()))
+                .signers(none(wallet.getDefaultAccount()))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -483,8 +517,8 @@ public class TransactionBuilderTest {
         Account acc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
         Wallet wallet = Wallet.withAccounts(acc);
         Signer signer = calledByEntry(acc);
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
@@ -505,13 +539,13 @@ public class TransactionBuilderTest {
         final String wif = "KwDidQJHSE67VJ6MWRvbBKAxhD3F48DvqRT6JRqrjd7MHLBjGF7V";
         Account senderAcc = new Account(ECKeyPair.create(WIF.getPrivateKeyFromWIF(wif)));
         Wallet wallet = Wallet.withAccounts(senderAcc);
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(feeOnly(senderAcc))
+                .signers(none(senderAcc))
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -533,13 +567,13 @@ public class TransactionBuilderTest {
         Account other = Account.create();
         wallet.addAccounts(other);
         Signer signer = calledByEntry(other);
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(wallet)
-                .signers(feeOnly(senderAcc), signer)
+                .signers(none(senderAcc), signer)
                 .validUntilBlock(1000)
                 .buildTransaction();
 
@@ -552,8 +586,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void signTransactionWithAdditionalSigners() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1, account2);
         Transaction tx = new TransactionBuilder(neow)
@@ -577,13 +611,13 @@ public class TransactionBuilderTest {
     public void failBuildingTransactionBecauseWalletDoesntContainAnySignerAccount()
             throws Throwable {
         Wallet w = Wallet.create();
-        Account signer = Account.create();
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
                 .wallet(w)
-                .signers(calledByEntry(signer))
+                .signers(ContractSigner.calledByEntry(contractHash))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("No signers were set for which an account " +
@@ -598,8 +632,8 @@ public class TransactionBuilderTest {
         Wallet w = Wallet.create();
         Account signer = Account.create();
         w.addAccounts(signer);
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
@@ -615,12 +649,32 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void testContractWitness() throws Throwable {
+        Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
+        Account signer = Account.create();
+        Wallet w = Wallet.withAccounts(signer);
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(w)
+                .signers(
+                        ContractSigner.global(contractHash, string("iamgroot"), integer(2)),
+                        AccountSigner.calledByEntry(signer))
+                .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
+        Transaction tx = b.sign();
+
+        byte[] invocScript = new ScriptBuilder().pushData("iamgroot").pushInteger(2).toArray();
+        assertThat(tx.getWitnesses(), hasItem(new Witness(invocScript, new byte[]{})));
+    }
+
+    @Test
     public void sendInvokeFunction() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
+        setUpWireMockForCall("invokescript",
                 "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
 
@@ -633,7 +687,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(script)
                 .wallet(w)
-                .signers(feeOnly(w.getDefaultAccount()))
+                .signers(none(w.getDefaultAccount()))
                 .sign();
 
         NeoSendRawTransaction response = tx.send();
@@ -647,9 +701,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void transferNeoFromNormalAccount() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
                 NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
@@ -670,7 +723,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(script)
                 .wallet(w)
-                .signers(feeOnly(w.getDefaultAccount()))
+                .signers(none(w.getDefaultAccount()))
                 .validUntilBlock(100)
                 .sign();
 
@@ -685,8 +738,8 @@ public class TransactionBuilderTest {
     // with a transfer from a multi-sig account is made.
     @Test
     public void transferNeoWithMultiSigAccount() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
                 NEP17_TRANSFER, asList(
@@ -708,7 +761,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(script)
                 .wallet(w)
-                .signers(feeOnly(w.getDefaultAccount()))
+                .signers(none(w.getDefaultAccount()))
                 .validUntilBlock(100)
                 .sign();
 
@@ -722,7 +775,7 @@ public class TransactionBuilderTest {
     // This tests if the `invokeFunction()` method produces the right request.
     @Test
     public void invokingWithParamsShouldProduceTheCorrectRequest() throws IOException {
-        WireMockTestHelper.setUpWireMockForCall("invokefunction",
+        setUpWireMockForCall("invokefunction",
                 "invokefunction_transfer_neo.json",
                 NEO_TOKEN_SCRIPT_HASH.toString(), NEP17_TRANSFER,
                 account1.getScriptHash().toString(), recipient.toString(), "5"); // the params
@@ -740,10 +793,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void doIfSenderCannotCoverFees() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_1000000.json");
 
         Wallet w = Wallet.withAccounts(account1);
@@ -786,14 +838,13 @@ public class TransactionBuilderTest {
 
     @Test
     public void throwIfSenderCannotCoverFees() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("invokefunction",
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_1000000.json",
                 GAS_TOKEN_SCRIPT_HASH.toString(),
                 "balanceOf",
                 account1.getScriptHash().toString());
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
 
@@ -827,7 +878,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void invokeScript() throws IOException {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
@@ -844,7 +895,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void invokeScriptWithoutSettingScript() throws IOException {
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
                 SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
@@ -871,9 +922,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void buildWithInvalidScript() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_invalidscript.json",
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_invalidscript.json",
                 "DAASDBSTrRVy");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .wallet(Wallet.withAccounts(account1))
@@ -886,8 +936,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void buildWithScript_vmFaults() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript",
                 "invokescript_exception.json",
                 "DA5PcmFjbGVDb250cmFjdEEa93tn");
         TransactionBuilder b = new TransactionBuilder(neow)
@@ -902,9 +952,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void testGetUnsignedTransaction() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new TransactionBuilder(neow)
                 .wallet(w)
@@ -919,10 +969,46 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void testVersion() {
-        TransactionBuilder b = new TransactionBuilder(neow)
-                .version((byte) 1);
-        assertThat(b.getVersion(), is((byte) 1));
+    public void testVersion() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Wallet w = Wallet.withAccounts(account1);
+        Transaction tx = new TransactionBuilder(neow)
+                .version((byte) 1)
+                .wallet(w)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .signers(calledByEntry(account1))
+                .getUnsignedTransaction();
+
+        assertThat(tx.getVersion(), is((byte) 1));
+    }
+
+    @Test
+    public void testAdditionalNetworkFee() throws Throwable {
+        Wallet wallet = Wallet.create();
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .signers(none(wallet.getDefaultAccount()))
+                .buildTransaction();
+
+        long baseNetworkFee = 1230610L;
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee));
+
+        tx = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .wallet(wallet)
+                .signers(none(wallet.getDefaultAccount()))
+                .additionalNetworkFee(2000L)
+                .buildTransaction();
+
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee + 2000L));
     }
 
     @Test
@@ -959,7 +1045,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner_feeOnlyPresent() {
-        Signer s1 = feeOnly(account1);
+        Signer s1 = AccountSigner.none(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
@@ -989,11 +1075,10 @@ public class TransactionBuilderTest {
 
     @Test
     public void trackingTransactionShouldReturnCorrectBlock() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
         Neow3j neowSpy = Mockito.spy(neow);
@@ -1031,10 +1116,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void trackingTransaction_txNotSent() throws Throwable {
-        WireMockTestHelper.setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Wallet w = Wallet.withAccounts(account1);
 
@@ -1048,7 +1132,7 @@ public class TransactionBuilderTest {
                 .script(script)
                 .nonce(0L)
                 .wallet(w)
-                .signers(feeOnly(w.getDefaultAccount()))
+                .signers(none(w.getDefaultAccount()))
                 .sign();
 
         exceptionRule.expect(IllegalStateException.class);
@@ -1081,13 +1165,13 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog() throws Throwable {
-        WireMockTestHelper.setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_1000000.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        WireMockTestHelper.setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        WireMockTestHelper.setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
         Wallet w = Wallet.withAccounts(account1);
 
         byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
@@ -1111,11 +1195,11 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog_txNotSent() throws Throwable {
-        WireMockTestHelper.setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_1000000.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         Wallet w = Wallet.withAccounts(account1);
 
         byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
@@ -1137,13 +1221,13 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog_notExisting() throws Throwable {
-        WireMockTestHelper.setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_1000000.json");
-        WireMockTestHelper.setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        WireMockTestHelper.setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        WireMockTestHelper.setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        WireMockTestHelper.setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        WireMockTestHelper.setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx" +
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx" +
                 ".json");
         Wallet w = Wallet.withAccounts(account1);
 
