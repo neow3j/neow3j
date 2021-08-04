@@ -55,8 +55,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
     public static native byte[] getByteArray(StorageContext context, byte[] key);
 
     /**
@@ -68,8 +69,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction()
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction()
     public static native String getString(StorageContext context, byte[] key);
 
     /**
@@ -83,6 +85,8 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
@@ -90,7 +94,6 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, byte[] key);
 
     /**
@@ -112,8 +115,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
     public static native byte[] getByteArray(StorageContext context, String key);
 
     /**
@@ -125,8 +129,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction()
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction()
     public static native String getString(StorageContext context, String key);
 
     /**
@@ -140,6 +145,8 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
@@ -147,7 +154,6 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, String key);
 
     /**
@@ -169,8 +175,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
     public static native byte[] getByteArray(StorageContext context, ByteString key);
 
     /**
@@ -182,8 +189,9 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction()
+    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction()
     public static native String getString(StorageContext context, ByteString key);
 
     /**
@@ -197,6 +205,8 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
@@ -204,7 +214,6 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native int getInteger(StorageContext context, ByteString key);
 
     /**
