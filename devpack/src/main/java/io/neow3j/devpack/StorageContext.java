@@ -75,4 +75,5 @@ public class StorageContext implements InteropInterface {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
 }

@@ -15,6 +15,8 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
@@ -38,9 +40,13 @@ public class StorageMapIntegrationTest {
 
     private static final String KEY = "0203";
     private static final String DATA = "040506";
+    private static final byte[] DATA_BYTEARRAY = new byte[]{4, 5, 6};
 
-    private static final String DATA2 = "world";
     private static final String KEY2 = "hello";
+    private static final String DATA2 = "world";
+
+    private static final String KEY3 = "neow";
+    private static final Integer DATA3 = 13;
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -51,27 +57,95 @@ public class StorageMapIntegrationTest {
         key = byteArrayFromString(KEY2);
         data = byteArrayFromString(DATA2);
         ct.invokeFunctionAndAwaitExecution("putData", key, data);
+
+        key = byteArrayFromString(KEY3);
+        data = integer(DATA3);
+        ct.invokeFunctionAndAwaitExecution("putIntegerData", key, data);
     }
 
     @Test
-    public void getByByteString() throws IOException {
+    public void getByByteStringKey() throws IOException {
         ContractParameter param = byteArray(KEY);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA));
     }
 
     @Test
-    public void getByByteArray() throws IOException {
+    public void getByteArrayByByteStringKey() throws IOException {
+        ContractParameter param = byteArray(KEY);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(DATA_BYTEARRAY));
+    }
+
+    @Test
+    public void getStringByByteStringKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getIntegerByByteStringKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+    }
+
+    @Test
+    public void getByByteArrayKey() throws IOException {
         ContractParameter param = byteArray(KEY);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA));
     }
 
     @Test
-    public void getByString() throws IOException {
+    public void getByteArrayByByteArrayKey() throws IOException {
+        ContractParameter param = byteArray(KEY);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(DATA_BYTEARRAY));
+    }
+
+    @Test
+    public void getStringByByteArrayKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getIntegerByByteArrayKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+    }
+
+    @Test
+    public void getByStringKey() throws IOException {
         ContractParameter param = string(KEY2);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getByteArrayByStringKey() throws IOException {
+        ContractParameter param = string(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(),
+                is(DATA2.getBytes(StandardCharsets.UTF_8)));
+    }
+
+    @Test
+    public void getStringByStringKey() throws IOException {
+        ContractParameter param = string(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getIntegerByStringKey() throws IOException {
+        ContractParameter param = string(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
     }
 
     @Test
@@ -239,7 +313,8 @@ public class StorageMapIntegrationTest {
     @Test
     public void deleteByByteArrayKey() throws IOException {
         ContractParameter key = byteArray(KEY);
-        InvocationResult res = ct.callInvokeFunction("getByByteArray", key).getInvocationResult();
+        InvocationResult res =
+                ct.callInvokeFunction("getByByteArrayKey", key).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
@@ -248,7 +323,8 @@ public class StorageMapIntegrationTest {
     @Test
     public void deleteByByteStringKey() throws IOException {
         ContractParameter key = byteArray(KEY);
-        InvocationResult res = ct.callInvokeFunction("getByByteString", key).getInvocationResult();
+        InvocationResult res =
+                ct.callInvokeFunction("getByByteStringKey", key).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
@@ -257,7 +333,7 @@ public class StorageMapIntegrationTest {
     @Test
     public void deleteByStringKey() throws IOException {
         ContractParameter key = string(KEY2);
-        InvocationResult res = ct.callInvokeFunction("getByString", key).getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction("getByStringKey", key).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA2));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
@@ -273,16 +349,56 @@ public class StorageMapIntegrationTest {
             Storage.put(ctx, prefix.concat(key), data);
         }
 
-        public static ByteString getByByteString(ByteString s) {
+        public static void putIntegerData(ByteString key, int data) {
+            Storage.put(ctx, prefix.concat(key), data);
+        }
+
+        public static ByteString getByByteStringKey(ByteString s) {
             return map.get(s);
         }
 
-        public static ByteString getByByteArray(byte[] b) {
+        public static byte[] getByteArrayByByteStringKey(ByteString s) {
+            return map.getByteArray(s);
+        }
+
+        public static String getStringByByteStringKey(ByteString s) {
+            return map.getString(s);
+        }
+
+        public static int getIntegerByByteStringKey(ByteString s) {
+            return map.getInteger(s);
+        }
+
+        public static ByteString getByByteArrayKey(byte[] b) {
             return map.get(b);
         }
 
-        public static ByteString getByString(String s) {
+        public static byte[] getByteArrayByByteArrayKey(byte[] b) {
+            return map.getByteArray(b);
+        }
+
+        public static String getStringByByteArrayKey(byte[] b) {
+            return map.getString(b);
+        }
+
+        public static int getIntegerByByteArrayKey(byte[] b) {
+            return map.getInteger(b);
+        }
+
+        public static ByteString getByStringKey(String s) {
             return map.get(s);
+        }
+
+        public static byte[] getByteArrayByStringKey(String s) {
+            return map.getByteArray(s);
+        }
+
+        public static String getStringByStringKey(String s) {
+            return map.getString(s);
+        }
+
+        public static int getIntegerByStringKey(String s) {
+            return map.getInteger(s);
         }
 
         public static ByteString putByteArrayKeyByteArrayValue(byte[] key, byte[] value) {
@@ -397,4 +513,5 @@ public class StorageMapIntegrationTest {
         }
 
     }
+
 }
