@@ -58,9 +58,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         return "responses/" + testClassName + "/" + methodName + ".json";
     }
 
-    public static String getNodeUrl(GenericContainer container) {
-        return "http://" + container.getContainerIpAddress() + ":" +
-                container.getMappedPort(EXPOSED_JSONRPC_PORT);
+    public String getNodeUrl() {
+        return "http://" + getContainerIpAddress() + ":" + getMappedPort(EXPOSED_JSONRPC_PORT);
     }
 
 }
