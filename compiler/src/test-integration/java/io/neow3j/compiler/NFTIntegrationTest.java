@@ -15,8 +15,6 @@ import io.neow3j.devpack.contracts.NonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -24,7 +22,6 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
@@ -127,7 +124,7 @@ public class NFTIntegrationTest {
         assertThat(map.get(nameKey), is(nameValue));
     }
 
-    @Permission(contract = "312c35c610daa32cfa9f225fe692ccc388c0cd70")
+    @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
         static final StorageContext ctx = Storage.getStorageContext();
         static final byte mapPrefix = (byte) 1;
@@ -217,7 +214,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("312c35c610daa32cfa9f225fe692ccc388c0cd70")
+    @ContractHash("3536c17e8d628871338aa782eb72e86d4efc1e2e")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 
