@@ -60,7 +60,7 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod, compUnit);
+                addStoreStaticField((FieldInsnNode) insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
@@ -139,16 +139,15 @@ public class ObjectsConverter implements Converter {
     }
 
     public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
+            CompilationUnit compUnit) throws IOException {
+        int idx = getFieldIndex(fieldInsn, compUnit);
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
-    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
+    public static void addStoreStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+        int idx = getFieldIndex(fieldInsn, compUnit);
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }

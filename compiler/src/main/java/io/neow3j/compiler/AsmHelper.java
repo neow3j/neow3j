@@ -315,11 +315,17 @@ public class AsmHelper {
 
     public static int getFieldIndex(FieldInsnNode fieldInsn, ClassNode owner) {
         int idx = 0;
+        boolean fieldFound = false;
         for (FieldNode field : owner.fields) {
             if (field.name.equals(fieldInsn.name)) {
+                fieldFound = true;
                 break;
             }
             idx++;
+        }
+        if (!fieldFound) {
+            throw new CompilerException(owner, format("Tried to access a field variable with " +
+                    "name '%s', but such a field does not exist on this class.", fieldInsn.name));
         }
         return idx;
     }
