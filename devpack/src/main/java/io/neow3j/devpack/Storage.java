@@ -69,9 +69,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction()
     public static native String getString(StorageContext context, byte[] key);
 
     /**
@@ -129,9 +127,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction()
     public static native String getString(StorageContext context, String key);
 
     /**
@@ -189,9 +185,7 @@ public class Storage {
      * @param key     The key to search for.
      * @return the value corresponding to the given key as a string.
      */
-    @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction()
     public static native String getString(StorageContext context, ByteString key);
 
     /**
