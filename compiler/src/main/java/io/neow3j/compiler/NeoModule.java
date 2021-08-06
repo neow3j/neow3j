@@ -3,7 +3,11 @@ package io.neow3j.compiler;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.script.OpCode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.FieldNode;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -15,6 +19,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static java.lang.String.format;
 
 public class NeoModule {
@@ -35,9 +40,9 @@ public class NeoModule {
     // in CALLT instructions.
     private List<MethodToken> methodTokens = new ArrayList<>();
 
-    // Holds this module's static field variables, i.e. all the static variables found on the
-    // contract class.
-    private List<NeoContractVariable> contractVariables = new ArrayList<>();
+    // Holds this module's static field variables. Includes static variables on the contract
+    // class and auxiliary classes.
+    private Map<String, NeoContractVariable> contractVariables = new HashMap<>();
 
     public List<NeoEvent> getEvents() {
         return new ArrayList<>(events.values());
@@ -49,21 +54,50 @@ public class NeoModule {
      * @return the
      */
     public List<NeoContractVariable> getContractVariables() {
-        return contractVariables;
+        return new ArrayList<>(contractVariables.values());
     }
 
+
     /**
-     * Gets the contract variable with the given JVM index
+     * Gets the corresponding contract variable for the variable found in the given instruction.
+     * <p>
+     * Creates a new contract variable, if the variable from the instruction is used for the
+     * first time in the compilation.
      *
-     * @param jvmIdx the index.
-     * @return the contract variable or null if not found.
+     * @param insn     The instruction using the variable.
+     * @param compUnit The compilation unit needed for the classloader.
+     * @return the contract variable.
      */
-    public NeoContractVariable getContractVariable(int jvmIdx) {
-        return contractVariables.stream()
-                .filter(v -> v.getJvmIdx() == jvmIdx)
-                .findFirst()
-                .orElse(null);
+    public NeoContractVariable getContractVariable(FieldInsnNode insn, CompilationUnit compUnit)
+            throws IOException {
+
+        ClassNode owner = getAsmClassForInternalName(insn.owner, compUnit.getClassLoader());
+        FieldNode variable = owner.fields.stream()
+                .filter(f -> f.name.equals(insn.name) && f.desc.equals(insn.desc))
+                .findFirst().get();
+        String id = NeoContractVariable.getVariableId(owner, variable);
+        if (contractVariables.containsKey(id)) {
+            return contractVariables.get(id);
+        }
+        int idx = contractVariables.size();
+        return new NeoContractVariable(variable, owner, idx);
     }
+
+//    /**
+//     * Gets the corresponding contract variable of the given ASM variable.
+//     *
+//     * @param owner    The owning class of the variable.
+//     * @param variable The variable.
+//     * @return the contract variable.
+//     */
+//    public NeoContractVariable getContractVariable(ClassNode owner, FieldNode variable) {
+//        String id = NeoContractVariable.getVariableId(owner, variable);
+//        if (contractVariables.containsKey(id)) {
+//            return contractVariables.get(id);
+//        }
+//        int idx = contractVariables.size();
+//        return new NeoContractVariable(variable, owner, idx);
+//    }
 
     /**
      * Gets this module's methods in the order they were added.
@@ -134,16 +168,8 @@ public class NeoModule {
         events.put(event.getDisplayName(), event);
     }
 
-    /**
-     * Adds the given variable to this module's contract variables.
-     *
-     * @param var the contract variable.
-     */
-    public void addContractVariable(NeoContractVariable var) {
-        contractVariables.add(var);
-    }
-
     void finalizeModule() {
+        checkForMaxNumberOfStaticFields();
         checkForDuplicatesOfMethodSignatureAnnotations();
         int startAddress = 0;
         for (NeoMethod method : this.sortedMethods) {
@@ -173,6 +199,14 @@ public class NeoModule {
                             .putInt(offset).array());
                 }
             }
+        }
+    }
+
+    private void checkForMaxNumberOfStaticFields() {
+        if (contractVariables.size() > Compiler.MAX_STATIC_FIELDS) {
+            throw new CompilerException(format("The contract has more than the maximally " +
+                            "supported number of static field variables (%d).",
+                    Compiler.MAX_STATIC_FIELDS));
         }
     }
 

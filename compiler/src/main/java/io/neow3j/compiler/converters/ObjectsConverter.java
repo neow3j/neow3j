@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
-import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addPushNumber;
@@ -140,15 +139,13 @@ public class ObjectsConverter implements Converter {
 
     public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {
-        int idx = getFieldIndex(fieldInsn, compUnit);
-        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
     public static void addStoreStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {
-        int idx = getFieldIndex(fieldInsn, compUnit);
-        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }
 

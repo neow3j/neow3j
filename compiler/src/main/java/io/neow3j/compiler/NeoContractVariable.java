@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import org.objectweb.asm.Type;
+import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
 import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
@@ -16,21 +17,19 @@ public class NeoContractVariable {
     private int idx;
 
     /**
-     * This variable's index in the JVM byte code. This index can deviate from the NeoVM index
-     * because events are not counted as variables in the NeoVM code but are normal variables in
-     * the JVM bytecode.
-     */
-    private int jvmIdx;
-
-    /**
      * The ASM counterpart of this variable.
      */
     private FieldNode asmField;
 
-    public NeoContractVariable(int idx, int jvmIdx, FieldNode asmField) {
-        this.idx = idx;
-        this.jvmIdx = jvmIdx;
+    /**
+     * The owning class of this variable.
+     */
+    private ClassNode owner;
+
+    public NeoContractVariable(FieldNode asmField, ClassNode owner, int idx) {
         this.asmField = asmField;
+        this.owner = owner;
+        this.idx = idx;
     }
 
     /**
@@ -46,11 +45,11 @@ public class NeoContractVariable {
         return idx;
     }
 
-    public int getJvmIdx() {
-        return jvmIdx;
+    public String getId() {
+        return getVariableId(owner, asmField);
     }
 
-    public FieldNode getAsmField() {
-        return asmField;
+    public static String getVariableId(ClassNode owner, FieldNode variable) {
+        return owner.name + variable.name + variable.desc;
     }
 }
