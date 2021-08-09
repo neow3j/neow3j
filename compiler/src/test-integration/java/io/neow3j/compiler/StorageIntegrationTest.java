@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.StackItemType;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,6 +33,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -55,6 +57,8 @@ public class StorageIntegrationTest {
 
     private static final String KEY4_STRING = "neow3j";
     private static final BigInteger INTEGER4 = BigInteger.valueOf(13);
+
+    private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -149,6 +153,12 @@ public class StorageIntegrationTest {
         ContractParameter key = byteArray(KEY3_HEX);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+
+        // Test that instructions return null if no value was found for the provided key.
+        key = byteArray(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.ANY));
+        assertNull(res.getStack().get(0).getValue());
     }
 
     @Test
@@ -156,6 +166,12 @@ public class StorageIntegrationTest {
         ContractParameter key = byteArray(KEY3_HEX);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+
+        // Test that instructions return null if no value was found for the provided key.
+        key = byteArray(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.ANY));
+        assertNull(res.getStack().get(0).getValue());
     }
 
     @Test
@@ -163,6 +179,12 @@ public class StorageIntegrationTest {
         ContractParameter key = string(KEY4_STRING);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER4));
+
+        // Test that instructions return null if no value was found for the provided key.
+        key = string(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.ANY));
+        assertNull(res.getStack().get(0).getValue());
     }
 
     @Test

@@ -20,6 +20,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class HelperIntegrationTest {
@@ -145,6 +146,15 @@ public class HelperIntegrationTest {
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(42747));
+    }
+
+    @Test
+    public void toIntNull() throws IOException {
+        // Test that instructions return null if no value was found for the provided key.
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getType(),
+                is(StackItemType.ANY));
+        assertNull(response.getInvocationResult().getStack().get(0).getValue());
     }
 
     @Test
@@ -316,6 +326,10 @@ public class HelperIntegrationTest {
 
         public static int toInt(byte[] bytes) {
             return Helper.toInt(bytes);
+        }
+
+        public static int toIntNull() {
+            return Helper.toInt(null);
         }
 
         public static String byteArrayToString(byte[] bytes) {
