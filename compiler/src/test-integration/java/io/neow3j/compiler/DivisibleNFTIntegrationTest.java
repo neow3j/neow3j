@@ -106,9 +106,7 @@ public class DivisibleNFTIntegrationTest {
             map.put(Helper.toByteArray((byte) 2),
                     addressToScriptHash("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
 
-            return (Iterator<ByteString>) Storage.find(ctx,
-                    mapPrefix,
-                    FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
         }
 
         public static int balanceOf(Hash160 account, ByteString tokenId) {
@@ -117,7 +115,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("60d6e924d7dfe4dc6c4ec9ad56e5e437324c8536")
+    @ContractHash("be54e16f78f67d8f2cc4236f1e3636be538edfa4")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

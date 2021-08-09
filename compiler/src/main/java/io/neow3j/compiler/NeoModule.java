@@ -72,6 +72,12 @@ public class NeoModule {
             throws IOException {
 
         ClassNode owner = getAsmClassForInternalName(insn.owner, compUnit.getClassLoader());
+        if (!owner.name.equals(compUnit.getContractClass().name)) {
+            throw new CompilerException(owner, "Static variables are only allowed in the main " +
+                    "contract class if they are not final or final but not of constant value. " +
+                    "Static variables that are final are automatically inlined and are therefore " +
+                    "also allowed outside of the main contract class.");
+        }
         FieldNode variable = owner.fields.stream()
                 .filter(f -> f.name.equals(insn.name) && f.desc.equals(insn.desc))
                 .findFirst().get();
@@ -80,24 +86,10 @@ public class NeoModule {
             return contractVariables.get(id);
         }
         int idx = contractVariables.size();
-        return new NeoContractVariable(variable, owner, idx);
+        NeoContractVariable var = new NeoContractVariable(variable, owner, idx);
+        contractVariables.put(id, var);
+        return var;
     }
-
-//    /**
-//     * Gets the corresponding contract variable of the given ASM variable.
-//     *
-//     * @param owner    The owning class of the variable.
-//     * @param variable The variable.
-//     * @return the contract variable.
-//     */
-//    public NeoContractVariable getContractVariable(ClassNode owner, FieldNode variable) {
-//        String id = NeoContractVariable.getVariableId(owner, variable);
-//        if (contractVariables.containsKey(id)) {
-//            return contractVariables.get(id);
-//        }
-//        int idx = contractVariables.size();
-//        return new NeoContractVariable(variable, owner, idx);
-//    }
 
     /**
      * Gets this module's methods in the order they were added.

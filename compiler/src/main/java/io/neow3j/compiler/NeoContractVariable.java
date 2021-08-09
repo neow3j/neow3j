@@ -45,8 +45,8 @@ public class NeoContractVariable {
         return idx;
     }
 
-    public String getId() {
-        return getVariableId(owner, asmField);
+    public ClassNode getOwner() {
+        return owner;
     }
 
     public static String getVariableId(ClassNode owner, FieldNode variable) {

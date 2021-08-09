@@ -291,21 +291,20 @@ public class Compiler {
         }
     }
 
-    private void compileInitsslotMethod() {
-        // TODO: Collect <cinit> methods and compile them into one single INITSSLOT method.
-//        compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
-    }
-
-    // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
-    // script. This only looks at the <clinit> method of the class. The <clinit> method
-    // contains static variable initialization instructions that happen right at the definition
-    // of the variables or in the static constructor.
-    private InitsslotNeoMethod createInitsslotMethod(ClassNode asmClass) {
-        Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
+    // Creates the method INITSSLOT method that initializes static variables in the NeoVM
+    // script. Currently, the compiler only considers static variables from the main contract
+    // class. Static variables in other classes lead to a compiler exception if they are
+    // non-final or final but not of constant value (e.g., set via method call).
+    private void compileInitsslotMethod() throws IOException {
+        Optional<MethodNode> classCtorOpt = compUnit.getContractClass().methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
                 .findFirst();
-        return classCtorOpt.map(methodNode -> new InitsslotNeoMethod(methodNode, asmClass))
-                .orElse(null);
+        if (!classCtorOpt.isPresent()) {
+            return;
+        }
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass());
+        compUnit.getNeoModule().addMethod(m);
+        m.convert(compUnit);
     }
 
     private void finalizeCompilation() {
