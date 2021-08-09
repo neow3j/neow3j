@@ -85,14 +85,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
-    @Instruction(opcode = OpCode.PUSHNULL)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native int getInteger(StorageContext context, byte[] key);
+    public static native Integer getInteger(StorageContext context, byte[] key);
 
     /**
      * Returns the value corresponding to the given key.
@@ -143,14 +137,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
-    @Instruction(opcode = OpCode.PUSHNULL)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native int getInteger(StorageContext context, String key);
+    public static native Integer getInteger(StorageContext context, String key);
 
     /**
      * Returns the value corresponding to the given key.
@@ -201,14 +189,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
-    @Instruction(opcode = OpCode.PUSHNULL)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native int getInteger(StorageContext context, ByteString key);
+    public static native Integer getInteger(StorageContext context, ByteString key);
 
     /**
      * Stores the given key-value pair.

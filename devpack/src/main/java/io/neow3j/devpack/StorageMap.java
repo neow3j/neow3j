@@ -99,7 +99,7 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public int getInteger(byte[] key) {
+    public Integer getInteger(byte[] key) {
         return Storage.getInteger(context, concat(prefix, key));
     }
 
@@ -145,7 +145,7 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public int getInteger(ByteString key) {
+    public Integer getInteger(ByteString key) {
         return Storage.getInteger(context, concat(prefix, key));
     }
 
@@ -191,7 +191,7 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public int getInteger(String key) {
+    public Integer getInteger(String key) {
         return Storage.getInteger(context, concat(prefix, key));
     }
 

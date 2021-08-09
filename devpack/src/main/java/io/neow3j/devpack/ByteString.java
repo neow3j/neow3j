@@ -76,17 +76,13 @@ public class ByteString {
     /**
      * Converts this {@code ByteString} to an integer. The bytes are read in little-endian format.
      * E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * If this byte string is null, the integer value 0 is returned.
      *
      * @return the integer.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
-    @Instruction(opcode = OpCode.PUSHNULL)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x03)
+    @Instruction(opcode = OpCode.ABORT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public native int toInteger();
 

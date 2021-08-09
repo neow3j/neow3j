@@ -1,6 +1,7 @@
 package io.neow3j.script;
 
 import io.neow3j.utils.Numeric;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -332,7 +333,7 @@ public enum OpCode {
     ABORT(0x38, 0),
 
     /**
-     * Pop the top value of the stack, if it false, then exit vm execution and set vm state to
+     * Pop the top value of the stack, if it's false, then exit vm execution and set vm state to
      * FAULT.
      */
     ASSERT(0x39, 1),
@@ -856,7 +857,7 @@ public enum OpCode {
     /**
      * Takes two elements of the stack and raises the first one to the power of the second one.
      */
-    POW(0xA3,  1 << 6),
+    POW(0xA3, 1 << 6),
 
     /**
      * Returns the square root of a specified number.

@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.types.StackItemType;
+import io.neow3j.types.NeoVMStateType;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,8 +14,8 @@ import java.io.IOException;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class ByteStringIntegrationTest {
@@ -73,8 +73,8 @@ public class ByteStringIntegrationTest {
     public void byteStringToIntegerNull() throws IOException {
         // Test that instructions return null if no value was found for the provided key.
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        assertThat(res.getStack().get(0).getType(), is(StackItemType.ANY));
-        assertNull(res.getStack().get(0).getValue());
+        assertThat(res.getStack(), hasSize(0));
+        assertThat(res.getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
