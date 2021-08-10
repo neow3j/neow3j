@@ -13,7 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.junit.Assert.assertThat;
 
 public class StaticVariablesTest {
@@ -23,15 +23,16 @@ public class StaticVariablesTest {
         CompilationUnit output =
                 new Compiler().compile(StaticVariablesTestContract.class.getName());
         java.util.List<String> staticVars = output.getDebugInfo().getStaticVariables();
-        assertThat(staticVars.get(0), is("ctx,InteropInterface,0"));
-        assertThat(staticVars.get(1), is("owner,Hash160,1"));
-        assertThat(staticVars.get(2), is("string,String,2"));
-        assertThat(staticVars.get(3), is("byteString,ByteArray,3"));
-        assertThat(staticVars.get(4), is("i,Integer,4"));
-        assertThat(staticVars.get(5), is("byteArray,ByteArray,5"));
-        assertThat(staticVars.get(6), is("map,Map,6"));
-        assertThat(staticVars.get(7), is("obj,Any,7"));
-        assertThat(staticVars.get(8), is("list,Array,8"));
+        assertThat(staticVars, containsInAnyOrder(
+                "ctx,InteropInterface,0",
+                "owner,Hash160,1",
+                "string,String,2",
+                "byteString,ByteArray,3",
+                "i,Integer,4",
+                "byteArray,ByteArray,5",
+                "map,Map,6",
+                "obj,Any,7",
+                "list,Array,8"));
     }
 
     public static class StaticVariablesTestContract {
