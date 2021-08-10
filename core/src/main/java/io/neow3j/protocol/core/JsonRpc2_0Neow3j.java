@@ -576,12 +576,12 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     @Override
     public Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers) {
         List<?> params;
+        String scriptBase64 = Base64.encode(scriptHex);
         if (signers.length > 0) {
-            params = asList(scriptHex, stream(signers)
-                    .map(TransactionSigner::new)
-                    .collect(Collectors.toList()));
+            params = asList(scriptBase64,
+                    stream(signers).map(TransactionSigner::new).collect(Collectors.toList()));
         } else {
-            params = singletonList(scriptHex);
+            params = singletonList(scriptBase64);
         }
         return new Request<>(
                 "invokescript",

@@ -3,6 +3,7 @@ package io.neow3j.transaction;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.WIF;
@@ -46,8 +47,8 @@ import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
-import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.transaction.AccountSigner.global;
+import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -879,7 +880,7 @@ public class TransactionBuilderTest {
     @Test
     public void invokeScript() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
-                SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
+                Base64.encode(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL),
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));

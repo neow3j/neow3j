@@ -1,17 +1,6 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
-import static io.neow3j.crypto.Sign.signMessage;
-import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
-import static io.neow3j.transaction.Witness.createContractWitness;
-import static io.neow3j.transaction.Witness.createMultiSigWitness;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
@@ -37,6 +26,15 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
+import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createContractWitness;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
 
 /**
  * Used to build a {@link Transaction}. When signing the {@code TransactionBuilder}, a transaction
@@ -380,9 +378,7 @@ public class TransactionBuilder {
         // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow3j.invokeScript(
-                Base64.encode(hexStringToByteArray(script)), signers)
-                .send();
+        NeoInvokeScript response = neow3j.invokeScript(script, signers).send();
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
                     "exception: " + response.getResult().getException());
