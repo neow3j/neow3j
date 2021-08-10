@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.types.NeoVMStateType;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -65,6 +67,14 @@ public class ByteStringIntegrationTest {
         ContractParameter byteString = byteArray("00010203");
         InvocationResult res = ct.callInvokeFunction(testName, byteString).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(50462976));
+    }
+
+    @Test
+    public void byteStringToIntegerNull() throws IOException {
+        // Test that instructions return null if no value was found for the provided key.
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(res.getStack(), hasSize(0));
+        assertThat(res.getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -138,7 +148,7 @@ public class ByteStringIntegrationTest {
             return s.length();
         }
 
-        public static  String byteStringAsString(ByteString s) {
+        public static String byteStringAsString(ByteString s) {
             return s.toString();
         }
 
@@ -147,6 +157,11 @@ public class ByteStringIntegrationTest {
         }
 
         public static int byteStringToInteger(ByteString s) {
+            return s.toInteger();
+        }
+
+        public static int byteStringToIntegerNull() {
+            ByteString s = null;
             return s.toInteger();
         }
 
