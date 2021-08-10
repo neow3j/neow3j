@@ -366,8 +366,9 @@ public class ObjectsConverter implements Converter {
         List<NeoEvent> events = compUnit.getNeoModule().getEvents();
         NeoEvent event = events.stream()
                 .filter(e -> eventVariableName.equals(e.getAsmVariable().name))
-                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find "
-                        + "triggered event in list of events."));
+                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find " +
+                        "triggered event in list of events. Make sure to declare events only in" +
+                        " the main contract class."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
         while (!isMethodCallToEventSend(insn)) {

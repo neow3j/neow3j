@@ -73,10 +73,8 @@ public class NeoModule {
 
         ClassNode owner = getAsmClassForInternalName(insn.owner, compUnit.getClassLoader());
         if (!owner.name.equals(compUnit.getContractClass().name)) {
-            throw new CompilerException(owner, "Static variables are only allowed in the main " +
-                    "contract class if they are not final or final but not of constant value. " +
-                    "Static variables that are final are automatically inlined and are therefore " +
-                    "also allowed outside of the main contract class.");
+            throw new CompilerException(owner, "Static variables are not allowed outside the main" +
+                    " contract class if they are not final or final but not of constant value. ");
         }
         FieldNode variable = owner.fields.stream()
                 .filter(f -> f.name.equals(insn.name) && f.desc.equals(insn.desc))
