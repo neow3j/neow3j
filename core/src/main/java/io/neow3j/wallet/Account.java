@@ -313,6 +313,12 @@ public class Account {
         return account;
     }
 
+    /**
+     * Creates an account from the given WIF.
+     *
+     * @param wif The WIF of the account.
+     * @return the account.
+     */
     public static Account fromWIF(String wif) {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
@@ -324,6 +330,11 @@ public class Account {
         return account;
     }
 
+    /**
+     * Creates an account from a new EC key pair.
+     *
+     * @return the account.
+     */
     public static Account fromNewECKeyPair() {
         try {
             return new Account(ECKeyPair.createEcKeyPair());
@@ -332,6 +343,12 @@ public class Account {
         }
     }
 
+    /**
+     * Creates an account from the provided NEP-6 account.
+     *
+     * @param nep6Acct The account in NEP-6 format.
+     * @return the account.
+     */
     public static Account fromNEP6Account(NEP6Account nep6Acct) {
         Account account = new Account();
         account.address = nep6Acct.getAddress();
@@ -368,12 +385,29 @@ public class Account {
     }
 
     /**
+     * Creates an account from the given script hash.
+     * <p>
+     * Note that an account created with this method does not contain a verification script nor
+     * an EC key pair. Therefore, it cannot be used for transaction signing.
+     *
+     * @param scriptHash The script hash of the account.
+     * @return the account.
+     */
+    public static Account fromScriptHash(Hash160 scriptHash) {
+        return fromAddress(scriptHash.toAddress());
+    }
+
+    /**
      * Creates a new generic account with a fresh key pair.
      *
      * @return the new account.
      */
     public static Account create() {
-        return fromNewECKeyPair();
+        try {
+            return new Account(ECKeyPair.createEcKeyPair());
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("Failed to create a new EC key pair.", e);
+        }
     }
 
 }

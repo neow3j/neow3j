@@ -311,7 +311,7 @@ public class Wallet {
      * @return the new wallet.
      */
     public static Wallet create() {
-        Account a = Account.fromNewECKeyPair();
+        Account a = Account.create();
         return new Wallet().addAccounts(a).defaultAccount(a.getScriptHash());
     }
 
