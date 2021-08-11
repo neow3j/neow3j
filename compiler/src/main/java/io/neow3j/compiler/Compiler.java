@@ -236,6 +236,27 @@ public class Compiler {
     }
 
     /**
+     * Replace the String literal in class initialization and compiles the given
+     * contract class to neo-vm code and generates debug information with the
+     * help of the given source containers.
+     * <p>
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
+     * the paths to the given class files.
+     *
+     * @param contractClass    The fully qualified name of the contract class.
+     * @param sourceContainers A list of source containers used for generating debugging
+     *                         information.
+     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @return the compilation results.
+     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     */
+    public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers,
+            java.util.Map<String, String> replaceMap) throws IOException {
+        compUnit.addSourceContainers(sourceContainers);
+        return compile(contractClass, replaceMap);
+    }
+
+    /**
      * Compiles the given contract class to neo-vm code.
      *
      * @param contractClass the fully qualified name of the contract class.
@@ -247,6 +268,19 @@ public class Compiler {
     }
 
     /**
+     * Replace the String literal in class initialization and compiles the given
+     * contract class to neo-vm code.
+     *
+     * @param contractClass the fully qualified name of the contract class.
+     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException when reading class files runs into an error.
+     */
+    public CompilationUnit compile(String contractClass, java.util.Map<String, String> replaceMap) throws IOException {
+        return compile(getAsmClass(contractClass, compUnit.getClassLoader()), replaceMap);
+    }
+
+    /**
      * Compiles the given contract class to neo-vm code.
      *
      * @param classStream the {@link InputStream} pointing to a contract class file.
@@ -255,6 +289,90 @@ public class Compiler {
      */
     public CompilationUnit compile(InputStream classStream) throws IOException {
         return compile(getAsmClass(classStream));
+    }
+
+    /**
+     * Replace the String literal in class initialization and compiles the given
+     * contract class to neo-vm code.
+     *
+     * @param classStream the {@link InputStream} pointing to a contract class file.
+     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException when reading class files runs into an error.
+     */
+    public CompilationUnit compile(InputStream classStream, java.util.Map<String, String> replaceMap) throws IOException {
+        return compile(getAsmClass(classStream), replaceMap);
+    }
+
+    /**
+     * Replace the String literal in class initialization and compiles the given
+     * contract class to neo-vm code.
+     *
+     * @param classNode the {@link ClassNode} representing a contract class.
+     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @return the compilation unit holding the NEF and contract manifest.
+     * @throws IOException when reading class files runs into an error.
+     */
+    protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap) throws IOException {
+        // apply replacement to static field on class initialization
+        classNode.methods.stream()
+                // apply to all occurrences in bytecode by removing this filter
+                .filter((it) -> it.name.equals(CLASS_CTOR))
+                .forEach((methodNode) -> {
+                    for (AbstractInsnNode insnNode : methodNode.instructions) {
+                        if (insnNode.getType() == AbstractInsnNode.LDC_INSN) {
+                            LdcInsnNode node = (LdcInsnNode) insnNode;
+                            if (node.cst instanceof String && replaceMap.containsKey(node.cst)) {
+                                node.cst = replaceMap.get(node.cst);
+                            }
+                        }
+                    }
+                });
+
+        // apply replacement to all invisible annotations
+        if (classNode.invisibleAnnotations != null)
+            classNode.invisibleAnnotations
+                    .forEach((it) -> processAnnotationNode(it, replaceMap));
+
+        // compile modified classNode
+        return compile(classNode);
+    }
+
+    private static void processAnnotationNode(AnnotationNode annotationNode, java.util.Map<String, String> replaceMap) {
+        // safety check
+        if (annotationNode.values == null || annotationNode.values.size() % 2 != 0)
+            return;
+
+        // for each name-value pair
+        for (int i = 0; i < annotationNode.values.size(); i += 2) {
+            // The value might be different types
+            Object value = annotationNode.values.get(i + 1);
+            if (value == null) continue;
+
+            // We only focused on String, AnnotationNode, List<String>
+            // and List<AnnotationNode>
+            if (value instanceof String) {
+                // do the modification
+                if (replaceMap.containsKey(value)) {
+                    annotationNode.values.set(i + 1, replaceMap.get(value));
+                }
+            } else if (value instanceof AnnotationNode) {
+                processAnnotationNode((AnnotationNode) value, replaceMap);
+            } else if (value instanceof List) {
+                List<Object> casted = (List<Object>) value;
+                for (int j = 0; j < casted.size(); j++) {
+                    Object elem = casted.get(j);
+                    if (elem instanceof String) {
+                        // do the modification
+                        if (replaceMap.containsKey(elem)) {
+                            casted.set(i + 1, replaceMap.get(elem));
+                        }
+                    } else if (elem instanceof AnnotationNode) {
+                        processAnnotationNode((AnnotationNode) elem, replaceMap);
+                    }
+                }
+            }
+        }
     }
 
     /**
