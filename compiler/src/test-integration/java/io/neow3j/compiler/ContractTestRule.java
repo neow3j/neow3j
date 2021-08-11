@@ -13,6 +13,9 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -29,9 +32,11 @@ import org.testcontainers.containers.ContainerState;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
@@ -97,11 +102,14 @@ public class ContractTestRule implements TestRule {
 
     protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
         CompilationUnit res = new Compiler().compile(fullyQualifiedName);
-        NeoSendRawTransaction response = new ContractManagement(neow3j)
+        Transaction tx = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
                 .signers(calledByEntry(committee))
-                .sign()
-                .send();
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
+                committee.getVerificationScript());
+        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
         }
@@ -235,10 +243,12 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 transferGas(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transfer(committee, to, amount)
-                .sign()
-                .send()
-                .getSendRawTransaction().getHash();
+        Transaction tx = gasToken.transfer(committee, to, amount).getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(),
+                        defaultAccount.getECKeyPair())),
+                committee.getVerificationScript());
+        return tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
     }
 
     /**
@@ -253,10 +263,12 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transfer(committee, to, amount)
-                .sign()
-                .send()
-                .getSendRawTransaction().getHash();
+        Transaction tx = neoToken.transfer(committee, to, amount).getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(),
+                        defaultAccount.getECKeyPair())),
+                committee.getVerificationScript());
+        return tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
     }
 
     /**
@@ -270,16 +282,17 @@ public class ContractTestRule implements TestRule {
     public Hash256 invokeFunction(String function, ContractParameter... params)
             throws Throwable {
 
-        Signer signer;
+        NeoSendRawTransaction response;
+        TransactionBuilder b = contract.invokeFunction(function, params);
         if (signAsCommittee) {
-            signer = AccountSigner.global(committee);
+            Transaction tx = b.signers(AccountSigner.global(committee)).getUnsignedTransaction();
+            Witness multiSigWitness = createMultiSigWitness(
+                    asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
+                    committee.getVerificationScript());
+            response = tx.addWitness(multiSigWitness).send();
         } else {
-            signer = AccountSigner.global(defaultAccount);
+            response = b.signers(AccountSigner.global(defaultAccount)).sign().send();
         }
-        NeoSendRawTransaction response = contract.invokeFunction(function, params)
-                .signers(signer)
-                .sign()
-                .send();
 
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
