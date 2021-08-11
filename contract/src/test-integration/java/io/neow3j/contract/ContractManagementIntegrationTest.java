@@ -6,6 +6,8 @@ import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import org.junit.BeforeClass;
@@ -18,13 +20,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.SmartContract.calcContractHash;
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -55,14 +60,21 @@ public class ContractManagementIntegrationTest {
         assertThat(minimumDeploymentFee, is(initialDeploymentFee));
 
         BigInteger newDeploymentFee = new BigInteger("2000000000");
-        Hash256 txHash = contractManagement
+
+        Transaction tx = contractManagement
                 .setMinimumDeploymentFee(newDeploymentFee)
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+
+        Hash256 txHash = tx.addWitness(multiSigWitness)
                 .send()
                 .getSendRawTransaction()
                 .getHash();
+
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         minimumDeploymentFee = contractManagement.getMinimumDeploymentFee();
@@ -80,14 +92,15 @@ public class ContractManagementIntegrationTest {
         ContractManifest manifest = getObjectMapper()
                 .readValue(manifestFile, ContractManifest.class);
 
-        Hash256 txHash = contractManagement.deploy(nef, manifest)
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = contractManagement.deploy(nef, manifest)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
+
         Hash160 contractHash = calcContractHash(
                 COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
         NeoGetContractState.ContractState contractState =

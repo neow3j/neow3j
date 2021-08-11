@@ -19,7 +19,6 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
@@ -46,6 +45,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.contract.Token.toFractions;
 import static io.neow3j.protocol.core.response.OracleResponseCode.TIMEOUT;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -82,16 +82,14 @@ public class OracleContractIntegrationTest {
         // Register candidate
         ECKeyPair.ECPublicKey publicKey = ct.getDefaultAccount().getECKeyPair().getPublicKey();
         NeoSendRawTransaction response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
         // Designate as oracle.
-        response = new RoleManagement(ct.getNeow3j()).designateAsRole(Role.ORACLE,
-                Arrays.asList(publicKey))
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
+        response = new RoleManagement(ct.getNeow3j())
+                .designateAsRole(Role.ORACLE, asList(publicKey))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());

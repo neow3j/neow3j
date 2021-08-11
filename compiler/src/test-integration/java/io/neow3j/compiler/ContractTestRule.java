@@ -32,6 +32,7 @@ import java.math.BigInteger;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
@@ -99,8 +100,7 @@ public class ContractTestRule implements TestRule {
         CompilationUnit res = new Compiler().compile(fullyQualifiedName);
         NeoSendRawTransaction response = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest())
-                .wallet(wallet)
-                .signers(AccountSigner.calledByEntry(committee.getScriptHash()))
+                .signers(calledByEntry(committee))
                 .sign()
                 .send();
         if (response.hasError()) {
@@ -236,7 +236,7 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 transferGas(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
-        return gasToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
+        return gasToken.transfer(committee, to, amount)
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -254,7 +254,7 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
-        return neoToken.transferFromSpecificAccounts(wallet, to, amount, committee.getScriptHash())
+        return neoToken.transfer(committee, to, amount)
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -273,12 +273,11 @@ public class ContractTestRule implements TestRule {
 
         Signer signer;
         if (signAsCommittee) {
-            signer = AccountSigner.global(committee.getScriptHash());
+            signer = AccountSigner.global(committee);
         } else {
-            signer = AccountSigner.global(defaultAccount.getScriptHash());
+            signer = AccountSigner.global(defaultAccount);
         }
         NeoSendRawTransaction response = contract.invokeFunction(function, params)
-                .wallet(wallet)
                 .signers(signer)
                 .sign()
                 .send();
@@ -343,4 +342,5 @@ public class ContractTestRule implements TestRule {
     public ContainerState getNeoTestContainer() {
         return neoTestContainer;
     }
+
 }

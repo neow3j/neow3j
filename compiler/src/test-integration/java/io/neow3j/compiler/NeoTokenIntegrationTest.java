@@ -123,8 +123,7 @@ public class NeoTokenIntegrationTest {
         // Add the default account as a candidate
         Hash256 txHash = new io.neow3j.contract.NeoToken(ct.getNeow3j())
                 .registerCandidate(ct.getDefaultAccount().getECKeyPair().getPublicKey())
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount()))
                 .sign()
                 .send()
                 .getSendRawTransaction().getHash();
@@ -249,7 +248,6 @@ public class NeoTokenIntegrationTest {
             NeoToken.vote(voter, publicKey);
             return NeoToken.getAccountState(voter);
         }
-
     }
 
 }

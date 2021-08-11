@@ -1,16 +1,21 @@
 package io.neow3j.contract;
 
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.client2AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static io.neow3j.wallet.Account.fromWIF;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
@@ -37,7 +42,7 @@ public class IntegrationTestHelper {
         GasToken gasToken = new GasToken(neow3j);
         BigInteger fractions = gasToken.toFractions(new BigDecimal("100000"));
         for (Account account : accounts) {
-            transferFromGenesisToAccount(neow3j, new GasToken(neow3j), fractions, account);
+            transferFromGenesisToAccount(neow3j, gasToken, fractions, account);
         }
     }
 
@@ -51,12 +56,18 @@ public class IntegrationTestHelper {
 
     static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
             BigInteger amount, Account a) throws Throwable {
-        Hash256 txHash =
-                token.transfer(COMMITTEE_WALLET, a.getScriptHash(), amount)
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+
+        Transaction unsignedTx = token.transfer(COMMITTEE_ACCOUNT, a.getScriptHash(), amount)
+                .getUnsignedTransaction();
+
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(unsignedTx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+
+        Hash256 txHash = unsignedTx.addWitness(multiSigWitness)
+                .send()
+                .getSendRawTransaction()
+                .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
     }
 

@@ -1,13 +1,15 @@
 package io.neow3j.contract;
 
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -17,6 +19,8 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
@@ -44,15 +48,14 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_stateValidator() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash = roleManagement
-                .designateAsRole(Role.STATE_VALIDATOR,
-                        singletonList(account.getECKeyPair().getPublicKey()))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = roleManagement.designateAsRole(Role.STATE_VALIDATOR,
+                        asList(account.getECKeyPair().getPublicKey()))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
@@ -70,15 +73,14 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_oracle() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash = roleManagement
-                .designateAsRole(Role.ORACLE,
-                        singletonList(account.getECKeyPair().getPublicKey()))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = roleManagement.designateAsRole(Role.ORACLE,
+                        asList(account.getECKeyPair().getPublicKey()))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
@@ -96,15 +98,14 @@ public class RoleManagementIntegrationTest {
     @Test
     public void testDesignateByRoleAndGetDesignated_fsAlphabetNode() throws Throwable {
         Account account = Account.create();
-        Hash256 txHash = roleManagement
-                .designateAsRole(Role.NEO_FS_ALPHABET_NODE,
-                        singletonList(account.getECKeyPair().getPublicKey()))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = roleManagement.designateAsRole(Role.NEO_FS_ALPHABET_NODE,
+                        asList(account.getECKeyPair().getPublicKey()))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         // The designation is active starting on the next block after the designate transaction
