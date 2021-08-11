@@ -10,15 +10,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-public class ContractReplaceTest {
+public class PlaceholderSubstitutionTest {
+
     @Test
     public void testSingleAnnotationReplacement() throws IOException {
         Map<String, String> replaceMap = new HashMap<>();
         replaceMap.put("<INVALID_TRUST_HASH>", "*");
         CompilationUnit res = new Compiler().compile(
-                ContractReplaceTest.SingleAnnotationReplaceTest.class.getName(),
+                PlaceholderSubstitutionTest.SingleAnnotationReplaceTest.class.getName(),
                 replaceMap
         );
         assertEquals(res.getManifest().getTrusts().get(0), "*");
@@ -37,7 +38,7 @@ public class ContractReplaceTest {
         replaceMap.put("<INVALID_TRUST_HASH1>", "*");
         replaceMap.put("<INVALID_TRUST_HASH2>", "*");
         CompilationUnit res = new Compiler().compile(
-                ContractReplaceTest.MultiAnnotationReplaceTest.class.getName(),
+                PlaceholderSubstitutionTest.MultiAnnotationReplaceTest.class.getName(),
                 replaceMap
         );
         assertEquals(res.getManifest().getTrusts().get(0), "*");
@@ -63,7 +64,7 @@ public class ContractReplaceTest {
         replaceMap.put("<INVALID_HASH>", Account.create().getAddress());
 
         new Compiler().compile(
-                ContractReplaceTest.BytecodeReplaceTest.class.getName(),
+                PlaceholderSubstitutionTest.BytecodeReplaceTest.class.getName(),
                 replaceMap
         );
     }
