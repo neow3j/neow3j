@@ -1,9 +1,11 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractManagement;
+import io.neow3j.contract.NefFile;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetStorage;
@@ -46,14 +48,13 @@ import static org.junit.Assert.assertThat;
 public class ContractTestRule implements TestRule {
 
     private NeoTestContainer neoTestContainer;
-    private final String fullyQualifiedClassName;
+    private String fullyQualifiedClassName;
     private Account defaultAccount;
     private Account committee;
     private Account client1;
     private Wallet wallet;
     private Neow3j neow3j;
     private SmartContract contract;
-    private String contractName;
     private Hash256 deployTxHash;
     private Hash256 blockHashOfDeployTx;
 
@@ -64,6 +65,8 @@ public class ContractTestRule implements TestRule {
         this.fullyQualifiedClassName = fullyQualifiedName;
     }
 
+    public ContractTestRule() {}
+
     @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {
@@ -72,7 +75,11 @@ public class ContractTestRule implements TestRule {
                 neoTestContainer = new NeoTestContainer();
                 try {
                     neoTestContainer.start();
-                    setUp(fullyQualifiedClassName, neoTestContainer.getNodeUrl());
+                    setUp(neoTestContainer.getNodeUrl());
+                    if (fullyQualifiedClassName != null) {
+                        contract = deployContract(fullyQualifiedClassName);
+                        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
+                    }
                     base.evaluate();
                 } finally {
                     neoTestContainer.stop();
@@ -81,7 +88,7 @@ public class ContractTestRule implements TestRule {
         };
     }
 
-    public void setUp(String name, String containerURL) throws Throwable {
+    public void setUp(String containerURL) throws Throwable {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
                 singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
@@ -89,15 +96,13 @@ public class ContractTestRule implements TestRule {
         wallet = Wallet.withAccounts(defaultAccount, committee);
         neow3j = neow3j.build(new HttpService(containerURL));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
-        contractName = name;
-        contract = deployContract(contractName);
-        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
     }
 
-    protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
+    public SmartContract deployContract(NefFile nef, ContractManifest manifest)
+            throws Throwable {
+
         NeoSendRawTransaction response = new ContractManagement(neow3j)
-                .deploy(res.getNefFile(), res.getManifest())
+                .deploy(nef, manifest)
                 .wallet(wallet)
                 .signers(AccountSigner.calledByEntry(committee.getScriptHash()))
                 .sign()
@@ -117,11 +122,16 @@ public class ContractTestRule implements TestRule {
         NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
         if (execution.getState().equals(NeoVMStateType.FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
-                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
+                    + "message was: '%s'", manifest.getName(), execution.getException()));
         }
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
         Hash160 scriptHash = new Hash160(reverseArray(hexStringToByteArray(scriptHashHex)));
         return new SmartContract(scriptHash, neow3j);
+    }
+
+    public SmartContract deployContract(String fullyQualifiedName) throws Throwable {
+        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
+        return deployContract(res.getNefFile(), res.getManifest());
     }
 
     public Account getDefaultAccount() {
@@ -146,10 +156,6 @@ public class ContractTestRule implements TestRule {
 
     public SmartContract getContract() {
         return contract;
-    }
-
-    public String getContractName() {
-        return contractName;
     }
 
     public Hash256 getDeployTxHash() {
