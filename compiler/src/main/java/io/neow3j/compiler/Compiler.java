@@ -236,8 +236,8 @@ public class Compiler {
     }
 
     /**
-     * Replace the String literal in class initialization and compiles the given
-     * contract class to neo-vm code and generates debug information with the
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
+     * compiles the contract to neo-vm code and generates debug information with the
      * help of the given source containers.
      * <p>
      * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
@@ -246,7 +246,8 @@ public class Compiler {
      * @param contractClass    The fully qualified name of the contract class.
      * @param sourceContainers A list of source containers used for generating debugging
      *                         information.
-     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @param replaceMap       The {@link java.util.Map} mapping placeholder strings to the
+     *                         desired values.
      * @return the compilation results.
      * @throws IOException if something goes wrong when reading Java and class files from disk.
      */
@@ -268,15 +269,17 @@ public class Compiler {
     }
 
     /**
-     * Replace the String literal in class initialization and compiles the given
-     * contract class to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
+     * compiles the contract to neo-vm code.
      *
      * @param contractClass the fully qualified name of the contract class.
-     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @param replaceMap    The {@link java.util.Map} mapping placeholder strings to the desired
+     *                      values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException when reading class files runs into an error.
      */
-    public CompilationUnit compile(String contractClass, java.util.Map<String, String> replaceMap) throws IOException {
+    public CompilationUnit compile(String contractClass, java.util.Map<String, String> replaceMap)
+            throws IOException {
         return compile(getAsmClass(contractClass, compUnit.getClassLoader()), replaceMap);
     }
 
@@ -292,28 +295,32 @@ public class Compiler {
     }
 
     /**
-     * Replace the String literal in class initialization and compiles the given
-     * contract class to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
+     * compiles the contract to neo-vm code.
      *
      * @param classStream the {@link InputStream} pointing to a contract class file.
-     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @param replaceMap  The {@link java.util.Map} mapping placeholder strings to the desired
+     *                    values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException when reading class files runs into an error.
      */
-    public CompilationUnit compile(InputStream classStream, java.util.Map<String, String> replaceMap) throws IOException {
+    public CompilationUnit compile(InputStream classStream,
+            java.util.Map<String, String> replaceMap) throws IOException {
         return compile(getAsmClass(classStream), replaceMap);
     }
 
     /**
-     * Replace the String literal in class initialization and compiles the given
-     * contract class to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
+     * compiles the contract to neo-vm code.
      *
-     * @param classNode the {@link ClassNode} representing a contract class.
-     * @param replaceMap the {@link java.util.Map} which key is old string, value is new string.
+     * @param classNode  the {@link ClassNode} representing a contract class.
+     * @param replaceMap The {@link java.util.Map} mapping placeholder strings to the desired
+     *                   values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException when reading class files runs into an error.
      */
-    protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap) throws IOException {
+    protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap)
+            throws IOException {
         // apply replacement to static field on class initialization
         classNode.methods.stream()
                 // apply to all occurrences in bytecode by removing this filter
@@ -338,7 +345,8 @@ public class Compiler {
         return compile(classNode);
     }
 
-    private static void processAnnotationNode(AnnotationNode annotationNode, java.util.Map<String, String> replaceMap) {
+    private static void processAnnotationNode(AnnotationNode annotationNode, java.util.Map<String
+            , String> replaceMap) {
         // safety check
         if (annotationNode.values == null || annotationNode.values.size() % 2 != 0)
             return;
