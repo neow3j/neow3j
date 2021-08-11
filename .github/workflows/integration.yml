@@ -12,7 +12,7 @@ env:
 jobs:
   build:
     runs-on: [self-hosted]
-    if: contains(github.event.pull_request.labels.*.name, 'safe to test')
+    if: github.repository_owner == 'neow3j' || contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - name: Cache local Gradle dir
