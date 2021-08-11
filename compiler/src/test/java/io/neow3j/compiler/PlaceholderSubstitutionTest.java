@@ -56,5 +56,21 @@ public class PlaceholderSubstitutionTest {
         }
     }
 
+    @Test
+    public void testAnnotationReplacement() throws IOException {
+        Map<String, String> replaceMap = new HashMap<>();
+        replaceMap.put("<PERMISSION_HASH>", "*");
+        CompilationUnit res = new Compiler().compile(
+                AnnotationReplaceTest.class.getName(),
+                replaceMap
+        );
+        assertEquals(res.getManifest().getPermissions().get(0).getContract(), "*");
+    }
+
+    @Permission(contract = "<PERMISSION_HASH>")
+    static class AnnotationReplaceTest {
+        public static void main() {
+        }
+    }
 
 }
