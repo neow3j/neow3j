@@ -10,7 +10,7 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
-import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -66,8 +66,8 @@ public class NeoNameService extends NonFungibleToken {
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
      * invocations.
      *
-     * @param scriptHash the script hash of the name service contract.
-     * @param neow the {@link Neow3j} instance to use for invocations.
+     * @param scriptHash The script hash of the name service contract.
+     * @param neow       The {@link Neow3j} instance to use for invocations.
      */
     public NeoNameService(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
@@ -89,7 +89,7 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Only committee members are allowed to add a new root domain.
      *
-     * @param root the new root domain.
+     * @param root The new root domain.
      * @return a transaction builder.
      */
     public TransactionBuilder addRoot(String root) {
@@ -103,7 +103,7 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Only committee members are allowed to set the price.
      *
-     * @param price the price for registering a domain.
+     * @param price The price for registering a domain.
      * @return a transaction builder.
      */
     public TransactionBuilder setPrice(BigInteger price) {
@@ -133,7 +133,7 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Checks if the specified second-level domain name is available.
      *
-     * @param name the domain name.
+     * @param name The domain name.
      * @return true if the domain name is available, false otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -151,8 +151,8 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to register a new domain and initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param name  the domain name.
-     * @param owner the address of the domain owner.
+     * @param name  The domain name.
+     * @param owner The address of the domain owner.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -198,7 +198,7 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Only supports renewing the second-level domain name.
      *
-     * @param name the domain name.
+     * @param name The domain name.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -213,8 +213,8 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Requires to be signed by the current owner and the new admin of the domain.
      *
-     * @param name  the domain name.
-     * @param admin the script hash of the admin address.
+     * @param name  The domain name.
+     * @param admin The script hash of the admin address.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -227,9 +227,9 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to set the type of the specified domain name and the
      * corresponding type data and initializes a {@link TransactionBuilder} based on this script.
      *
-     * @param name the domain name.
-     * @param type the record type.
-     * @param data the corresponding data.
+     * @param name The domain name.
+     * @param type The record type.
+     * @param data The corresponding data.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -259,8 +259,8 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Gets the type data of the domain.
      *
-     * @param name the domain name.
-     * @param type the record type.
+     * @param name The domain name.
+     * @param type The record type.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -278,8 +278,8 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to delete the record data initializes a
      * {@link TransactionBuilder} based on this script.
      *
-     * @param name the domain name.
-     * @param type the record type.
+     * @param name The domain name.
+     * @param type The record type.
      * @return a transaction builder.
      */
     public TransactionBuilder deleteRecord(String name, RecordType type) {
@@ -289,8 +289,8 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Resolves a domain name.
      *
-     * @param name the domain name.
-     * @param type the record type.
+     * @param name The domain name.
+     * @param type The record type.
      * @return the resolution result.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -307,7 +307,7 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Gets the owner of the domain name.
      *
-     * @param name the domain name.
+     * @param name The domain name.
      * @return the owner of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -319,7 +319,7 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Gets the properties of the domain name.
      *
-     * @param name the domain name.
+     * @param name The domain name.
      * @return the properties of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -330,7 +330,7 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Gets the properties of the domain name.
      *
-     * @param name the domain name.
+     * @param name The domain name.
      * @return the properties of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -363,15 +363,15 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * The returned {@link TransactionBuilder} is ready to be signed and sent.
      *
-     * @param wallet the wallet.
-     * @param to     the receiver of the domain name.
-     * @param name   the domain name.
+     * @param from The owner of the domain name.
+     * @param to   The receiver of the domain name.
+     * @param name The domain name.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name)
+    public TransactionBuilder transfer(Account from, Hash160 to, String name)
             throws IOException {
-        return transfer(wallet, to, name, null);
+        return transfer(from, to, name, null);
     }
 
     /**
@@ -380,18 +380,18 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * The returned {@link TransactionBuilder} is ready to be signed and sent.
      *
-     * @param wallet the wallet.
-     * @param to     the receiver of the domain name.
-     * @param name   the domain name.
-     * @param data   the data that is passed to the {@code onNEP11Payment} method of the receiving
-     *               smart contract.
+     * @param from The owner of the domain name.
+     * @param to   The receiver of the domain name.
+     * @param name The domain name.
+     * @param data The data that is passed to the {@code onNEP11Payment} method of the receiving
+     *             smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, String name,
+    public TransactionBuilder transfer(Account from, Hash160 to, String name,
             ContractParameter data) throws IOException {
         checkDomainNameAvailability(name, false);
-        return transfer(wallet, to, name.getBytes(UTF_8), data);
+        return transfer(from, to, name.getBytes(UTF_8), data);
     }
 
 }

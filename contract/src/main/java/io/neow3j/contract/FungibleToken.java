@@ -3,19 +3,14 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
-import io.neow3j.wallet.exceptions.InsufficientFundsException;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
@@ -114,251 +109,51 @@ public class FungibleToken extends Token {
     }
 
     /**
-     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
-     * <p>
-     * The default account is used first to cover the amount. If it cannot cover the full amount,
-     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers packed in one transaction.
+     * Creates a transfer transaction.
      *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer in token fractions.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigInteger amount)
-            throws IOException {
-        return transfer(wallet, to, amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses all accounts in the wallet to cover the amount.
-     * <p>
-     * The default account is used first to cover the amount. If it cannot cover the full amount,
-     * the other accounts in the wallet are iterated one by one to cover the remaining amount. If
-     * the amount can be covered, all necessary transfers packed in one transaction.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer in token fractions.
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, BigInteger amount,
-            ContractParameter data) throws IOException {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The parameter amount must be greater than or " +
-                    "equal to 0");
-        }
-
-        List<Account> accountsOrdered = new ArrayList<>(wallet.getAccounts());
-        accountsOrdered.remove(wallet.getDefaultAccount());
-        accountsOrdered.add(0, wallet.getDefaultAccount()); // Start with default account.
-        return buildMultiTransferInvocation(wallet, to, amount, accountsOrdered, data);
-    }
-
-    /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
-     *
-     * @param wallet the wallet from which to send the tokens from.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer in token fractions.
-     * @param from   the script hashes of the accounts in the wallet that should be used to cover
-     *               the amount.
+     * @param from   the sender account.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, Hash160 to,
-            BigInteger amount, Hash160... from) throws IOException {
-        return transferFromSpecificAccounts(wallet, to, amount, null, from);
+    public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount)
+            throws IOException {
+
+        return transfer(from, to, amount, null);
     }
 
     /**
-     * Creates a transfer transaction that uses the provided accounts.
-     * <p>
-     * The accounts are used in the order provided to cover the transaction amount. If the first
-     * account cannot cover the full amount, the second account is used to cover the remaining
-     * amount and so on. If the amount can be covered by the specified accounts, all necessary
-     * transfers are packed in one transaction.
+     * Creates a transfer transaction.
      * <p>
      * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
      * additional fees. Otherwise, use the method without a contract parameter for data.
      *
-     * @param wallet the wallet from which to send the tokens from.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method of the receiving
      *               smart contract.
-     * @param from   the script hashes of the accounts in the wallet that should be used to cover
-     *               the amount.
+     * @param from   the sender account.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transferFromSpecificAccounts(Wallet wallet, Hash160 to,
-            BigInteger amount, ContractParameter data, Hash160... from) throws IOException {
+    public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount,
+            ContractParameter data) throws IOException {
 
-        if (from.length == 0) {
-            throw new IllegalArgumentException(
-                    "An account address must be provided to build an invocation.");
-        }
         if (amount.signum() < 0) {
             throw new IllegalArgumentException(
                     "The parameter amount must be greater than or equal to 0");
         }
-
-        List<Account> accounts = new ArrayList<>();
-        for (Hash160 fromScriptHash : from) {
-            Account a = wallet.getAccount(fromScriptHash);
-            // TODO: 15.10.20 Michael: Remove this multi-sig check. The signers for a multi-sig can
-            //  still be added to the TransactionBuilder.
-            // Verify that potential multi-sig accounts can be used.
-            if (a.isMultiSig() && a.getVerificationScript() != null &&
-                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
-                throw new IllegalArgumentException("The multi-sig account with script hash " +
-                        fromScriptHash.toString() + " does not have the corresponding private " +
-                        "keys in the wallet that are required for signing the transfer " +
-                        "transaction.");
-            }
-            accounts.add(a);
-        }
-        return buildMultiTransferInvocation(wallet, to, amount, accounts, data);
-    }
-
-    TransactionBuilder buildMultiTransferInvocation(Wallet wallet, Hash160 to, BigInteger amount,
-            List<Account> accounts, ContractParameter data) throws IOException {
-
-        List<byte[]> scripts = new ArrayList<>(); // List of the individual invocation scripts.
-        List<Signer> signers = new ArrayList<>(); // Accounts taking part in the transfer.
-        Iterator<Account> it = accounts.iterator();
-        BigInteger remainingAmount = amount;
-        while (remainingAmount.signum() > 0 && it.hasNext()) {
-            Account a = it.next();
-            if (a.isMultiSig() && a.getVerificationScript() != null &&
-                    !wallet.privateKeysArePresentForMultiSig(a.getVerificationScript())) {
-                continue;
-            }
-            BigInteger balance = getBalanceOf(a.getScriptHash());
-            if (balance.signum() <= 0) {
-                continue;
-            }
-            signers.add(calledByEntry(a.getScriptHash()));
-            if (balance.compareTo(remainingAmount) >= 0) {
-                // Full remaining amount can be covered by current account.
-                scripts.add(buildSingleTransferScript(a, to, remainingAmount, data));
-            } else {
-                // Full balance of account is needed but doesn't yet cover the full amount.
-                scripts.add(buildSingleTransferScript(a, to, balance, data));
-            }
-            remainingAmount = remainingAmount.subtract(balance);
-        }
-
-        if (remainingAmount.signum() > 0) {
-            BigInteger coveredAmount = amount.subtract(remainingAmount);
-            throw new InsufficientFundsException("The wallet does not hold enough tokens (i.e. " +
-                    "token-holding accounts with available private keys). The transfer amount is " +
-                    amount + " " + getSymbol() + " but the wallet only holds " + coveredAmount +
-                    " " + getSymbol() + " (in token fractions).");
-        }
-        return assembleMultiTransferTransaction(wallet, scripts, signers);
+        byte[] transferScript = buildSingleTransferScript(from, to, amount, data);
+        return new TransactionBuilder(neow3j).script(transferScript).signers(calledByEntry(from));
     }
 
     private byte[] buildSingleTransferScript(Account acc, Hash160 to, BigInteger amount,
             ContractParameter data) {
         List<ContractParameter> params;
-        params = asList(
-                hash160(acc.getScriptHash()),
-                hash160(to),
-                integer(amount),
-                data);
+        params = asList(hash160(acc), hash160(to), integer(amount), data);
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
-    }
-
-    private TransactionBuilder assembleMultiTransferTransaction(Wallet wallet, List<byte[]> scripts,
-            List<Signer> signers) throws IOException {
-
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        for (byte[] script : scripts) {
-            byteArrayOutputStream.write(script);
-        }
-        byte[] concatenatedScript = byteArrayOutputStream.toByteArray();
-
-        return new TransactionBuilder(neow3j)
-                .wallet(wallet)
-                .script(concatenatedScript)
-                .signers(signers.toArray(new Signer[]{}));
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount. I.e., the default account is the signer of the transaction.
-     * <p>
-     * The scope of the signer's witness is set to
-     * {@link io.neow3j.transaction.WitnessScope#CALLED_BY_ENTRY}.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the address of the receiver.
-     * @param amount the amount to transfer in token fractions.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, Hash160 to,
-            BigInteger amount) throws IOException {
-        return transferFromDefaultAccount(wallet, to, amount, null);
-    }
-
-    /**
-     * Creates a transfer transaction that uses only the wallet's default account to cover the
-     * token amount.
-     * <p>
-     * The scope of the signer's witness is set to
-     * {@link io.neow3j.transaction.WitnessScope#CALLED_BY_ENTRY}.
-     * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
-     * additional fees. Otherwise, use the method without a contract parameter for data.
-     *
-     * @param wallet the wallet from which to send the tokens from.
-     * @param to     the script hash of the receiver.
-     * @param amount the amount to transfer in token fractions.
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
-     * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public TransactionBuilder transferFromDefaultAccount(Wallet wallet, Hash160 to,
-            BigInteger amount, ContractParameter data) throws IOException {
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The amount must be greater than or equal to 0.");
-        }
-
-        Account acc = wallet.getDefaultAccount();
-        BigInteger accBalance = getBalanceOf(acc.getScriptHash());
-        if (accBalance.compareTo(amount) < 0) {
-            throw new InsufficientFundsException("The wallet's default account does not hold " +
-                    "enough tokens. Transfer amount is " + amount + " but account only holds " +
-                    accBalance + ".");
-        }
-
-        TransactionBuilder b;
-        b = invokeFunction(TRANSFER,
-                hash160(acc.getScriptHash()),
-                hash160(to),
-                integer(amount),
-                data);
-
-
-        return b.wallet(wallet)
-                .signers(calledByEntry(acc.getScriptHash()));
     }
 
 }
