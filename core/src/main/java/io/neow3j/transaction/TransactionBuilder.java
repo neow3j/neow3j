@@ -1,10 +1,8 @@
 package io.neow3j.transaction;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
-import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
 import static io.neow3j.transaction.Witness.createContractWitness;
-import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
@@ -14,15 +12,12 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.crypto.Sign.SignatureData;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
-import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -49,7 +44,6 @@ public class TransactionBuilder {
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
 
     protected Neow3j neow3j;
-    protected Wallet wallet;
     protected Transaction transaction;
 
     private byte version;
@@ -73,19 +67,6 @@ public class TransactionBuilder {
         this.additionalNetworkFee = 0L;
         this.signers = new ArrayList<>();
         this.attributes = new ArrayList<>();
-    }
-
-    /**
-     * Sets the wallet used for this transaction.
-     * <p>
-     * The wallet is required for retrieving the signer accounts when signing the transaction.
-     *
-     * @param wallet the wallet.
-     * @return this transaction builder.
-     */
-    public TransactionBuilder wallet(Wallet wallet) {
-        this.wallet = wallet;
-        return this;
     }
 
     /**
@@ -274,11 +255,6 @@ public class TransactionBuilder {
 
     // package-private visible for testability purpose.
     Transaction buildTransaction() throws Throwable {
-        if (wallet == null) {
-            throw new TransactionConfigurationException("Cannot build a transaction without a " +
-                    "wallet that contains the accounts of the transaction signers.");
-        }
-
         if (script == null || script.length == 0) {
             throw new TransactionConfigurationException("Cannot build a transaction without a " +
                     "script.");
@@ -332,35 +308,33 @@ public class TransactionBuilder {
                 .map(Hash160::fromPublicKey)
                 .collect(Collectors.toList());
 
-        boolean signersContainSingleSigCommitteeMember = signers.stream()
+        boolean signersContainCommitteeMember = signers.stream()
                 .map(Signer::getScriptHash).anyMatch(committee::contains);
-        if (signersContainSingleSigCommitteeMember) {
+        if (signersContainCommitteeMember) {
             return true;
         }
         return signersContainMultiSigWithCommitteeMember(committee);
     }
 
-    // Checks if the signers contains a multi-sig account that contains a
-    // committee member.
+    // Checks if the signers contains a multi-sig account that contains a committee member.
     private boolean signersContainMultiSigWithCommitteeMember(List<Hash160> committee) {
-        Iterator<Hash160> iterator = signers.stream().map(Signer::getScriptHash).iterator();
+        Iterator<Signer> iterator = signers.stream().iterator();
         while (iterator.hasNext()) {
-            Hash160 scriptHash = iterator.next();
-            try {
-                Account account = wallet.getAccount(scriptHash);
-                if (account.isMultiSig()) {
-                    Stream<Hash160> accountStream = account
-                            .getVerificationScript().getPublicKeys()
-                            .stream().map(s -> s.getEncoded(true))
-                            .map(Hash160::fromPublicKey);
-                    boolean multiSigContainsCommitteeMember = accountStream
-                            .filter(sh -> wallet.holdsAccount(sh))
+            Signer signer = iterator.next();
+            if (signer instanceof AccountSigner) {
+                AccountSigner s = (AccountSigner) signer;
+                Account a = s.getAccount();
+                if (a.isMultiSig()) {
+                    boolean containsCommitteeMemberInMultiSig = a.getVerificationScript()
+                            .getPublicKeys()
+                            .stream()
+                            .map(key -> key.getEncoded(true))
+                            .map(Hash160::fromPublicKey)
                             .anyMatch(committee::contains);
-                    if (multiSigContainsCommitteeMember) {
+                    if (containsCommitteeMemberInMultiSig) {
                         return true;
                     }
                 }
-            } catch (IllegalArgumentException ignored) {
             }
         }
         return false;
@@ -380,8 +354,8 @@ public class TransactionBuilder {
         // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow3j.invokeScript(
-                Base64.encode(hexStringToByteArray(script)), signers)
+        NeoInvokeScript response = neow3j
+                .invokeScript(Base64.encode(hexStringToByteArray(script)), signers)
                 .send();
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
@@ -393,19 +367,18 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer that is available in the wallet, we add a witness to a temporary
-        // transaction object that is serialized and sent to the `getnetworkfee` RPC method.
-        // Signers that are contracts do not need a verification script. Instead, their `verify`
-        // method will be consulted by the neo-node. We use the static method
-        // createContractWitness to instantiate a witness with the parameters for the verify
-        // method in its invocation script.
+        // For each signer a witness is added to a temporary transaction object that is serialized
+        // and sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
+        // verification script. Instead, their `verify` method will be consulted by the neo-node.
+        // The static method createContractWitness is used to instantiate a witness with the
+        // parameters for the verify method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
             if (signer instanceof ContractSigner) {
                 ContractSigner contractSigner = (ContractSigner) signer;
                 tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                Account a = wallet.getAccount(signer.getScriptHash());
+                Account a = ((AccountSigner) signer).getAccount();
                 if (a != null && a.getVerificationScript() != null) {
                     tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
                     hasAtLeastOneSigningAccount = true;
@@ -441,9 +414,9 @@ public class TransactionBuilder {
                     "Cannot make an 'invokescript' call without the script being configured.");
         }
         // The list of signers is required for `invokescript` calls that will hit a
-        // CheckWitness check in the smart contract. We add the signers even if that
-        // is not the case because we cannot know if the invoked script needs it or not and it
-        // doesn't lead to failures if we add them in any case.
+        // CheckWitness check in the smart contract. We add the signers even if that is not the
+        // case because we cannot know if the invoked script needs it or not, and it doesn't lead
+        // to failures if we add them in any case.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
         return neow3j.invokeScript(script, signers).send();
@@ -472,14 +445,12 @@ public class TransactionBuilder {
                 ContractSigner contractSigner = (ContractSigner) signer;
                 transaction.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                // There's no need to check if every signer has its account in the wallet here.
-                // This check has already been executed within building the transaction above
-                // when calculating the network fees.
-                Account signerAcc = wallet.getAccount(signer.getScriptHash());
-                if (signerAcc.isMultiSig()) {
-                    signWithMultiSigAccount(txBytes, signerAcc);
+                Account a = ((AccountSigner) signer).getAccount();
+                if (a.isMultiSig()) {
+                    throw new IllegalStateException("Transactions with multi-sig signers cannot " +
+                            "be signed automatically.");
                 } else {
-                    signWithNormalAccount(txBytes, signerAcc);
+                    signWithAccount(txBytes, a);
                 }
             }
         });
@@ -488,6 +459,7 @@ public class TransactionBuilder {
 
     /**
      * Builds the transaction without signing it.
+     *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the
@@ -500,7 +472,7 @@ public class TransactionBuilder {
         return buildTransaction();
     }
 
-    private void signWithNormalAccount(byte[] txBytes, Account acc) {
+    private void signWithAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
         if (keyPair == null) {
             throw new TransactionConfigurationException("Can't create transaction signature " +
@@ -508,32 +480,6 @@ public class TransactionBuilder {
                     "private key.");
         }
         transaction.addWitness(Witness.create(txBytes, keyPair));
-    }
-
-    private void signWithMultiSigAccount(byte[] txBytes, Account signerAcc) {
-        List<SignatureData> sigs = new ArrayList<>();
-        VerificationScript multiSigVerifScript = signerAcc.getVerificationScript();
-        for (ECPublicKey pubKey : multiSigVerifScript.getPublicKeys()) {
-            Hash160 accScriptHash = Hash160.fromPublicKey(pubKey.getEncoded(true));
-            Account a;
-            a = wallet.getAccount(accScriptHash);
-            if (a == null) {
-                continue;
-            }
-            ECKeyPair ecKeyPair = a.getECKeyPair();
-            if (ecKeyPair == null) {
-                continue;
-            }
-            sigs.add(signMessage(txBytes, ecKeyPair));
-        }
-        int m = multiSigVerifScript.getSigningThreshold();
-        if (sigs.size() < m) {
-            throw new TransactionConfigurationException("Can't create transaction signature. " +
-                    "Wallet does not contain enough accounts (with decrypted private keys) that " +
-                    "are part of the multi-sig account with script hash " +
-                    signerAcc.getScriptHash() + ".");
-        }
-        transaction.addWitness(createMultiSigWitness(sigs, multiSigVerifScript));
     }
 
     /**
@@ -581,19 +527,12 @@ public class TransactionBuilder {
 
     private BigInteger getSenderGasBalance() throws IOException {
         return neow3j.invokeFunction(GAS_TOKEN_HASH, BALANCE_OF_FUNCTION,
-                asList(hash160(getSender())))
+                        asList(hash160(getSender())))
                 .send().getInvocationResult().getStack().get(0).getInteger();
     }
 
     private Hash160 getSender() {
-        // First we look for a signer that has the fee-only scope. The signer with that scope is
-        // the sender of the transaction. If there is no such signer then the order of the
-        // signers defines the sender, i.e., the first signer is the sender of the transaction.
-        return signers.stream()
-                .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
-                .findFirst()
-                .orElse(signers.get(0))
-                .getScriptHash();
+        return signers.get(0).getScriptHash();
     }
 
     private boolean canSenderCoverFees(BigInteger fees) throws IOException {

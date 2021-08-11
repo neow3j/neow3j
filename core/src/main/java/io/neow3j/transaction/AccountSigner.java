@@ -1,5 +1,6 @@
 package io.neow3j.transaction;
 
+import io.neow3j.script.VerificationScript;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 
@@ -9,8 +10,25 @@ import io.neow3j.wallet.Account;
  */
 public class AccountSigner extends Signer {
 
+    private Account account;
+
     private AccountSigner(Hash160 signerHash, WitnessScope scope) {
         super(signerHash, scope);
+        account = Account.fromAddress(signerHash.toAddress());
+    }
+
+    private AccountSigner(Account account, WitnessScope scope) {
+        super(account.getScriptHash(), scope);
+        this.account = account;
+    }
+
+    /**
+     * Gets the account of this signer.
+     *
+     * @return the signer account.
+     */
+    public Account getAccount() {
+        return account;
     }
 
     /**
@@ -21,18 +39,18 @@ public class AccountSigner extends Signer {
      * @return the signer.
      */
     public static AccountSigner none(Account account) {
-        return none(account.getScriptHash());
+        return new AccountSigner(account, WitnessScope.NONE);
     }
 
     /**
      * Creates a signer for the given account with no witness scope ({@link WitnessScope#NONE}).
      * The signature of this signer is only used for transactions and is disabled in contracts.
      *
-     * @param account The script hash of the signer account.
+     * @param accountHash The script hash of the signer account.
      * @return the signer.
      */
-    public static AccountSigner none(Hash160 account) {
-        return new AccountSigner(account, WitnessScope.NONE);
+    public static AccountSigner none(Hash160 accountHash) {
+        return new AccountSigner(accountHash, WitnessScope.NONE);
     }
 
     /**
@@ -43,18 +61,18 @@ public class AccountSigner extends Signer {
      * @return the signer.
      */
     public static AccountSigner calledByEntry(Account account) {
-        return calledByEntry(account.getScriptHash());
+        return new AccountSigner(account, WitnessScope.CALLED_BY_ENTRY);
     }
 
     /**
      * Creates a signer for the given account with a scope ({@link WitnessScope#CALLED_BY_ENTRY})
      * that only allows the entry point contract to use this signer's witness.
      *
-     * @param account The script hash of the signer account.
+     * @param accountHash The script hash of the signer account.
      * @return the signer.
      */
-    public static AccountSigner calledByEntry(Hash160 account) {
-        return new AccountSigner(account, WitnessScope.CALLED_BY_ENTRY);
+    public static AccountSigner calledByEntry(Hash160 accountHash) {
+        return new AccountSigner(accountHash, WitnessScope.CALLED_BY_ENTRY);
     }
 
     /**
@@ -65,18 +83,18 @@ public class AccountSigner extends Signer {
      * @return the signer.
      */
     public static AccountSigner global(Account account) {
-        return global(account.getScriptHash());
+        return new AccountSigner(account, WitnessScope.GLOBAL);
     }
 
     /**
      * Creates a signer for the given account with global witness scope
      * ({@link WitnessScope#GLOBAL}).
      *
-     * @param account The account's script hash.
+     * @param accountHash The script hash of the signer account.
      * @return the signer.
      */
-    public static AccountSigner global(Hash160 account) {
-        return new AccountSigner(account, WitnessScope.GLOBAL);
+    public static AccountSigner global(Hash160 accountHash) {
+        return new AccountSigner(accountHash, WitnessScope.GLOBAL);
     }
 
 }
