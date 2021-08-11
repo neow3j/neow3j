@@ -1,7 +1,7 @@
 name: neow3j-integration
 
 on:
-  pull_request:
+  pull_request_target:
     types: [assigned, review_requested, ready_for_review]
   workflow_dispatch:
 
@@ -12,6 +12,7 @@ env:
 jobs:
   build:
     runs-on: [self-hosted]
+    if: github.repository_owner == 'neow3j' || contains(github.event.pull_request.labels.*.name, 'safe to test')
     steps:
       - uses: actions/checkout@v2
       - name: Cache local Gradle dir
