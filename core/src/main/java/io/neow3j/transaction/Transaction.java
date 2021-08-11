@@ -196,8 +196,9 @@ public class Transaction extends NeoSerializable {
      *
      * @param witness The transaction witness.
      */
-    public void addWitness(Witness witness) {
+    public Transaction addWitness(Witness witness) {
         this.witnesses.add(witness);
+        return this;
     }
 
     /**
