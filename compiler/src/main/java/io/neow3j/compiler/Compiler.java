@@ -321,32 +321,39 @@ public class Compiler {
      */
     protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap)
             throws IOException {
-        // apply replacement to static field on class initialization
-        classNode.methods.stream()
-                // apply to all occurrences in bytecode by removing this filter
-                .filter((it) -> it.name.equals(CLASS_CTOR))
-                .forEach((methodNode) -> {
-                    for (AbstractInsnNode insnNode : methodNode.instructions) {
-                        if (insnNode.getType() == AbstractInsnNode.LDC_INSN) {
-                            LdcInsnNode node = (LdcInsnNode) insnNode;
-                            if (node.cst instanceof String && replaceMap.containsKey(node.cst)) {
-                                node.cst = replaceMap.get(node.cst);
-                            }
-                        }
-                    }
-                });
 
-        // apply replacement to all invisible annotations
-        if (classNode.invisibleAnnotations != null)
-            classNode.invisibleAnnotations
-                    .forEach((it) -> processAnnotationNode(it, replaceMap));
-
-        // compile modified classNode
+        substitutePlaceholdersInMethodBodies(classNode, replaceMap);
+        substitutePlaceholdersInClassAnnotations(classNode, replaceMap);
         return compile(classNode);
     }
 
-    private static void processAnnotationNode(AnnotationNode annotationNode, java.util.Map<String
-            , String> replaceMap) {
+    private static void substitutePlaceholdersInMethodBodies(ClassNode classNode,
+            java.util.Map<String,
+            String> replaceMap) {
+
+        classNode.methods.forEach((methodNode) -> {
+            for (AbstractInsnNode insnNode : methodNode.instructions) {
+                if (insnNode.getType() == AbstractInsnNode.LDC_INSN) {
+                    LdcInsnNode node = (LdcInsnNode) insnNode;
+                    if (node.cst instanceof String && replaceMap.containsKey(node.cst)) {
+                        node.cst = replaceMap.get(node.cst);
+                    }
+                }
+            }
+        });
+    }
+
+    private static void substitutePlaceholdersInClassAnnotations(ClassNode classNode,
+            java.util.Map<String,String> replaceMap) {
+
+        if (classNode.invisibleAnnotations != null)
+            classNode.invisibleAnnotations
+                    .forEach((it) -> processAnnotationNode(it, replaceMap));
+    }
+
+    private static void processAnnotationNode(AnnotationNode annotationNode,
+            java.util.Map<String, String> replaceMap) {
+
         // safety check
         if (annotationNode.values == null || annotationNode.values.size() % 2 != 0)
             return;
