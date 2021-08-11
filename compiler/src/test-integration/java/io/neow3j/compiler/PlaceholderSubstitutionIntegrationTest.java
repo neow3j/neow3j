@@ -1,42 +1,40 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Account;
-import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.contract.SmartContract;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
-import static io.neow3j.test.TestProperties.defaultAccountAddress;
-import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
-import static io.neow3j.types.ContractParameter.publicKey;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class PlaceholderSubstitutionIntegrationTest {
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            AccountIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule();
 
     @Test
-    public void createStandardAccount() throws IOException {
-        NeoInvokeFunction res = ct.callInvokeFunction("createStandardAccount",
-                publicKey(defaultAccountPublicKey()));
-        assertThat(res.getInvocationResult().getStack().get(0).getAddress(),
-                is(defaultAccountAddress()));
+    public void testReplacementInMethodBody() throws Throwable {
+        Map<String, String> replaceMap = new HashMap<>();
+        replaceMap.put("<PLACEHODLER1>", "Hello, ");
+        replaceMap.put("<PLACEHODLER2>", "world!");
+        CompilationUnit res = new Compiler().compile(
+                PlaceholderSubstitutionIntegrationTestContract.class.getName(),
+                replaceMap
+        );
+        SmartContract c = ct.deployContract(res.getNefFile(), res.getManifest());
+        assertThat(c.callFuncReturningString("main"), is("Hello, world!"));
     }
 
-    static class AccountIntegrationTestContract {
+    static class PlaceholderSubstitutionIntegrationTestContract {
 
-        public static Hash160 createStandardAccount(ECPoint pubKey) {
-            return Account.createStandardAccount(pubKey);
-        }
+        public static final String s1 = "<PLACEHODLER1>";
 
-        public static Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys) {
-            return Account.createMultiSigAccount(m, pubKeys);
+        public static String main() {
+            String s2 = "<PLACEHODLER2>";
+            return s1 + s2;
         }
 
     }
