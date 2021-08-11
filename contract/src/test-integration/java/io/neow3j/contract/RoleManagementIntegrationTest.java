@@ -1,24 +1,10 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.crypto.Sign.signMessage;
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
-import static io.neow3j.transaction.Witness.createMultiSigWitness;
-import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
-import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
-import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
-import io.neow3j.test.NeoTestContainer;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
@@ -30,6 +16,19 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 public class RoleManagementIntegrationTest {
 
     private static Neow3j neow3j;
@@ -40,7 +39,7 @@ public class RoleManagementIntegrationTest {
 
     @BeforeClass
     public static void setUp() {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         roleManagement = new RoleManagement(neow3j);
     }

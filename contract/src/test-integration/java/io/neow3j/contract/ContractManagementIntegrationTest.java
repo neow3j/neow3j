@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
@@ -24,7 +24,6 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.SmartContract.calcContractHash;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
@@ -47,7 +46,7 @@ public class ContractManagementIntegrationTest {
 
     @BeforeClass
     public static void setUp() {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractManagement = new ContractManagement(neow3j);
     }
@@ -103,7 +102,7 @@ public class ContractManagementIntegrationTest {
 
         Hash160 contractHash = calcContractHash(
                 COMMITTEE_ACCOUNT.getScriptHash(), nef.getCheckSumAsInteger(), manifest.getName());
-        NeoGetContractState.ContractState contractState =
+        ContractState contractState =
                 neow3j.getContractState(contractHash).send().getContractState();
         assertThat(contractState.getManifest(), is(manifest));
         assertThat(contractState.getNef().getScript(), is(Base64.encode(nef.getScript())));

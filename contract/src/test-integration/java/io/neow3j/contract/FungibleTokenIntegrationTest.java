@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
@@ -31,7 +30,7 @@ public class FungibleTokenIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         fungibleToken = new FungibleToken(NEO_HASH, neow3j);
         // make a transaction that can be used for the tests

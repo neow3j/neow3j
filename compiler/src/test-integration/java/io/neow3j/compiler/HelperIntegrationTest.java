@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.Helper;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -18,8 +19,10 @@ import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class HelperIntegrationTest {
@@ -145,6 +148,14 @@ public class HelperIntegrationTest {
         assertThat(
                 response.getInvocationResult().getStack().get(0).getInteger().intValue(),
                 is(42747));
+    }
+
+    @Test
+    public void toIntNull() throws IOException {
+        // Test that instructions return null if no value was found for the provided key.
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack(), hasSize(0));
+        assertThat(response.getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -315,7 +326,11 @@ public class HelperIntegrationTest {
         }
 
         public static int toInt(byte[] bytes) {
-            return Helper.toInt(bytes);
+            return Helper.toInteger(bytes);
+        }
+
+        public static int toIntNull() {
+            return Helper.toInteger(null);
         }
 
         public static String byteArrayToString(byte[] bytes) {

@@ -7,11 +7,12 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEve
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
-import io.neow3j.protocol.core.response.NeoGetContractState.ContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -39,6 +40,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
+import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -54,7 +56,6 @@ import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.test.NeoTestContainer.getNodeUrl;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.contractManagementHash;
@@ -138,7 +139,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        neow3j = Neow3j.build(new HttpService(getNodeUrl(neoTestContainer)));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
@@ -324,15 +325,14 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNativeContracts() throws IOException {
-        List<ContractState> nativeContracts = getNeow3j()
+        List<NativeContractState> nativeContracts = getNeow3j()
                 .getNativeContracts()
                 .send()
                 .getNativeContracts();
 
         assertThat(nativeContracts, hasSize(9));
-        ContractState contractState1 = nativeContracts.get(0);
+        NativeContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId(), is(-1));
-        assertNull(contractState1.getUpdateCounter());
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -368,9 +368,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
 
-        ContractState contractState8 = nativeContracts.get(8);
+        NativeContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId(), is(-9));
-        assertNull(contractState8.getUpdateCounter());
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
         ContractNef nef8 = contractState8.getNef();
@@ -741,7 +740,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScript(Base64.encode(script), signer)
+                .invokeScript(Numeric.toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 

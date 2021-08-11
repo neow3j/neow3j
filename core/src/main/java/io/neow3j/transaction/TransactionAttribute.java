@@ -4,12 +4,16 @@ import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
+
 import java.io.IOException;
 import java.util.Objects;
 
 public abstract class TransactionAttribute extends NeoSerializable {
 
     protected TransactionAttributeType type;
+
+    public TransactionAttribute() {
+    }
 
     public TransactionAttribute(TransactionAttributeType type) {
         if (type == null) {
@@ -37,14 +41,14 @@ public abstract class TransactionAttribute extends NeoSerializable {
                 throw new DeserializationException("The deserialized type does not match the type "
                         + "information in the serialized data.");
             }
+            deserializeWithoutType(reader);
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
-        deserializeWithoutType(reader);
     }
 
     protected abstract void deserializeWithoutType(BinaryReader reader)
-            throws DeserializationException;
+            throws DeserializationException, IOException;
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {

@@ -127,7 +127,7 @@ public class NNSIntegrationTest {
                 is("resolveReturn"));
     }
 
-    @Permission(contract = "7536e0b31d87965aa0a4e60d06c22362fc014be4")
+    @Permission(contract = "*")
     static class NNSTestContract {
 
         public static void testAddRoot(String root) {
@@ -219,7 +219,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("7536e0b31d87965aa0a4e60d06c22362fc014be4")
+    @ContractHash("7d8cf534e6fee10e110dd121e73ec06625ec6fc0")
     static class CustomNeoNameService extends NeoNameService {
     }
 

@@ -34,7 +34,7 @@ public class StorageMap {
      * @param key The key to delete.
      */
     public void delete(byte[] key) {
-        Storage.delete(this.context, concat(this.prefix, key));
+        Storage.delete(context, concat(prefix, key));
     }
 
     /**
@@ -44,7 +44,7 @@ public class StorageMap {
      * @param key The key to delete.
      */
     public void delete(ByteString key) {
-        Storage.delete(this.context, concat(this.prefix, key));
+        Storage.delete(context, concat(prefix, key));
     }
 
     /**
@@ -54,7 +54,7 @@ public class StorageMap {
      * @param key The key to delete.
      */
     public void delete(String key) {
-        Storage.delete(this.context, concat(this.prefix, key));
+        Storage.delete(context, concat(prefix, key));
     }
 
     /**
@@ -64,7 +64,43 @@ public class StorageMap {
      * @return the value corresponding to the given key.
      */
     public ByteString get(byte[] key) {
-        return Storage.get(this.context, concat(this.prefix, key));
+        return Storage.get(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to a byte array.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    public byte[] getByteArray(byte[] key) {
+        return Storage.getByteArray(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a string.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a string.
+     */
+    public String getString(byte[] key) {
+        return Storage.getString(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getInteger(byte[] key) {
+        return Storage.getInteger(context, concat(prefix, key));
     }
 
     /**
@@ -74,7 +110,43 @@ public class StorageMap {
      * @return the value corresponding to the given key.
      */
     public ByteString get(ByteString key) {
-        return Storage.get(this.context, concat(this.prefix, key));
+        return Storage.get(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to a byte array.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    public byte[] getByteArray(ByteString key) {
+        return Storage.getByteArray(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a string.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a string.
+     */
+    public String getString(ByteString key) {
+        return Storage.getString(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getInteger(ByteString key) {
+        return Storage.getInteger(context, concat(prefix, key));
     }
 
     /**
@@ -84,7 +156,43 @@ public class StorageMap {
      * @return the value corresponding to the given key.
      */
     public ByteString get(String key) {
-        return Storage.get(this.context, concat(this.prefix, key));
+        return Storage.get(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to a byte array.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    public byte[] getByteArray(String key) {
+        return Storage.getByteArray(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a string.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a string.
+     */
+    public String getString(String key) {
+        return Storage.getString(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getInteger(String key) {
+        return Storage.getInteger(context, concat(prefix, key));
     }
 
     /**
@@ -95,7 +203,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, byte[] value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -106,7 +214,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, int value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -117,7 +225,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, ByteString value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -128,7 +236,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, String value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -139,7 +247,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, Hash160 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -150,7 +258,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(byte[] key, Hash256 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -161,7 +269,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, byte[] value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
 
     }
 
@@ -173,7 +281,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, int value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -184,7 +292,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, ByteString value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -195,7 +303,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, String value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -206,7 +314,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, Hash160 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -217,7 +325,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(ByteString key, Hash256 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -228,7 +336,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, String value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -239,7 +347,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, byte[] value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
 
     }
 
@@ -251,7 +359,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, int value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -262,7 +370,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, ByteString value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -273,7 +381,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, Hash160 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**
@@ -284,7 +392,7 @@ public class StorageMap {
      * @param value The value of the entry.
      */
     public void put(String key, Hash256 value) {
-        Storage.put(this.context, concat(this.prefix, key), value);
+        Storage.put(context, concat(prefix, key), value);
     }
 
     /**

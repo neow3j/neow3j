@@ -1,15 +1,6 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
-import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
-import static io.neow3j.transaction.Witness.createContractWitness;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Arrays.asList;
-
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
@@ -33,14 +24,21 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
+import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.Witness.createContractWitness;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
+
 /**
  * Used to build a {@link Transaction}. When signing the {@code TransactionBuilder}, a transaction
  * is created that can be sent to the Neo node.
  */
 public class TransactionBuilder {
 
-    private static final Hash160 GAS_TOKEN_HASH = new Hash160(
-            "d2a4cff31913016155e38e474a2c06d08be276cf");
+    private static final Hash160 GAS_TOKEN_HASH =
+            new Hash160("d2a4cff31913016155e38e474a2c06d08be276cf");
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
 
     protected Neow3j neow3j;
@@ -354,9 +352,7 @@ public class TransactionBuilder {
         // CheckWitness check in the smart contract.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
-        NeoInvokeScript response = neow3j
-                .invokeScript(Base64.encode(hexStringToByteArray(script)), signers)
-                .send();
+        NeoInvokeScript response = neow3j.invokeScript(script, signers).send();
         if (response.getResult().hasStateFault()) {
             throw new TransactionConfigurationException("The vm exited due to the following " +
                     "exception: " + response.getResult().getException());

@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import io.neow3j.transaction.TransactionAttributeType;
 
 import java.util.Objects;
@@ -9,51 +9,25 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class OracleResponseAttribute extends TransactionAttribute {
 
+    @JsonUnwrapped
+    private OracleResponse oracleResponse;
+
     public OracleResponseAttribute() {
         super(TransactionAttributeType.ORACLE_RESPONSE);
     }
 
-    public OracleResponseAttribute(int id, OracleResponseCode responseCode, String result) {
+    public OracleResponseAttribute(OracleResponse oracleResponse) {
         super(TransactionAttributeType.ORACLE_RESPONSE);
-        this.id = id;
-        this.responseCode = responseCode;
-        this.result = result;
-    }
-
-    @JsonProperty(value = "id", required = true)
-    private int id;
-
-    @JsonProperty(value = "code")
-    private OracleResponseCode responseCode;
-
-    @JsonProperty("result")
-    private String result;
-
-    /**
-     * Gets the response id.
-     *
-     * @return the response id.
-     */
-    public int getId() {
-        return id;
+        this.oracleResponse = oracleResponse;
     }
 
     /**
-     * Gets the response code.
+     * Gets the oracle response.
      *
-     * @return the response code.
+     * @return the oracle response.
      */
-    public OracleResponseCode getResponseCode() {
-        return responseCode;
-    }
-
-    /**
-     * Gets the result.
-     *
-     * @return the result.
-     */
-    public String getResult() {
-        return result;
+    public OracleResponse getOracleResponse() {
+        return oracleResponse;
     }
 
     @Override
@@ -65,22 +39,19 @@ public class OracleResponseAttribute extends TransactionAttribute {
             return false;
         }
         OracleResponseAttribute that = (OracleResponseAttribute) o;
-        return Objects.equals(getId(), that.getId()) &&
-               Objects.equals(getResponseCode(), that.getResponseCode()) &&
-               Objects.equals(getResult(), that.getResult());
+        return Objects.equals(getOracleResponse(), that.getOracleResponse());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getResponseCode(), getResult());
+        return Objects.hash(getOracleResponse());
     }
 
     @Override
     public String toString() {
-        return "OracleResponse{" +
-               "id='" + id + '\'' +
-               "code='" + responseCode + '\'' +
-               "result='" + result + '\'' +
-               "}";
+        return "OracleResponseAttribute{" +
+                "response=" + oracleResponse +
+                '}';
     }
+
 }
