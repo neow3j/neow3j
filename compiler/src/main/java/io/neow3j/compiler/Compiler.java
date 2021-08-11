@@ -380,7 +380,7 @@ public class Compiler {
                     if (elem instanceof String) {
                         // do the modification
                         if (replaceMap.containsKey(elem)) {
-                            casted.set(i + 1, replaceMap.get(elem));
+                            casted.set(j, replaceMap.get(elem));
                         }
                     } else if (elem instanceof AnnotationNode) {
                         processAnnotationNode((AnnotationNode) elem, replaceMap);
