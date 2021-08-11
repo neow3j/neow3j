@@ -64,6 +64,10 @@ public class AccountTest {
     @Rule
     public ExpectedException exceptionRule = ExpectedException.none();
 
+    @Rule
+    public WireMockRule wireMockRule =
+            new WireMockRule(WireMockConfiguration.options().dynamicPort());
+
     @Test
     public void testCreateGenericAccount() {
         Account a = Account.create();
@@ -76,22 +80,6 @@ public class AccountTest {
         assertThat(a.getECKeyPair(), notNullValue());
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
-    }
-
-    @Test
-    public void testFromNewECKeyPair() {
-        Account a = Account.fromNewECKeyPair()
-                .label("example")
-                .lock();
-
-        assertThat(a, notNullValue());
-        assertThat(a.getAddress(), notNullValue());
-        assertThat(a.getVerificationScript(), notNullValue());
-        assertThat(a.getECKeyPair(), notNullValue());
-        assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
-        assertThat(a.getLabel(), is("example"));
-        assertThat(a.getECKeyPair(), notNullValue());
-        assertTrue(a.isLocked());
     }
 
     @Test
@@ -276,17 +264,14 @@ public class AccountTest {
         assertThat(a.getVerificationScript(), is(nullValue()));
     }
 
-    @Rule
-    public WireMockRule wireMockRule =
-            new WireMockRule(WireMockConfiguration.options().dynamicPort());
-
     @Test
     public void getNep17Balances() throws IOException {
         int port = wireMockRule.port();
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         Account a = Account.fromAddress(defaultAccountAddress());
-        WalletTestHelper.setUpWireMockForCall("getnep17balances", "getnep17balances_ofDefaultAccount.json",
+        WalletTestHelper.setUpWireMockForCall("getnep17balances",
+                "getnep17balances_ofDefaultAccount.json",
                 defaultAccountAddress());
         Map<Hash160, BigInteger> balances = a.getNep17Balances(neow);
         assertThat(balances.keySet(), containsInAnyOrder(
