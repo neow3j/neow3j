@@ -1,9 +1,11 @@
 package io.neow3j.compiler;
 
 import io.neow3j.contract.ContractManagement;
+import io.neow3j.contract.NefFile;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetStorage;
@@ -12,7 +14,6 @@ import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
@@ -22,7 +23,6 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -35,7 +35,6 @@ import java.math.BigInteger;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
@@ -45,21 +44,18 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class ContractTestRule implements TestRule {
 
     private NeoTestContainer neoTestContainer;
-    private final String fullyQualifiedClassName;
+    private String fullyQualifiedClassName;
     private Account defaultAccount;
     private Account committee;
     private Account client1;
-    private Wallet wallet;
     private Neow3j neow3j;
     private SmartContract contract;
-    private String contractName;
     private Hash256 deployTxHash;
     private Hash256 blockHashOfDeployTx;
 
@@ -70,6 +66,9 @@ public class ContractTestRule implements TestRule {
         this.fullyQualifiedClassName = fullyQualifiedName;
     }
 
+    public ContractTestRule() {
+    }
+
     @Override
     public Statement apply(Statement base, Description description) {
         return new Statement() {
@@ -78,7 +77,11 @@ public class ContractTestRule implements TestRule {
                 neoTestContainer = new NeoTestContainer();
                 try {
                     neoTestContainer.start();
-                    setUp(fullyQualifiedClassName, neoTestContainer.getNodeUrl());
+                    setUp(neoTestContainer.getNodeUrl());
+                    if (fullyQualifiedClassName != null) {
+                        contract = deployContract(fullyQualifiedClassName);
+                        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
+                    }
                     base.evaluate();
                 } finally {
                     neoTestContainer.stop();
@@ -87,24 +90,21 @@ public class ContractTestRule implements TestRule {
         };
     }
 
-    public void setUp(String name, String containerURL) throws Throwable {
+    public void setUp(String containerURL) throws Throwable {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
         committee = Account.createMultiSigAccount(
-                singletonList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+                asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         client1 = Account.fromWIF(client1AccountWIF());
-        wallet = Wallet.withAccounts(defaultAccount, committee);
-        neow3j = neow3j.build(new HttpService(containerURL));
+        neow3j = Neow3j.build(new HttpService(containerURL));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
-        contractName = name;
-        contract = deployContract(contractName);
-        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
     }
 
-    protected SmartContract deployContract(String fullyQualifiedName) throws Throwable {
-        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
+    public SmartContract deployContract(NefFile nef, ContractManifest manifest)
+            throws Throwable {
+
         Transaction tx = new ContractManagement(neow3j)
-                .deploy(res.getNefFile(), res.getManifest())
-                .signers(calledByEntry(committee))
+                .deploy(nef, manifest)
+                .signers(AccountSigner.calledByEntry(committee))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
                 asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
@@ -125,11 +125,16 @@ public class ContractTestRule implements TestRule {
         NeoApplicationLog.Execution execution = appLog.getExecutions().get(0);
         if (execution.getState().equals(NeoVMStateType.FAULT)) {
             throw new IllegalStateException(format("Failed deploying the contract '%s'. Exception "
-                    + "message was: '%s'", fullyQualifiedName, execution.getException()));
+                    + "message was: '%s'", manifest.getName(), execution.getException()));
         }
         String scriptHashHex = execution.getStack().get(0).getList().get(2).getHexString();
         Hash160 scriptHash = new Hash160(reverseArray(hexStringToByteArray(scriptHashHex)));
         return new SmartContract(scriptHash, neow3j);
+    }
+
+    public SmartContract deployContract(String fullyQualifiedName) throws Throwable {
+        CompilationUnit res = new Compiler().compile(fullyQualifiedName);
+        return deployContract(res.getNefFile(), res.getManifest());
     }
 
     public Account getDefaultAccount() {
@@ -144,20 +149,12 @@ public class ContractTestRule implements TestRule {
         return client1;
     }
 
-    public Wallet getWallet() {
-        return wallet;
-    }
-
     public Neow3j getNeow3j() {
         return neow3j;
     }
 
     public SmartContract getContract() {
         return contract;
-    }
-
-    public String getContractName() {
-        return contractName;
     }
 
     public Hash256 getDeployTxHash() {
@@ -245,8 +242,7 @@ public class ContractTestRule implements TestRule {
         io.neow3j.contract.GasToken gasToken = new io.neow3j.contract.GasToken(neow3j);
         Transaction tx = gasToken.transfer(committee, to, amount).getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                asList(signMessage(tx.getHashData(),
-                        defaultAccount.getECKeyPair())),
+                asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
                 committee.getVerificationScript());
         return tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
     }
