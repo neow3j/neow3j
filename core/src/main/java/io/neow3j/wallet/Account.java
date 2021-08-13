@@ -1,6 +1,5 @@
 package io.neow3j.wallet;
 
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -10,11 +9,12 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.script.VerificationScript;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
@@ -331,19 +331,6 @@ public class Account {
     }
 
     /**
-     * Creates an account from a new EC key pair.
-     *
-     * @return the account.
-     */
-    public static Account fromNewECKeyPair() {
-        try {
-            return new Account(ECKeyPair.createEcKeyPair());
-        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new RuntimeException("Failed to create a new EC key pair.", e);
-        }
-    }
-
-    /**
      * Creates an account from the provided NEP-6 account.
      *
      * @param nep6Acct The account in NEP-6 format.
@@ -398,7 +385,7 @@ public class Account {
     }
 
     /**
-     * Creates a new generic account with a fresh key pair.
+     * Creates a new account with a fresh key pair.
      *
      * @return the new account.
      */
