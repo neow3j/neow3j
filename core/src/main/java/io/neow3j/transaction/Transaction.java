@@ -2,19 +2,19 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoGetBlock;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.utils.Numeric;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
@@ -195,6 +195,7 @@ public class Transaction extends NeoSerializable {
      * Adds a witness to this transaction.
      *
      * @param witness The transaction witness.
+     * @return this.
      */
     public Transaction addWitness(Witness witness) {
         this.witnesses.add(witness);

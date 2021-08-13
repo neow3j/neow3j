@@ -3,9 +3,9 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NameState;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -361,7 +361,8 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to transfer a domain name and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The returned {@link TransactionBuilder} is ready to be signed and sent.
+     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from}
+     * account is set as a signer on the transaction.
      *
      * @param from The owner of the domain name.
      * @param to   The receiver of the domain name.
@@ -378,7 +379,8 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to transfer a domain name and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The returned {@link TransactionBuilder} is ready to be signed and sent.
+     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from}
+     * account is set as a signer on the transaction.
      *
      * @param from The owner of the domain name.
      * @param to   The receiver of the domain name.
