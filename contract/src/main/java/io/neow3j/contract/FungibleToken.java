@@ -110,11 +110,13 @@ public class FungibleToken extends Token {
 
     /**
      * Creates a transfer transaction.
+     * <p>
+     * The {@code from} account is set as a signer of the transaction.
      *
+     * @param from   the sender account.
      * @param to     the address of the receiver.
      * @param amount the amount to transfer in token fractions.
-     * @param from   the sender account.
-     * @return a transaction builder.
+     * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount)
@@ -126,15 +128,17 @@ public class FungibleToken extends Token {
     /**
      * Creates a transfer transaction.
      * <p>
+     * The {@code from} account is set as a signer of the transaction.
+     * <p>
      * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
      * additional fees. Otherwise, use the method without a contract parameter for data.
      *
+     * @param from   the sender account.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method of the receiving
      *               smart contract.
-     * @param from   the sender account.
-     * @return a transaction builder.
+     * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount,
