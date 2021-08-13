@@ -260,7 +260,7 @@ public class TransactionBuilder {
 
         if (validUntilBlock == null) {
             // If validUntilBlock is not set explicitly, then set it to the current max. It can
-            // happen that the neo-node rejects the transaction when we set the validUntilBlock
+            // happen that the Neo node rejects the transaction when we set the validUntilBlock
             // to the max. To be sure that this does not happen, we decrement the max by 1.
             this.validUntilBlock(fetchCurrentBlockCount() + neow3j.getMaxValidUntilBlockIncrement()
                     - 1);
@@ -365,7 +365,7 @@ public class TransactionBuilder {
                 attributes, script, new ArrayList<>());
         // For each signer a witness is added to a temporary transaction object that is serialized
         // and sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
-        // verification script. Instead, their `verify` method will be consulted by the neo-node.
+        // verification script. Instead, their `verify` method will be consulted by the Neo node.
         // The static method createContractWitness is used to instantiate a witness with the
         // parameters for the verify method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
@@ -379,30 +379,31 @@ public class TransactionBuilder {
                     tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
                     hasAtLeastOneSigningAccount = true;
                 } else {
-                    throw new TransactionConfigurationException("The wallet does not hold the " +
-                            "verification script of the signer with script hash '" +
-                            signer.getScriptHash() + "'. If this signer is a contract, use the " +
-                            "method 'asContract' in the class Signer.");
+                    throw new TransactionConfigurationException("The signer with script hash '" +
+                            signer.getScriptHash() + "' does not hold a verification script. If " +
+                            "this signer is a contract, use the class 'ContractSigner' instead of" +
+                            " 'AccountSigner', otherwise, this signer requires a verification " +
+                            "script in order to be able to calculate the network fee.");
                 }
             }
         }
         if (!hasAtLeastOneSigningAccount) {
-            throw new TransactionConfigurationException("No signers were set for which an account" +
-                    " with verification script exists in the wallet.");
+            throw new TransactionConfigurationException("A transaction requires at least one " +
+                    "signing account (i.e. an AccountSigner). None was provided.");
         }
         String txHex = toHexStringNoPrefix(tx.toArray());
         return neow3j.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
     }
 
     /**
-     * Makes an {@code invokescript} call to the neo-node with the transaction in its current
+     * Makes an {@code invokescript} call to the Neo node with the transaction in its current
      * configuration. No changes are made to the blockchain state.
      * <p>
      * Make sure to add all necessary signers to the builder before making this call. They are
      * required for a successful {@code invokescript} call.
      *
      * @return the call's response.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public NeoInvokeScript callInvokeScript() throws IOException {
         if (signers == null || script.length == 0) {
