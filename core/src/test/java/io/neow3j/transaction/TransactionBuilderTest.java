@@ -75,13 +75,14 @@ public class TransactionBuilderTest {
     private static final Hash160 GAS_TOKEN_SCRIPT_HASH = new Hash160(TestProperties.gasTokenHash());
     private static final String NEP17_TRANSFER = "transfer";
 
-    private static final String SCRIPT_NEO_INVOKEFUNCTION_SYMBOL = toHexStringNoPrefix(
+    private static final String SCRIPT_INVOKEFUNCTION_NEO_SYMBOL = toHexStringNoPrefix(
             new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, "symbol", new ArrayList<>())
                     .toArray());
+    private static final byte[] SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY =
+            hexStringToByteArray(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL);
 
     private Account account1;
     private Account account2;
-    private Account multiSigAcc;
     private Hash160 recipient;
 
     @Rule
@@ -199,7 +200,7 @@ public class TransactionBuilderTest {
     @Test
     public void failBuildingTxWithoutAnySigner() throws Throwable {
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Can't create a transaction without signers.");
+        exceptionRule.expectMessage("Cannot create a transaction without signers.");
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
                 .script(new byte[]{1, 2, 3})
@@ -237,7 +238,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(account1))
                 .buildTransaction();
@@ -261,7 +262,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(multiSigAccount))
                 .buildTransaction();
@@ -283,7 +284,7 @@ public class TransactionBuilderTest {
                 "priority.");
 
         new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(account2))
                 .buildTransaction();
@@ -300,7 +301,7 @@ public class TransactionBuilderTest {
         HighPriorityAttribute attr2 = new HighPriorityAttribute();
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account1))
                 .attributes(attr1)
                 .attributes(attr2)
@@ -369,7 +370,7 @@ public class TransactionBuilderTest {
         setUpWireMockForGetBlockCount(1000);
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
                 .buildTransaction();
 
@@ -382,7 +383,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
                 .validUntilBlock(1000)
                 .buildTransaction();
@@ -397,12 +398,60 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         TransactionBuilder builder = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.fromAddress(account1.getAddress())))
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("does not hold a verification script. If this signer" +
+                " is a contract, use the class 'ContractSigner' instead of 'AccountSigner'");
         builder.sign();
+    }
+
+    @Test
+    public void failAutomaticallySigningWithMultiSigAccountSigner() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("Transactions with multi-sig signers cannot be " +
+                "signed automatically.");
+        new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(
+                        createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
+                .sign();
+    }
+
+    @Test
+    public void failWithNoSigningAccount() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+
+        exceptionRule.expect(TransactionConfigurationException.class);
+        exceptionRule.expectMessage("transaction requires at least one signing account");
+        new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(ContractSigner.calledByEntry(Account.create().getScriptHash()))
+                .sign();
+    }
+
+    @Test
+    public void failSigningWithAccountWithoutECKeyPair() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Account accountWithoutKeyPair =
+                Account.fromVerificationScript(account1.getVerificationScript());
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("does not hold a private key");
+        new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(accountWithoutKeyPair))
+                .sign();
     }
 
     @Test
@@ -411,7 +460,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(calledByEntry(account1), calledByEntry(account2))
                 .validUntilBlock(1000)
                 .sign();
@@ -434,7 +483,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(calledByEntry(Account.create()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .buildTransaction();
@@ -451,7 +500,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(
                         ContractSigner.global(contractHash, string("iamgroot"), integer(2)),
                         AccountSigner.calledByEntry(Account.create()))
@@ -581,7 +630,7 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .throwIfSenderCannotCoverFees(IllegalStateException::new);
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Can't handle a consumer for this case, since an exception");
+        exceptionRule.expectMessage("Cannot handle a consumer for this case, since an exception");
         b.doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
     }
 
@@ -618,20 +667,20 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
         exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Can't handle a supplier for this case, since a consumer");
+        exceptionRule.expectMessage("Cannot handle a supplier for this case, since a consumer");
         b.throwIfSenderCannotCoverFees(IllegalStateException::new);
     }
 
     @Test
     public void invokeScript() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
-                Base64.encode(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL),
+                Base64.encode(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL),
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
 
         NeoInvokeScript response = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .callInvokeScript();
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
@@ -639,7 +688,7 @@ public class TransactionBuilderTest {
     @Test
     public void invokeScriptWithoutSettingScript() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
-                SCRIPT_NEO_INVOKEFUNCTION_SYMBOL,
+                SCRIPT_INVOKEFUNCTION_NEO_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
         ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
@@ -693,7 +742,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(calledByEntry(account1))
                 .getUnsignedTransaction();
 
@@ -711,7 +760,7 @@ public class TransactionBuilderTest {
 
         Transaction tx = new TransactionBuilder(neow)
                 .version((byte) 1)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(calledByEntry(account1))
                 .getUnsignedTransaction();
 
@@ -726,7 +775,7 @@ public class TransactionBuilderTest {
 
         Account account = Account.create();
         Transaction tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
                 .buildTransaction();
 
@@ -734,7 +783,7 @@ public class TransactionBuilderTest {
         assertThat(tx.getNetworkFee(), is(baseNetworkFee));
 
         tx = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account))
                 .additionalNetworkFee(2000L)
                 .buildTransaction();
@@ -747,7 +796,7 @@ public class TransactionBuilderTest {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -762,7 +811,7 @@ public class TransactionBuilderTest {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -777,7 +826,7 @@ public class TransactionBuilderTest {
         Signer s1 = AccountSigner.none(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(s1, s2);
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
@@ -791,7 +840,7 @@ public class TransactionBuilderTest {
     public void testSetFirstSigner_notPresent() {
         Signer s1 = global(account1);
         TransactionBuilder b = new TransactionBuilder(neow)
-                .script(hexStringToByteArray(SCRIPT_NEO_INVOKEFUNCTION_SYMBOL))
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(s1);
         assertThat(b.getSigners().get(0), is(s1));
 

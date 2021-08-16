@@ -174,7 +174,7 @@ public class TransactionBuilder {
      */
     public TransactionBuilder signers(Signer... signers) {
         if (containsDuplicateSigners(signers)) {
-            throw new TransactionConfigurationException("Can't add multiple signers concerning " +
+            throw new TransactionConfigurationException("Cannot add multiple signers concerning " +
                     "the same account.");
         }
         checkAndThrowIfMaxAttributesExceeded(signers.length, attributes.size());
@@ -267,8 +267,8 @@ public class TransactionBuilder {
         }
 
         if (signers.isEmpty()) {
-            throw new IllegalStateException("Can't create a transaction without signers. At least" +
-                    " one signer with witness scope fee-only or higher is required.");
+            throw new IllegalStateException("Cannot create a transaction without signers. At" +
+                    "least one signer with witness scope fee-only or higher is required.");
         }
 
         if (isHighPriority() && !isAllowedForHighPriority()) {
@@ -472,9 +472,8 @@ public class TransactionBuilder {
     private void signWithAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
         if (keyPair == null) {
-            throw new TransactionConfigurationException("Can't create transaction signature " +
-                    "because account with script " + acc.getScriptHash() + " doesn't hold a " +
-                    "private key.");
+            throw new IllegalStateException("Cannot create transaction signature because account " +
+                    "with script hash" + acc.getScriptHash() + " does not hold a private key.");
         }
         transaction.addWitness(Witness.create(txBytes, keyPair));
     }
@@ -494,7 +493,7 @@ public class TransactionBuilder {
     public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger,
             BigInteger> consumer) {
         if (supplier != null) {
-            throw new IllegalStateException("Can't handle a consumer for this case, since an " +
+            throw new IllegalStateException("Cannot handle a consumer for this case, since an " +
                     "exception will be thrown if the sender cannot cover the fees.");
         }
         this.consumer = consumer;
@@ -515,7 +514,7 @@ public class TransactionBuilder {
     public TransactionBuilder throwIfSenderCannotCoverFees(
             Supplier<? extends Throwable> exceptionSupplier) {
         if (consumer != null) {
-            throw new IllegalStateException("Can't handle a supplier for this case, since a " +
+            throw new IllegalStateException("Cannot handle a supplier for this case, since a " +
                     "consumer will be executed if the sender cannot cover the fees.");
         }
         supplier = exceptionSupplier;
