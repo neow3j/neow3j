@@ -399,11 +399,11 @@ public class Compiler {
      */
     protected CompilationUnit compile(ClassNode classNode) throws IOException {
         checkForClassCompatibility(classNode);
-        compUnit.setContractClass(classNode);
         checkForUsageOfInstanceConstructor(classNode);
-        collectContractVariables(classNode);
+        checkForNonStaticVariablesOnContractClass(classNode);
+
+        compUnit.setContractClass(classNode);
         collectSmartContractEvents(classNode);
-        compUnit.getNeoModule().addMethod(createInitsslotMethod(classNode));
         compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
@@ -411,37 +411,33 @@ public class Compiler {
         for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
             neoMethod.convert(compUnit);
         }
+        compileInitsslotMethod();
         finalizeCompilation();
         return compUnit;
     }
 
-    private void collectContractVariables(ClassNode asmClass) {
-        if (asmClass.fields == null) {
+    private void checkForNonStaticVariablesOnContractClass(ClassNode contractClass) {
+        if (contractClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
+            throw new CompilerException(format("Contract class %s has non-static fields but only " +
+                            "static fields are supported in smart contract classes.",
+                    getFullyQualifiedNameForInternalName(contractClass.name)));
+        }
+    }
+
+    // Creates the method INITSSLOT method that initializes static variables in the NeoVM
+    // script. Currently, the compiler only considers static variables from the main contract
+    // class. Static variables in other classes lead to a compiler exception if they are
+    // non-final or final but not of constant value (e.g., set via method call).
+    private void compileInitsslotMethod() throws IOException {
+        Optional<MethodNode> classCtorOpt = compUnit.getContractClass().methods.stream()
+                .filter(m -> m.name.equals(CLASS_CTOR))
+                .findFirst();
+        if (!classCtorOpt.isPresent()) {
             return;
         }
-        if (asmClass.fields.size() > MAX_STATIC_FIELDS) {
-            throw new CompilerException(format("The class %s has more than the max supported "
-                            + "number of static field variables (%d).",
-                    getFullyQualifiedNameForInternalName(asmClass.name), MAX_STATIC_FIELDS));
-        }
-        if (asmClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
-            throw new CompilerException(format("Class %s has non-static fields but only static "
-                            + "fields are supported in smart contract classes.",
-                    getFullyQualifiedNameForInternalName(asmClass.name)));
-        }
-
-        int neoIdx = 0;
-        int jvmIdx = 0;
-        for (FieldNode f : asmClass.fields) {
-            if (isEvent(f.desc)) {
-                // Don't add events to the NeoVM variables.
-                jvmIdx++;
-                continue;
-            }
-            NeoContractVariable var = new NeoContractVariable(neoIdx++, jvmIdx++, f);
-            compUnit.getNeoModule().addContractVariable(var);
-        }
-
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass());
+        compUnit.getNeoModule().addMethod(m);
+        m.convert(compUnit);
     }
 
     private void finalizeCompilation() {
@@ -508,18 +504,6 @@ public class Compiler {
                     )
             );
         }
-    }
-
-    // Creates the method (beginning with INITSSLOT) that initializes static variables in the NeoVM
-    // script. This only looks at the <clinit> method of the class. The <clinit> method
-    // contains static variable initialization instructions that happen right at the definition
-    // of the variables or in the static constructor.
-    private InitsslotNeoMethod createInitsslotMethod(ClassNode asmClass) {
-        Optional<MethodNode> classCtorOpt = asmClass.methods.stream()
-                .filter(m -> m.name.equals(CLASS_CTOR))
-                .findFirst();
-        return classCtorOpt.map(methodNode -> new InitsslotNeoMethod(methodNode, asmClass))
-                .orElse(null);
     }
 
     // Collects all static methods and initializes them, e.g., sets the parameters and local

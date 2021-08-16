@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
-import static io.neow3j.compiler.AsmHelper.getFieldIndex;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static io.neow3j.compiler.Compiler.addPushNumber;
@@ -60,7 +59,7 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
-                addStoreStaticField(insn, neoMethod, compUnit);
+                addStoreStaticField((FieldInsnNode) insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
@@ -139,17 +138,14 @@ public class ObjectsConverter implements Converter {
     }
 
     public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+            CompilationUnit compUnit) throws IOException {
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
-    public static void addStoreStaticField(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        int idx = getFieldIndex(fieldInsn, neoMethod.getOwnerClass());
-        int neoVmIdx = compUnit.getNeoModule().getContractVariable(idx).getNeoIdx();
+    public static void addStoreStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+        int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }
 
@@ -370,8 +366,9 @@ public class ObjectsConverter implements Converter {
         List<NeoEvent> events = compUnit.getNeoModule().getEvents();
         NeoEvent event = events.stream()
                 .filter(e -> eventVariableName.equals(e.getAsmVariable().name))
-                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find "
-                        + "triggered event in list of events."));
+                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find " +
+                        "triggered event in list of events. Make sure to declare events only in" +
+                        " the main contract class."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
         while (!isMethodCallToEventSend(insn)) {

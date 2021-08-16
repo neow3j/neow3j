@@ -1,9 +1,8 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
-import static java.util.Arrays.asList;
-
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
@@ -12,10 +11,6 @@ import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.hamcrest.core.StringContains;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
@@ -23,6 +18,14 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
+import static java.util.Arrays.asList;
 
 public class CompilerExceptionsTest {
 
@@ -242,6 +245,22 @@ public class CompilerExceptionsTest {
         new Compiler().compile(c);
     }
 
+    @Test
+    public void throwOnStaticVariableInNonContractClass() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains(
+                "Static variables are not allowed outside the main contract class"));
+        new Compiler().compile(ContractClassWithReferenceToStaticVariable.class.getName());
+    }
+
+    @Test
+    public void throwOnEventDeclarationInNonContractClass() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContains(
+                "Couldn't find triggered event in list of events"));
+        new Compiler().compile(ContractClassWithReferenceToEventInOtherClass.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -449,6 +468,30 @@ public class CompilerExceptionsTest {
     }
 
     static class ContractWithWrongClassCompatibility {
+    }
+
+    static class ContractClassWithReferenceToStaticVariable {
+
+        public static void method() {
+            StorageContext storageContext = NonContractClassWithStaticVariable.ctx.asReadOnly();
+        }
+
+    }
+
+    static class NonContractClassWithStaticVariable {
+        public static final StorageContext ctx = Storage.getStorageContext();
+    }
+
+    static class ContractClassWithReferenceToEventInOtherClass {
+
+        public static void method() {
+            NonContractClassWithEventDeclaration.event.fire("Hello, world!");
+        }
+
+    }
+
+    static class NonContractClassWithEventDeclaration {
+        public static Event1Arg<String> event;
     }
 
 }
