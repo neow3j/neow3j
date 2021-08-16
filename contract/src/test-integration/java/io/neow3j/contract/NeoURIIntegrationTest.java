@@ -12,10 +12,9 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static io.neow3j.contract.IntegrationTestHelper.CLIENTS_WALLET;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
@@ -50,10 +49,9 @@ public class NeoURIIntegrationTest {
 
         Hash256 txHash = new NeoURI(neow3j)
                 .token(GAS_HASH)
-                .wallet(COMMITTEE_WALLET)
                 .to(account.getScriptHash())
                 .amount(new BigDecimal("0.00000001"))
-                .buildTransfer()
+                .buildTransferFrom(DEFAULT_ACCOUNT)
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -74,8 +72,7 @@ public class NeoURIIntegrationTest {
 
         Hash256 txHash = NeoURI.fromURI(uriString)
                 .neow3j(neow3j)
-                .wallet(COMMITTEE_WALLET)
-                .buildTransfer()
+                .buildTransferFrom(DEFAULT_ACCOUNT)
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -98,8 +95,7 @@ public class NeoURIIntegrationTest {
 
         Hash256 txHash = NeoURI.fromURI(uriString)
                 .neow3j(neow3j)
-                .wallet(CLIENTS_WALLET)
-                .buildTransfer()
+                .buildTransferFrom(CLIENT_2)
                 .sign()
                 .send()
                 .getSendRawTransaction()

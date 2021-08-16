@@ -23,7 +23,6 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -93,9 +92,7 @@ public class PolicyContractTest {
                         singletonList(integer(20)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.setFeePerByte(new BigInteger("20"))
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -120,9 +117,7 @@ public class PolicyContractTest {
                         singletonList(integer(10)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.setExecFeeFactor(BigInteger.TEN)
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -147,9 +142,7 @@ public class PolicyContractTest {
                         singletonList(integer(8)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.setStoragePrice(new BigInteger("8"))
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -174,9 +167,7 @@ public class PolicyContractTest {
                         singletonList(hash160(recipient)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.blockAccount(recipient)
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -201,10 +192,8 @@ public class PolicyContractTest {
                         singletonList(hash160(recipient)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract
                 .blockAccount(recipient.toAddress())
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -229,9 +218,7 @@ public class PolicyContractTest {
                         singletonList(hash160(recipient)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.unblockAccount(recipient)
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 
@@ -256,9 +243,7 @@ public class PolicyContractTest {
                         singletonList(hash160(recipient)))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = policyContract.unblockAccount(recipient.toAddress())
-                .wallet(w)
                 .signers(calledByEntry(account1))
                 .sign();
 

@@ -22,7 +22,6 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -76,9 +75,7 @@ public class NonFungibleTokenTest {
                                 null))
                 .toArray();
 
-        Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transfer(wallet, account2.getScriptHash(),
-                TOKEN_ID);
+        TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -88,18 +85,7 @@ public class NonFungibleTokenTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("only intended for non-divisible NFTs.");
-        nfTestToken.transfer(Wallet.withAccounts(account2), account1.getScriptHash(), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransfer_WalletDoesNotContainTokenOwner() throws IOException {
-        setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
-
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided wallet does not contain the account");
-        nfTestToken.transfer(Wallet.withAccounts(account2), account1.getScriptHash(),
-                TOKEN_ID);
+        nfTestToken.transfer(account2, account1.getScriptHash(), TOKEN_ID);
     }
 
     @Test
@@ -199,9 +185,8 @@ public class NonFungibleTokenTest {
                                 null))
                 .toArray();
 
-        Wallet wallet = Wallet.withAccounts(account1);
-        TransactionBuilder b = nfTestToken.transfer(wallet, account1.getScriptHash(),
-                account2.getScriptHash(), new BigInteger("25000"), TOKEN_ID);
+        TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(),
+                new BigInteger("25000"), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -211,18 +196,7 @@ public class NonFungibleTokenTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("only intended for divisible NFTs.");
-        Wallet wallet = Wallet.withAccounts(account1);
-        nfTestToken.transfer(wallet, account1.getScriptHash(), account2.getScriptHash(),
-                new BigInteger("25000"), TOKEN_ID);
-    }
-
-    @Test
-    public void testTransferDivisible_ownerNotInWallet() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("wallet does not contain the from account.");
-        Wallet wallet = Wallet.withAccounts(account2);
-        nfTestToken.transfer(wallet, account1.getScriptHash(), account2.getScriptHash(),
-                new BigInteger("25000"), TOKEN_ID);
+        nfTestToken.transfer(account1, account2.getScriptHash(), new BigInteger("25000"), TOKEN_ID);
     }
 
     @Test
@@ -258,7 +232,7 @@ public class NonFungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("only intended for divisible NFTs.");
-        BigInteger balance = nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
+        nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
     }
 
 }

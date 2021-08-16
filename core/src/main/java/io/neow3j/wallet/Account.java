@@ -1,6 +1,5 @@
 package io.neow3j.wallet;
 
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -10,11 +9,12 @@ import io.neow3j.crypto.WIF;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.script.VerificationScript;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
@@ -313,6 +313,12 @@ public class Account {
         return account;
     }
 
+    /**
+     * Creates an account from the given WIF.
+     *
+     * @param wif The WIF of the account.
+     * @return the account.
+     */
     public static Account fromWIF(String wif) {
         BigInteger privateKey = Numeric.toBigInt(WIF.getPrivateKeyFromWIF(wif));
         ECKeyPair keyPair = ECKeyPair.create(privateKey);
@@ -324,14 +330,12 @@ public class Account {
         return account;
     }
 
-    public static Account fromNewECKeyPair() {
-        try {
-            return new Account(ECKeyPair.createEcKeyPair());
-        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
-            throw new RuntimeException("Failed to create a new EC key pair.", e);
-        }
-    }
-
+    /**
+     * Creates an account from the provided NEP-6 account.
+     *
+     * @param nep6Acct The account in NEP-6 format.
+     * @return the account.
+     */
     public static Account fromNEP6Account(NEP6Account nep6Acct) {
         Account account = new Account();
         account.address = nep6Acct.getAddress();
@@ -368,12 +372,29 @@ public class Account {
     }
 
     /**
-     * Creates a new generic account with a fresh key pair.
+     * Creates an account from the given script hash.
+     * <p>
+     * Note that an account created with this method does not contain a verification script nor
+     * an EC key pair. Therefore, it cannot be used for transaction signing.
+     *
+     * @param scriptHash The script hash of the account.
+     * @return the account.
+     */
+    public static Account fromScriptHash(Hash160 scriptHash) {
+        return fromAddress(scriptHash.toAddress());
+    }
+
+    /**
+     * Creates a new account with a fresh key pair.
      *
      * @return the new account.
      */
     public static Account create() {
-        return fromNewECKeyPair();
+        try {
+            return new Account(ECKeyPair.createEcKeyPair());
+        } catch (InvalidAlgorithmParameterException | NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException("Failed to create a new EC key pair.", e);
+        }
     }
 
 }

@@ -3,6 +3,8 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
@@ -19,9 +21,7 @@ import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.transaction.Signer;
 import io.neow3j.utils.Await;
-import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,10 +30,14 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
@@ -56,7 +60,7 @@ public class ContractManagementIntegrationTest {
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-5)); // ID
         assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
-        assertThat(Numeric.reverseHexString(array.get(2).getHexString()),
+        assertThat(reverseHexString(array.get(2).getHexString()),
                 is(NeoToken.SCRIPT_HASH.toString())); // contract hash
         // nef
         assertThat(array.get(3).getHexString(), not(isEmptyString()));
@@ -122,11 +126,14 @@ public class ContractManagementIntegrationTest {
                 ContractManagementIntegrationTestContractToUpdateWithoutData.class.getName());
 
         // Deploy contract
-        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
+        Transaction tx = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(compUnit.getNefFile(), compUnit.getManifest())
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                .sign().send();
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
 
@@ -144,15 +151,15 @@ public class ContractManagementIntegrationTest {
                 .writeValueAsString(compUnit.getManifest());
 
         // Update the contract
-        Hash256 txHash =
-                new SmartContract(contractHash, ct.getNeow3j()).invokeFunction("updateWithoutData",
+        tx = new SmartContract(contractHash, ct.getNeow3j())
+                .invokeFunction("updateWithoutData",
                         byteArray(compUnit.getNefFile().toArray()), string(manifestString))
-                        .wallet(ct.getWallet())
-                        .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         // Check one update has been performed
@@ -166,19 +173,21 @@ public class ContractManagementIntegrationTest {
                 ContractManagementIntegrationTestContractToUpdateWithData.class.getName());
 
         // Deploy contract
-        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
+        Transaction tx = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(compUnit.getNefFile(), compUnit.getManifest())
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                .sign().send();
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
 
         // Check zero updates have been performed
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
-        NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash).send();
+        NeoGetContractState contractState = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
@@ -188,16 +197,16 @@ public class ContractManagementIntegrationTest {
                 .writeValueAsString(compUnit.getManifest());
 
         // Update the contract
-        Hash256 txHash =
-                new SmartContract(contractHash, ct.getNeow3j()).invokeFunction("updateWithData",
+        tx = new SmartContract(contractHash, ct.getNeow3j())
+                .invokeFunction("updateWithData",
                         byteArray(compUnit.getNefFile().toArray()), string(manifestString),
                         string("hello, world!"))
-                        .wallet(ct.getWallet())
-                        .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                        .sign()
-                        .send()
-                        .getSendRawTransaction()
-                        .getHash();
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         // Check one update has been performed
@@ -209,28 +218,29 @@ public class ContractManagementIntegrationTest {
     public void destroy() throws Throwable {
         CompilationUnit res = new Compiler().compile(
                 ContractManagementIntegrationTestContractToDestroy.class.getName());
-        NeoSendRawTransaction response = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
+        Transaction tx = new io.neow3j.contract.ContractManagement(ct.getNeow3j())
                 .deploy(res.getNefFile(), res.getManifest())
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                .sign().send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
-                ct.getNeow3j());
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         SmartContract sc = new SmartContract(contractHash, ct.getNeow3j());
-        Hash256 txHash = sc.invokeFunction("destroy")
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        tx = sc.invokeFunction("destroy")
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
-        NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash).send();
+        NeoGetContractState contractState = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getError().getMessage(), is("Unknown contract"));
     }
 
@@ -238,7 +248,7 @@ public class ContractManagementIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(Numeric.reverseHexString(TestProperties.contractManagementHash())));
+                is(reverseHexString(TestProperties.contractManagementHash())));
     }
 
     @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
@@ -267,7 +277,6 @@ public class ContractManagementIntegrationTest {
         public static void updateWithData(ByteString nefFile, String manifest, Object data) {
             ContractManagement.update(nefFile, manifest, data);
         }
-
     }
 
     @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
@@ -276,7 +285,6 @@ public class ContractManagementIntegrationTest {
         public static void updateWithoutData(ByteString nefFile, String manifest) {
             ContractManagement.update(nefFile, manifest);
         }
-
     }
 
     @DisplayName(
@@ -289,7 +297,6 @@ public class ContractManagementIntegrationTest {
         public static void deploy(Object data, boolean update) {
             onUpdate.fire(data);
         }
-
     }
 
     @DisplayName(
@@ -302,7 +309,6 @@ public class ContractManagementIntegrationTest {
         public static void deploy(Object data, boolean update) {
             onUpdate.fire(data);
         }
-
     }
 
     static class ContractManagementIntegrationTestContractToDeployWithoutData {

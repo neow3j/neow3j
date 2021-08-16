@@ -12,6 +12,7 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -25,14 +26,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
-import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -281,7 +280,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(AccountSigner.none(account1));
+        signers.add(AccountSigner.none(Account.fromScriptHash(account1)));
         Transaction tx = new Transaction(neow, (byte) 0,
                 0L,
                 0L,

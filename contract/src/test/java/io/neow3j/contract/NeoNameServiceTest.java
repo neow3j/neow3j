@@ -29,7 +29,6 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -154,10 +153,8 @@ public class NeoNameServiceTest {
                 .contractCall(nameServiceHash, ADD_ROOT, singletonList(string("neow")))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         TransactionBuilder b = nameServiceContract.addRoot("neow")
-                .wallet(w)
-                .signers(calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -181,10 +178,8 @@ public class NeoNameServiceTest {
                         singletonList(integer(new BigInteger("1000000000000"))))
                 .toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         TransactionBuilder b = nameServiceContract.setPrice(new BigInteger("1000000000000"))
-                .wallet(w)
-                .signers(calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
         assertThat(b.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
@@ -375,7 +370,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(nameServiceHash, SET_RECORD,
-                asList(string("client1.neo"), integer(5), string("firstlevel.client1.neo")))
+                        asList(string("client1.neo"), integer(5), string("firstlevel.client1.neo")))
                 .toArray();
 
         TransactionBuilder b = nameServiceContract
@@ -424,7 +419,7 @@ public class NeoNameServiceTest {
 
         byte[] expectedScript =
                 new ScriptBuilder().contractCall(nameServiceHash, SET_RECORD,
-                        asList(string("client1.neo"), integer(28), string("1234::1234")))
+                                asList(string("client1.neo"), integer(28), string("1234::1234")))
                         .toArray();
 
         TransactionBuilder b = nameServiceContract
@@ -592,15 +587,14 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(nameServiceHash, TRANSFER,
-                asList(
-                        hash160(account2.getScriptHash()),
-                        byteArray("636c69656e74312e6e656f"),
-                        null))
+                        asList(
+                                hash160(account2.getScriptHash()),
+                                byteArray("636c69656e74312e6e656f"),
+                                null))
                 .toArray();
 
-        Wallet wallet = Wallet.withAccounts(account1);
         TransactionBuilder b = nameServiceContract
-                .transfer(wallet, account2.getScriptHash(), "client1.neo");
+                .transfer(account1, account2.getScriptHash(), "client1.neo");
         assertThat(b.getScript(), is(expectedScript));
     }
 

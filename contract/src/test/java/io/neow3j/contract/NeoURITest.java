@@ -10,7 +10,6 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -47,7 +46,6 @@ public class NeoURITest {
     private static final Account SENDER_ACCOUNT =
             Account.fromWIF("L2jLP9VXA23Hbzo7PmvLfjwkbUaaz887w3aGaeAz5xWyzjizpu9C");
     private static final Hash160 SENDER = SENDER_ACCOUNT.getScriptHash();
-    private static final Wallet WALLET = Wallet.withAccounts(SENDER_ACCOUNT);
     private static final String RECIPIENT_ADDRESS = "NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj";
     private static final Hash160 RECIPIENT = Hash160.fromAddress(RECIPIENT_ADDRESS);
     private static final BigDecimal AMOUNT = BigDecimal.ONE;
@@ -121,8 +119,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("The Neo token does not support any decimal places.");
         NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1.1")
                 .neow3j(neow3j)
-                .wallet(WALLET)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -131,8 +128,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("The Gas token does not support more than 8 decimal places.");
         NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas&amount=0.000000001")
                 .neow3j(neow3j)
-                .wallet(WALLET)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -141,6 +137,19 @@ public class NeoURITest {
                 .buildURI()
                 .getURI();
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
+    }
+
+    @Test
+    public void testBuildUriNonNativeAsset() {
+        Hash160 tokenHash = new Hash160("c0338c7be47126b92eae8a67a2ebaedbbdce6ceb");
+        Hash160 recipient = Hash160.fromAddress("NV4fSVvFNHAHtmyCVpQnQ85qXdttUaZkbS");
+        NeoURI neoURI = new NeoURI()
+                .token(tokenHash)
+                .to(recipient)
+                .amount(BigDecimal.valueOf(13))
+                .buildURI();
+        assertThat(neoURI.getURIAsString(), is("neo:NV4fSVvFNHAHtmyCVpQnQ85qXdttUaZkbS?" +
+                "asset=c0338c7be47126b92eae8a67a2ebaedbbdce6ceb&amount=13"));
     }
 
     @Test
@@ -269,10 +278,9 @@ public class NeoURITest {
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
                 .token(NeoToken.SCRIPT_HASH)
-                .wallet(WALLET)
                 .to(RECIPIENT)
                 .amount(AMOUNT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
 
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER));
@@ -295,10 +303,9 @@ public class NeoURITest {
         TransactionBuilder b = new NeoURI()
                 .neow3j(neow3j)
                 .token(GasToken.SCRIPT_HASH)
-                .wallet(WALLET)
                 .to(RECIPIENT)
                 .amount(new BigDecimal("2"))
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
 
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().get(0).getScriptHash(), is(SENDER));
@@ -310,7 +317,7 @@ public class NeoURITest {
         exceptionRule.expectMessage("Neow3j instance is not set.");
         new NeoURI()
                 .to(RECIPIENT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -319,20 +326,8 @@ public class NeoURITest {
         exceptionRule.expectMessage("Recipient is not set.");
         new NeoURI(neow3j)
                 .token(NeoToken.SCRIPT_HASH)
-                .wallet(WALLET)
                 .amount(AMOUNT)
-                .buildTransfer();
-    }
-
-    @Test
-    public void buildTransfer_noWallet() throws IOException {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Wallet is not set.");
-        new NeoURI(neow3j)
-                .token(NeoToken.SCRIPT_HASH)
-                .to(RECIPIENT)
-                .amount(AMOUNT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -341,9 +336,8 @@ public class NeoURITest {
         exceptionRule.expectMessage("Amount is not set.");
         new NeoURI(neow3j)
                 .token(NeoToken.SCRIPT_HASH)
-                .wallet(WALLET)
                 .to(RECIPIENT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -353,10 +347,9 @@ public class NeoURITest {
                 "balanceOf");
         TransactionBuilder b = new NeoURI(neow3j)
                 .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(WALLET)
                 .to(RECIPIENT)
                 .amount(AMOUNT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
         assertThat(b, instanceOf(TransactionBuilder.class));
     }
 
@@ -368,10 +361,9 @@ public class NeoURITest {
                 "not support more than 2 decimal places.");
         new NeoURI(neow3j)
                 .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(WALLET)
                 .to(RECIPIENT)
                 .amount(new BigDecimal("0.001"))
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
@@ -381,10 +373,9 @@ public class NeoURITest {
         exceptionRule.expectMessage("Got stack item of type Boolean but expected Integer.");
         new NeoURI(neow3j)
                 .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .wallet(WALLET)
                 .to(RECIPIENT)
                 .amount(AMOUNT)
-                .buildTransfer();
+                .buildTransferFrom(SENDER_ACCOUNT);
     }
 
     @Test
