@@ -202,7 +202,7 @@ public class NefFileTest {
                      + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
-        expectedException.expectMessage(new StringContains("Script can't be empty"));
+        expectedException.expectMessage(new StringContains("Script cannot be empty"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
     }
 

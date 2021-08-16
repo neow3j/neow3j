@@ -250,7 +250,7 @@ public class Transaction extends NeoSerializable {
      */
     public Observable<Long> track() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Can't subscribe before transaction has been sent.");
+            throw new IllegalStateException("Cannot subscribe before transaction has been sent.");
         }
 
         Predicate<NeoGetBlock> pred = neoGetBlock ->
@@ -276,8 +276,8 @@ public class Transaction extends NeoSerializable {
      */
     public NeoApplicationLog getApplicationLog() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Can't get the application log before transaction has" +
-                    " been sent.");
+            throw new IllegalStateException("Cannot get the application log before transaction " +
+                    "has been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {
