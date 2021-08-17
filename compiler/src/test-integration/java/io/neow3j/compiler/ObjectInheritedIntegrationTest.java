@@ -1,11 +1,9 @@
 package io.neow3j.compiler;
 
-import io.neow3j.test.TestProperties;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Iterator;
@@ -16,12 +14,14 @@ import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.Transaction;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.test.TestProperties;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -250,7 +250,7 @@ public class ObjectInheritedIntegrationTest {
         // the comparison of Objects, which are Arrays on the neo-vm, is only by reference.
         // Therefore, only the comparison of the same reference will return true.
         assertTrue(boolArr.get(0).getBoolean());
-        assertFalse(boolArr.get(1).getBoolean());
+        assertTrue(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
         assertFalse(boolArr.get(3).getBoolean());
     }

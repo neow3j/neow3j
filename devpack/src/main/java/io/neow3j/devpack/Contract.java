@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.script.OpCode;
-import io.neow3j.devpack.annotations.Instruction;
 
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
@@ -36,14 +36,14 @@ public class Contract {
     /**
      * The contract's manifest in JSON format.
      */
-    public final String manifest;
+    public final Manifest manifest;
 
     private Contract() {
         id = 0;
         updateCounter = 0;
         hash = new Hash160(new byte[0]);
         nef = new ByteString("");
-        manifest = "";
+        manifest = null;
     }
 
     /**

@@ -11,8 +11,10 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
+import io.neow3j.devpack.Manifest;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
+import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -43,6 +45,7 @@ import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class ContractManagementIntegrationTest {
 
@@ -66,6 +69,17 @@ public class ContractManagementIntegrationTest {
         assertThat(array.get(3).getHexString(), not(isEmptyString()));
         // manifest
         assertThat(array.get(4).getList(), notNullValue());
+    }
+
+    @Test
+    public void checkManifestValues() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                hash160(new Hash160(neoTokenHash())));
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertTrue(array.get(0).getBoolean());
+        assertTrue(array.get(1).getBoolean());
+        assertTrue(array.get(2).getBoolean());
+        assertTrue(array.get(3).getBoolean());
     }
 
     @Test
@@ -256,6 +270,16 @@ public class ContractManagementIntegrationTest {
 
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
             return ContractManagement.getContract(contractHash);
+        }
+
+        public static boolean[] checkManifestValues(io.neow3j.devpack.Hash160 contractHash) {
+            Manifest manifest = ContractManagement.getContract(contractHash).manifest;
+            boolean[] objs = new boolean[4];
+            objs[0] = manifest.name == "NeoToken";
+            objs[1] = manifest.abi.methods.get(0).name == "balanceOf";
+            objs[2] = manifest.abi.events.get(0).name == "Transfer";
+            objs[3] = manifest.supportedStandards.get(0) == "NEP-17";
+            return objs;
         }
 
         public static io.neow3j.devpack.Hash160 getHash() {
