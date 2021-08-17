@@ -1,8 +1,8 @@
 package io.neow3j.compiler;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
+import io.neow3j.script.OpCode;
 import io.neow3j.utils.ArrayUtils;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -273,15 +273,6 @@ public class NeoMethod {
      */
     public ClassNode getOwnerClass() {
         return sourceClass;
-    }
-
-    /**
-     * Gets the fully qualified name of the class that this method was converted from.
-     *
-     * @return the fully qualified name of the corresponding class.
-     */
-    public String getOwnerClassName() {
-        return getFullyQualifiedNameForInternalName(sourceClass.name);
     }
 
     /**

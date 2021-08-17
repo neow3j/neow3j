@@ -1,12 +1,12 @@
 package io.neow3j.compiler;
 
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash256;
 import org.hamcrest.core.StringEndsWith;
 import org.hamcrest.core.StringStartsWith;
 import org.junit.ClassRule;
@@ -46,6 +46,13 @@ public class StaticVariablesIntegrationTest {
                 StringEndsWith.endsWith("NEO"));
     }
 
+    @Test
+    public void callStaticFinalVariableFromNonContractClass() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getString(),
+                StringStartsWith.startsWith("Hello, world!"));
+    }
+
     static class StaticVariablesIntegrationTestContract {
 
         private static final StorageMap map = Storage.getStorageContext().createMap(new ByteString(
@@ -60,6 +67,15 @@ public class StaticVariablesIntegrationTest {
             return platform;
         }
 
+        public static String callStaticFinalVariableFromNonContractClass() {
+            return NonContractClass.var;
+        }
+
+    }
+
+    static class NonContractClass {
+
+        public static final String var = "Hello, world!";
     }
 
 }

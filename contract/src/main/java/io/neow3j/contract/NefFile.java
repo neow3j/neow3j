@@ -200,7 +200,7 @@ public class NefFile extends NeoSerializable {
             // Script
             script = reader.readVarBytes(MAX_SCRIPT_LENGTH);
             if (script.length == 0) {
-                throw new DeserializationException("Script can't be empty in NEF file.");
+                throw new DeserializationException("Script cannot be empty in NEF file.");
             }
             // Check sum
             checkSum = reader.readBytes(CHECKSUM_SIZE);
