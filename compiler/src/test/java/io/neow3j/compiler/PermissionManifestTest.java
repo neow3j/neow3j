@@ -1,21 +1,22 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.annotations.Permission.Permissions;
+import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import org.hamcrest.text.StringContainsInOrder;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.IOException;
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
-
-import io.neow3j.devpack.annotations.Permission;
-import io.neow3j.devpack.annotations.Permission.Permissions;
-import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
-import java.io.IOException;
-import java.util.List;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class PermissionManifestTest {
 
@@ -68,6 +69,19 @@ public class PermissionManifestTest {
         assertThat(permissions.get(0).getMethods().get(0), is(CONTRACT_METHOD_1));
         assertThat(permissions.get(0).getMethods().get(1), is(CONTRACT_METHOD_2));
     }
+
+    @Test
+    public void withPermissionsAnnotationSingleContractHashAndSingleMethod() throws IOException {
+        CompilationUnit unit = new Compiler().compile(
+                PermissionManifestTestContractWithSingleAnnotationContractHashAndSingleMethod.class
+                        .getName());
+        List<ContractPermission> permissions = unit.getManifest().getPermissions();
+        assertThat(permissions, hasSize(1));
+        assertThat(permissions.get(0).getContract(), is(CONTRACT_HASH_1));
+        assertThat(permissions.get(0).getMethods(), hasSize(1));
+        assertThat(permissions.get(0).getMethods().get(0), is(CONTRACT_METHOD_1));
+    }
+
 
     @Test
     public void withPermissionsAnnotationWrapper() throws IOException {
@@ -138,6 +152,14 @@ public class PermissionManifestTest {
 
     }
 
+    @Permission(contract = CONTRACT_HASH_1, methods = CONTRACT_METHOD_1)
+    static class PermissionManifestTestContractWithSingleAnnotationContractHashAndSingleMethod {
+
+        public static void main() {
+        }
+
+    }
+
     @Permissions({
             @Permission(contract = CONTRACT_HASH_1),
             @Permission(contract = CONTRACT_HASH_2,
@@ -168,7 +190,7 @@ public class PermissionManifestTest {
     }
 
     @Permission(contract = "*", methods = "*")
-    static class PermissionManifestWithWildCardTestContract{
+    static class PermissionManifestWithWildCardTestContract {
 
         public static void main() {
         }
