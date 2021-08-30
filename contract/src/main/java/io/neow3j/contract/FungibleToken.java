@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.ContractSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -136,26 +137,63 @@ public class FungibleToken extends Token {
      * @param from   the sender account.
      * @param to     the script hash of the receiver.
      * @param amount the amount to transfer in token fractions.
-     * @param data   the data that is passed to the {@code onPayment} method of the receiving
-     *               smart contract.
+     * @param data   the data that is passed to the {@code onPayment} method if the receiver is a
+     *               contract.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount,
             ContractParameter data) throws IOException {
 
-        if (amount.signum() < 0) {
-            throw new IllegalArgumentException(
-                    "The parameter amount must be greater than or equal to 0");
-        }
-        byte[] transferScript = buildSingleTransferScript(from, to, amount, data);
-        return new TransactionBuilder(neow3j).script(transferScript).signers(calledByEntry(from));
+        return transfer(from.getScriptHash(), to, amount, data).signers(calledByEntry(from));
     }
 
-    private byte[] buildSingleTransferScript(Account acc, Hash160 to, BigInteger amount,
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     *
+     * @param from   the sender hash.
+     * @param to     the hash of the receiver.
+     * @param amount the amount to transfer in token fractions.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, BigInteger amount)
+            throws IOException {
+
+        return transfer(from, to, amount, null);
+    }
+
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     *
+     * @param from   the sender account.
+     * @param to     the script hash of the receiver.
+     * @param amount the amount to transfer in token fractions.
+     * @param data   the data that is passed to the {@code onPayment} method if the receiver is a
+     *               contract.
+     * @return a transaction builder ready for signing.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, BigInteger amount,
+            ContractParameter data) throws IOException {
+
+        if (amount.signum() < 0) {
+            throw new IllegalArgumentException("The amount must be greater than or equal to 0");
+        }
+        byte[] transferScript = buildSingleTransferScript(from, to, amount, data);
+        return new TransactionBuilder(neow3j).script(transferScript);
+    }
+
+    private byte[] buildSingleTransferScript(Hash160 from, Hash160 to, BigInteger amount,
             ContractParameter data) {
         List<ContractParameter> params;
-        params = asList(hash160(acc), hash160(to), integer(amount), data);
+        params = asList(hash160(from), hash160(to), integer(amount), data);
 
         return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
     }
