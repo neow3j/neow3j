@@ -1,38 +1,40 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.test.TestProperties.gasTokenHash;
-import static io.neow3j.test.TestProperties.neoTokenHash;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import io.neow3j.wallet.Wallet;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 public class FungibleTokenTest {
 
@@ -70,7 +72,7 @@ public class FungibleTokenTest {
     }
 
     @Test
-    public void transferFromSpecificAccount_withDataParam() throws Throwable {
+    public void transferFromAccount() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -82,15 +84,23 @@ public class FungibleTokenTest {
                         asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
                                 integer(gasToken.toFractions(BigDecimal.ONE)),
-                                hash160(account1.getScriptHash())))
+                                any(null)))
                 .toArray();
 
-        Transaction tx = gasToken.transfer(account1, RECIPIENT_SCRIPT_HASH,
-                        gasToken.toFractions(new BigDecimal("1.0")),
-                        hash160(account1.getScriptHash()))
+        // 1. Option: Sender is an account
+        Transaction tx = gasToken.transfer(
+                        account1, RECIPIENT_SCRIPT_HASH, new BigInteger("100000000"))
                 .getUnsignedTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
+        assertThat(((AccountSigner) tx.getSigners().get(0)).getAccount(), is(account1));
+
+        // 2. Option: Sender is a script hash
+        TransactionBuilder builder = gasToken.transfer(
+                account1.getScriptHash(), RECIPIENT_SCRIPT_HASH, new BigInteger("100000000"));
+
+        assertThat(builder.getScript(), is(expectedScript));
+        assertThat(builder.getSigners().size(), is(0));
     }
 
     @Test
