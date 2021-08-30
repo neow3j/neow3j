@@ -1,37 +1,38 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.types.ContractParameter.byteArray;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.types.ContractParameter.integer;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.test.TestProperties;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.protocol.core.response.NFTokenState;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.NFTokenState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.test.TestProperties;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThat;
 
 public class NonFungibleTokenTest {
 
@@ -63,7 +64,7 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testTransfer() throws IOException {
+    public void testTransferNonDivisible() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
 
@@ -72,15 +73,20 @@ public class NonFungibleTokenTest {
                         asList(
                                 hash160(account2.getScriptHash()),
                                 byteArray(TOKEN_ID),
-                                null))
+                                any(null)))
                 .toArray();
 
         TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
+        assertThat(((AccountSigner)b.getSigners().get(0)).getAccount(), is(account1));
+
+        b = nfTestToken.transfer(account1.getScriptHash(), account2.getScriptHash(), TOKEN_ID);
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(b.getSigners().size(), is(0));
     }
 
     @Test
-    public void testTransfer_Divisible() throws IOException {
+    public void failOnDivisibleTransferWithNonDivisibleNFT() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
 
         exceptionRule.expect(IllegalStateException.class);
@@ -182,16 +188,22 @@ public class NonFungibleTokenTest {
                                 hash160(account2.getScriptHash()),
                                 integer(25000), // 0.25
                                 byteArray(TOKEN_ID),
-                                null))
+                                any(null)))
                 .toArray();
 
         TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
+        assertThat(((AccountSigner)b.getSigners().get(0)).getAccount(), is(account1));
+
+        b = nfTestToken.transfer(account1.getScriptHash(), account2.getScriptHash(),
+                new BigInteger("25000"), TOKEN_ID);
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(b.getSigners().size(), is(0));
     }
 
     @Test
-    public void testTransferDivisible_nonDivisible() throws IOException {
+    public void failOnNonDivisibleTransferWithDivisibleNFT() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
 
         exceptionRule.expect(IllegalStateException.class);
