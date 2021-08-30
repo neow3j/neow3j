@@ -4,7 +4,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.Strings;
-import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,7 +21,6 @@ public class NeoURI {
     private URI uri;
 
     private Neow3j neow3j;
-    private Wallet wallet;
     private Hash160 recipient;
     private Hash160 tokenHash;
     private BigDecimal amount;
@@ -97,21 +96,17 @@ public class NeoURI {
     /**
      * Creates a transaction script to transfer and initializes a {@link TransactionBuilder}
      * based on this script which is ready to be signed and sent.
-     * <p>
-     * Uses only the wallet's default account.
      *
+     * @param sender The sender account.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder buildTransfer() throws IOException {
+    public TransactionBuilder buildTransferFrom(Account sender) throws IOException {
         if (neow3j == null) {
             throw new IllegalStateException("Neow3j instance is not set.");
         }
         if (recipient == null) {
             throw new IllegalStateException("Recipient is not set.");
-        }
-        if (wallet == null) {
-            throw new IllegalStateException("Wallet is not set.");
         }
         if (amount == null) {
             throw new IllegalStateException("Amount is not set.");
@@ -134,7 +129,7 @@ public class NeoURI {
             }
         }
 
-        return token.transfer(wallet, recipient, token.toFractions(amount));
+        return token.transfer(sender, recipient, token.toFractions(amount));
     }
 
     private boolean isNeoToken(Hash160 asset) {
@@ -206,17 +201,6 @@ public class NeoURI {
      */
     public NeoURI neow3j(Neow3j neow3j) {
         this.neow3j = neow3j;
-        return this;
-    }
-
-    /**
-     * Sets the wallet.
-     *
-     * @param wallet the wallet.
-     * @return this NeoURI object.
-     */
-    public NeoURI wallet(Wallet wallet) {
-        this.wallet = wallet;
         return this;
     }
 

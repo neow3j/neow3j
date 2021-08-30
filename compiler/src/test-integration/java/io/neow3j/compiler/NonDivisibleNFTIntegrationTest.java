@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
@@ -29,7 +30,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
+        SmartContract smartContract = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
     @Test
@@ -57,7 +58,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("3bd33b8f823eebaed33e27dd33536b38ef7b6909")
+    @ContractHash("997cf94a91993189bdfeb431c9ff9e8945e17519")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

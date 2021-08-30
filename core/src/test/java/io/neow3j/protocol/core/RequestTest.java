@@ -380,7 +380,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokescript\"," +
-                "\"params\":[\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\"]," +
+                "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\"]," +
                 "\"id\":1}"
         );
     }
@@ -394,7 +394,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokescript\"," +
-                "\"params\":[\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\"," +
+                "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\"," +
                 "[{\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\",\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
                 "]," +
                 "\"id\":1}"

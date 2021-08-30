@@ -3,6 +3,8 @@ package io.neow3j.contract;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
@@ -14,11 +16,14 @@ import java.math.BigInteger;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_WALLET;
+import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -37,7 +42,6 @@ public class PolicyContractIntegrationTest {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         policyContract = new PolicyContract(neow3j);
-        // make a transaction that can be used for the tests
         fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
     }
 
@@ -49,13 +53,13 @@ public class PolicyContractIntegrationTest {
         BigInteger feePerByte = policyContract.getFeePerByte();
         assertThat(feePerByte, is(expectedInitialFeePerByte));
 
-        Hash256 txHash = policyContract.setFeePerByte(new BigInteger("2500"))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = policyContract.setFeePerByte(new BigInteger("2500"))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newFeePerByte = policyContract.getFeePerByte();
@@ -70,13 +74,13 @@ public class PolicyContractIntegrationTest {
         BigInteger execFeeFactor = policyContract.getExecFeeFactor();
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
 
-        Hash256 txHash = policyContract.setExecFeeFactor(new BigInteger("50"))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = policyContract.setExecFeeFactor(new BigInteger("50"))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newExecFeeFactor = policyContract.getExecFeeFactor();
@@ -91,13 +95,13 @@ public class PolicyContractIntegrationTest {
         BigInteger feePerByte = policyContract.getStoragePrice();
         assertThat(feePerByte, is(expectedInitialStoragePrice));
 
-        Hash256 txHash = policyContract.setStoragePrice(new BigInteger("300000"))
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = policyContract.setStoragePrice(new BigInteger("300000"))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         BigInteger newFeePerByte = policyContract.getStoragePrice();
@@ -112,25 +116,25 @@ public class PolicyContractIntegrationTest {
         boolean isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);
 
-        Hash256 txHash = policyContract.blockAccount(blockAccount.getScriptHash())
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = policyContract.blockAccount(blockAccount.getScriptHash())
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
 
-        txHash = policyContract.unblockAccount(blockAccount.getScriptHash())
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        tx = policyContract.unblockAccount(blockAccount.getScriptHash())
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
@@ -145,25 +149,25 @@ public class PolicyContractIntegrationTest {
         boolean isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);
 
-        Hash256 txHash = policyContract.blockAccount(blockAccount.getAddress())
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        Transaction tx = policyContract.blockAccount(blockAccount.getAddress())
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
 
-        txHash = policyContract.unblockAccount(blockAccount.getAddress())
-                .wallet(COMMITTEE_WALLET)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT.getScriptHash()))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
+        tx = policyContract.unblockAccount(blockAccount.getAddress())
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());

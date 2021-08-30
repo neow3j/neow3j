@@ -12,8 +12,8 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -44,8 +44,8 @@ import static org.junit.Assert.assertThat;
 
 public class ContractManagementTest {
 
-    private static final String CONTRACTMANAGEMENT_SCRIPTHASH =
-            "fffdc93764dbaddd97c48f252a53ea4643faa3fd";
+    private static final Hash160 CONTRACTMANAGEMENT_SCRIPTHASH =
+            new Hash160("fffdc93764dbaddd97c48f252a53ea4643faa3fd");
 
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE =
@@ -90,11 +90,9 @@ public class ContractManagementTest {
                 "setMinimumDeploymentFee",
                 singletonList(integer(new BigInteger("70000000")))).toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         Transaction tx = new ContractManagement(neow3j)
                 .setMinimumDeploymentFee(new BigInteger("70000000"))
-                .wallet(w)
-                .signers(calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .sign();
 
         assertThat(tx.getSigners(), hasSize(1));
@@ -107,7 +105,7 @@ public class ContractManagementTest {
 
     @Test
     public void scriptHash() {
-        assertThat(new ContractManagement(neow3j).getScriptHash().toString(),
+        assertThat(new ContractManagement(neow3j).getScriptHash(),
                 is(CONTRACTMANAGEMENT_SCRIPTHASH));
     }
 
@@ -117,7 +115,6 @@ public class ContractManagementTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
-        Wallet w = Wallet.withAccounts(account1);
         File nefFile = new File(getClass().getClassLoader()
                 .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
@@ -134,8 +131,7 @@ public class ContractManagementTest {
 
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest)
-                .wallet(w)
-                .signers(calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -147,7 +143,6 @@ public class ContractManagementTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
-        Wallet w = Wallet.withAccounts(account1);
         File nefFile = new File(this.getClass().getClassLoader()
                 .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
@@ -161,14 +156,13 @@ public class ContractManagementTest {
         ContractParameter data = string("some data");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(
-                ContractManagement.SCRIPT_HASH, "deploy", asList(
-                        byteArray(nef.toArray()), byteArray(manifestBytes), data))
+                        ContractManagement.SCRIPT_HASH, "deploy", asList(
+                                byteArray(nef.toArray()), byteArray(manifestBytes), data))
                 .toArray();
 
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest, data)
-                .wallet(w)
-                .signers(calledByEntry(account1.getScriptHash()))
+                .signers(calledByEntry(account1))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));

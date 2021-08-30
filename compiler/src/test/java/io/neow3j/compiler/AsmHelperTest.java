@@ -110,11 +110,12 @@ public class AsmHelperTest {
 
     @Test
     public void gettingFieldIndexShouldReturnCorrectIndex() throws IOException {
-        ClassNode owner = getAsmClass(StorageMap.class.getCanonicalName(),
-                this.getClass().getClassLoader());
+//        ClassNode owner = getAsmClass(StorageMap.class.getCanonicalName(),
+//                this.getClass().getClassLoader());
         String ownerName = StorageMap.class.getCanonicalName().replace(".", "/");
         FieldInsnNode insn = new FieldInsnNode(PUTSTATIC.getOpcode(), ownerName, "prefix", "[B");
-        assertThat(getFieldIndex(insn, owner), is(1));
+        CompilationUnit compUnit = new CompilationUnit(this.getClass().getClassLoader());
+        assertThat(getFieldIndex(insn, compUnit), is(1));
     }
 
     @Test

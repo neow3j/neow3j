@@ -40,6 +40,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
+import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -739,7 +740,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScript(Base64.encode(script), signer)
+                .invokeScript(Numeric.toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 

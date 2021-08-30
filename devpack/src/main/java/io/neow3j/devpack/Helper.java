@@ -122,12 +122,10 @@ public class Helper {
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x05)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x03)
+    @Instruction(opcode = OpCode.ABORT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native int toInt(byte[] source);
+    public static native int toInteger(byte[] source);
 
     /**
      * Casts the given byte array to a string. Assumes that the byte array is a UTF-8 encoded

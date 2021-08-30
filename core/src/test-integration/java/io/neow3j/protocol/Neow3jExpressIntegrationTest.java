@@ -50,8 +50,8 @@ public class Neow3jExpressIntegrationTest {
     static final String INVOKE_FILE_DESTINATION = "/app/oracle-request-invoke.json";
     static final String BATCH_SOURCE = "/setup.batch";
 
-    static final Hash160 oracleTestContractHash = new Hash160(
-            "8693a8d7d9c5633f9b27cb4366f98b4171dc8838");
+    static final Hash160 oracleTestContractHash =
+            new Hash160("8693a8d7d9c5633f9b27cb4366f98b4171dc8838");
 
     protected static Neow3jExpress neow3jExpress;
 
@@ -64,7 +64,7 @@ public class Neow3jExpressIntegrationTest {
     );
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void setUp() {
         neow3jExpress = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
     }
 

@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.transaction.AccountSigner.none;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
@@ -23,10 +24,8 @@ import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Account;
-import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -132,14 +131,12 @@ public class SmartContractTest {
                         hash160(recipient),
                         integer(5))).toArray();
 
-        Wallet w = Wallet.withAccounts(account1);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         Transaction tx = sc.invokeFunction(NEP17_TRANSFER,
                 hash160(account1.getScriptHash()),
                 hash160(recipient),
                 integer(5))
-                .wallet(w)
-                .signers(AccountSigner.none(w.getDefaultAccount().getScriptHash()))
+                .signers(none(account1))
                 .sign();
 
         assertThat(tx.getScript(), is(expectedScript));

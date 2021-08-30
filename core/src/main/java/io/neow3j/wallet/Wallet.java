@@ -80,7 +80,7 @@ public class Wallet {
     public Wallet defaultAccount(Hash160 accountHash160) {
         if (accountHash160 == null) throw new IllegalArgumentException("No account provided to set default.");
         if (!this.accounts.containsKey(accountHash160)) {
-            throw new IllegalArgumentException("Can't set default account on wallet. Wallet does "
+            throw new IllegalArgumentException("Cannot set default account on wallet. Wallet does "
                     + "not contain the account with script hash "
                     + accountHash160.toString() + ".");
         }
@@ -311,7 +311,7 @@ public class Wallet {
      * @return the new wallet.
      */
     public static Wallet create() {
-        Account a = Account.fromNewECKeyPair();
+        Account a = Account.create();
         return new Wallet().addAccounts(a).defaultAccount(a.getScriptHash());
     }
 

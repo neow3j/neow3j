@@ -2,20 +2,23 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Sign;
+import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoGetBlock;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Account;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
 
@@ -27,9 +30,12 @@ import java.util.List;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 public class Transaction extends NeoSerializable {
 
@@ -195,9 +201,55 @@ public class Transaction extends NeoSerializable {
      * Adds a witness to this transaction.
      *
      * @param witness The transaction witness.
+     * @return this.
      */
-    public void addWitness(Witness witness) {
+    public Transaction addWitness(Witness witness) {
         this.witnesses.add(witness);
+        return this;
+    }
+
+    /**
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
+     * signer that is part of this transaction.
+     * <p>
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and the
+     * {@code signatures}. Obviously, the signatures should be derived from this transaction's hash
+     * data (see {@link Transaction#getHashData()}).
+     *
+     * @param verificationScript The verification script of the multi-sig account.
+     * @param signatures         The signatures created with the participating private keys.
+     * @return this.
+     */
+    public Transaction addMultiSigWitness(VerificationScript verificationScript,
+            Sign.SignatureData... signatures) {
+
+        Witness multiSigWitness = createMultiSigWitness(asList(signatures), verificationScript);
+        this.witnesses.add(multiSigWitness);
+        return this;
+    }
+
+    /**
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
+     * signer that is part of this transaction.
+     * <p>
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and by
+     * signing this transaction with the given accounts.
+     *
+     * @param verificationScript The verification script of the multi-sig account.
+     * @param accounts           The accounts to use for signing. They need to hold decrypted
+     *                           private keys.
+     * @return this.
+     */
+    public Transaction addMultiSigWitness(VerificationScript verificationScript,
+            Account... accounts) throws IOException {
+
+        ArrayList<Sign.SignatureData> signatures = new ArrayList<>();
+        for (Account a : accounts) {
+            signatures.add(signMessage(getHashData(), a.getECKeyPair()));
+        }
+        Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);
+        this.witnesses.add(multiSigWitness);
+        return this;
     }
 
     /**
@@ -248,7 +300,7 @@ public class Transaction extends NeoSerializable {
      */
     public Observable<Long> track() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Can't subscribe before transaction has been sent.");
+            throw new IllegalStateException("Cannot subscribe before transaction has been sent.");
         }
 
         Predicate<NeoGetBlock> pred = neoGetBlock ->
@@ -274,8 +326,8 @@ public class Transaction extends NeoSerializable {
      */
     public NeoApplicationLog getApplicationLog() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Can't get the application log before transaction has" +
-                    " been sent.");
+            throw new IllegalStateException("Cannot get the application log before transaction " +
+                    "has been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {

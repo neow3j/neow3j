@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
@@ -48,7 +49,7 @@ public class NFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        ct.deployContract(ConcreteNonFungibleToken.class.getName());
+        SmartContract smartContract = ct.deployContract(ConcreteNonFungibleToken.class.getName());
     }
 
     @Test
@@ -126,8 +127,6 @@ public class NFTIntegrationTest {
 
     @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
-        static final StorageContext ctx = Storage.getStorageContext();
-        static final byte mapPrefix = (byte) 1;
 
         public static String testSymbol() {
             return CustomNonFungibleToken.symbol();
@@ -187,9 +186,7 @@ public class NFTIntegrationTest {
             map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("token1"));
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("token2"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("token3"));
-            return (Iterator<ByteString>) Storage.find(ctx,
-                    mapPrefix,
-                    FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
         }
 
         public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
@@ -202,9 +199,7 @@ public class NFTIntegrationTest {
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("tokenTwo"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("tokenThree"));
             map.put(Helper.toByteArray((byte) 4), Helper.toByteArray("tokenFour"));
-            return (Iterator<ByteString>) Storage.find(ctx,
-                    mapPrefix,
-                    FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
         }
 
         public static Map<String, String> properties(ByteString tokenId) {
@@ -214,7 +209,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("3536c17e8d628871338aa782eb72e86d4efc1e2e")
+    @ContractHash("c9244eb11b9e49d46386c03f06b7d8cd8c10b902")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 

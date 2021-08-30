@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.GasToken;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
@@ -19,7 +20,6 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
@@ -32,7 +32,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,11 +40,14 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.oracleContractHash;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.contract.Token.toFractions;
 import static io.neow3j.protocol.core.response.OracleResponseCode.TIMEOUT;
+import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -82,19 +84,22 @@ public class OracleContractIntegrationTest {
         // Register candidate
         ECKeyPair.ECPublicKey publicKey = ct.getDefaultAccount().getECKeyPair().getPublicKey();
         NeoSendRawTransaction response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount().getScriptHash()))
+                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
                 ct.getNeow3j());
         // Designate as oracle.
-        response = new RoleManagement(ct.getNeow3j()).designateAsRole(Role.ORACLE,
-                Arrays.asList(publicKey))
-                .wallet(ct.getWallet())
-                .signers(AccountSigner.calledByEntry(ct.getCommittee().getScriptHash()))
-                .sign().send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
-                ct.getNeow3j());
+        io.neow3j.transaction.Transaction unsignedTx = new RoleManagement(ct.getNeow3j())
+                .designateAsRole(Role.ORACLE, asList(publicKey))
+                .signers(AccountSigner.calledByEntry(ct.getCommittee()))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(unsignedTx.getHashData(),
+                        ct.getDefaultAccount().getECKeyPair())),
+                ct.getCommittee().getVerificationScript());
+        Hash256 txHash = unsignedTx.addWitness(multiSigWitness).send()
+                .getSendRawTransaction().getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         // Start the oracle service on the neo-node
         ct.getNeoTestContainer().execInContainer("screen", "-X", "stuff", "start oracle \\015");
@@ -112,7 +117,7 @@ public class OracleContractIntegrationTest {
         String filter = "";  // JSONPath
         String userdata = "userdata";
         int gasForResponse = 100000000;
-        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName, string(url), string(filter),
+        txHash = ct.invokeFunctionAndAwaitExecution(testName, string(url), string(filter),
                 string(userdata), integer(gasForResponse));
 
         // The oracle response should be available in the next block.

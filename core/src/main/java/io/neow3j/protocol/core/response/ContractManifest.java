@@ -2,31 +2,22 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.TreeNode;
-import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
-import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractManifest {
@@ -53,11 +44,12 @@ public class ContractManifest {
     private ContractABI abi;
 
     @JsonProperty("permissions")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<ContractPermission> permissions;
 
     // List of trusted contracts
     @JsonProperty("trusts")
-    @JsonSerialize(using = TrustsSerializer.class)
+    @JsonSerialize(using = WildcardContainerSerializer.class)
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
     private List<String> trusts;
@@ -413,8 +405,9 @@ public class ContractManifest {
         private String contract;
 
         @JsonProperty("methods")
-        @JsonFormat(with = {JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY,
-                JsonFormat.Feature.WRITE_SINGLE_ELEM_ARRAYS_UNWRAPPED})
+        @JsonSerialize(using = WildcardContainerSerializer.class)
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         private List<String> methods;
 
         public ContractPermission() {
@@ -460,24 +453,22 @@ public class ContractManifest {
         }
     }
 
-    private static class TrustsSerializer extends JsonSerializer<List<String>> {
+    private static class WildcardContainerSerializer extends JsonSerializer<List<String>> {
 
         @Override
-        public void serialize(List<String> trusts, JsonGenerator jgen, SerializerProvider provider)
-                throws IOException {
+        public void serialize(List<String> container, JsonGenerator jgen,
+                SerializerProvider provider) throws IOException {
 
-            if (!trusts.isEmpty() && trusts.get(0).equals(WILDCARD_CHAR)) {
-                // If '*' is used for trusts, don't write an array but the '*' directly.
+            if (!container.isEmpty() && container.get(0).equals(WILDCARD_CHAR)) {
+                // If '*' is used, don't write an array but the '*' directly.
                 jgen.writeString(WILDCARD_CHAR);
                 return;
             }
 
-            // Else start an array even if no trusts are set.
+            // Else start an array even if no values are in the container.
             jgen.writeStartArray();
-            if (!trusts.isEmpty()) {
-                for (String trust : trusts) {
-                    jgen.writeString(trust);
-                }
+            for (String value : container) {
+                jgen.writeString(value);
             }
             jgen.writeEndArray();
         }

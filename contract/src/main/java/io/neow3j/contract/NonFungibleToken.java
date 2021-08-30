@@ -2,13 +2,14 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.response.NFTokenState;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.core.response.NFTokenState;
+import io.neow3j.transaction.ContractSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
-import io.neow3j.wallet.Wallet;
+import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -16,12 +17,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.StackItemType.MAP;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
-import static io.neow3j.utils.Numeric.toHexString;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Collections.singletonList;
 
@@ -41,8 +41,8 @@ public class NonFungibleToken extends Token {
      * Constructs a new {@code NFT} representing the contract with the given script hash. Uses
      * the given {@link Neow3j} instance for all invocations.
      *
-     * @param scriptHash the token contract's script hash.
-     * @param neow       the {@link Neow3j} instance to use for invocations.
+     * @param scriptHash The token contract's script hash.
+     * @param neow       The {@link Neow3j} instance to use for invocations.
      */
     public NonFungibleToken(Hash160 scriptHash, Neow3j neow) {
         super(scriptHash, neow);
@@ -54,15 +54,14 @@ public class NonFungibleToken extends Token {
      * The balance is not cached locally. Every time this method is called requests are send to
      * the Neo node.
      *
-     * @param owner the script hash of the account to fetch the balance for.
+     * @param owner The script hash of the account to fetch the balance for.
      * @return the token balance of the given account.
      * @throws IOException                   if there was a problem fetching information from
      *                                       the Neo node.
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something
      *                                       interpretable as a number.
      */
-    public BigInteger balanceOf(Hash160 owner)
-            throws IOException {
+    public BigInteger balanceOf(Hash160 owner) throws IOException {
         return callFuncReturningInt(BALANCE_OF, hash160(owner));
     }
 
@@ -72,7 +71,7 @@ public class NonFungibleToken extends Token {
      * Consider that for this RPC the returned list may be limited in size and not reveal all
      * entries that exist on the contract.
      *
-     * @param owner the owner of the tokens.
+     * @param owner The owner of the tokens.
      * @return a list of token ids that are owned by the specified owner.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -89,54 +88,96 @@ public class NonFungibleToken extends Token {
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The token owner is set as the signer of the transaction, thus, the given wallet must
-     * contain the owner account. The returned builder is ready to be signed and sent.
+     * The token owner is set as signer of the transaction. The returned builder is ready to be
+     * signed and sent.
      * <p>
      * This method is intended to be used for non-divisible NFTs only.
      *
-     * @param wallet  the wallet that holds the account of the token owner.
-     * @param to      the receiver of the token.
-     * @param tokenID the token ID.
+     * @param from    The account of the token owner.
+     * @param to      The receiver of the token.
+     * @param tokenId The token id.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, byte[] tokenID)
+    public TransactionBuilder transfer(Account from, Hash160 to, byte[] tokenId)
             throws IOException {
-        return transfer(wallet, to, tokenID, null);
+
+        return transfer(from, to, tokenId, null);
     }
 
     /**
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The token owner is set as the signer of the transaction, thus, the given wallet must
-     * contain the owner account. The returned builder is ready to be signed and sent.
+     * The token owner is set as signer of the transaction. The returned builder is ready to be
+     * signed and sent.
      * <p>
      * This method is intended to be used for non-divisible NFTs only.
      *
-     * @param wallet  the wallet that holds the account of the token owner.
-     * @param to      the receiver of the token.
-     * @param tokenID the token ID.
-     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving
+     * @param from    The account of the token owner.
+     * @param to      The receiver of the token.
+     * @param tokenId The token id.
+     * @param data    The data that is passed to the {@code onNEP11Payment} method of the receiving
      *                smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 to, byte[] tokenID,
+    public TransactionBuilder transfer(Account from, Hash160 to, byte[] tokenId,
             ContractParameter data) throws IOException {
+
+        return transfer(from.getScriptHash(), to, tokenId, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    The hash of the token owner.
+     * @param to      The receiver of the token.
+     * @param tokenId The token id.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, byte[] tokenId)
+            throws IOException {
+
+        return transfer(from, to, tokenId, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    The account of the token owner.
+     * @param to      The receiver of the token.
+     * @param tokenId The token id.
+     * @param data    The data that is passed to the {@code onNEP11Payment} method if the
+     *                receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, byte[] tokenId,
+            ContractParameter data) throws IOException {
+
         if (getDecimals() != 0) {
             throw new IllegalStateException("This method is only intended for non-divisible NFTs.");
         }
-        Hash160 tokenOwner = ownerOf(tokenID);
-        if (!wallet.holdsAccount(tokenOwner)) {
-            throw new IllegalArgumentException("The provided wallet does not contain the account " +
-                    "that owns the token with ID " + toHexString(tokenID) + ". The address of the" +
-                    " owner of this token is " + tokenOwner.toAddress() + ".");
+        Hash160 tokenOwner = ownerOf(tokenId);
+        if (!tokenOwner.equals(from)) {
+            throw new IllegalArgumentException("The provided from account is not the owner of " +
+                    "this token.");
         }
-
-        return invokeFunction(TRANSFER, hash160(to), byteArray(tokenID), data)
-                .wallet(wallet)
-                .signers(calledByEntry(tokenOwner));
+        return invokeFunction(TRANSFER, hash160(to), byteArray(tokenId), data);
     }
 
     /**
@@ -144,7 +185,7 @@ public class NonFungibleToken extends Token {
      * <p>
      * This method is intended to be used for non-divisible NFTs only.
      *
-     * @param tokenId the token ID.
+     * @param tokenId The token id.
      * @return the token owner.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -161,57 +202,96 @@ public class NonFungibleToken extends Token {
      * Creates a transaction script to transfer a non-fungible token and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * The sender is set as the signer of the transaction, thus, the given wallet must
-     * contain the this account. The returned builder is ready to be signed and sent.
+     * The sender is set as signer of the transaction. The returned builder is ready to be signed
+     * and sent.
      * <p>
      * This method is intended to be used for divisible NFTs only.
      *
-     * @param wallet  the wallet that holds the account of the sender.
-     * @param from    the sender of the token amount.
-     * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
-     * @param tokenID the token ID.
+     * @param from    The sender of the token amount.
+     * @param to      The receiver of the token amount.
+     * @param amount  The fraction amount to transfer.
+     * @param tokenID The token ID.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 from, Hash160 to,
-            BigInteger amount, byte[] tokenID) throws IOException {
-        return transfer(wallet, from, to, amount, tokenID, null);
+    public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount, byte[] tokenID)
+            throws IOException {
+
+        return transfer(from, to, amount, tokenID, null);
     }
 
     /**
      * Creates a transaction script to transfer an amount of a divisible non-fungible token and
      * initializes a {@link TransactionBuilder} based on this script.
      * <p>
-     * The sender is set as the signer of the transaction, thus, the given wallet must
-     * contain the this account. The returned builder is ready to be signed and sent.
+     * The returned builder is ready to be signed and sent.
      * <p>
      * This method is intended to be used for divisible NFTs only.
      *
-     * @param wallet  the wallet that holds the account of the sender.
-     * @param from    the sender of the token amount.
-     * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
-     * @param tokenID the token ID.
-     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving
-     *                smart contract.
+     * @param from    The sender of the token amount.
+     * @param to      The receiver of the token amount.
+     * @param amount  The fraction amount to transfer.
+     * @param tokenId The token id.
+     * @param data    The data that is passed to the {@code onNEP11Payment} method if the receiver
+     *                is a smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Wallet wallet, Hash160 from, Hash160 to,
-            BigInteger amount, byte[] tokenID, ContractParameter data) throws IOException {
-        if (!wallet.holdsAccount(from)) {
-            throw new IllegalArgumentException("The provided wallet does not contain the from " +
-                    "account.");
-        }
+    public TransactionBuilder transfer(Account from, Hash160 to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException {
+
+        return transfer(from.getScriptHash(), to, amount, tokenId, data)
+                .signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    The sender of the token amount.
+     * @param to      The receiver of the token amount.
+     * @param amount  The fraction amount to transfer.
+     * @param tokenID The token ID.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, BigInteger amount, byte[] tokenID)
+            throws IOException {
+
+        return transfer(from, to, amount, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and
+     * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct
+     * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    The sender of the token amount.
+     * @param to      The receiver of the token amount.
+     * @param amount  The fraction amount to transfer.
+     * @param tokenId The token id.
+     * @param data    The data that is passed to the {@code onNEP11Payment} method if the receiver
+     *                is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, Hash160 to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException {
+
         if (getDecimals() == 0) {
             throw new IllegalStateException("This method is only intended for divisible NFTs.");
         }
-
         return invokeFunction(TRANSFER, hash160(from), hash160(to), integer(amount),
-                byteArray(tokenID), data)
-                .wallet(wallet)
-                .signers(calledByEntry(from));
+                byteArray(tokenId), data);
     }
 
     /**
@@ -222,7 +302,7 @@ public class NonFungibleToken extends Token {
      * <p>
      * This method is intended to be used for divisible NFTs only.
      *
-     * @param tokenId the token id.
+     * @param tokenId The token id.
      * @return a list of owners of the token.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -248,8 +328,8 @@ public class NonFungibleToken extends Token {
      * <p>
      * This method is intended to be used for divisible NFTs only.
      *
-     * @param owner the script hash of the account to fetch the balance for.
-     * @param tokenId the token ID.
+     * @param owner   The script hash of the account to fetch the balance for.
+     * @param tokenId The token id.
      * @return the token balance of the given account.
      * @throws IOException                   if there was a problem fetching information from
      *                                       the Neo node.
@@ -258,6 +338,7 @@ public class NonFungibleToken extends Token {
      */
     public BigInteger balanceOf(Hash160 owner, byte[] tokenId)
             throws IOException {
+
         if (getDecimals() == 0) {
             throw new IllegalStateException("This method is only intended for divisible NFTs.");
         }
@@ -285,16 +366,16 @@ public class NonFungibleToken extends Token {
     }
 
     /**
-     * Gets the properties of the token with {@code tokenID}.
+     * Gets the properties of the token with {@code tokenId}.
      * <p>
      * This method is optional for the NEP-11 standard.
      *
-     * @param tokenID the token ID.
+     * @param tokenId The token id.
      * @return the properties of the token as {@link NFTokenState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NFTokenState properties(byte[] tokenID) throws IOException {
-        StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenID)))
+    public NFTokenState properties(byte[] tokenId) throws IOException {
+        StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenId)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
             Map<StackItem, StackItem> map = item.getMap();
