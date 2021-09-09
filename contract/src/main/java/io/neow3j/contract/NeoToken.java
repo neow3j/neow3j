@@ -1,15 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.publicKey;
-import static io.neow3j.types.StackItemType.ANY;
-import static io.neow3j.types.StackItemType.ARRAY;
-import static io.neow3j.types.StackItemType.BYTE_STRING;
-import static io.neow3j.types.StackItemType.INTEGER;
-import static io.neow3j.types.StackItemType.STRUCT;
-import static java.util.Arrays.asList;
-
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
@@ -26,6 +16,17 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.types.StackItemType.ANY;
+import static io.neow3j.types.StackItemType.ARRAY;
+import static io.neow3j.types.StackItemType.BYTE_STRING;
+import static io.neow3j.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.STRUCT;
+import static java.util.Arrays.asList;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.
@@ -268,15 +269,42 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder vote(Hash160 voter, ECPublicKey candidate) throws IOException {
-        if (!isCandidate(candidate)) {
-            throw new IllegalArgumentException("The provided public key is not a candidate. Only " +
-                    "candidates can be voted for.");
+        if (candidate == null) {
+            return invokeFunction(VOTE, hash160(voter), any(null));
         }
-        return invokeFunction(VOTE, hash160(voter),
-                publicKey(candidate.getEncoded(true)));
+        return invokeFunction(VOTE, hash160(voter), publicKey(candidate.getEncoded(true)));
     }
 
-    private boolean isCandidate(ECPublicKey publicKey) throws IOException {
+    /**
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a
+     * transaction Builder based on the script.
+     *
+     * @param voter the account for which to cancel the vote.
+     * @return a transaction builder
+     */
+    public TransactionBuilder cancelVote(Hash160 voter) throws IOException {
+        return vote(voter, null);
+    }
+
+    /**
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a
+     * transaction Builder based on the script.
+     *
+     * @param voter the account for which to cancel the vote.
+     * @return a transaction builder
+     */
+    public TransactionBuilder cancelVote(Account voter) throws IOException {
+        return cancelVote(voter.getScriptHash());
+    }
+
+    /**
+     * Checks if there is a committee candidate or member with {@code publicKey}.
+     *
+     * @param publicKey The candidates public key.
+     * @return true if the public key belongs to a candidate. False otherwise.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public boolean isCandidate(ECPublicKey publicKey) throws IOException {
         return getCandidates().containsKey(publicKey);
     }
 

@@ -109,6 +109,42 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
+    public void cancelVote() throws Throwable {
+        registerClient1AsCandidate();
+        Account voterAccount = Account.create();
+        fundAccountsWithGas(neow3j, voterAccount);
+        fundAccountsWithNeo(neow3j, new BigInteger("22"), voterAccount);
+
+        Map<ECKeyPair.ECPublicKey, BigInteger> candidates = neoToken.getCandidates();
+        BigInteger initialVotes = candidates.get(CLIENT_1.getECKeyPair().getPublicKey());
+
+        Hash256 txHash = neoToken.vote(voterAccount, CLIENT_1.getECKeyPair().getPublicKey())
+                .signers(calledByEntry(voterAccount))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        candidates = neoToken.getCandidates();
+        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()).intValue(),
+                is(initialVotes.intValue() + 22));
+
+        txHash = neoToken.cancelVote(voterAccount)
+                .signers(calledByEntry(voterAccount))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        candidates = neoToken.getCandidates();
+        assertThat(candidates.get(CLIENT_1.getECKeyPair().getPublicKey()), is(initialVotes));
+
+        unregisterClient1AsCandidate();
+    }
+
+    @Test
     public void testGetCommittee() throws IOException {
         List<ECKeyPair.ECPublicKey> committeeList = neoToken.getCommittee();
         assertThat(committeeList, hasSize(1));
