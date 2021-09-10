@@ -251,7 +251,8 @@ public class NeoToken extends FungibleToken {
      * {@link TransactionBuilder} based on this script.
      *
      * @param voter     the account that casts the vote.
-     * @param candidate the candidate to vote for.
+     * @param candidate the candidate to vote for. If null, then the current vote of the voter is
+     *                  withdrawn (see {@link NeoToken#cancelVote(Account)}).
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -264,7 +265,8 @@ public class NeoToken extends FungibleToken {
      * {@link TransactionBuilder} based on this script.
      *
      * @param voter     the account that casts the vote.
-     * @param candidate the candidate to vote for.
+     * @param candidate the candidate to vote for. If null, then the current vote of the voter is
+     *                  withdrawn (see {@link NeoToken#cancelVote(Hash160)}).
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
