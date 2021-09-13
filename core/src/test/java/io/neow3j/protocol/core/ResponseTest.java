@@ -1486,19 +1486,39 @@ public class ResponseTest extends ResponseTester {
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
-                        "        \"network\": 769\n" +
+                        "        \"protocol\": {\n" +
+                        "            \"addressversion\": 22,\n" +
+                        "            \"network\": 769,\n" +
+                        "            \"msperblock\": 15000,\n" +
+                        "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"maxvaliduntilblockincrement\": 1,\n" +
+                        "            \"maxtransactionsperblock\": 150000,\n" +
+                        "            \"memorypoolmaxtransactions\": 34000,\n" +
+                        "            \"initialgasdistribution\": 14\n" +
+                        "        }\n" +
                         "    }\n" +
                         "}"
         );
 
-        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
-        assertThat(getVersion.getVersion(), is(notNullValue()));
-        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
-        assertThat(getVersion.getVersion().getWSPort(), is(40334));
-        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(769L));
+        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
+        NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
+        assertThat(version, is(notNullValue()));
+        assertThat(version.getTCPPort(), is(40333));
+        assertThat(version.getWSPort(), is(40334));
+        assertThat(version.getNonce(), is(224036820L));
+        assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
+        assertThat(protocol.getAddressVersion(), is(22));
+        assertThat(protocol.getNetwork(), is(769L));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
+        assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
+        assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
     }
+
 
     @Test
     public void testGetVersion_Network_Long() {
@@ -1511,18 +1531,37 @@ public class ResponseTest extends ResponseTester {
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
-                        "        \"network\": 4232068425\n" +
+                        "        \"protocol\": {\n" +
+                        "            \"addressversion\": 22,\n" +
+                        "            \"network\": 4232068425,\n" +
+                        "            \"msperblock\": 15000,\n" +
+                        "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"maxvaliduntilblockincrement\": 1,\n" +
+                        "            \"maxtransactionsperblock\": 150000,\n" +
+                        "            \"memorypoolmaxtransactions\": 34000,\n" +
+                        "            \"initialgasdistribution\": 14\n" +
+                        "        }\n" +
                         "    }\n" +
                         "}"
         );
 
-        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
-        assertThat(getVersion.getVersion(), is(notNullValue()));
-        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
-        assertThat(getVersion.getVersion().getWSPort(), is(40334));
-        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(4232068425L));
+        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
+        NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
+        assertThat(version, is(notNullValue()));
+        assertThat(version.getTCPPort(), is(40333));
+        assertThat(version.getWSPort(), is(40334));
+        assertThat(version.getNonce(), is(224036820L));
+        assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
+        assertThat(protocol.getAddressVersion(), is(22));
+        assertThat(protocol.getNetwork(), is(4232068425L));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
+        assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
+        assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
     }
 
     @Test

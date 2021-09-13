@@ -653,17 +653,27 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetVersion() throws IOException {
-        NeoGetVersion.Result versionResult = getNeow3j()
+        NeoGetVersion.NeoVersion neoVersion = getNeow3j()
                 .getVersion()
                 .send()
                 .getVersion();
 
-        assertNotNull(versionResult);
-        assertThat(versionResult.getUserAgent(), not(isEmptyString()));
-        assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
-        assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0L)));
+        assertNotNull(neoVersion);
+        assertThat(neoVersion.getUserAgent(), not(isEmptyString()));
+        assertThat(neoVersion.getNonce(), is(greaterThanOrEqualTo(0L)));
+        assertThat(neoVersion.getTCPPort(), is(greaterThanOrEqualTo(0)));
+        assertThat(neoVersion.getWSPort(), is(greaterThanOrEqualTo(0)));
+
+        // TODO: 13.09.21 Michael: Update protocol tests as soon as test container is updated.
+        NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
+        assertThat(protocol.getAddressVersion(), is(0));
+        assertThat(protocol.getNetwork(), is(0));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(0));
+        assertThat(protocol.getMaxTraceableBlocks(), is(0));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(0));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(0));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(0));
+        assertThat(protocol.getInitialGasDistribution(), is(0));
     }
 
     // SmartContract Methods
