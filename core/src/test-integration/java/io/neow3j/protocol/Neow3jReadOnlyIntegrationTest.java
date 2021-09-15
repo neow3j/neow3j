@@ -666,11 +666,12 @@ public class Neow3jReadOnlyIntegrationTest {
 
         // TODO: 13.09.21 Michael: Update protocol tests as soon as test container is updated.
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
-        assertThat(protocol.getAddressVersion(), is(0));
         assertThat(protocol.getNetwork(), is(0));
+        assertThat(protocol.getValidatorsCount(), is(0));
         assertThat(protocol.getMilliSecondsPerBlock(), is(0));
-        assertThat(protocol.getMaxTraceableBlocks(), is(0));
         assertThat(protocol.getMaxValidUntilBlockIncrement(), is(0));
+        assertThat(protocol.getMaxTraceableBlocks(), is(0));
+        assertThat(protocol.getAddressVersion(), is(0));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(0));
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(0));
         assertThat(protocol.getInitialGasDistribution(), is(0));

@@ -1487,11 +1487,12 @@ public class ResponseTest extends ResponseTester {
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
                         "        \"protocol\": {\n" +
-                        "            \"addressversion\": 22,\n" +
                         "            \"network\": 769,\n" +
+                        "            \"validatorscount\": 7,\n" +
                         "            \"msperblock\": 15000,\n" +
-                        "            \"maxtraceableblocks\": 3,\n" +
                         "            \"maxvaliduntilblockincrement\": 1,\n" +
+                        "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"addressversion\": 22,\n" +
                         "            \"maxtransactionsperblock\": 150000,\n" +
                         "            \"memorypoolmaxtransactions\": 34000,\n" +
                         "            \"initialgasdistribution\": 14\n" +

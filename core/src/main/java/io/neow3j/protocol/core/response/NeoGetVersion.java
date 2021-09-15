@@ -101,20 +101,23 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
         public static class Protocol {
 
-            @JsonProperty("addressversion")
-            private int addressVersion;
-
             @JsonProperty("network")
             private long network;
+
+            @JsonProperty("validatorscount")
+            private Integer validatorsCount;
 
             @JsonProperty("msperblock")
             private long msPerBlock;
 
+            @JsonProperty("maxvaliduntilblockincrement")
+            private long maxValidUntilBlockIncrement;
+
             @JsonProperty("maxtraceableblocks")
             private long maxTraceableBlocks;
 
-            @JsonProperty("maxvaliduntilblockincrement")
-            private long maxValidUntilBlockIncrement;
+            @JsonProperty("addressversion")
+            private int addressVersion;
 
             @JsonProperty("maxtransactionsperblock")
             private long maxTransactionsPerBlock;
@@ -128,24 +131,28 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             public Protocol() {
             }
 
-            public int getAddressVersion() {
-                return addressVersion;
-            }
-
             public long getNetwork() {
                 return network;
+            }
+
+            public Integer getValidatorsCount() {
+                return validatorsCount;
             }
 
             public long getMilliSecondsPerBlock() {
                 return msPerBlock;
             }
 
+            public long getMaxValidUntilBlockIncrement() {
+                return maxValidUntilBlockIncrement;
+            }
+
             public long getMaxTraceableBlocks() {
                 return maxTraceableBlocks;
             }
 
-            public long getMaxValidUntilBlockIncrement() {
-                return maxValidUntilBlockIncrement;
+            public int getAddressVersion() {
+                return addressVersion;
             }
 
             public long getMaxTransactionsPerBlock() {
@@ -165,11 +172,12 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 if (this == o) return true;
                 if (!(o instanceof Protocol)) return false;
                 Protocol that = (Protocol) o;
-                return getAddressVersion() == that.getAddressVersion() &&
-                        getNetwork() == that.getNetwork() &&
+                return getNetwork() == that.getNetwork() &&
+                        Objects.equals(getValidatorsCount(), that.getValidatorsCount()) &&
                         getMilliSecondsPerBlock() == that.getMilliSecondsPerBlock() &&
-                        getMaxTraceableBlocks() == that.getMaxTraceableBlocks() &&
                         getMaxValidUntilBlockIncrement() == that.getMaxValidUntilBlockIncrement() &&
+                        getMaxTraceableBlocks() == that.getMaxTraceableBlocks() &&
+                        getAddressVersion() == that.getAddressVersion() &&
                         getMaxTransactionsPerBlock() == that.getMaxTransactionsPerBlock() &&
                         Objects.equals(getMemoryPoolMaxTransactions(),
                                 that.getMemoryPoolMaxTransactions()) &&
@@ -179,20 +187,22 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
             @Override
             public int hashCode() {
-                return Objects.hash(getAddressVersion(), getNetwork(), getMilliSecondsPerBlock(),
-                        getMaxTraceableBlocks(), getMaxValidUntilBlockIncrement(),
-                        getMaxTransactionsPerBlock(), getMemoryPoolMaxTransactions(),
+                return Objects.hash(getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
+                        getMaxValidUntilBlockIncrement(), getMaxTraceableBlocks(),
+                        getAddressVersion(), getMaxTransactionsPerBlock(),
+                        getMemoryPoolMaxTransactions(),
                         getInitialGasDistribution());
             }
 
             @Override
             public String toString() {
                 return "Protocol{" +
-                        "addressVersion=" + addressVersion +
-                        ", network=" + network +
+                        "network=" + network +
+                        ", validatorsCount=" + validatorsCount +
                         ", milliSecondsPerBlock=" + msPerBlock +
-                        ", maxTraceableBlocks=" + maxTraceableBlocks +
                         ", maxValidUntilBlockIncrement=" + maxValidUntilBlockIncrement +
+                        ", maxTraceableBlocks=" + maxTraceableBlocks +
+                        ", addressVersion=" + addressVersion +
                         ", maxTransactionsPerBlock=" + maxTransactionsPerBlock +
                         ", memoryPoolMaxTransactions=" + memoryPoolMaxTransactions +
                         ", initialGasDistribution=" + initialGasDistribution +
