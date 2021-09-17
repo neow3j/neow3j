@@ -18,6 +18,7 @@ buildscript {
     ext.testcontainersVersion = '1.15.3'
     ext.awaitility = '3.1.5'
     ext.wiremockVersion = '2.25.1'
+    ext.jupiterVersion = '5.8.0'
 
     repositories {
         mavenCentral()
@@ -132,8 +133,7 @@ subprojects {
     dependencies {
         testImplementation "junit:junit:$junitVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
-                "org.hamcrest:hamcrest-all:$hamcrestVersion",
-                "org.testcontainers:testcontainers:$testcontainersVersion"
+                "org.hamcrest:hamcrest-all:$hamcrestVersion"
     }
 
     task javadocsJar(type: Jar) {
