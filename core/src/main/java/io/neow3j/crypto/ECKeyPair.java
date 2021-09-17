@@ -1,11 +1,11 @@
 package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.types.Hash160;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.Hash160;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
@@ -27,10 +27,8 @@ import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
-import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
-import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
 
@@ -207,17 +205,7 @@ public class ECKeyPair {
      * @return the WIF of this ECKeyPair.
      */
     public String exportAsWIF() {
-        byte[] data = concatenate(
-                new byte[]{(byte) 0x80},
-                toBytesPadded(getPrivateKey().getInt(), NeoConstants.PRIVATE_KEY_SIZE),
-                new byte[]{(byte) 0x01}
-        );
-        byte[] checksum = hash256(data, 0, data.length);
-        byte[] first4Bytes = Arrays.copyOfRange(checksum, 0, 4);
-        data = concatenate(data, first4Bytes);
-        String wif = Base58.encode(data);
-        Arrays.fill(data, (byte) 0);
-        return wif;
+        return WIF.getWIFFromPrivateKey(getPrivateKey().getBytes());
     }
 
     @Override
