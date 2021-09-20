@@ -7,7 +7,7 @@ import static io.neow3j.script.InteropService.SYSTEM_STORAGE_ASREADONLY;
 import static io.neow3j.devpack.Helper.toByteArray;
 
 /**
- * A {@code StorageContext} is the gateway to a contracts storage. It can be passed to other
+ * A {@code StorageContext} is the gateway to a contract's storage. It can be passed to other
  * contracts as an argument, allowing them to perform read/write operations on the persistent store
  * of the current contract. It is required in all {@link Storage} methods.
  */
@@ -41,6 +41,17 @@ public class StorageContext implements InteropInterface {
      * @return the {@link StorageMap}
      */
     public StorageMap createMap(String prefix) {
+        return new StorageMap(this, Helper.toByteArray(prefix));
+    }
+
+    /**
+     * Creates a new {@link StorageMap} from entries with the given prefix in this
+     * {@code StorageContext}.
+     *
+     * @param prefix The prefix.
+     * @return the {@link StorageMap}
+     */
+    public StorageMap createMap(int prefix) {
         return new StorageMap(this, Helper.toByteArray(prefix));
     }
 
