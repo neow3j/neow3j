@@ -14,14 +14,15 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ContractTest(blockTime = 1)
+@ContractTest(blockTime = 1, contractClass = ExampleContract.class)
 public class ExampleTest {
 
-    private Neow3jExpress neow3j;
-    private SmartContract contract;
-
     @RegisterExtension
-    static ContractTestExtension ext = new ContractTestExtension(ExampleContract.class);
+    private static ContractTestExtension ext = new ContractTestExtension();
+
+    private Neow3jExpress neow3j;
+
+    private SmartContract contract;
 
     public ExampleTest(Neow3jExpress neow3j, SmartContract contract) {
         this.neow3j = neow3j;

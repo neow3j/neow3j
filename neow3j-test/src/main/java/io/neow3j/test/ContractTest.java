@@ -8,9 +8,11 @@ import java.lang.annotation.Target;
 
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
-@ExtendWith({Neow3jParameterResolver.class,
-        ContainerParameterResolver.class,
-        ContractParameterResolver.class})
+@ExtendWith({
+        ContractParameterResolver.class,
+        Neow3jParameterResolver.class,
+        ContainerParameterResolver.class
+})
 @Retention(RUNTIME)
 @Target({ElementType.TYPE})
 public @interface ContractTest {
@@ -20,6 +22,15 @@ public @interface ContractTest {
      * executed. The block time can also be set via the default.neo-express file in the
      * {@code chainSecondsPerBlock} property. That property is overwritten when setting it here
      * on the annotation.
+     *
+     * @return the block time.
      */
     int blockTime() default 0;
+
+    /**
+     * The contract class to compile and deploy before running the test instance.
+     *
+     * @return the contract class to compile and deploy
+     */
+    Class<?> contractClass();
 }

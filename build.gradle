@@ -160,8 +160,7 @@ subprojects {
     // In addition the gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (!project.name.startsWith(rootProject.name)
-            && !project.name.startsWith("test-tools")) {
+    if (project.name != rootProject.name && !project.name.startsWith("test-tools")) {
 
         apply plugin: 'maven-publish'
 

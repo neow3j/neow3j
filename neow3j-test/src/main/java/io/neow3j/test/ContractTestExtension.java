@@ -3,6 +3,7 @@ package io.neow3j.test;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.contract.ContractUtils;
+import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3jExpress;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -49,14 +50,12 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 //    private final static String ACC_1_SCRIPT_HASH = ACC_PROPS_PREFIX + "1.script-hash";
 //    private final static String ACC_1_PRIV_KEY = ACC_PROPS_PREFIX + "1.private-key";
 
-    private Class<?> contractClass;
-    private Hash256 deployTxHash;
     //    private Properties properties;
     private NeoExpressTestContainer container;
+    private Neow3jExpress neow3j;
+    private SmartContract contractUnderTest;
 
-    public ContractTestExtension(Class<?> contractClass) {
-        this.contractClass = contractClass;
-
+//    public ContractTestExtension() {
 //        Properties props = new Properties();
 //        Properties defaultProps = new Properties();
 //        try {
@@ -77,15 +76,10 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 //        properties = new Properties();
 //        properties.putAll(defaultProps);
 //        properties.putAll(props);
-    }
-
-//    public String getProperty(String key) {
-//        return properties.getProperty(key);
 //    }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
-        // Setup the container and the Neow3j instance.
         ContractTest annotation = context.getTestClass().get().getAnnotation(ContractTest.class);
         if (annotation == null) {
             throw new ExtensionConfigurationException("Using the " + this.getClass().getSimpleName()
@@ -93,14 +87,22 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         }
         container = new NeoExpressTestContainer(annotation.blockTime());
         container.start();
-        Neow3jExpress neow3j = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
+        neow3j = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
+        contractUnderTest = compileAndDeployContract(annotation.contractClass(), container, neow3j);
+
         ExtensionContext.Store store = context.getStore(ExtensionContext.Namespace.GLOBAL);
         store.put(CONTAINER_STORE_KEY, container);
         store.put(NEOW3J_STORE_KEY, neow3j);
+        store.put(CONTRACT_STORE_KEY, contractUnderTest);
+    }
+
+    private SmartContract compileAndDeployContract(Class<?> contractClass,
+            NeoExpressTestContainer container, Neow3jExpress neow3j) throws Exception {
 
         Path tmpDir = Files.createTempDirectory("compilation-output");
         tmpDir.toFile().deleteOnExit();
         CompilationUnit res = new Compiler().compile(contractClass.getCanonicalName());
+
         String contractName = res.getManifest().getName();
         String nefFile = ContractUtils.writeNefFile(res.getNefFile(), contractName, tmpDir);
         String manifestFile = ContractUtils.writeContractManifestFile(res.getManifest(), tmpDir);
@@ -110,19 +112,27 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         container.copyFileToContainer(MountableFile.forHostPath(manifestFile, 777),
                 destManifestFile);
 
-        deployTxHash = new Hash256(container.deployContract(destNefFile));
+        Hash256 deployTxHash = new Hash256(container.deployContract(destNefFile));
         Await.waitUntilTransactionIsExecuted(deployTxHash, neow3j);
         NeoApplicationLog log = neow3j.getApplicationLog(deployTxHash).send().getApplicationLog();
         Hash160 contractHash = new Hash160(Numeric.reverseHexString(log.getExecutions().get(0)
                 .getNotifications().get(0)
                 .getState().getList().get(0)
                 .getHexString()));
-        store.put(CONTRACT_STORE_KEY, contractHash);
+        return new SmartContract(contractHash, neow3j);
     }
 
     @Override
-    public void afterAll(ExtensionContext context) throws Exception {
+    public void afterAll(ExtensionContext context) {
         container.stop();
+    }
+
+    public SmartContract getContractUnderTest() {
+        return contractUnderTest;
+    }
+
+    public Neow3jExpress getNeow3j() {
+        return neow3j;
     }
 
     public void runExpress() throws Exception {
@@ -186,4 +196,5 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         return Account.fromWIF(WIF.getWIFFromPrivateKey(
                 Numeric.hexStringToByteArray(acc.get().privateKey)));
     }
+
 }

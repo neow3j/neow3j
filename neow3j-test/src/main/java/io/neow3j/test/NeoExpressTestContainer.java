@@ -112,7 +112,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @param sender   The sender. Can be a name of a wallet, e.g., "genesis", or an address.
      * @param receiver The receiver. Can be a name of a wallet, e.g., "genesis", or an address.
      * @return The transaction hash of the transfer.
-     * @throws Exception
+     * @throws Exception if an error occurs when executing the transfer on the neo-express instance.
      */
     public String transfer(BigInteger amount, String asset, String sender, String receiver)
             throws Exception {
