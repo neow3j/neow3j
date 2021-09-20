@@ -7,8 +7,6 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -21,10 +19,10 @@ import java.nio.charset.StandardCharsets;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 public class StorageContextIntegrationTest {
 
@@ -40,6 +38,7 @@ public class StorageContextIntegrationTest {
     private static final String DATA1 = "0001020304";
 
     private static final byte[] PREFIX2 = new byte[]{(byte) 0xa1, (byte) 0xb1};
+    private static final int PREFIX2_INT = -20063;
     private static final String KEY2 = "02";
     private static final String DATA2 = "0ab105c802";
 
@@ -49,17 +48,17 @@ public class StorageContextIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        byte[] bytes = ArrayUtils.concatenate(PREFIX1, Numeric.hexStringToByteArray(KEY1));
+        byte[] bytes = concatenate(PREFIX1, hexStringToByteArray(KEY1));
         ContractParameter key = byteArray(bytes);
         ContractParameter data = byteArray(DATA1);
         ct.invokeFunctionAndAwaitExecution("storeData", key, data);
 
-        bytes = ArrayUtils.concatenate(PREFIX2, Numeric.hexStringToByteArray(KEY2));
+        bytes = concatenate(PREFIX2, hexStringToByteArray(KEY2));
         key = byteArray(bytes);
         data = byteArray(DATA2);
         ct.invokeFunctionAndAwaitExecution("storeData", key, data);
 
-        bytes = ArrayUtils.concatenate(PREFIX3.getBytes(StandardCharsets.UTF_8), Numeric.hexStringToByteArray(KEY3));
+        bytes = concatenate(PREFIX3.getBytes(StandardCharsets.UTF_8), hexStringToByteArray(KEY3));
         key = byteArray(bytes);
         data = byteArray(DATA3);
         ct.invokeFunctionAndAwaitExecution("storeData", key, data);
@@ -90,6 +89,13 @@ public class StorageContextIntegrationTest {
     public void createMapWithByteStringPrefix() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName, byteArray(PREFIX2), byteArray(KEY2))
                 .getInvocationResult();
+        assertThat(res.getStack().get(0).getHexString(), is(DATA2));
+    }
+
+    @Test
+    public void createMapWithIntegerPrefix() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName, integer(PREFIX2_INT), byteArray(KEY2))
+                        .getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA2));
     }
 
@@ -129,6 +135,12 @@ public class StorageContextIntegrationTest {
         }
 
         public static ByteString createMapWithByteStringPrefix(ByteString prefix, ByteString key) {
+            StorageContext ctx = Storage.getStorageContext();
+            StorageMap map = ctx.createMap(prefix);
+            return map.get(key);
+        }
+
+        public static ByteString createMapWithIntegerPrefix(int prefix, ByteString key) {
             StorageContext ctx = Storage.getStorageContext();
             StorageMap map = ctx.createMap(prefix);
             return map.get(key);
