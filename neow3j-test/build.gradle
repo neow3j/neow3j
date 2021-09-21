@@ -7,7 +7,8 @@ dependencies {
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             project(":core"),
             project(":contract"),
-            project(":compiler")
+            project(":compiler"),
+            project(":test-tools")
 
     testImplementation project(":devpack")
 }

@@ -89,8 +89,8 @@ public class TestProperties {
         return getValue("neo3PrivateNetContainerImg");
     }
 
-    public static String neo3ExpressPrivateNetContainerImg() {
-        return getValue("neo3ExpressPrivateNetContainerImg");
+    public static String neoExpressDockerImage() {
+        return getValue("neoExpressDockerImage");
     }
 
     public static String committeeAccountAddress() {
