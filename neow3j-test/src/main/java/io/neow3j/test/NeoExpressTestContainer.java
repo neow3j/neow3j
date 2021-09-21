@@ -47,8 +47,6 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             String dest = resources[i++];
             withCopyFileToContainer(MountableFile.forClasspathResource(src, 777), dest);
         }
-
-        withLogConsumer(outputFrame -> System.out.println(outputFrame.getUtf8String()));
     }
 
     public NeoExpressTestContainer withBatchFile(String batchFile) {
