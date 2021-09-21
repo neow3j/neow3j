@@ -33,4 +33,34 @@ public @interface ContractTest {
      * @return the contract class to compile and deploy
      */
     Class<?> contractClass();
+
+    /**
+     * The batch file to run before all tests of the test instance. The batch file must be placed
+     * in the resources directory.
+     * <p>
+     * The batch file can be combined with a checkpoint. In that case, the checkpoint is applied
+     * first.
+     *
+     * @return the batch file name
+     */
+    String batchFile() default "";
+
+    /**
+     * The checkpoint file to apply before all tests of the test instance. The checkpoint file
+     * must be placed in the resources directory.
+     * <p>
+     * The checkpoint can be combined with a batch file. In that case, the checkpoint is applied
+     * first.
+     *
+     * @return the checkpoint file name.
+     */
+    String checkpoint() default "";
+
+    /**
+     * The neo-express configuration file to use. The file must be placed in the resources
+     * directory.
+     *
+     * @return the configuration file.
+     */
+    String neoxpConfig() default "";
 }

@@ -12,9 +12,9 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     private static final String IMAGE = "ghcr.io/neow3j/neow3j-test-docker:latest";
     public static final String CONTAINER_WORKDIR = "/neoxp/";
     private static final String NEOXP_RUN_SCRIPT = CONTAINER_WORKDIR + "neoxp-run.sh";
-
-    public static final String NEOXP_CONFIG_FILE = "default.neo-express";
-    public static final String CONFIG_DEST = CONTAINER_WORKDIR + NEOXP_CONFIG_FILE;
+    public static final String NEOXP_CONFIG_DEST = CONTAINER_WORKDIR + "default.neo-express";
+    private static final String BATCH_FILE_DEST = CONTAINER_WORKDIR + "setup.batch";
+    private static final String CHECKPOINT_FILE_DEST = CONTAINER_WORKDIR + "setup.neoxp-checkpoint";
 
     // This is the port of neo-express node which is exposed by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
@@ -33,9 +33,13 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     public NeoExpressTestContainer(int secondsPerBlock, String... resources) {
         super(DockerImageName.parse(IMAGE));
-        withCopyFileToContainer(MountableFile.forClasspathResource(NEOXP_CONFIG_FILE, 777),
-                CONFIG_DEST);
         withExposedPorts(EXPOSED_JSONRPC_PORT);
+        waitingFor(Wait.forListeningPort());
+
+        if (secondsPerBlock != 0) {
+            withCommand("-s " + secondsPerBlock);
+            this.secondsPerBlock = secondsPerBlock;
+        }
 
         int i = 0;
         while (resources != null && i + 1 < resources.length) {
@@ -43,11 +47,25 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             String dest = resources[i++];
             withCopyFileToContainer(MountableFile.forClasspathResource(src, 777), dest);
         }
-        if (secondsPerBlock != 0) {
-            withCommand("-s " + secondsPerBlock);
-            this.secondsPerBlock = secondsPerBlock;
-        }
-        waitingFor(Wait.forListeningPort());
+
+        withLogConsumer(outputFrame -> System.out.println(outputFrame.getUtf8String()));
+    }
+
+    public NeoExpressTestContainer withBatchFile(String batchFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(batchFile), BATCH_FILE_DEST);
+        return this;
+    }
+
+    public NeoExpressTestContainer withCheckpoint(String checkpointFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(checkpointFile),
+                CHECKPOINT_FILE_DEST);
+        return this;
+    }
+
+    public NeoExpressTestContainer withNeoxpConfig(String configFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(configFile, 777),
+                NEOXP_CONFIG_DEST);
+        return this;
     }
 
     public String getNodeUrl() {

@@ -14,7 +14,12 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@ContractTest(blockTime = 1, contractClass = ExampleContract.class)
+@ContractTest(
+        blockTime = 1,
+        contractClass = ExampleContract.class,
+        batchFile = "example.batch",
+        neoxpConfig = "example.neo-express"
+)
 public class ExampleTest {
 
     @RegisterExtension
@@ -31,9 +36,8 @@ public class ExampleTest {
 
     @Test
     public void test() throws Throwable {
-        Account a = ext.getAccount("account1");
-        Hash256 transferTx = ext.transfer(new BigInteger("1000000000"), "GAS", "genesis",
-                "account1");
+        Account a = ext.getAccount("Alice");
+        Hash256 transferTx = ext.transfer(new BigInteger("1000000000"), "GAS", "genesis", "Alice");
         Await.waitUntilTransactionIsExecuted(transferTx, neow3j);
 
         Hash256 txHash = contract.invokeFunction("method")

@@ -30,14 +30,17 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import static io.neow3j.test.NeoExpressTestContainer.CONTAINER_WORKDIR;
-import static io.neow3j.test.NeoExpressTestContainer.NEOXP_CONFIG_FILE;
 
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
+
+    private static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
 
     // Extension Context Store
     final static String CONTAINER_STORE_KEY = "neoExpressContainer";
     final static String NEOW3J_STORE_KEY = "neow3j";
     final static String CONTRACT_STORE_KEY = "contractHash";
+
+    private String neoxpConfigFileName = DEFAULT_NEOXP_CONFIG;
 
     // Properties
 //    private final static String PROP_FILE_NAME = "test.properties";
@@ -86,6 +89,16 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                     + " without the @" + ContractTest.class.getSimpleName() + " annotation.");
         }
         container = new NeoExpressTestContainer(annotation.blockTime());
+        if (!annotation.neoxpConfig().isEmpty()) {
+            neoxpConfigFileName = annotation.neoxpConfig();
+        }
+        container.withNeoxpConfig(neoxpConfigFileName);
+        if (!annotation.batchFile().isEmpty()) {
+            container.withBatchFile(annotation.batchFile());
+        }
+        if (!annotation.checkpoint().isEmpty()) {
+            container.withCheckpoint(annotation.checkpoint());
+        }
         container.start();
         neow3j = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
         contractUnderTest = compileAndDeployContract(annotation.contractClass(), container, neow3j);
@@ -176,7 +189,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      */
     public Account getAccount(String name) throws IOException {
         InputStream s = ContractTestExtension.class.getClassLoader()
-                .getResourceAsStream(NEOXP_CONFIG_FILE);
+                .getResourceAsStream(neoxpConfigFileName);
         NeoExpressConfig config = ObjectMapperFactory.getObjectMapper()
                 .readValue(s, NeoExpressConfig.class);
 
