@@ -42,44 +42,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 
     private String neoxpConfigFileName = DEFAULT_NEOXP_CONFIG;
 
-    // Properties
-//    private final static String PROP_FILE_NAME = "test.properties";
-//    private final static String DEFAULT_PROP_FILE_NAME = "test-default.properties";
-//    private final static String GENESIS_PROPS_PREFIX = "genesis";
-//    private final static String ACC_PROPS_PREFIX = "account";
-//    private final static String GENESIS_ADDR = GENESIS_PROPS_PREFIX + ".address";
-//    private final static String GENESIS_SCRIPT_HASH = GENESIS_PROPS_PREFIX + ".script-hash";
-//    private final static String ACC_1_ADDR = ACC_PROPS_PREFIX + "1.address";
-//    private final static String ACC_1_SCRIPT_HASH = ACC_PROPS_PREFIX + "1.script-hash";
-//    private final static String ACC_1_PRIV_KEY = ACC_PROPS_PREFIX + "1.private-key";
-
-    //    private Properties properties;
     private NeoExpressTestContainer container;
     private Neow3jExpress neow3j;
     private SmartContract contractUnderTest;
-
-//    public ContractTestExtension() {
-//        Properties props = new Properties();
-//        Properties defaultProps = new Properties();
-//        try {
-//            InputStream s =
-//                    ContractTestExtension.class.getClassLoader().getResourceAsStream
-//                    (PROP_FILE_NAME);
-//            if (s != null) {
-//                props.load(s);
-//            }
-//            s =
-//                    ContractTestExtension.class.getClassLoader().getResourceAsStream
-//                    (DEFAULT_PROP_FILE_NAME);
-//            if (s != null) {
-//                defaultProps.load(s);
-//            }
-//        } catch (IOException ignore) {
-//        }
-//        properties = new Properties();
-//        properties.putAll(defaultProps);
-//        properties.putAll(props);
-//    }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
