@@ -13,7 +13,7 @@ dependencies {
             "ch.qos.logback:logback-classic:$logbackVersion",
             "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",
             "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
-            "org.testcontainers:junit-jupiter:$testcontainersVersion",
+            "org.testcontainers:testcontainers:$testcontainersVersion",
             project(':test-tools')
 }
 

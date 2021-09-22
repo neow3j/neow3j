@@ -7,7 +7,6 @@ import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
-import org.junit.Ignore;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -15,7 +14,6 @@ import java.math.BigInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-@Ignore
 @ContractTest(
         blockTime = 1,
         contractClass = ExampleContract.class,
