@@ -1,4 +1,4 @@
-description 'test tools for neow3j'
+description 'test framework for neow3j'
 
 dependencies {
     compile project(":test-tools")
