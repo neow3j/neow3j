@@ -1,6 +1,6 @@
 description 'test tools for neow3j'
 
 dependencies {
-    implementation "org.testcontainers:testcontainers:$testcontainersVersion",
+    compile "org.testcontainers:testcontainers:$testcontainersVersion",
             "com.github.tomakehurst:wiremock-jre8:$wiremockVersion"
 }

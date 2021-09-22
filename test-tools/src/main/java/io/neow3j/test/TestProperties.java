@@ -1,37 +1,17 @@
 package io.neow3j.test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.util.Objects;
 import java.util.Properties;
 
 public class TestProperties {
 
     private static TestProperties instance = null;
     private final Properties properties;
-    private final byte[] nameServiceNef;
-    private final byte[] nameServiceManifest;
 
     protected TestProperties() throws IOException, URISyntaxException {
         properties = new Properties();
         properties.load(getClass().getResourceAsStream("/test.properties"));
-        nameServiceNef = readFromStream(Objects.requireNonNull(
-                getClass().getResourceAsStream("/NameService.nef")));
-        nameServiceManifest = readFromStream(Objects.requireNonNull(
-                getClass().getResourceAsStream("/NameService.manifest.json")));
-    }
-
-    private byte[] readFromStream(InputStream st) throws IOException {
-        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-        int nRead;
-        byte[] data = new byte[1024];
-        while ((nRead = st.read(data, 0, data.length)) != -1) {
-            buffer.write(data, 0, nRead);
-        }
-        buffer.flush();
-        return buffer.toByteArray();
     }
 
     public static TestProperties getInstance() {
@@ -113,10 +93,6 @@ public class TestProperties {
         return getValue("gasTokenHash");
     }
 
-    public static String nameServiceHash() {
-        return getValue("nameServiceHash");
-    }
-
     public static String contractManagementHash() {
         return getValue("contractManagementHash");
     }
@@ -151,14 +127,6 @@ public class TestProperties {
 
     public static String getValue(String key) {
         return getInstance().properties.getProperty(key);
-    }
-
-    public static byte[] nameServiceManifest() {
-        return getInstance().nameServiceManifest;
-    }
-
-    public static byte[] nameServiceNef() {
-        return getInstance().nameServiceNef;
     }
 
 }
