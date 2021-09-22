@@ -1,12 +1,12 @@
 description 'test framework for neow3j'
 
 dependencies {
-    compile project(":test-tools")
+    compile project(":test-tools"),
+            project(":contract"),
+            project(":core")
 
     implementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-            project(":core"),
-            project(":contract"),
             project(":compiler")
 
     testImplementation project(":devpack")
