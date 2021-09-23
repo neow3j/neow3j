@@ -1,0 +1,17 @@
+description 'test framework for neow3j'
+
+dependencies {
+    compile project(":test-tools"),
+            project(":contract"),
+            project(":core")
+
+    implementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
+            "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            project(":compiler")
+
+    testImplementation project(":devpack")
+}
+
+tasks.withType(Test) {
+    useJUnitPlatform()
+}

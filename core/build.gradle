@@ -12,7 +12,6 @@ dependencies {
     testImplementation "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion",
             "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",
-            "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
             project(':test-tools')
 }
 
