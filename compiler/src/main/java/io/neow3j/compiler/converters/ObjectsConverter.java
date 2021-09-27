@@ -1,6 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.CompilerException;
@@ -59,12 +58,17 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
+                if (isAssertionDisabledStaticField(insn)) {
+                    break;
+                }
                 addStoreStaticField((FieldInsnNode) insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
                 if (isEvent(fieldInsn.desc)) {
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
+                } else if (isAssertionDisabledStaticField(fieldInsn)) {
+                    insn = fieldInsn.getNext();
                 } else {
                     addLoadStaticField(fieldInsn, neoMethod, compUnit);
                 }
@@ -84,6 +88,14 @@ public class ObjectsConverter implements Converter {
                 break;
         }
         return insn;
+    }
+
+    private boolean isAssertionDisabledStaticField(AbstractInsnNode insn) {
+        if (insn.getType() != AbstractInsnNode.FIELD_INSN) {
+            return false;
+        }
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        return fieldInsn.name.equals("$assertionsDisabled");
     }
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
@@ -200,8 +212,7 @@ public class ObjectsConverter implements Converter {
     private static boolean isNewThrowable(TypeInsnNode typeInsn,
             CompilationUnit compUnit) throws IOException {
 
-        ClassNode type = AsmHelper.getAsmClassForInternalName(typeInsn.desc,
-                compUnit.getClassLoader());
+        ClassNode type = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
 
         if (getFullyQualifiedNameForInternalName(type.name).equals(
                 Throwable.class.getCanonicalName())) {
@@ -220,17 +231,25 @@ public class ObjectsConverter implements Converter {
     private static AbstractInsnNode handleNewThrowable(TypeInsnNode typeInsn,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
-        if (!Exception.class.getCanonicalName()
-                .equals(getFullyQualifiedNameForInternalName(typeInsn.desc))) {
-            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type "
-                            + "%s but only %s is allowed.",
+        String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
+        boolean isException = false;
+        boolean isAssertion = false;
+        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            isException = true;
+        } else if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            isAssertion = true;
+        }
+        if (!isException && !isAssertion) {
+            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
+                            " %s but only %s and %s are allowed.",
                     getFullyQualifiedNameForInternalName(typeInsn.desc),
-                    Exception.class.getCanonicalName()));
+                    Exception.class.getCanonicalName(), AssertionError.class.getCanonicalName()));
         }
         // Skip to the next instruction after DUP.
         AbstractInsnNode insn = typeInsn.getNext().getNext();
         // Process any instructions that come before the INVOKESPECIAL, e.g., a PUSHDATA insn.
-        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName())) {
+        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName()) &&
+                !isCallToCtor(insn, Type.getType(AssertionError.class).getInternalName())) {
             insn = handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
@@ -241,17 +260,23 @@ public class ObjectsConverter implements Converter {
                     + " can either take no arguments or a String argument. You provided %d "
                     + "arguments.", argTypes.length));
         }
+        // TODO: 27.09.21 Michael: Assertion message is of type Object. Add implementation that
+        //  casts the assert message to string.
         if (argTypes.length == 1 &&
                 !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
                         .equals(String.class.getCanonicalName())) {
             throw new CompilerException(callingNeoMethod, "An exception thrown in a contract can "
                     + "either take no arguments or a String argument. You provided a non-string "
                     + "argument.");
-
         }
+
         if (argTypes.length == 0) {
             // No exception message is given, thus we add a dummy message.
-            callingNeoMethod.addInstruction(buildPushDataInsn("error"));
+            String dummyMessage = "error";
+            if (isAssertion) {
+                dummyMessage = "assertion failure";
+            }
+            callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
         }
         return insn;
     }

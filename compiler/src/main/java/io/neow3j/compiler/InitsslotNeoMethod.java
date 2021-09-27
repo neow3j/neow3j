@@ -73,4 +73,5 @@ public class InitsslotNeoMethod extends NeoMethod {
         throw new UnsupportedOperationException("The INITSSLOT method cannotneed to be " +
                 "initialized with local variable and parameter slots.");
     }
+
 }

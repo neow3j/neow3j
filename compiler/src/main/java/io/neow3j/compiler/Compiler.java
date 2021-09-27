@@ -328,8 +328,7 @@ public class Compiler {
     }
 
     private static void substitutePlaceholdersInMethodBodies(ClassNode classNode,
-            java.util.Map<String,
-            String> replaceMap) {
+            java.util.Map<String, String> replaceMap) {
 
         classNode.methods.forEach((methodNode) -> {
             for (AbstractInsnNode insnNode : methodNode.instructions) {
@@ -344,7 +343,7 @@ public class Compiler {
     }
 
     private static void substitutePlaceholdersInClassAnnotations(ClassNode classNode,
-            java.util.Map<String,String> replaceMap) {
+            java.util.Map<String, String> replaceMap) {
 
         if (classNode.invisibleAnnotations != null)
             classNode.invisibleAnnotations
@@ -408,7 +407,9 @@ public class Compiler {
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
-        for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
+        ArrayList<NeoMethod> neoMethods =
+                new ArrayList<>(compUnit.getNeoModule().getSortedMethods());
+        for (NeoMethod neoMethod : neoMethods) {
             neoMethod.convert(compUnit);
         }
         compileInitsslotMethod();
@@ -435,7 +436,8 @@ public class Compiler {
         if (!classCtorOpt.isPresent()) {
             return;
         }
-        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass());
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(),
+                compUnit.getContractClass());
         compUnit.getNeoModule().addMethod(m);
         m.convert(compUnit);
     }
