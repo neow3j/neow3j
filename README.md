@@ -74,11 +74,12 @@ compile smart contracts that are compatible with Neo Legacy.
 
 Help the development of neow3j by donating to the following addresses:
 
-| Crypto   | Address                                      |
-|----------|----------------------------------------------|
-| NEO      | `AHb3PPUY6a36Gd6JXCkn8j8LKtbEUr3UfZ`         |
-| ETH      | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
-| BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
+| Crypto     | Address                                      |
+|------------|----------------------------------------------|
+| Neo N3     | `NfhQyNmMCLCKaaazL6gbvYxtkZNGVb8kRn`         |
+| Neo Legacy | `AHb3PPUY6a36Gd6JXCkn8j8LKtbEUr3UfZ`         |
+| ETH        | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
+| BTC        | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
 
 ## Thanks and Credits :pray:
