@@ -25,6 +25,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -417,6 +418,14 @@ public class Compiler {
         return compUnit;
     }
 
+    public static boolean isAssertionDisabledStaticField(AbstractInsnNode insn) {
+        if (insn.getType() != AbstractInsnNode.FIELD_INSN) {
+            return false;
+        }
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        return fieldInsn.name.equals("$assertionsDisabled");
+    }
+
     private void checkForNonStaticVariablesOnContractClass(ClassNode contractClass) {
         if (contractClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
             throw new CompilerException(format("Contract class %s has non-static fields but only " +
@@ -438,6 +447,9 @@ public class Compiler {
         }
         InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(),
                 compUnit.getContractClass());
+        if (m.containsOnlyAssertionRelatedInstructions()) {
+            return;
+        }
         compUnit.getNeoModule().addMethod(m);
         m.convert(compUnit);
     }

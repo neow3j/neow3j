@@ -34,6 +34,7 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.handleInsn;
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
 import static io.neow3j.compiler.Compiler.isCallToCtor;
 import static io.neow3j.compiler.Compiler.isEvent;
 import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
@@ -58,9 +59,6 @@ public class ObjectsConverter implements Converter {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
             case PUTSTATIC:
-                if (isAssertionDisabledStaticField(insn)) {
-                    break;
-                }
                 addStoreStaticField((FieldInsnNode) insn, neoMethod, compUnit);
                 break;
             case GETSTATIC:
@@ -88,14 +86,6 @@ public class ObjectsConverter implements Converter {
                 break;
         }
         return insn;
-    }
-
-    private boolean isAssertionDisabledStaticField(AbstractInsnNode insn) {
-        if (insn.getType() != AbstractInsnNode.FIELD_INSN) {
-            return false;
-        }
-        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        return fieldInsn.name.equals("$assertionsDisabled");
     }
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
@@ -260,21 +250,23 @@ public class ObjectsConverter implements Converter {
                     + " can either take no arguments or a String argument. You provided %d "
                     + "arguments.", argTypes.length));
         }
-        // TODO: 27.09.21 Michael: Assertion message is of type Object. Add implementation that
-        //  casts the assert message to string.
-        if (argTypes.length == 1 &&
-                !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
-                        .equals(String.class.getCanonicalName())) {
-            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract can "
-                    + "either take no arguments or a String argument. You provided a non-string "
-                    + "argument.");
+        if (argTypes.length == 1) {
+            // Only string messages are allowed in exceptions. In assert statements, this cannot
+            // be checked properly. Therefore, if an assertion message is not a string, it is
+            // ignored when converting it.
+            if (!isAssertion && !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
+                    .equals(String.class.getCanonicalName())) {
+                throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
+                        "can either take no arguments or a String argument. You provided a " +
+                        "non-string argument.");
+            }
         }
 
         if (argTypes.length == 0) {
-            // No exception message is given, thus we add a dummy message.
+            // No exception message is given, thus a dummy message is added.
             String dummyMessage = "error";
             if (isAssertion) {
-                dummyMessage = "assertion failure";
+                dummyMessage = "assertion failed";
             }
             callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
         }

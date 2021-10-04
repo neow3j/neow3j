@@ -2,6 +2,7 @@ package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 
 import io.neow3j.compiler.CompilationUnit;
@@ -40,7 +41,12 @@ public class ConstantsConverter implements Converter {
             case LDC_W:
             case LDC2_W:
                 if (isDesiredAssertionStatusConst(insn)) {
-                    insn = insn.getNext().getNext();
+                    insn = insn.getNext();
+                    // Ignore instructions until static variable $assertionDisabled is loaded
+                    while (!isAssertionDisabledStaticField(insn)) {
+                        insn = insn.getNext();
+                    }
+                    insn.getNext();
                     break;
                 }
                 addLoadConstant(insn, neoMethod);
@@ -57,9 +63,14 @@ public class ConstantsConverter implements Converter {
     }
 
     private boolean isDesiredAssertionStatusConst(AbstractInsnNode insn) {
+        if (!insn.getNext().getClass().getCanonicalName().equals(
+                MethodInsnNode.class.getCanonicalName())) {
+            return false;
+        }
         MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
         return methodInsn.name.equals("desiredAssertionStatus") &&
                 getFullyQualifiedNameForInternalName(methodInsn.owner)
                         .equals(Class.class.getCanonicalName());
     }
+
 }
