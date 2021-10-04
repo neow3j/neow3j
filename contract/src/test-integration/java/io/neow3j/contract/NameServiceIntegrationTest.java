@@ -6,20 +6,22 @@ import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
-import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import io.neow3j.utils.Files;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URL;
 import java.util.Date;
 
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
@@ -58,6 +60,9 @@ public class NameServiceIntegrationTest {
     private static final long ONE_YEAR_IN_MILLISECONDS = 365L * 24 * 3600 * 1000;
     private static final long BUFFER_MILLISECONDS = 3600 * 1000;
 
+    private static final String NAMESERVICE_NEF = "NameService.nef";
+    private static final String NAMESERVICE_MANIFEST = "NameService.manifest.json";
+
     @ClassRule
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
@@ -75,8 +80,10 @@ public class NameServiceIntegrationTest {
     }
 
     private static Hash160 deployNameServiceContract() throws Throwable {
-        byte[] manifestBytes = TestProperties.nameServiceManifest();
-        byte[] nefBytes = TestProperties.nameServiceNef();
+        URL r = NameServiceIntegrationTest.class.getClassLoader().getResource(NAMESERVICE_NEF);
+        byte[] nefBytes = Files.readBytes(new File(r.toURI()));
+        r = NameServiceIntegrationTest.class.getClassLoader().getResource(NAMESERVICE_MANIFEST);
+        byte[] manifestBytes = Files.readBytes(new File(r.toURI()));
 
         Transaction tx = new ContractManagement(getNeow3j())
                 .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))

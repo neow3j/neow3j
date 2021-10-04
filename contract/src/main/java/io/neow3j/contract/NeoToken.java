@@ -283,6 +283,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param voter the account for which to cancel the vote.
      * @return a transaction builder
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder cancelVote(Hash160 voter) throws IOException {
         return vote(voter, null);
@@ -294,6 +295,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param voter the account for which to cancel the vote.
      * @return a transaction builder
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder cancelVote(Account voter) throws IOException {
         return cancelVote(voter.getScriptHash());

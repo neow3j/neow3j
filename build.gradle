@@ -18,6 +18,7 @@ buildscript {
     ext.testcontainersVersion = '1.15.3'
     ext.awaitility = '3.1.5'
     ext.wiremockVersion = '2.25.1'
+    ext.jupiterVersion = '5.8.0'
 
     repositories {
         mavenCentral()
@@ -67,7 +68,7 @@ allprojects { thisproject ->
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.13.0'
+    version '3.13.1'
     archivesBaseName = "${thisproject.name}"
 
     sourceCompatibility = JavaVersion.VERSION_1_8
@@ -132,8 +133,7 @@ subprojects {
     dependencies {
         testImplementation "junit:junit:$junitVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
-                "org.hamcrest:hamcrest-all:$hamcrestVersion",
-                "org.testcontainers:testcontainers:$testcontainersVersion"
+                "org.hamcrest:hamcrest-all:$hamcrestVersion"
     }
 
     task javadocsJar(type: Jar) {
@@ -160,8 +160,7 @@ subprojects {
     // In addition the gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (!project.name.startsWith(rootProject.name)
-            && !project.name.startsWith("test-tools")) {
+    if (project.name != rootProject.name) {
 
         apply plugin: 'maven-publish'
 

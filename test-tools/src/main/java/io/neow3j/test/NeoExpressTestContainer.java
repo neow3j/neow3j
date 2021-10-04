@@ -1,31 +1,25 @@
 package io.neow3j.test;
 
-import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.math.BigInteger;
+
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> {
 
-    /**
-     * Default location for a neoxp checkpoint file in the container.
-     */
-    public static final String CHECKPOINT_DEST = "/app/setup.neoxp-checkpoint";
-
-    /**
-     * Default location for a neoxp batch file in the container.
-     */
-    public static final String BATCH_DEST = "/app/setup.batch";
-
-    /**
-     * Default location for the neoxp config file in the container.
-     */
-    public static final String CONFIG_DEST = "/app/default.neo-express";
-    static final String DEFAULT_CONFIG_SOURCE = "/default.neo-express";
+    public static final String CONTAINER_WORKDIR = "/neoxp/";
+    private static final String NEOXP_RUN_SCRIPT = CONTAINER_WORKDIR + "neoxp-run.sh";
+    public static final String NEOXP_CONFIG_DEST = CONTAINER_WORKDIR + "default.neo-express";
+    private static final String BATCH_FILE_DEST = CONTAINER_WORKDIR + "setup.batch";
+    private static final String CHECKPOINT_FILE_DEST = CONTAINER_WORKDIR + "setup.neoxp-checkpoint";
 
     // This is the port of neo-express node which is exposed by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
+
+    // Can be set if the container is initialized with a specific block time.
+    private int secondsPerBlock = 0;
 
     /**
      * Creates a new instance of a docker container running a neo-express private network.
@@ -33,14 +27,17 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @param secondsPerBlock The block time to use by neo-express.
      * @param resources       Names of files that should be copied into the container. For each
      *                        file you need to set a source and a destination (in the container)
-     *                        path
-     *                        consecutively.
+     *                        path consecutively.
      */
     public NeoExpressTestContainer(int secondsPerBlock, String... resources) {
-        super(DockerImageName.parse(TestProperties.neo3ExpressPrivateNetContainerImg()));
-        withCopyFileToContainer(MountableFile.forClasspathResource(DEFAULT_CONFIG_SOURCE, 777),
-                CONFIG_DEST);
+        super(DockerImageName.parse(TestProperties.neoExpressDockerImage()));
         withExposedPorts(EXPOSED_JSONRPC_PORT);
+        waitingFor(Wait.forListeningPort());
+
+        if (secondsPerBlock != 0) {
+            withCommand("-s " + secondsPerBlock);
+            this.secondsPerBlock = secondsPerBlock;
+        }
 
         int i = 0;
         while (resources != null && i + 1 < resources.length) {
@@ -48,15 +45,146 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             String dest = resources[i++];
             withCopyFileToContainer(MountableFile.forClasspathResource(src, 777), dest);
         }
-        if (secondsPerBlock != 0) {
-            withCommand("-s " + secondsPerBlock);
-        }
-        waitingFor(Wait.forListeningPort());
     }
 
+    /**
+     * Adds the given batch file to the test container and executes it before the neo-express
+     * instance is started.
+     * The batch file must be located in the resources directory.
+     *
+     * @param batchFile The batch file name.
+     * @return this.
+     */
+    public NeoExpressTestContainer withBatchFile(String batchFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(batchFile), BATCH_FILE_DEST);
+        return this;
+    }
+
+    /**
+     * Adds the given checkpoint file to the test container and executes it before the neo-express
+     * instance is started.
+     * The file must be located in the resources directory.
+     * <p>
+     * If both a batch and a checkpoint file is added, the checkpoint is first applied.
+     *
+     * @param checkpointFile The checkpoint file name.
+     * @return this.
+     */
+    public NeoExpressTestContainer withCheckpoint(String checkpointFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(checkpointFile),
+                CHECKPOINT_FILE_DEST);
+        return this;
+    }
+
+    /**
+     * Adds the given neo-express config file to the test container. It will be used to configure
+     * the neo-express instance in the container.
+     * The file must be located in the resources directory.
+     *
+     * @param configFile The config file name.
+     * @return this.
+     */
+    public NeoExpressTestContainer withNeoxpConfig(String configFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(configFile, 777),
+                NEOXP_CONFIG_DEST);
+        return this;
+    }
+
+    /**
+     * Adds the given invoke file to the test container. It can then be used with the neo-express
+     * command {@code neoxp contract invoke}.
+     * The file must be located in the resources directory.
+     * <p>
+     * The copied file in the container will have the same name as the given source.
+     *
+     * @param invokeFile The invoke file name.
+     * @return this.
+     */
+    public NeoExpressTestContainer withInvokeFile(String invokeFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(invokeFile, 777),
+                CONTAINER_WORKDIR + invokeFile);
+        return this;
+    }
+
+    /**
+     * Adds the given NEF and manifest files to the test container. They can then be used with the
+     * neo-express command {@code neoxp contract deploy}.
+     * The files must be located in the resources directory.
+     * <p>
+     * The copied files in the container will have the same name as the given sources.
+     *
+     * @param nefFile      The NEF file name.
+     * @param manifestFile The manifest file name.
+     * @return this.
+     */
+    public NeoExpressTestContainer withNefAndManifestFiles(String nefFile, String manifestFile) {
+        withCopyFileToContainer(MountableFile.forClasspathResource(nefFile, 777),
+                CONTAINER_WORKDIR + nefFile);
+        withCopyFileToContainer(MountableFile.forClasspathResource(manifestFile, 777),
+                CONTAINER_WORKDIR + manifestFile);
+        return this;
+    }
+
+    /**
+     * Gets the URL of the neo-express node running in the container.
+     *
+     * @return the neo-express node URL.
+     */
     public String getNodeUrl() {
         return "http://" + this.getContainerIpAddress() + ":" +
                 this.getMappedPort(EXPOSED_JSONRPC_PORT);
+    }
+
+    /**
+     * Runs neo-express if it was stopped before.
+     *
+     * @return The message emitted by neo-express on startup.
+     * @throws Exception if an error occurs while trying to start neo-express.
+     */
+    public String runExpress() throws Exception {
+        String cmd;
+        if (secondsPerBlock != 0) {
+            cmd = NEOXP_RUN_SCRIPT + " " + secondsPerBlock;
+        } else {
+            cmd = NEOXP_RUN_SCRIPT;
+        }
+        ExecResult execResult = execInContainer(cmd);
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout();
+    }
+
+    /**
+     * Stops the neo-express instance.
+     *
+     * @return The message emitted by neo-express on stopping.
+     * @throws Exception if an error occurs when trying to stop neo-express.
+     */
+    public String stopExpress() throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "stop");
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout();
+    }
+
+    /**
+     * Creates a new account with the given name on the neo-express instance.
+     *
+     * @param name The name of the account to create.
+     * @return The new account's address.
+     * @throws Exception if an error occurs when trying to create the account.
+     */
+    public String createAccount(String name) throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "wallet", "create", name);
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout().replaceAll(" ", "").split("\n")[1];
     }
 
     /**
@@ -67,8 +195,28 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @throws Exception if the execution failed.
      */
     public String deployContract(String nefFilePath) throws Exception {
-        Container.ExecResult execResult = execInContainer(
+        ExecResult execResult = execInContainer(
                 "neoxp", "contract", "deploy", nefFilePath, "genesis");
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout().split(" ")[2];
+    }
+
+    /**
+     * @param amount   The amount of assets to transfer.
+     * @param asset    The asset to transfer. Can be a symbol, e.g., "NEO", or the hash of a
+     *                 contract.
+     * @param sender   The sender. Can be a name of a wallet, e.g., "genesis", or an address.
+     * @param receiver The receiver. Can be a name of a wallet, e.g., "genesis", or an address.
+     * @return The transaction hash of the transfer.
+     * @throws Exception if an error occurs when executing the transfer on the neo-express instance.
+     */
+    public String transfer(BigInteger amount, String asset, String sender, String receiver)
+            throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "transfer", amount.toString(), asset,
+                sender, receiver);
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
                     execResult.getStderr());
@@ -85,7 +233,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @throws Exception if the execution failed.
      */
     public String invokeContract(String invokeFile) throws Exception {
-        Container.ExecResult execResult = execInContainer(
+        ExecResult execResult = execInContainer(
                 "neoxp", "contract", "invoke", invokeFile, "genesis");
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
@@ -101,11 +249,12 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @throws Exception if the execution failed.
      */
     public String enableOracle() throws Exception {
-        Container.ExecResult execResult = execInContainer("neoxp", "oracle", "enable", "genesis");
+        ExecResult execResult = execInContainer("neoxp", "oracle", "enable", "genesis");
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
                     execResult.getStderr());
         }
         return execResult.getStdout().split(" ")[3];
     }
+
 }

@@ -67,9 +67,10 @@ public class NeoModule {
      * @param insn     The instruction using the variable.
      * @param compUnit The compilation unit needed for the classloader.
      * @return the contract variable.
+     * @throws IOException if there was a problem loading classes from disk.
      */
     public NeoContractVariable getContractVariable(FieldInsnNode insn, CompilationUnit compUnit)
-            throws IOException {
+           throws IOException {
 
         ClassNode owner = getAsmClassForInternalName(insn.owner, compUnit.getClassLoader());
         if (!owner.name.equals(compUnit.getContractClass().name)) {
