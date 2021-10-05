@@ -222,15 +222,18 @@ public class ObjectsConverter implements Converter {
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
-        boolean isException =
-                Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName);
-        boolean isAssertion =
-                AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName);
+        ThrowableType type;
+        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            type = ThrowableType.EXCEPTION;
+        } else if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            type = ThrowableType.ASSERTION;
+        } else {
+            type = ThrowableType.OTHER;
+        }
 
-        if (!isException && !isAssertion) {
+        if (type.equals(ThrowableType.OTHER)) {
             throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
-                            " %s but only %s and %s are allowed.",
-                    getFullyQualifiedNameForInternalName(typeInsn.desc),
+                            " %s but only %s and %s are allowed.", fullyQualifiedExceptionName,
                     Exception.class.getCanonicalName(), AssertionError.class.getCanonicalName()));
         }
         // Skip to the next instruction after DUP.
@@ -248,27 +251,33 @@ public class ObjectsConverter implements Converter {
                     + " can either take no arguments or a String argument. You provided %d "
                     + "arguments.", argTypes.length));
         }
-        if (argTypes.length == 1) {
-            // Only string messages are allowed in exceptions. In assert statements, this cannot
-            // be checked properly. Therefore, if an assertion message is not a string, it is
-            // ignored when converting it.
-            if (!isAssertion && !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
-                    .equals(String.class.getCanonicalName())) {
-                throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
-                        "can either take no arguments or a String argument. You provided a " +
-                        "non-string argument.");
-            }
+
+        // Only string messages are allowed in exceptions. In assert statements, this cannot
+        // be checked properly. Therefore, if an assertion message is not a string, it is
+        // ignored when converting it.
+        if (argTypes.length == 1 && !type.equals(ThrowableType.ASSERTION) &&
+                !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
+                        .equals(String.class.getCanonicalName())) {
+            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
+                    "can either take no arguments or a String argument. You provided a " +
+                    "non-string argument.");
         }
 
         if (argTypes.length == 0) {
             // No exception message is given, thus a dummy message is added.
             String dummyMessage = "error";
-            if (isAssertion) {
+            if (type.equals(ThrowableType.ASSERTION)) {
                 dummyMessage = "assertion failed";
             }
             callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
         }
         return insn;
+    }
+
+    private enum ThrowableType {
+        EXCEPTION,
+        ASSERTION,
+        OTHER
     }
 
     /**
