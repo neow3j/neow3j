@@ -43,7 +43,6 @@ public class ConstantsConverter implements Converter {
             case LDC_W:
             case LDC2_W:
                 if (isDesiredAssertionStatusConst(insn)) {
-                    insn = insn.getNext();
                     // Ignore instructions until static variable $assertionDisabled is loaded
                     while (!isAssertionDisabledStaticField(insn)) {
                         insn = insn.getNext();
