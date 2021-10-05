@@ -74,6 +74,8 @@ public class Compiler {
     public static final String INSN_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
     public static final String INSN_ANNOTATION_INTEROPSERVICE = "interopService";
 
+    private static final String ASSERTIONS_DISABLED = "$assertionsDisabled";
+
     private final CompilationUnit compUnit;
 
     public Compiler() {
@@ -423,7 +425,7 @@ public class Compiler {
             return false;
         }
         FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-        return fieldInsn.name.equals("$assertionsDisabled");
+        return fieldInsn.name.equals(ASSERTIONS_DISABLED);
     }
 
     private void checkForNonStaticVariablesOnContractClass(ClassNode contractClass) {

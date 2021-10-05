@@ -17,6 +17,7 @@ import static io.neow3j.compiler.Compiler.isEvent;
 public class InitsslotNeoMethod extends NeoMethod {
 
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
+    private static final String DESIRED_ASSERTION_STATUS = "desiredAssertionStatus";
 
     /**
      * Constructs a new INITSSLOT method.
@@ -47,7 +48,7 @@ public class InitsslotNeoMethod extends NeoMethod {
         if (insn.getType() == AbstractInsnNode.LDC_INSN &&
                 insn.getNext().getType() == AbstractInsnNode.METHOD_INSN) {
             MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
-            if (methodInsn.name.equals("desiredAssertionStatus")) {
+            if (methodInsn.name.equals(DESIRED_ASSERTION_STATUS)) {
                 insn = insn.getNext();
                 while (!isAssertionDisabledStaticField(insn)) {
                     insn = insn.getNext();

@@ -16,6 +16,8 @@ import org.objectweb.asm.tree.MethodInsnNode;
 
 public class ConstantsConverter implements Converter {
 
+    private static final String DESIRED_ASSERTION_STATUS = "desiredAssertionStatus";
+
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
             CompilationUnit compUnit) {
@@ -46,7 +48,7 @@ public class ConstantsConverter implements Converter {
                     while (!isAssertionDisabledStaticField(insn)) {
                         insn = insn.getNext();
                     }
-                    insn.getNext();
+                    insn = insn.getNext();
                     break;
                 }
                 addLoadConstant(insn, neoMethod);
@@ -63,12 +65,11 @@ public class ConstantsConverter implements Converter {
     }
 
     private boolean isDesiredAssertionStatusConst(AbstractInsnNode insn) {
-        if (!insn.getNext().getClass().getCanonicalName().equals(
-                MethodInsnNode.class.getCanonicalName())) {
+        if (insn.getNext().getType() != AbstractInsnNode.METHOD_INSN) {
             return false;
         }
         MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
-        return methodInsn.name.equals("desiredAssertionStatus") &&
+        return methodInsn.name.equals(DESIRED_ASSERTION_STATUS) &&
                 getFullyQualifiedNameForInternalName(methodInsn.owner)
                         .equals(Class.class.getCanonicalName());
     }
