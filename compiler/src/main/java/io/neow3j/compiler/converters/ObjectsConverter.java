@@ -222,13 +222,11 @@ public class ObjectsConverter implements Converter {
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
-        boolean isException = false;
-        boolean isAssertion = false;
-        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            isException = true;
-        } else if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            isAssertion = true;
-        }
+        boolean isException =
+                Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName);
+        boolean isAssertion =
+                AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName);
+
         if (!isException && !isAssertion) {
             throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
                             " %s but only %s and %s are allowed.",
