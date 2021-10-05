@@ -70,6 +70,22 @@ public class AssertionTest {
         assertFalse(result.hasStateFault());
     }
 
+    @Test
+    public void testWitnessCheckWithErrorMessageFromMethod() throws Throwable {
+        Account a = Account.fromWIF("L4NH7MLEdnX6u8vGx1qTLnuE9Aa5ovKcrVtUQfhyksqcAwZ4Xfto");
+        NeoInvokeFunction response = ct.getContract()
+                .callInvokeFunction(testName.getMethodName(), asList(hash160(a)),
+                        calledByEntry(Account.create()));
+        InvocationResult result = response.getInvocationResult();
+        assertTrue(result.hasStateFault());
+        assertThat(result.getException(), containsString("hello, world!"));
+
+        response = ct.getContract()
+                .callInvokeFunction(testName.getMethodName(), asList(hash160(a)), calledByEntry(a));
+        result = response.getInvocationResult();
+        assertFalse(result.hasStateFault());
+    }
+
     static class AssertionTestContract {
 
         public static int VAR = 42;
@@ -85,6 +101,14 @@ public class AssertionTest {
 
         public static void testWitnessCheck(Hash160 witness) {
             assert Runtime.checkWitness(witness) : "No authorization!";
+        }
+
+        public static void testWitnessCheckWithErrorMessageFromMethod(Hash160 witness) {
+            assert Runtime.checkWitness(witness) : getString();
+        }
+
+        private static String getString() {
+            return "hello" + ", world!";
         }
     }
 
