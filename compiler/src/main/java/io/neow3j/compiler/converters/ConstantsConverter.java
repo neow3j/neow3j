@@ -2,6 +2,8 @@ package io.neow3j.compiler.converters;
 
 import static io.neow3j.compiler.Compiler.addLoadConstant;
 import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.JVMOpcode;
@@ -10,8 +12,11 @@ import io.neow3j.compiler.NeoMethod;
 import io.neow3j.script.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 
 public class ConstantsConverter implements Converter {
+
+    private static final String DESIRED_ASSERTION_STATUS = "desiredAssertionStatus";
 
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
@@ -37,6 +42,14 @@ public class ConstantsConverter implements Converter {
             case LDC:
             case LDC_W:
             case LDC2_W:
+                if (isDesiredAssertionStatusConst(insn)) {
+                    // Ignore instructions until static variable $assertionDisabled is loaded
+                    while (!isAssertionDisabledStaticField(insn)) {
+                        insn = insn.getNext();
+                    }
+                    insn = insn.getNext();
+                    break;
+                }
                 addLoadConstant(insn, neoMethod);
                 break;
             case ACONST_NULL:
@@ -49,4 +62,15 @@ public class ConstantsConverter implements Converter {
         }
         return insn;
     }
+
+    private boolean isDesiredAssertionStatusConst(AbstractInsnNode insn) {
+        if (insn.getNext().getType() != AbstractInsnNode.METHOD_INSN) {
+            return false;
+        }
+        MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
+        return methodInsn.name.equals(DESIRED_ASSERTION_STATUS) &&
+                getFullyQualifiedNameForInternalName(methodInsn.owner)
+                        .equals(Class.class.getCanonicalName());
+    }
+
 }
