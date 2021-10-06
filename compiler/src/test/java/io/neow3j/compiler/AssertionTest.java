@@ -22,7 +22,7 @@ public class AssertionTest {
     @Test
     public void testInitsslotOnlyAssertionInstructions() throws IOException {
         CompilationUnit compUnit = new Compiler()
-                .compile(InitsslotNeoMethodWithAssertionAndWithoutOtherStaticVar.class.getName());
+                .compile(InitsslotWithoutOtherStaticVar.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
         assertThat(methods, hasSize(1));
         NeoMethod method = methods.get(0);
@@ -37,7 +37,7 @@ public class AssertionTest {
 
     @Test
     public void testInitsslotWithAssertion() throws IOException {
-        CompilationUnit compUnit = new Compiler().compile(InitsslotNeoMethodWithAssertionAndStaticVar.class.getName());
+        CompilationUnit compUnit = new Compiler().compile(InitsslotWithStaticVar.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
         assertThat(methods, hasSize(2));
         NeoMethod initsslotMethod = methods.get(1);
@@ -53,13 +53,13 @@ public class AssertionTest {
 
     }
 
-    static class InitsslotNeoMethodWithAssertionAndWithoutOtherStaticVar {
+    static class InitsslotWithoutOtherStaticVar {
         public static void testAssert1(int i) {
             assert i == 17;
         }
     }
 
-    static class InitsslotNeoMethodWithAssertionAndStaticVar {
+    static class InitsslotWithStaticVar {
         public static int VAR = 42;
 
         public static boolean testAssert2(int i) {
