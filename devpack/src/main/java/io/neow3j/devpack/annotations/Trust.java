@@ -10,9 +10,9 @@ import java.lang.annotation.Target;
  * This annotation is used on contract class level to define which contracts your contract trusts,
  * meaning for which contracts or groups of contracts will the user interface not give any
  * warnings if they call your contract.
- *
- * The value can be a contract hash, a group's public key or a wildcard "*". The wildcard mean
- * that you trust any contract.
+ * <p>
+ * The value can be a contract hash, a group's public key or a wildcard "*". The wildcard means
+ * that any other contract is trusted.
  */
 @Target(ElementType.TYPE)
 @Repeatable(Trusts.class)
