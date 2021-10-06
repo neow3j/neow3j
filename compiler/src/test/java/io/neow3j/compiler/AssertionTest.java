@@ -1,9 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.script.OpCode;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -15,9 +13,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 public class AssertionTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void testInitsslotOnlyAssertionInstructions() throws IOException {
