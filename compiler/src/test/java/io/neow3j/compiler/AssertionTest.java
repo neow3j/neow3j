@@ -50,7 +50,6 @@ public class AssertionTest {
         assertThat(insns.get(2).getOperand(), is(new byte[]{42}));
         assertThat(insns.get(4).getOpcode(), is(OpCode.STSFLD0));
         assertThat(insns.get(5).getOpcode(), is(OpCode.RET));
-
     }
 
     static class InitsslotWithoutOtherStaticVar {

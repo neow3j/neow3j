@@ -9,6 +9,7 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LocalVariableNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 import static io.neow3j.compiler.Compiler.MAX_LOCAL_VARIABLES;
 import static io.neow3j.compiler.Compiler.MAX_PARAMS_COUNT;
 import static io.neow3j.compiler.Compiler.THIS_KEYWORD;
+import static io.neow3j.compiler.Compiler.isEvent;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 import static java.util.Arrays.stream;
@@ -51,6 +53,8 @@ public class NeoMethod {
 
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
+
+    private final String VERIFY_METHOD_NAME = "verify";
 
     // This method's instructions sorted by their address. The addresses in this map are only
     // relative to this method and not the whole `NeoModule` in which this method lives in.
@@ -474,12 +478,28 @@ public class NeoMethod {
      * @throws IOException If an error occurs when reading class files.
      */
     public void convert(CompilationUnit compUnit) throws IOException {
+        if (isVerifyMethod()) {
+            throwOnEventFieldInsn();
+        }
         AbstractInsnNode insn = asmMethod.instructions.get(0);
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);
             insn = insn.getNext();
         }
         insertTryCatchBlocks();
+    }
+
+    private boolean isVerifyMethod() {
+        return name.equals(VERIFY_METHOD_NAME);
+    }
+
+    private void throwOnEventFieldInsn() {
+        for (AbstractInsnNode insn : asmMethod.instructions) {
+            if (insn.getType() == AbstractInsnNode.FIELD_INSN &&
+                    isEvent(((FieldInsnNode) insn).desc)) {
+                throw new CompilerException("The verify method is not allowed to fire any event.");
+            }
+        }
     }
 
     protected void insertTryCatchBlocks() {

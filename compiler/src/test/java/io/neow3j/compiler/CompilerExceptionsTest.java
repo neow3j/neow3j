@@ -6,6 +6,7 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.contracts.FungibleToken;
@@ -261,6 +262,13 @@ public class CompilerExceptionsTest {
         new Compiler().compile(ContractClassWithReferenceToEventInOtherClass.class.getName());
     }
 
+    @Test
+    public void throwOnEventFiredInVerifyMethod() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("The verify method is not allowed to fire any event.");
+        new Compiler().compile(VerifyWithEvent.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -492,6 +500,16 @@ public class CompilerExceptionsTest {
 
     static class NonContractClassWithEventDeclaration {
         public static Event1Arg<String> event;
+    }
+
+    static class VerifyWithEvent {
+        static Event1Arg<String> e;
+
+        @OnVerification
+        public static boolean verif() {
+            e.fire("neowww");
+            return true;
+        }
     }
 
 }
