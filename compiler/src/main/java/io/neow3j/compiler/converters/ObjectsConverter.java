@@ -222,16 +222,8 @@ public class ObjectsConverter implements Converter {
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
-        ThrowableType type;
-        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            type = ThrowableType.EXCEPTION;
-        } else if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            type = ThrowableType.ASSERTION;
-        } else {
-            type = ThrowableType.OTHER;
-        }
-
-        if (type.equals(ThrowableType.OTHER)) {
+        ThrowableType throwableType = getThrowableType(fullyQualifiedExceptionName);
+        if (throwableType.equals(ThrowableType.OTHER)) {
             throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
                             " %s but only %s and %s are allowed.", fullyQualifiedExceptionName,
                     Exception.class.getCanonicalName(), AssertionError.class.getCanonicalName()));
@@ -246,6 +238,22 @@ public class ObjectsConverter implements Converter {
         }
 
         Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
+        checkForInvalidExceptionArguments(argTypes, throwableType, callingNeoMethod);
+
+        if (argTypes.length == 0) {
+            // No exception message is given, thus a dummy message is added.
+            String dummyMessage = "error";
+            if (throwableType.equals(ThrowableType.ASSERTION)) {
+                dummyMessage = "assertion failed";
+            }
+            callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
+        }
+        return insn;
+    }
+
+    private static void checkForInvalidExceptionArguments(Type[] argTypes,
+            ThrowableType throwableType, NeoMethod callingNeoMethod) {
+
         if (argTypes.length > 1) {
             throw new CompilerException(callingNeoMethod, format("An exception thrown in a contract"
                     + " can either take no arguments or a String argument. You provided %d "
@@ -255,23 +263,23 @@ public class ObjectsConverter implements Converter {
         // Only string messages are allowed in exceptions. In assert statements, this cannot
         // be checked properly. Therefore, if an assertion message is not a string, it is
         // ignored when converting it.
-        if (argTypes.length == 1 && !type.equals(ThrowableType.ASSERTION) &&
+        if (argTypes.length == 1 && !throwableType.equals(ThrowableType.ASSERTION) &&
                 !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
                         .equals(String.class.getCanonicalName())) {
             throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
                     "can either take no arguments or a String argument. You provided a " +
                     "non-string argument.");
         }
+    }
 
-        if (argTypes.length == 0) {
-            // No exception message is given, thus a dummy message is added.
-            String dummyMessage = "error";
-            if (type.equals(ThrowableType.ASSERTION)) {
-                dummyMessage = "assertion failed";
-            }
-            callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
+    private static ThrowableType getThrowableType(String fullyQualifiedExceptionName) {
+        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            return ThrowableType.EXCEPTION;
         }
-        return insn;
+        if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            return ThrowableType.ASSERTION;
+        }
+        return ThrowableType.OTHER;
     }
 
     private enum ThrowableType {
