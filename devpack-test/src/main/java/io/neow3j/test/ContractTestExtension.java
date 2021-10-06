@@ -105,22 +105,50 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         container.stop();
     }
 
+    /**
+     * Gets the contract that is under test. Use the contract class to make calls to the contract.
+     *
+     * @return the contract under test.
+     */
     public SmartContract getContractUnderTest() {
         return contractUnderTest;
     }
 
+    /**
+     * Gets the Neow3j instance that allows for calls to the underlying neo-express instance.
+     *
+     * @return the Neow3j instance.
+     */
     public Neow3jExpress getNeow3j() {
         return neow3j;
     }
 
+    /**
+     * Starts neo-express in the test container if it is not running yet.
+     *
+     * @throws Exception if running neo-express failed, or it was already running.
+     */
     public void runExpress() throws Exception {
         container.runExpress();
     }
 
+    /**
+     * Stops neo-express in the test container if it is not already stopped. The container will
+     * continue running, allowing you to start up neo-express again.
+     *
+     * @throws Exception if stopping neo-express failed, or it was already stopped.
+     */
     public void stopExpress() throws Exception {
         container.stopExpress();
     }
 
+    /**
+     * Creates a new account on the neo-express instance and returns its Neo address.
+     *
+     * @param name The desired name of the account.
+     * @return The account's address
+     * @throws Exception if creating the account failed.
+     */
     public String createAccount(String name) throws Exception {
         return container.createAccount(name);
     }
