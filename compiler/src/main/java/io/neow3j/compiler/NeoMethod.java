@@ -478,9 +478,6 @@ public class NeoMethod {
      * @throws IOException If an error occurs when reading class files.
      */
     public void convert(CompilationUnit compUnit) throws IOException {
-        if (isVerifyMethod()) {
-            throwOnEventFieldInsn();
-        }
         AbstractInsnNode insn = asmMethod.instructions.get(0);
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);
@@ -489,17 +486,11 @@ public class NeoMethod {
         insertTryCatchBlocks();
     }
 
-    private boolean isVerifyMethod() {
+    /**
+     * @return if this method is the verify method.
+     */
+    public boolean isVerifyMethod() {
         return name.equals(VERIFY_METHOD_NAME);
-    }
-
-    private void throwOnEventFieldInsn() {
-        for (AbstractInsnNode insn : asmMethod.instructions) {
-            if (insn.getType() == AbstractInsnNode.FIELD_INSN &&
-                    isEvent(((FieldInsnNode) insn).desc)) {
-                throw new CompilerException("The verify method is not allowed to fire any event.");
-            }
-        }
     }
 
     protected void insertTryCatchBlocks() {

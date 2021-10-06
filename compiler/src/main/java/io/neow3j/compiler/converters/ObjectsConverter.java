@@ -64,6 +64,10 @@ public class ObjectsConverter implements Converter {
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
                 if (isEvent(fieldInsn.desc)) {
+                    if (neoMethod.isVerifyMethod()) {
+                        throw new CompilerException(neoMethod,
+                                "The verify method is not allowed to fire any event.");
+                    }
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
                 } else if (isAssertionDisabledStaticField(fieldInsn)) {
                     insn = fieldInsn.getNext();
