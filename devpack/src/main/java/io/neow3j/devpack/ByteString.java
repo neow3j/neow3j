@@ -5,7 +5,7 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.types.StackItemType;
 
 /**
- * A {@code ByteString} is an immutable byte array. Otherwise it behaves the same as a normal Java
+ * A {@code ByteString} is an immutable byte array. Otherwise, it behaves the same as a normal Java
  * byte array ({@code byte[]}).
  * Java {@code String}s are also represented as {@code ByteString}s on the neo-vm and can therefore
  * seamlessly be converted to and from {@code ByteString} without any GAS costs. The conversion
@@ -84,7 +84,16 @@ public class ByteString {
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x03)
     @Instruction(opcode = OpCode.ABORT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public native int toInteger();
+    public native int toInt();
+
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native int toIntOrZero();
 
     /**
      * Concatenates this and the given byte string. The returned value is a new byte string
