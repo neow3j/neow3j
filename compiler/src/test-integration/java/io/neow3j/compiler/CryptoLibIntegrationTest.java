@@ -18,6 +18,7 @@ import static io.neow3j.test.TestProperties.cryptoLibHash;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.types.ContractParameter.signature;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -53,7 +54,7 @@ public class CryptoLibIntegrationTest {
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
-                publicKey(pubKey), byteArray(signature), integer(NamedCurve.Secp256r1));
+                publicKey(pubKey), signature(signature), integer(NamedCurve.Secp256r1));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         message = "0102030406"; // small change in message.
