@@ -41,5 +41,5 @@ public class CryptoLib extends ContractInterface {
      * @return true if the signature is valid. False otherwise.
      */
     public static native boolean verifyWithECDsa(ByteString message, ECPoint publicKey,
-            String signature, byte curve);
+            ByteString signature, byte curve);
 }

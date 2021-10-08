@@ -79,8 +79,8 @@ public class CryptoLibIntegrationTest {
             return CryptoLib.ripemd160(value);
         }
 
-        public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey, String signature,
-                byte curve) {
+        public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey,
+                ByteString signature, byte curve) {
             return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
         }
 
