@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @ExtendWith({
-        ContractParameterResolver.class,
+//        ContractParameterResolver.class,
         Neow3jParameterResolver.class,
         ContainerParameterResolver.class
 })
@@ -28,11 +28,11 @@ public @interface ContractTest {
     int blockTime() default 0;
 
     /**
-     * The contract class to compile and deploy before running the test instance.
+     * The contracts to compile and deploy before running the test instance.
      *
-     * @return the contract class to compile and deploy
+     * @return the contracts to compile and deploy
      */
-    Class<?> contractClass();
+    Class<?>[] contracts();
 
     /**
      * The batch file to run before all tests of the test instance. The batch file must be placed
