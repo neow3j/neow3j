@@ -6,8 +6,8 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.types.ContractParameter.ContractParameterSerializer;
 import io.neow3j.crypto.Base64;
+import io.neow3j.types.ContractParameter.ContractParameterSerializer;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
@@ -455,7 +455,6 @@ public class ContractParameter {
 
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
             switch (p.getParamType()) {
-                case SIGNATURE:
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
@@ -463,6 +462,7 @@ public class ContractParameter {
                             toHexStringNoPrefix((byte[]) p.getValue()));
                     break;
                 case BYTE_ARRAY:
+                case SIGNATURE:
                     gen.writeStringField("value", Base64.encode((byte[]) p.getValue()));
                     break;
                 case BOOLEAN:
