@@ -1,8 +1,5 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.utils.Assertions.verifyPrecondition;
-import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
@@ -11,6 +8,7 @@ import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.util.Arrays;
 
@@ -18,6 +16,10 @@ import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
+
+import static io.neow3j.utils.Assertions.verifyPrecondition;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
 
 /**
  * <p>Transaction signing logic.</p>
@@ -32,10 +34,50 @@ public class Sign {
 
     private static final int LOWER_REAL_V = 27;
 
+    /**
+     * Signs the hash ({@code SHA256}) of the hexadecimal message with the private key of the
+     * provided {@link ECKeyPair}.
+     *
+     * @param messageHex The message to sign in hexadecimal format.
+     * @param keyPair    The key pair that holds the private key that is used to sign the message.
+     * @return the signature data.
+     */
+    public static SignatureData signHexMessage(String messageHex, ECKeyPair keyPair) {
+        return signMessage(hexStringToByteArray(messageHex), keyPair, true);
+    }
+
+    /**
+     * Signs the hash ({@code SHA256}) of the message's UTF-8 bytes with the private key of the
+     * provided {@link ECKeyPair}.
+     *
+     * @param message The message to sign.
+     * @param keyPair The key pair that holds the private key that is used to sign message.
+     * @return the signature data.
+     */
+    public static SignatureData signMessage(String message, ECKeyPair keyPair) {
+        return signMessage(message.getBytes(StandardCharsets.UTF_8), keyPair, true);
+    }
+
+    /**
+     * Signs the hash ({@code SHA256}) of the message with the private key of the provided
+     * {@link ECKeyPair}.
+     *
+     * @param message The message to sign.
+     * @param keyPair The key pair that holds the private key that is used to sign the message.
+     * @return the signature data.
+     */
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
         return signMessage(message, keyPair, true);
     }
 
+    /**
+     * Signs the message with the private key of the provided {@link ECKeyPair}.
+     *
+     * @param message    The message to sign.
+     * @param keyPair    The key pair that holds the private key that is used to sign the message.
+     * @param needToHash Whether the message should be hashed ({@code SHA256}) before signing.
+     * @return the signature data.
+     */
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair, boolean needToHash) {
         byte[] messageHash;
         if (needToHash) {
@@ -229,17 +271,17 @@ public class Sign {
     }
 
     /**
-     * Recovers the address that created the given signature on the given message.
+     * Recovers the signer's script hash that created the given signature on the given message.
      * <p>
      * If the message is a Neo transaction, then make sure that it was serialized without the
      * verification and invocation script attached (i.e. without the signature).
      *
      * @param signatureData The signature.
      * @param message       The message for which the signature was created.
-     * @return the address that produced the signature data from the transaction.
+     * @return the signer's script hash that produced the signature data from the transaction.
      * @throws SignatureException if the signature is invalid.
      */
-    public static String recoverSigningAddress(byte[] message, SignatureData signatureData)
+    public static Hash160 recoverSigningScriptHash(byte[] message, SignatureData signatureData)
             throws SignatureException {
 
         byte v = signatureData.getV();
@@ -247,9 +289,8 @@ public class Sign {
         byte[] s = signatureData.getS();
         SignatureData signatureDataV = new Sign.SignatureData(getRealV(v), r, s);
         ECPublicKey key = Sign.signedMessageToKey(message, signatureDataV);
-        return Hash160.fromPublicKey(key.getEncoded(true)).toAddress();
+        return Hash160.fromPublicKey(key.getEncoded(true));
     }
-
 
     private static byte getRealV(byte v) {
         if (v == LOWER_REAL_V || v == (LOWER_REAL_V + 1)) {
@@ -335,4 +376,5 @@ public class Sign {
                     '}';
         }
     }
+
 }
