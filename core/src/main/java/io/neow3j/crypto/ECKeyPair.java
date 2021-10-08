@@ -79,8 +79,19 @@ public class ECKeyPair {
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        byte[] script = buildVerificationScript(this.publicKey.getEncoded(true));
-        return Hash160.fromScript(script).toAddress();
+        return getScriptHash().toAddress();
+    }
+
+    /**
+     * Constructs the script hash from this key pairs public key.
+     * <p>
+     * The script hash is constructed ad hoc each time this method is called.
+     *
+     * @return the script hash of the public key.
+     */
+    public Hash160 getScriptHash() {
+        byte[] script = buildVerificationScript(publicKey.getEncoded(true));
+        return Hash160.fromScript(script);
     }
 
     /**
