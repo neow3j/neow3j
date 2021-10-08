@@ -2,7 +2,9 @@ package io.neow3j.crypto;
 
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.Sign.recoverSigningScriptHash;
+import static io.neow3j.crypto.Sign.signHexMessage;
 import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.crypto.Sign.signedMessageToKey;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexString;
 import static org.hamcrest.CoreMatchers.is;
@@ -50,10 +52,10 @@ public class SignTest {
         signatureData = signMessage(sha256(TEST_MESSAGE_BYTES), KEY_PAIR, false);
         assertThat(signatureData, is(expected));
 
-        signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
+        signatureData = signMessage(TEST_MESSAGE, KEY_PAIR);
         assertThat(signatureData, is(expected));
 
-        signatureData = Sign.signHexMessage(toHexString(TEST_MESSAGE_BYTES), KEY_PAIR);
+        signatureData = signHexMessage(toHexString(TEST_MESSAGE_BYTES), KEY_PAIR);
         assertThat(signatureData, is(expected));
     }
 
@@ -94,7 +96,7 @@ public class SignTest {
     @Test
     public void testSignedMessageToKey() throws SignatureException {
         Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
-        ECPublicKey key = Sign.signedMessageToKey(TEST_MESSAGE_BYTES, signatureData);
+        ECPublicKey key = signedMessageToKey(TEST_MESSAGE_BYTES, signatureData);
         assertThat(key, equalTo(PUBLIC_KEY));
     }
 
@@ -107,8 +109,7 @@ public class SignTest {
     public void testInvalidSignature() throws SignatureException {
         exceptionRule.expect(RuntimeException.class);
         exceptionRule.expectMessage("r must be 32 bytes.");
-        Sign.signedMessageToKey(
-                TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
+        signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
                         new byte[]{0}));
     }
 
