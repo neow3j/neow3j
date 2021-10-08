@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.crypto.Sign;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -7,6 +8,7 @@ import io.neow3j.devpack.constants.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
+import io.neow3j.wallet.Account;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -14,11 +16,13 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.cryptoLibHash;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.signature;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -59,8 +63,20 @@ public class CryptoLibIntegrationTest {
 
         message = "0102030406"; // small change in message.
         response = ct.callInvokeFunction(testName, byteArray(message), publicKey(pubKey),
-                byteArray(signature), integer(NamedCurve.Secp256r1));
+                signature(signature), integer(NamedCurve.Secp256r1));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void verifyWithECDsaWithSignatureData() throws IOException {
+        String message = "010203040506";
+        Account account = Account.fromWIF("L2Zb82MN9mh5gZ759q3CwmDCqHTsUD2SGC5GsEw2L451PE4L2Gjh");
+        Sign.SignatureData signatureData = signMessage(hexStringToByteArray(message),
+                account.getECKeyPair());
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
+                publicKey(account.getECKeyPair().getPublicKey().getEncoded(true)),
+                signature(signatureData), integer(NamedCurve.Secp256r1));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
@@ -81,6 +97,11 @@ public class CryptoLibIntegrationTest {
         }
 
         public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey,
+                ByteString signature, byte curve) {
+            return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
+        }
+
+        public static boolean verifyWithECDsaWithSignatureData(ByteString message, ECPoint pubKey,
                 ByteString signature, byte curve) {
             return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
         }

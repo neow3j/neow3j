@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.Sign;
 import io.neow3j.types.ContractParameter.ContractParameterSerializer;
 import io.neow3j.wallet.Account;
 
@@ -235,6 +236,16 @@ public class ContractParameter {
             throw new IllegalArgumentException("Argument is not a valid hex number.");
         }
         return signature(hexStringToByteArray(signatureHexString));
+    }
+
+    /**
+     * Creates a signature parameter from the provided {@link io.neow3j.crypto.Sign.SignatureData}.
+     *
+     * @param signatureData The signature data.
+     * @return the contract parameter.
+     */
+    public static ContractParameter signature(Sign.SignatureData signatureData) {
+        return signature(signatureData.getConcatenated());
     }
 
     /**
