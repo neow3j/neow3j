@@ -16,9 +16,14 @@ import io.neow3j.utils.Numeric;
 
 import java.security.SignatureException;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class SignTest {
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String TEST_MESSAGE = "A test message";
     private static final byte[] TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes();
@@ -67,6 +72,26 @@ public class SignTest {
     }
 
     @Test
+    public void testFromByteArray() {
+        byte[] r = hexStringToByteArray(
+                "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655");
+        byte[] s = hexStringToByteArray(
+                "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+
+        byte[] signature = hexStringToByteArray(
+                "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+        Sign.SignatureData signatureData = Sign.SignatureData.fromByteArray(signature);
+        assertThat(signatureData.getV(), is((byte) 0x00));
+        assertThat(signatureData.getR(), is(r));
+        assertThat(signatureData.getS(), is(s));
+
+        signatureData = Sign.SignatureData.fromByteArray((byte) 0x27, signature);
+        assertThat(signatureData.getV(), is((byte) 0x27));
+        assertThat(signatureData.getR(), is(r));
+        assertThat(signatureData.getS(), is(s));
+    }
+
+    @Test
     public void testSignedMessageToKey() throws SignatureException {
         Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
         ECPublicKey key = Sign.signedMessageToKey(TEST_MESSAGE_BYTES, signatureData);
@@ -78,10 +103,13 @@ public class SignTest {
         assertThat(Sign.publicKeyFromPrivate(PRIVATE_KEY), equalTo(PUBLIC_KEY));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testInvalidSignature() throws SignatureException {
+        exceptionRule.expect(RuntimeException.class);
+        exceptionRule.expectMessage("r must be 32 bytes.");
         Sign.signedMessageToKey(
                 TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
                         new byte[]{0}));
     }
+
 }

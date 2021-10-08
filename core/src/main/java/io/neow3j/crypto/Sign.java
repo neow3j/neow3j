@@ -217,8 +217,8 @@ public class Sign {
 
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
-        verifyPrecondition(r != null && r.length == 32, "r must be 32 bytes");
-        verifyPrecondition(s != null && s.length == 32, "s must be 32 bytes");
+        verifyPrecondition(r != null && r.length == 32, "r must be 32 bytes.");
+        verifyPrecondition(s != null && s.length == 32, "s must be 32 bytes.");
 
         // unsigned byte to int
         int header = signatureData.getV() & 0xFF;
@@ -316,8 +316,12 @@ public class Sign {
         }
 
         public static SignatureData fromByteArray(byte[] signature) {
+            return fromByteArray((byte) 0x00, signature);
+        }
+
+        public static SignatureData fromByteArray(byte v, byte[] signature) {
             return new SignatureData(
-                    (byte) 0x00,
+                    v,
                     Arrays.copyOfRange(signature, 0, 32),
                     Arrays.copyOfRange(signature, 32, 64)
             );
