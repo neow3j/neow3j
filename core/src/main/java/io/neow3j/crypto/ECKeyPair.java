@@ -86,25 +86,25 @@ public class ECKeyPair {
     /**
      * Sign a hash with the private key of this key pair.
      *
-     * @param transactionHash the hash to sign
-     * @return A raw {@link BigInteger} array with the signature
+     * @param messageHash The hash to sign.
+     * @return a raw {@link BigInteger} array with the signature.
      */
-    public BigInteger[] sign(byte[] transactionHash) {
+    public BigInteger[] sign(byte[] messageHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey.getInt(),
                 NeoConstants.curve());
         signer.init(true, privKey);
-        return signer.generateSignature(transactionHash);
+        return signer.generateSignature(messageHash);
     }
 
     /**
      * Sign a hash with the private key of this key pair.
      *
-     * @param transactionHash the hash to sign
-     * @return An {@link ECDSASignature} of the hash
+     * @param messageHash The hash to sign.
+     * @return an {@link ECDSASignature} of the hash.
      */
-    public ECDSASignature signAndGetECDSASignature(byte[] transactionHash) {
-        BigInteger[] components = sign(transactionHash);
+    public ECDSASignature signAndGetECDSASignature(byte[] messageHash) {
+        BigInteger[] components = sign(messageHash);
         // in bitcoin and ethereum we would/could use .toCanonicalised(), but not in NEO, AFAIK
         return new ECDSASignature(components[0], components[1]);
     }
@@ -112,11 +112,11 @@ public class ECKeyPair {
     /**
      * Sign a hash with the private key of this key pair.
      *
-     * @param transactionHash the hash to sign
-     * @return A byte array with the canonicalized signature
+     * @param messageHash The hash to sign.
+     * @return a byte array with the canonicalized signature.
      */
-    public byte[] signAndGetArrayBytes(byte[] transactionHash) {
-        BigInteger[] components = sign(transactionHash);
+    public byte[] signAndGetArrayBytes(byte[] messageHash) {
+        BigInteger[] components = sign(messageHash);
         byte[] signature = new byte[64];
         System.arraycopy(BigIntegers.asUnsignedByteArray(32, components[0]), 0, signature, 0, 32);
         System.arraycopy(BigIntegers.asUnsignedByteArray(32, components[1]), 0, signature, 32, 32);
@@ -126,7 +126,7 @@ public class ECKeyPair {
     /**
      * Creates an EC key pair from a key pair.
      *
-     * @param keyPair the key pair.
+     * @param keyPair The key pair.
      * @return the EC key pair.
      */
     public static ECKeyPair create(KeyPair keyPair) {
@@ -141,7 +141,7 @@ public class ECKeyPair {
     /**
      * Creates an EC key pair from a private key.
      *
-     * @param privateKey the private key.
+     * @param privateKey The private key.
      * @return the EC key pair.
      */
     public static ECKeyPair create(ECPrivateKey privateKey) {
@@ -151,7 +151,7 @@ public class ECKeyPair {
     /**
      * Creates an EC key pair from a private key.
      *
-     * @param privateKey the private key.
+     * @param privateKey The private key.
      * @return the EC key pair.
      */
     public static ECKeyPair create(BigInteger privateKey) {
@@ -161,7 +161,7 @@ public class ECKeyPair {
     /**
      * Creates an EC key pair from a private key.
      *
-     * @param privateKey the private key.
+     * @param privateKey The private key.
      * @return the EC key pair.
      */
     public static ECKeyPair create(byte[] privateKey) {
@@ -175,7 +175,7 @@ public class ECKeyPair {
      * <br>
      * <p>Private keys are encoded using X.509.</p>
      *
-     * @return The created {@link ECKeyPair}.
+     * @return the created {@link ECKeyPair}.
      * @throws InvalidAlgorithmParameterException throws if the algorithm parameter used is
      *                                            invalid.
      * @throws NoSuchAlgorithmException           throws if the encryption algorithm is not
@@ -263,7 +263,7 @@ public class ECKeyPair {
         /**
          * Gets this private key as an integer.
          *
-         * @return This private key as an integer.
+         * @return this private key as an integer.
          */
         public BigInteger getInt() {
             return new BigInteger(1, this.privateKey);

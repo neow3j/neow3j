@@ -1,6 +1,7 @@
 package io.neow3j.crypto;
 
 import static io.neow3j.utils.Assertions.verifyPrecondition;
+import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.types.Hash160;
@@ -8,11 +9,12 @@ import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.Arrays;
+
 import org.bouncycastle.asn1.x9.X9IntegerConverter;
-import org.bouncycastle.math.ec.ECAlgorithms;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
@@ -84,9 +86,9 @@ public class Sign {
      * the next recId.</p>
      *
      * @param recId   Which possible key to recover.
-     * @param sig     the R and S components of the signature, wrapped.
+     * @param sig     The R and S components of the signature, wrapped.
      * @param message Hash of the data that was signed.
-     * @return An ECKey containing only the public part, or null if recovery wasn't possible.
+     * @return an ECKey containing only the public part, or null if recovery wasn't possible.
      */
     public static ECPublicKey recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
         verifyPrecondition(recId >= 0, "recId must be positive");
@@ -139,7 +141,7 @@ public class Sign {
         BigInteger rInv = sig.r.modInverse(n);
         BigInteger srInv = rInv.multiply(sig.s).mod(n);
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
-        ECPoint q = ECAlgorithms.sumOfTwoMultiplies(NeoConstants.curve().getG(), eInvrInv, R, srInv);
+        ECPoint q = sumOfTwoMultiplies(NeoConstants.curve().getG(), eInvrInv, R, srInv);
 
         return new ECPublicKey(q);
     }
@@ -162,10 +164,10 @@ public class Sign {
      * public key that was used to sign it. This can then be compared to the expected public key to
      * determine if the signature was correct.
      *
-     * @param message       encoded message.
+     * @param message       The encoded message.
      * @param signatureData The message signature components
      * @return the public key used to sign the message
-     * @throws SignatureException If the public key could not be recovered or if there was a
+     * @throws SignatureException if the public key could not be recovered or if there was a
      *                            signature format error.
      */
     public static ECPublicKey signedMessageToKey(
@@ -200,8 +202,8 @@ public class Sign {
     /**
      * Returns public key from the given private key.
      *
-     * @param privKey the private key to derive the public key from
-     * @return BigInteger encoded public key
+     * @param privKey The private key to derive the public key from.
+     * @return BigInteger encoded public key.
      */
     public static ECPublicKey publicKeyFromPrivate(ECPrivateKey privKey) {
         return new ECPublicKey(publicPointFromPrivateKey(privKey));
@@ -210,8 +212,8 @@ public class Sign {
     /**
      * Returns public key point from the given private key.
      *
-     * @param privKey The private key as BigInteger
-     * @return The ECPoint object representation of the public key based on the given private key
+     * @param privKey The private key as BigInteger.
+     * @return the ECPoint object representation of the public key based on the given private key.
      */
     public static ECPoint publicPointFromPrivateKey(ECPrivateKey privKey) {
         BigInteger key = privKey.getInt();
@@ -223,7 +225,7 @@ public class Sign {
             key = key.mod(NeoConstants.curve().getN());
         }
         return new FixedPointCombMultiplier().multiply(NeoConstants.curve().getG(), key)
-                                             .normalize();
+                .normalize();
     }
 
     /**
@@ -235,7 +237,7 @@ public class Sign {
      * @param signatureData The signature.
      * @param message       The message for which the signature was created.
      * @return the address that produced the signature data from the transaction.
-     * @throws SignatureException throws if the signature is invalid.
+     * @throws SignatureException if the signature is invalid.
      */
     public static String recoverSigningAddress(byte[] message, SignatureData signatureData)
             throws SignatureException {
