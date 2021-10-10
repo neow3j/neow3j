@@ -48,6 +48,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withExposedPorts(EXPOSED_JSONRPC_PORT);
+        withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
         waitingFor(Wait.forListeningPort());
         try {
             withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE,
@@ -57,8 +59,6 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
             System.out.println("OracleService config file not found at "
                     + ORACLECONFIG_FILE_SOURCE);
         }
-        withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
-                BindMode.READ_ONLY);
     }
 
     public static String getResultFilePath(String testClassName, String methodName) {
