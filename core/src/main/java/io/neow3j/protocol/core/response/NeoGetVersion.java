@@ -23,7 +23,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         private Integer wsPort;
 
         @JsonProperty("nonce")
-        private long nonce;
+        private Long nonce;
 
         @JsonProperty("useragent")
         private String userAgent;
@@ -50,7 +50,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             this.wsPort = wsPort;
         }
 
-        public long getNonce() {
+        public Long getNonce() {
             return nonce;
         }
 
@@ -72,14 +72,18 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof NeoVersion)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof NeoVersion)) {
+                return false;
+            }
             NeoVersion that = (NeoVersion) o;
-            return Objects.equals(getTCPPort(), that.getTCPPort()) &&
-                    Objects.equals(getWSPort(), that.getWSPort()) &&
-                    getNonce() == that.getNonce() &&
-                    Objects.equals(getUserAgent(), that.getUserAgent()) &&
-                    Objects.equals(getProtocol(), that.getProtocol());
+            return getTCPPort().equals(that.getTCPPort()) &&
+                    getWSPort().equals(that.getWSPort()) &&
+                    getNonce().equals(that.getNonce()) &&
+                    getUserAgent().equals(that.getUserAgent()) &&
+                    getProtocol().equals(that.getProtocol());
         }
 
         @Override
@@ -102,25 +106,25 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         public static class Protocol {
 
             @JsonProperty("network")
-            private long network;
+            private Long network;
 
             @JsonProperty("validatorscount")
             private Integer validatorsCount;
 
             @JsonProperty("msperblock")
-            private long msPerBlock;
+            private Long msPerBlock;
 
             @JsonProperty("maxvaliduntilblockincrement")
-            private long maxValidUntilBlockIncrement;
+            private Long maxValidUntilBlockIncrement;
 
             @JsonProperty("maxtraceableblocks")
-            private long maxTraceableBlocks;
+            private Long maxTraceableBlocks;
 
             @JsonProperty("addressversion")
-            private int addressVersion;
+            private Integer addressVersion;
 
             @JsonProperty("maxtransactionsperblock")
-            private long maxTransactionsPerBlock;
+            private Long maxTransactionsPerBlock;
 
             @JsonProperty("memorypoolmaxtransactions")
             private Integer memoryPoolMaxTransactions;
@@ -131,7 +135,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             public Protocol() {
             }
 
-            public long getNetwork() {
+            public Long getNetwork() {
                 return network;
             }
 
@@ -139,23 +143,23 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return validatorsCount;
             }
 
-            public long getMilliSecondsPerBlock() {
+            public Long getMilliSecondsPerBlock() {
                 return msPerBlock;
             }
 
-            public long getMaxValidUntilBlockIncrement() {
+            public Long getMaxValidUntilBlockIncrement() {
                 return maxValidUntilBlockIncrement;
             }
 
-            public long getMaxTraceableBlocks() {
+            public Long getMaxTraceableBlocks() {
                 return maxTraceableBlocks;
             }
 
-            public int getAddressVersion() {
+            public Integer getAddressVersion() {
                 return addressVersion;
             }
 
-            public long getMaxTransactionsPerBlock() {
+            public Long getMaxTransactionsPerBlock() {
                 return maxTransactionsPerBlock;
             }
 
@@ -169,20 +173,24 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (!(o instanceof Protocol)) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof Protocol)) {
+                    return false;
+                }
                 Protocol that = (Protocol) o;
-                return getNetwork() == that.getNetwork() &&
-                        Objects.equals(getValidatorsCount(), that.getValidatorsCount()) &&
-                        getMilliSecondsPerBlock() == that.getMilliSecondsPerBlock() &&
-                        getMaxValidUntilBlockIncrement() == that.getMaxValidUntilBlockIncrement() &&
-                        getMaxTraceableBlocks() == that.getMaxTraceableBlocks() &&
-                        getAddressVersion() == that.getAddressVersion() &&
-                        getMaxTransactionsPerBlock() == that.getMaxTransactionsPerBlock() &&
-                        Objects.equals(getMemoryPoolMaxTransactions(),
+                return getNetwork().equals(that.getNetwork()) &&
+                        getValidatorsCount().equals(that.getValidatorsCount()) &&
+                        getMilliSecondsPerBlock().equals(that.getMilliSecondsPerBlock()) &&
+                        getMaxValidUntilBlockIncrement().equals(
+                                that.getMaxValidUntilBlockIncrement()) &&
+                        getMaxTraceableBlocks().equals(that.getMaxTraceableBlocks()) &&
+                        getAddressVersion().equals(that.getAddressVersion()) &&
+                        getMaxTransactionsPerBlock().equals(that.getMaxTransactionsPerBlock()) &&
+                        getMemoryPoolMaxTransactions().equals(
                                 that.getMemoryPoolMaxTransactions()) &&
-                        Objects.equals(getInitialGasDistribution(),
-                                that.getInitialGasDistribution());
+                        getInitialGasDistribution().equals(that.getInitialGasDistribution());
             }
 
             @Override
