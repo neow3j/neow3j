@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
  * <li>Use it on an {@link io.neow3j.devpack.events.Event} variable to set the event name as it
  * will appear in the contract manifest.</li>
  * </ul>
- *
+ * <p>
  * Usage of this annotation is not mandatory. If not used the class name or variable name is used
  * in the manifest, respectively.
  */

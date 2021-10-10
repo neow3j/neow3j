@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -22,7 +23,6 @@ import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class HelperIntegrationTest {
@@ -68,6 +68,23 @@ public class HelperIntegrationTest {
                 is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 is("hello, world!"));
+    }
+
+    @Test
+    public void toByteArrayFromInteger() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(new BigInteger("12345678901234567890")));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(),
+                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is("d20a1feb8ca954ab00"));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
+                is(new BigInteger("12345678901234567890")));
+
+        response = ct.callInvokeFunction(testName, integer(new BigInteger("-12345678901234567890")));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is("2ef5e0147356ab54ff"));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
+                is(new BigInteger("-12345678901234567890")));
     }
 
     @Test
@@ -315,6 +332,10 @@ public class HelperIntegrationTest {
 
         public static byte[] toByteArrayFromString(String s) {
             return Helper.toByteArray(s);
+        }
+
+        public static byte[] toByteArrayFromInteger(int i) {
+            return Helper.toByteArray(i);
         }
 
         public static byte asByte(int i) {

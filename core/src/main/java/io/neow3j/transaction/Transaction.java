@@ -239,6 +239,7 @@ public class Transaction extends NeoSerializable {
      * @param accounts           The accounts to use for signing. They need to hold decrypted
      *                           private keys.
      * @return this.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript,
             Account... accounts) throws IOException {

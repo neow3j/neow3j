@@ -16,4 +16,5 @@ public class Assertions {
             throw new RuntimeException(errorMessage);
         }
     }
+
 }

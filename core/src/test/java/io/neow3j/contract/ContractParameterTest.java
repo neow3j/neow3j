@@ -11,7 +11,7 @@ import static io.neow3j.types.ContractParameter.map;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -19,11 +19,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
+import io.neow3j.crypto.Sign;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -75,7 +75,7 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParam_equals() {
-        ContractParameter fromHex = byteArray(Numeric.hexStringToByteArray("0x796573"));
+        ContractParameter fromHex = byteArray(hexStringToByteArray("0x796573"));
         ContractParameter fromByteArray = byteArray(new byte[]{0x79, 0x65, 0x73});
         assertThat(fromHex, is(fromByteArray));
     }
@@ -180,7 +180,7 @@ public class ContractParameterTest {
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         ContractParameter p = signature(sig);
 
-        assertArrayEquals(Numeric.hexStringToByteArray(sig), (byte[]) p.getValue());
+        assertArrayEquals(hexStringToByteArray(sig), (byte[]) p.getValue());
         assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
     }
 
@@ -190,7 +190,7 @@ public class ContractParameterTest {
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         ContractParameter p = signature("0x" + sig);
 
-        assertArrayEquals(Numeric.hexStringToByteArray(sig), (byte[]) p.getValue());
+        assertArrayEquals(hexStringToByteArray(sig), (byte[]) p.getValue());
         assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
     }
 
@@ -198,11 +198,21 @@ public class ContractParameterTest {
     public void testSignatureParamCreationFromByteArray() {
         String sigString = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b" +
                 "6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
-        byte[] sig = Numeric.hexStringToByteArray(sigString);
+        byte[] sig = hexStringToByteArray(sigString);
         ContractParameter p = signature(sig);
 
         assertArrayEquals(sig, (byte[]) p.getValue());
         assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
+    }
+
+    @Test
+    public void testSignatureParamCreationFromSignatureData() {
+        Sign.SignatureData signatureData = Sign.SignatureData.fromByteArray(
+                hexStringToByteArray(
+                        "598235b9c5495cced03e41c0e4e0f7c4e3b8df3a190d33a76d764c5a6eb7581e8875976f63c1848cccc0822d8b8a534537da56a9b41f5e03977f83aae33d3558"));
+
+        ContractParameter p = signature(signatureData);
+        assertArrayEquals(signatureData.getConcatenated(), (byte[]) p.getValue());
     }
 
     @Test
@@ -316,7 +326,7 @@ public class ContractParameterTest {
     @Test
     public void testHash256ParameterCreationFromValidByteArray() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
-        ContractParameter p = hash256(Numeric.hexStringToByteArray(hashValue));
+        ContractParameter p = hash256(hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getParamType());
         assertEquals(hashValue, p.getValue().toString());
@@ -348,7 +358,7 @@ public class ContractParameterTest {
 
     @Test
     public void testPublicKeyParamCreationFromByteArray() {
-        byte[] pubKey = Numeric.hexStringToByteArray(
+        byte[] pubKey = hexStringToByteArray(
                 "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
         ContractParameter p = publicKey(pubKey);
         assertThat((byte[]) p.getValue(), is(pubKey));
@@ -360,7 +370,7 @@ public class ContractParameterTest {
         expectedException.expect(IllegalArgumentException.class);
         expectedException.expectMessage("must be 33 bytes but was 32 bytes.");
         // one byte too short
-        byte[] pubKey = Numeric.hexStringToByteArray(
+        byte[] pubKey = hexStringToByteArray(
                 "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368");
         publicKey(pubKey);
     }
@@ -369,7 +379,7 @@ public class ContractParameterTest {
     public void testPublicKeyParamCreationFromHexString() {
         String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         ContractParameter p = publicKey(pubKey);
-        assertThat((byte[]) p.getValue(), is(Numeric.hexStringToByteArray(pubKey)));
+        assertThat((byte[]) p.getValue(), is(hexStringToByteArray(pubKey)));
         assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
     }
 

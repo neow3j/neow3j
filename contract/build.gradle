@@ -3,6 +3,5 @@ description 'neow3j: Smart Contracts'
 dependencies {
     compile project(':core')
 
-    testImplementation "com.github.tomakehurst:wiremock-jre8:$wiremockVersion",
-            project(':test-tools')
+    testImplementation project(':test-tools')
 }

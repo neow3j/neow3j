@@ -25,6 +25,7 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.LabelNode;
 import org.objectweb.asm.tree.LdcInsnNode;
@@ -53,7 +54,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.13.0";
+    public static final String COMPILER_NAME = "neow3j-3.13.1";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
@@ -72,6 +73,8 @@ public class Compiler {
     public static final String INSN_ANNOTATION_OPERAND = "operand";
     public static final String INSN_ANNOTATION_OPERAND_PREFIX = "operandPrefix";
     public static final String INSN_ANNOTATION_INTEROPSERVICE = "interopService";
+
+    private static final String ASSERTIONS_DISABLED = "$assertionsDisabled";
 
     private final CompilationUnit compUnit;
 
@@ -328,8 +331,7 @@ public class Compiler {
     }
 
     private static void substitutePlaceholdersInMethodBodies(ClassNode classNode,
-            java.util.Map<String,
-            String> replaceMap) {
+            java.util.Map<String, String> replaceMap) {
 
         classNode.methods.forEach((methodNode) -> {
             for (AbstractInsnNode insnNode : methodNode.instructions) {
@@ -344,7 +346,7 @@ public class Compiler {
     }
 
     private static void substitutePlaceholdersInClassAnnotations(ClassNode classNode,
-            java.util.Map<String,String> replaceMap) {
+            java.util.Map<String, String> replaceMap) {
 
         if (classNode.invisibleAnnotations != null)
             classNode.invisibleAnnotations
@@ -408,12 +410,22 @@ public class Compiler {
         // Need to create a new list from the methods that have been added to the NeoModule so
         // far because we are potentially adding new methods to the module in the compilation,
         // which leads to concurrency errors.
-        for (NeoMethod neoMethod : new ArrayList<>(compUnit.getNeoModule().getSortedMethods())) {
+        ArrayList<NeoMethod> neoMethods =
+                new ArrayList<>(compUnit.getNeoModule().getSortedMethods());
+        for (NeoMethod neoMethod : neoMethods) {
             neoMethod.convert(compUnit);
         }
         compileInitsslotMethod();
         finalizeCompilation();
         return compUnit;
+    }
+
+    public static boolean isAssertionDisabledStaticField(AbstractInsnNode insn) {
+        if (insn.getType() != AbstractInsnNode.FIELD_INSN) {
+            return false;
+        }
+        FieldInsnNode fieldInsn = (FieldInsnNode) insn;
+        return fieldInsn.name.equals(ASSERTIONS_DISABLED);
     }
 
     private void checkForNonStaticVariablesOnContractClass(ClassNode contractClass) {
@@ -435,7 +447,11 @@ public class Compiler {
         if (!classCtorOpt.isPresent()) {
             return;
         }
-        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass());
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(),
+                compUnit.getContractClass());
+        if (m.containsOnlyAssertionRelatedInstructions()) {
+            return;
+        }
         compUnit.getNeoModule().addMethod(m);
         m.convert(compUnit);
     }

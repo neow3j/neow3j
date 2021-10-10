@@ -8,15 +8,17 @@ import org.testcontainers.utility.MountableFile;
 
 public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
-    static final String CONFIG_FILE_SOURCE = "/node-config/config.json";
+    public static final String CONFIG_BASE_DIR = "neo-cli-config/";
+
+    public static final String CONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "config.json";
     static final String CONFIG_FILE_DESTINATION = "/neo-cli/config.json";
-    static final String WALLET_FILE_SOURCE = "/node-config/wallet.json";
+    static final String WALLET_FILE_SOURCE = CONFIG_BASE_DIR + "wallet.json";
     static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
-    static final String RPCCONFIG_FILE_SOURCE = "/node-config/rpcserver.config.json";
+    static final String RPCCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "rpcserver.config.json";
     static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
-    static final String DBFTCONFIG_FILE_SOURCE = "/node-config/dbft.config.json";
+    static final String DBFTCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "dbft.config.json";
     static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
-    static final String ORACLECONFIG_FILE_SOURCE = "/node-config/oracle.config.json";
+    static final String ORACLECONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "oracle.config.json";
     static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
             + ".json";
 

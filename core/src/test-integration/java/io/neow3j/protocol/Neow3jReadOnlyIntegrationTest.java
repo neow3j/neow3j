@@ -101,7 +101,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT_NEO_TRANSFER =
-            "CwHECQwURVEu00/nfUbhURye/qtSvc8LywMMFH9l1DQ2JwiyVfDgaFa9y1zpnYUFFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
+            "CwHECQwURVEu00/nfUbhURye" +
+                    "/qtSvc8LywMMFH9l1DQ2JwiyVfDgaFa9y1zpnYUFFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
     private static final BigInteger TX_AMOUNT_NEO = new BigInteger("2500");
     private static final BigInteger TX_AMOUNT_GAS = new BigInteger("1000");
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
@@ -132,8 +133,7 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/configReadTests.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
@@ -339,7 +339,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef1.getTokens(), hasSize(0));
-        assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef1.getScript(), is(
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef1.getChecksum(), is(1110259869L));
 
         ContractManifest manifest1 = contractState1.getManifest();
@@ -424,7 +425,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getScript(), is(
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef.getChecksum(), is(588003825L));
 
         ContractManifest manifest = contractState.getManifest();
@@ -1061,7 +1063,8 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testVerifyProof() throws IOException {
         String storage = getNeow3j()
                 .verifyProof(
-                        new Hash256("0x1cd846c74d5f78565c7c50957330147e5c0ee7e298f1dabd43a5651e00c41fac"),
+                        new Hash256(
+                                "0x1cd846c74d5f78565c7c50957330147e5c0ee7e298f1dabd43a5651e00c41fac"),
                         "05fdffffff0e062401010f03e20708edd777e5afb3ddbaaed0a6cd78793086975c43897f4ec5361c36ef8930d200040404040404040403b97ce0716d448e55d75b39f2f03ef02679180ac52e419460b3bdf112da31a6260393049f1d2ea67548e395d3a6850346fc2b94f0f9f6e5b2f5a22b752e13d03d9c040366ddb2164ca79a31da0a1500e323be8c4d21658eaa326844fbba64ec3691d8fa03cbaa546787bdeaba7529da84f04b9206595fd633e1bd02b5a95f554d7e37e11b03fadfbaa3addaca4f81a78b8d665c20a21afbbbe5605bf977c2821eb5da5726ee040342eefd9168b302445d5780ba52ae2d762f62302fd65c8f3e4b662681e671ca36042901060f0f0f0f0f0f03b30f4847ae191de2be4bfe41aca92bdab8f54ca6558fd1c4d92d7bb73adf4cf45200037b51dba93dcf3e1b8d547b52c05f34a1d4f840ac205d70d73dfe28aae2471d17032509026b74fac8e7415ae27831390c22ef239f554ef5c19b30ad7151ea9bb0b404040404040404040404040404040472000403bf8b4ccf825a4db3c123889eedf9dcabf4640aaa4f2e74dfd425295f3e9f61db04040404040404040403e0f5608876eb84737d1e70b991a63da5884450400409171a91ec7e9759611db6040403281489452008c08da47651d740cb3ff679e2100cd5bddd8058cf5f1633b22bd504042d022b2940014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60210000")
                 .send()
                 .verifyProof();

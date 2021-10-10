@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import java.io.IOException;
 import java.util.Arrays;
+
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -10,12 +11,12 @@ import org.junit.rules.ExpectedException;
 public class InstanceVariablesTest {
 
     @Rule
-    public ExpectedException expected = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void usageOfInstanceInitializerThrowsCompilerException() throws IOException {
-        expected.expect(CompilerException.class);
-        expected.expectMessage(new StringContainsInOrder(Arrays.asList(
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 IllegalUseOfInstanceInitializer.class.getSimpleName(),
                 "has an explicit instance constructor")));
         new Compiler().compile(IllegalUseOfInstanceInitializer.class.getName());
@@ -23,8 +24,8 @@ public class InstanceVariablesTest {
 
     @Test
     public void usageOfInstanceVariablesThrowsCompilerException() throws IOException {
-        expected.expect(CompilerException.class);
-        expected.expectMessage(new StringContainsInOrder(Arrays.asList(
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
                 IllegalUseOfInstanceVariables.class.getSimpleName(),
                 "has non-static fields")));
         new Compiler().compile(IllegalUseOfInstanceVariables.class.getName());
