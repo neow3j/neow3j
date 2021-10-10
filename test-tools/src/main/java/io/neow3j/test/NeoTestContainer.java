@@ -21,6 +21,9 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final String ORACLECONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "oracle.config.json";
     static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
             + ".json";
+    static final String APPLOGSCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "applicationlogs.config.json";
+    static final String APPLOGSCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/ApplicationLogs/config"
+            + ".json";
 
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
@@ -54,6 +57,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
             System.out.println("OracleService config file not found at "
                     + ORACLECONFIG_FILE_SOURCE);
         }
+        withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
     }
 
     public static String getResultFilePath(String testClassName, String methodName) {
