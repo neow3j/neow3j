@@ -79,11 +79,11 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return false;
             }
             NeoVersion that = (NeoVersion) o;
-            return getTCPPort().equals(that.getTCPPort()) &&
-                    getWSPort().equals(that.getWSPort()) &&
-                    getNonce().equals(that.getNonce()) &&
-                    getUserAgent().equals(that.getUserAgent()) &&
-                    getProtocol().equals(that.getProtocol());
+            return Objects.equals(getTCPPort(), that.getTCPPort()) &&
+                    Objects.equals(getWSPort(), that.getWSPort()) &&
+                    Objects.equals(getNonce(), that.getNonce()) &&
+                    Objects.equals(getUserAgent(), that.getUserAgent()) &&
+                    Objects.equals(getProtocol(), that.getProtocol());
         }
 
         @Override
@@ -180,17 +180,19 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                     return false;
                 }
                 Protocol that = (Protocol) o;
-                return getNetwork().equals(that.getNetwork()) &&
-                        getValidatorsCount().equals(that.getValidatorsCount()) &&
-                        getMilliSecondsPerBlock().equals(that.getMilliSecondsPerBlock()) &&
-                        getMaxValidUntilBlockIncrement().equals(
+                return Objects.equals(getNetwork(), that.getNetwork()) &&
+                        Objects.equals(getValidatorsCount(), that.getValidatorsCount()) &&
+                        Objects.equals(getMilliSecondsPerBlock(), that.getMilliSecondsPerBlock()) &&
+                        Objects.equals(getMaxValidUntilBlockIncrement(),
                                 that.getMaxValidUntilBlockIncrement()) &&
-                        getMaxTraceableBlocks().equals(that.getMaxTraceableBlocks()) &&
-                        getAddressVersion().equals(that.getAddressVersion()) &&
-                        getMaxTransactionsPerBlock().equals(that.getMaxTransactionsPerBlock()) &&
-                        getMemoryPoolMaxTransactions().equals(
+                        Objects.equals(getMaxTraceableBlocks(), that.getMaxTraceableBlocks()) &&
+                        Objects.equals(getAddressVersion(), that.getAddressVersion()) &&
+                        Objects.equals(getMaxTransactionsPerBlock(),
+                                that.getMaxTransactionsPerBlock()) &&
+                        Objects.equals(getMemoryPoolMaxTransactions(),
                                 that.getMemoryPoolMaxTransactions()) &&
-                        getInitialGasDistribution().equals(that.getInitialGasDistribution());
+                        Objects.equals(getInitialGasDistribution(),
+                                that.getInitialGasDistribution());
             }
 
             @Override
