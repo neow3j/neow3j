@@ -771,7 +771,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetStateRoot() throws Exception {
-        neow3j.getStateRoot(new BigInteger("52")).send();
+        neow3j.getStateRoot(52L).send();
 
         verifyResult("{\"jsonrpc\": \"2.0\"," +
                 "\"method\": \"getstateroot\"," +

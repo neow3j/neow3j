@@ -26,6 +26,7 @@ import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
 import io.neow3j.protocol.core.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.response.NeoGetStorage;
@@ -996,7 +997,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex) {
+    public Request<?, NeoGetStateRoot> getStateRoot(Long blockIndex) {
         return new Request<>(
                 "getstateroot",
                 singletonList(blockIndex),
@@ -1050,6 +1051,23 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 emptyList(),
                 neow3jService,
                 NeoGetStateHeight.class);
+    }
+
+    /**
+     * Gets the state.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyHex       The storage key.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetState> getState(Hash256 rootHash, Hash160 contractHash, String keyHex) {
+        return new Request<>(
+                "getstate",
+                asList(rootHash, contractHash, Base64.encode(keyHex)),
+                neow3jService,
+                NeoGetState.class);
     }
 
     // Neow3j Rx Convenience methods:

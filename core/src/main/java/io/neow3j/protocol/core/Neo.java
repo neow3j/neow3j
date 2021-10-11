@@ -22,6 +22,7 @@ import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
 import io.neow3j.protocol.core.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.response.NeoGetStorage;
@@ -204,13 +205,15 @@ public interface Neo {
 
     //region StateService
 
-    Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex);
+    Request<?, NeoGetStateRoot> getStateRoot(Long blockIndex);
 
     Request<?, NeoGetProof> getProof(Hash256 rootHash, Hash160 contractHash, String storageKeyHex);
 
     Request<?, NeoVerifyProof> verifyProof(Hash256 rootHash, String proofDataHex);
 
     Request<?, NeoGetStateHeight> getStateHeight();
+
+    Request<?, NeoGetState> getState(Hash256 rootHash, Hash160 contractHash, String keyHex);
 
     //endregion
 

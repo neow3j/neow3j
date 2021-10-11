@@ -62,6 +62,7 @@ import static io.neow3j.test.TestProperties.contractManagementHash;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
@@ -1024,7 +1025,7 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetStateRoot() throws IOException {
         StateRoot stateRoot = getNeow3j()
-                .getStateRoot(BigInteger.ZERO)
+                .getStateRoot(0L)
                 .send()
                 .getStateRoot();
 
@@ -1037,11 +1038,11 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetProof() throws IOException {
-        int localRootIndex = 2;
+        long localRootIndex = 2L;
         String proof = null;
         while (localRootIndex < 5) {
             Hash256 rootHash = getNeow3j()
-                    .getStateRoot(BigInteger.valueOf(localRootIndex))
+                    .getStateRoot(localRootIndex)
                     .send()
                     .getStateRoot()
                     .getRootHash();
@@ -1081,6 +1082,18 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateHeight.getLocalRootIndex(), greaterThanOrEqualTo(0L));
         assertThat(stateHeight.getValidatedRootIndex(), greaterThanOrEqualTo(0L));
+    }
+
+    @Test
+    public void testGetState() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String state = getNeow3j().getState(rootHash, new Hash160(gasTokenHash()),
+                "147f65d434362708b255f0e06856bdcb5ce99d8505").send().getState();
+
+        assertThat(state, is("QQEhB4DRxWFfeRI="));
     }
 
 }
