@@ -19,11 +19,15 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final String DBFTCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "dbft.config.json";
     static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
     static final String ORACLECONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "oracle.config.json";
-    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
-            + ".json";
+    static final String ORACLECONFIG_FILE_DESTINATION =
+            "/neo-cli/Plugins/OracleService/config.json";
     static final String APPLOGSCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "applicationlogs.config.json";
-    static final String APPLOGSCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/ApplicationLogs/config"
-            + ".json";
+    static final String APPLOGSCONFIG_FILE_DESTINATION =
+            "/neo-cli/Plugins/ApplicationLogs/config.json";
+    static final String RPCNEP17TRACKER_FILE_SOURCE = CONFIG_BASE_DIR +
+            "rpcnep17tracker.config.json";
+    static final String RPCNEP17TRACKER_FILE_DESTINATION =
+            "/neo-cli/Plugins/RpcNep17Tracker/config.json";
 
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
@@ -49,6 +53,8 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
                 BindMode.READ_ONLY);
         withExposedPorts(EXPOSED_JSONRPC_PORT);
         withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withClasspathResourceMapping(RPCNEP17TRACKER_FILE_SOURCE, RPCNEP17TRACKER_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         waitingFor(Wait.forListeningPort());
         try {
