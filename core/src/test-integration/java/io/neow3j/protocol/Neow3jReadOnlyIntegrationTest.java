@@ -13,6 +13,7 @@ import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -1093,7 +1094,84 @@ public class Neow3jReadOnlyIntegrationTest {
         String state = getNeow3j().getState(rootHash, new Hash160(gasTokenHash()),
                 "147f65d434362708b255f0e06856bdcb5ce99d8505").send().getState();
 
-        assertThat(state, is("QQEhB4DRxWFfeRI="));
+        assertNotNull(state);
+    }
+
+    @Test
+    public void testFindStates() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNotNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults(), hasSize(3));
+        assertNotNull(states.getResults().get(2));
+    }
+
+    @Test
+    public void testFindStates_startKey() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        String startKey = "147f";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, startKey).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults(), hasSize(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
+    }
+
+    @Test
+    public void testFindStates_count() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, 1).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertTrue(states.isTruncated());
+        assertThat(states.getResults(), hasSize(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
+    }
+
+    @Test
+    public void testFindStates_startKeyAndCount() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        String startKey = "147f";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, startKey, 1).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults().size(), greaterThanOrEqualTo(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
     }
 
 }
