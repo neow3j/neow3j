@@ -1,8 +1,8 @@
 package io.neow3j.serialization;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.util.List;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class IOUtils {
 
@@ -49,7 +49,8 @@ public class IOUtils {
     }
 
     /**
-     * Gets the byte size of the given string when Neo-serialized.
+     * Gets the byte size of the given string when Neo-serialized. The string is interpreted as
+     * UTF_8 encoded.
      *
      * @param value The string to serialize.
      * @return the byte size.
