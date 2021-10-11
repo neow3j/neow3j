@@ -38,7 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * │ Magic    │ uint32        │ Magic header                               │
  * │ Compiler │ byte[64]      │ Compiler name and version                  │
  * ├──────────┼───────────────┼────────────────────────────────────────────┤
- * │ Source   │ byte[]        │ The url of the source files, max 256 bytes |
+ * │ Source   │ byte[]        │ The url of the source files, max 255 bytes |
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
  * │ Tokens   │ MethodToken[] │ Method tokens                              │
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
