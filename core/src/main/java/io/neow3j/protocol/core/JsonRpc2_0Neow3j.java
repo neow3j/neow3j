@@ -1072,8 +1072,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets a list of states together with proofs of the first and last entry based on the given
-     * root and contract hash that match the provided key prefix.
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
      *
      * @param rootHash             The root hash.
      * @param contractHash         The contract hash.
@@ -1108,8 +1109,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets a list of states together with proofs of the first and last entry based on the given
-     * root and contract hash that match the provided key prefix.
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
      *
      * @param rootHash     The root hash.
      * @param contractHash The contract hash.
@@ -1124,8 +1126,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets a list of states together with proofs of the first and last entry based on the given
-     * root and contract hash.
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
      *
      * @param rootHash             The root hash.
      * @param contractHash         The contract hash.
@@ -1141,8 +1144,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Gets a list of states together with proofs of the first and last entry based on the given
-     * root and contract hash that match the provided key prefix.
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
      *
      * @param rootHash     The root hash.
      * @param contractHash The contract hash.
