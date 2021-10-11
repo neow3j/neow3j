@@ -841,6 +841,83 @@ public class RequestTest extends RequestTester {
                 "\"id\": 1}");
     }
 
+    @Test
+    public void testFindStates() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                "0b",
+                2).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"Cw==\"," +
+                "2" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noCount() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                "0b").send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"Cw==\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noStartKey_withCount() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                53).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"\"," +
+                "53" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noStartKey() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe").send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
     // Neo-express related tests
 
     @Test
