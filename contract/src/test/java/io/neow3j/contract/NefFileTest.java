@@ -247,7 +247,7 @@ public class NefFileTest {
     }
 
     @Test
-    public void failDeserializationWithTooLongSerouceUrl() throws DeserializationException {
+    public void failDeserializationWithTooLongSourceUrl() throws DeserializationException {
         String nefHex =
                 // beginning of nef
                 "4e4546336e656f2d636f72652d76332e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" +
