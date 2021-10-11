@@ -30,6 +30,7 @@ import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoExpressShutdown;
+import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
@@ -2823,6 +2824,21 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(stateHeight.getLocalRootIndex(), is(212L));
         assertThat(stateHeight.getValidatedRootIndex(), is(211L));
+    }
+
+    @Test
+    public void testGetState() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"QQEhBwAA1VhfeRI=\"\n" +
+                "}"
+        );
+
+        NeoGetState neoGetState = deserialiseResponse(NeoGetState.class);
+        String state = neoGetState.getState();
+
+        assertThat(state, is("QQEhBwAA1VhfeRI="));
     }
 
     // Neo-express related tests

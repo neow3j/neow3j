@@ -823,6 +823,24 @@ public class RequestTest extends RequestTester {
                 "\"id\": 1}");
     }
 
+    @Test
+    public void testGetState() throws Exception {
+        neow3j.getState(
+                new Hash256("0x7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca"),
+                new Hash160("7c5832ba81fd0af40ec11e96b1c26613466dae02"),
+                "4101210780d1c5615f7912"
+        ).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"getstate\"," +
+                "\"params\": [" +
+                "\"7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca\"," +
+                "\"7c5832ba81fd0af40ec11e96b1c26613466dae02\"," +
+                "\"QQEhB4DRxWFfeRI=\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
     // Neo-express related tests
 
     @Test
