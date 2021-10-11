@@ -263,7 +263,7 @@ public class NefFileTest {
     }
 
     @Test
-    public void failConstructingWithTooLongSerouceUrl() throws DeserializationException {
+    public void failConstructingWithTooLongSourceUrl() throws DeserializationException {
         // 256 bytes string
         String url = "github.com/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/";
 
