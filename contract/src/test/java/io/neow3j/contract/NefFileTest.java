@@ -6,7 +6,6 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.CallFlags;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +21,7 @@ import java.util.Objects;
 
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -238,7 +238,7 @@ public class NefFileTest {
                 url);
 
         byte[] bytes = nef.toArray();
-        String hexString = Numeric.toHexString(bytes);
+        String hexString = toHexString(bytes);
         // first number "18" is the length of the url.
         assertThat(hexString, containsString("186769746875622e636f6d2f6e656f77336a2f6e656f77336a"));
 
@@ -259,7 +259,7 @@ public class NefFileTest {
 
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("must not be longer than"));
-        NeoSerializableInterface.from(Numeric.hexStringToByteArray(nefHex), NefFile.class);
+        NeoSerializableInterface.from(hexStringToByteArray(nefHex), NefFile.class);
     }
 
     @Test
