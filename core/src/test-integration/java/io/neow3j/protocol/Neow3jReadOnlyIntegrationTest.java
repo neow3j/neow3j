@@ -668,7 +668,6 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(neoVersion.getTCPPort(), is(greaterThanOrEqualTo(0)));
         assertThat(neoVersion.getWSPort(), is(greaterThanOrEqualTo(0)));
 
-        // TODO: 13.09.21 Michael: Update protocol tests as soon as test container is updated.
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
         assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));
