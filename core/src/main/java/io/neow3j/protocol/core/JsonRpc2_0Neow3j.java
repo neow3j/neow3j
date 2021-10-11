@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetCommittee;
@@ -1068,6 +1069,90 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(rootHash, contractHash, Base64.encode(keyHex)),
                 neow3jService,
                 NeoGetState.class);
+    }
+
+    /**
+     * Gets a list of states together with proofs of the first and last entry based on the given
+     * root and contract hash that match the provided key prefix.
+     *
+     * @param rootHash             The root hash.
+     * @param contractHash         The contract hash.
+     * @param keyPrefixHex         The key prefix.
+     * @param startKeyHex          The start key.
+     * @param countFindResultItems The number of results. An upper limit is defined in the Neo
+     *                             core.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex, Integer countFindResultItems) {
+
+        List<Comparable<? extends Comparable<?>>> parameters =
+                asList(rootHash, contractHash, Base64.encode(keyPrefixHex));
+        if (startKeyHex != null && countFindResultItems != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex),
+                    Base64.encode(startKeyHex), countFindResultItems);
+        } else if (countFindResultItems != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex), "",
+                    countFindResultItems);
+        } else if (startKeyHex != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex),
+                    Base64.encode(startKeyHex));
+        }
+
+        return new Request<>(
+                "findstates",
+                parameters,
+                neow3jService,
+                NeoFindStates.class);
+    }
+
+    /**
+     * Gets a list of states together with proofs of the first and last entry based on the given
+     * root and contract hash that match the provided key prefix.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyPrefixHex The key prefix.
+     * @param startKeyHex  The start key.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex) {
+        return findStates(rootHash, contractHash, keyPrefixHex, startKeyHex, null);
+    }
+
+    /**
+     * Gets a list of states together with proofs of the first and last entry based on the given
+     * root and contract hash.
+     *
+     * @param rootHash             The root hash.
+     * @param contractHash         The contract hash.
+     * @param keyPrefixHex         The key prefix.
+     * @param countFindResultItems The number of results. An upper limit is defined in the Neo
+     *                             core.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, Integer countFindResultItems) {
+        return findStates(rootHash, contractHash, keyPrefixHex, null, countFindResultItems);
+    }
+
+    /**
+     * Gets a list of states together with proofs of the first and last entry based on the given
+     * root and contract hash that match the provided key prefix.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyPrefixHex The key prefix.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex) {
+        return findStates(rootHash, contractHash, keyPrefixHex, null, null);
     }
 
     // Neow3j Rx Convenience methods:

@@ -7,6 +7,7 @@ import io.neow3j.protocol.core.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetCommittee;
@@ -214,6 +215,18 @@ public interface Neo {
     Request<?, NeoGetStateHeight> getStateHeight();
 
     Request<?, NeoGetState> getState(Hash256 rootHash, Hash160 contractHash, String keyHex);
+
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex, Integer countFindResultItems);
+
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex);
+
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, Integer countFindResultItems);
+
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex);
 
     //endregion
 
