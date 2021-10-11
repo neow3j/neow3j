@@ -484,8 +484,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
-        assertThat(nef.getChecksum(), is(529571427L));
+        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getChecksum(), is(2663858513L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -500,15 +500,15 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(6));
-        ContractMethod method = abi.getMethods().get(2);
-        assertThat(method.getName(), is("refuel"));
-        assertThat(method.getParameters(), hasSize(2));
-        assertThat(method.getParameters().get(1).getParamName(), is("amount"));
-        assertThat(method.getParameters().get(1).getParamType(), is(ContractParameterType.INTEGER));
-        assertThat(method.getOffset(), is(14));
-        assertThat(method.getReturnType(), is(ContractParameterType.VOID));
-        assertFalse(method.isSafe());
+        assertThat(abi.getMethods(), hasSize(5));
+        ContractMethod method = abi.getMethods().get(0);
+        assertThat(method.getName(), is("balanceOf"));
+        assertThat(method.getParameters(), hasSize(1));
+        assertThat(method.getParameters().get(0).getParamName(), is("account"));
+        assertThat(method.getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(method.getOffset(), is(0));
+        assertThat(method.getReturnType(), is(ContractParameterType.INTEGER));
+        assertTrue(method.isSafe());
 
         assertNotNull(abi.getEvents());
         assertThat(abi.getEvents(), hasSize(1));
