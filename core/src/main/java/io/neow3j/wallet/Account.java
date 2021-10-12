@@ -419,7 +419,9 @@ public class Account {
      * <p>
      * Note that an account created with this method does not contain a verification script nor
      * an EC key pair. Therefore, it cannot be used for transaction signing.
-     *
+     * <p>
+     * Don't use this method for creating a multi-sig account from an address. Use
+     * {@link Account#createMultiSigAccount(String, int, int)} instead.
      * @param address The address of the account. Must be a valid Neo address. Make sure that the
      *                address version used in this address is the same as the one configured in
      *                {@link Neow3jConfig#getAddressVersion()}.
