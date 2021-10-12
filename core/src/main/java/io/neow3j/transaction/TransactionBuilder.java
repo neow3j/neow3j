@@ -6,6 +6,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
@@ -40,6 +41,8 @@ public class TransactionBuilder {
     private static final Hash160 GAS_TOKEN_HASH =
             new Hash160("d2a4cff31913016155e38e474a2c06d08be276cf");
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
+    private static final String DEFAULT_PUB_KEY =
+            "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
 
     protected Neow3j neow3j;
     protected Transaction transaction;
@@ -360,14 +363,14 @@ public class TransactionBuilder {
         return new BigInteger(response.getInvocationResult().getGasConsumed()).longValue();
     }
 
+    // For each signer a witness is added to a temporary transaction object that is serialized and
+    // sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
+    // verification script. Instead, their `verify` method will be consulted by the Neo node. The
+    // static method createContractWitness is used to instantiate a witness with the parameters for
+    // the verify method in its invocation script.
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer a witness is added to a temporary transaction object that is serialized
-        // and sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
-        // verification script. Instead, their `verify` method will be consulted by the Neo node.
-        // The static method createContractWitness is used to instantiate a witness with the
-        // parameters for the verify method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
             if (signer instanceof ContractSigner) {
@@ -375,16 +378,14 @@ public class TransactionBuilder {
                 tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
                 Account a = ((AccountSigner) signer).getAccount();
-                if (a != null && a.getVerificationScript() != null) {
-                    tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
-                    hasAtLeastOneSigningAccount = true;
+                VerificationScript verificationScript;
+                if (a.isMultiSig()) {
+                    verificationScript = createFakeMultiSigVerificationScript(a);
                 } else {
-                    throw new TransactionConfigurationException("The signer with script hash '" +
-                            signer.getScriptHash() + "' does not hold a verification script. If " +
-                            "this signer is a contract, use the class 'ContractSigner' instead of" +
-                            " 'AccountSigner', otherwise, this signer requires a verification " +
-                            "script in order to be able to calculate the network fee.");
+                    verificationScript = createFakeSingleSigVerificationScript();
                 }
+                tx.addWitness(new Witness(new byte[]{}, verificationScript.getScript()));
+                hasAtLeastOneSigningAccount = true;
             }
         }
         if (!hasAtLeastOneSigningAccount) {
@@ -394,6 +395,45 @@ public class TransactionBuilder {
         String txHex = toHexStringNoPrefix(tx.toArray());
         return neow3j.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
     }
+
+    private VerificationScript createFakeSingleSigVerificationScript() {
+        return new VerificationScript(new ECPublicKey(DEFAULT_PUB_KEY));
+    }
+
+    private VerificationScript createFakeMultiSigVerificationScript(Account a) {
+        List<ECPublicKey> pubKeys = new ArrayList<>();
+        for (int i = 0; i < a.getNrOfParticipants(); i++) {
+            pubKeys.add(new ECPublicKey(DEFAULT_PUB_KEY));
+        }
+        return new VerificationScript(pubKeys, a.getSigningThreshold());
+    }
+
+//    /**
+//     * Calculates the verification fee for a signature address.
+//     *
+//     * @return the fee.
+//     */
+//    public static long signatureContractCost() {
+//        return OpCode.PUSHDATA1.getPrice() * 2
+//                + OpCode.SYSCALL.getPrice()
+//                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getPrice();
+//    }
+//
+//    /**
+//     * Calculates the verification fee for a multi-signature address.
+//     *
+//     * @param nrOfKeys  The number of public keys in the account.
+//     * @param threshold The minimum number of correct signatures that need to be provided in order
+//     *                  for the verification to pass.
+//     * @return The calculated cost.
+//     */
+//    public static long multiSignatureContractCost(int nrOfKeys, int threshold) {
+//        return OpCode.PUSHDATA1.getPrice() * (nrOfKeys + threshold)
+//                + OpCode.get(new ScriptBuilder().pushInteger(nrOfKeys).toArray()[0]).getPrice()
+//                + OpCode.get(new ScriptBuilder().pushInteger(threshold).toArray()[0]).getPrice()
+//                + OpCode.SYSCALL.getPrice()
+//                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getPrice() * nrOfKeys;
+//    }
 
     /**
      * Makes an {@code invokescript} call to the Neo node with the transaction in its current
@@ -472,8 +512,8 @@ public class TransactionBuilder {
     private void signWithAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
         if (keyPair == null) {
-            throw new IllegalStateException("Cannot create transaction signature because account " +
-                    "with script hash" + acc.getScriptHash() + " does not hold a private key.");
+            throw new TransactionConfigurationException("Cannot create transaction signature " +
+                    "because account " + acc.getAddress() + " does not hold a private key.");
         }
         transaction.addWitness(Witness.create(txBytes, keyPair));
     }

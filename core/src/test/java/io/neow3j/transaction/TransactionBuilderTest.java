@@ -403,8 +403,8 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1000);
 
         exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("does not hold a verification script. If this signer" +
-                " is a contract, use the class 'ContractSigner' instead of 'AccountSigner'");
+        exceptionRule.expectMessage("Cannot create transaction signature because account "
+                 + account1.getAddress() + " does not hold a private key.");
         builder.sign();
     }
 
