@@ -1,43 +1,44 @@
 package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.protocol.core.Response;
 
+import java.math.BigInteger;
 import java.util.Objects;
 
-public class NeoGetVersion extends Response<NeoGetVersion.Result> {
+public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
-    public NeoGetVersion.Result getVersion() {
+    public NeoVersion getVersion() {
         return getResult();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Result {
+    public static class NeoVersion {
 
         @JsonProperty("tcpport")
-        private int tcpPort;
+        private Integer tcpPort;
 
         @JsonProperty("wsport")
-        private int wsPort;
+        private Integer wsPort;
 
         @JsonProperty("nonce")
-        private long nonce;
+        private Long nonce;
 
         @JsonProperty("useragent")
         private String userAgent;
 
-        @JsonProperty("network")
-        private long network;
+        @JsonProperty("protocol")
+        private Protocol protocol;
 
-        public Result() {
+        public NeoVersion() {
         }
 
-        public int getTCPPort() {
+        public Integer getTCPPort() {
             return tcpPort;
         }
 
-        public int getWSPort() {
+        public Integer getWSPort() {
             return wsPort;
         }
 
@@ -49,7 +50,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             this.wsPort = wsPort;
         }
 
-        public long getNonce() {
+        public Long getNonce() {
             return nonce;
         }
 
@@ -65,25 +66,30 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
             this.userAgent = userAgent;
         }
 
-        public long getNetwork() {
-            return network;
+        public Protocol getProtocol() {
+            return protocol;
         }
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Result)) return false;
-            Result that = (Result) o;
-            return getTCPPort() == that.getTCPPort() &&
-                    getWSPort() == that.getWSPort() &&
-                    getNonce() == that.getNonce() &&
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof NeoVersion)) {
+                return false;
+            }
+            NeoVersion that = (NeoVersion) o;
+            return Objects.equals(getTCPPort(), that.getTCPPort()) &&
+                    Objects.equals(getWSPort(), that.getWSPort()) &&
+                    Objects.equals(getNonce(), that.getNonce()) &&
                     Objects.equals(getUserAgent(), that.getUserAgent()) &&
-                    getNetwork() == that.getNetwork();
+                    Objects.equals(getProtocol(), that.getProtocol());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(), getNetwork());
+            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(),
+                    getProtocol());
         }
 
         @Override
@@ -93,8 +99,125 @@ public class NeoGetVersion extends Response<NeoGetVersion.Result> {
                     ", wsport=" + wsPort +
                     ", nonce=" + nonce +
                     ", useragent='" + userAgent + '\'' +
-                    ", network=" + network +
+                    ", protocol=" + protocol +
                     '}';
+        }
+
+        public static class Protocol {
+
+            @JsonProperty("network")
+            private Long network;
+
+            @JsonProperty("validatorscount")
+            private Integer validatorsCount;
+
+            @JsonProperty("msperblock")
+            private Long msPerBlock;
+
+            @JsonProperty("maxvaliduntilblockincrement")
+            private Long maxValidUntilBlockIncrement;
+
+            @JsonProperty("maxtraceableblocks")
+            private Long maxTraceableBlocks;
+
+            @JsonProperty("addressversion")
+            private Integer addressVersion;
+
+            @JsonProperty("maxtransactionsperblock")
+            private Long maxTransactionsPerBlock;
+
+            @JsonProperty("memorypoolmaxtransactions")
+            private Integer memoryPoolMaxTransactions;
+
+            @JsonProperty("initialgasdistribution")
+            private BigInteger initialGasDistribution;
+
+            public Protocol() {
+            }
+
+            public Long getNetwork() {
+                return network;
+            }
+
+            public Integer getValidatorsCount() {
+                return validatorsCount;
+            }
+
+            public Long getMilliSecondsPerBlock() {
+                return msPerBlock;
+            }
+
+            public Long getMaxValidUntilBlockIncrement() {
+                return maxValidUntilBlockIncrement;
+            }
+
+            public Long getMaxTraceableBlocks() {
+                return maxTraceableBlocks;
+            }
+
+            public Integer getAddressVersion() {
+                return addressVersion;
+            }
+
+            public Long getMaxTransactionsPerBlock() {
+                return maxTransactionsPerBlock;
+            }
+
+            public Integer getMemoryPoolMaxTransactions() {
+                return memoryPoolMaxTransactions;
+            }
+
+            public BigInteger getInitialGasDistribution() {
+                return initialGasDistribution;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof Protocol)) {
+                    return false;
+                }
+                Protocol that = (Protocol) o;
+                return Objects.equals(getNetwork(), that.getNetwork()) &&
+                        Objects.equals(getValidatorsCount(), that.getValidatorsCount()) &&
+                        Objects.equals(getMilliSecondsPerBlock(), that.getMilliSecondsPerBlock()) &&
+                        Objects.equals(getMaxValidUntilBlockIncrement(),
+                                that.getMaxValidUntilBlockIncrement()) &&
+                        Objects.equals(getMaxTraceableBlocks(), that.getMaxTraceableBlocks()) &&
+                        Objects.equals(getAddressVersion(), that.getAddressVersion()) &&
+                        Objects.equals(getMaxTransactionsPerBlock(),
+                                that.getMaxTransactionsPerBlock()) &&
+                        Objects.equals(getMemoryPoolMaxTransactions(),
+                                that.getMemoryPoolMaxTransactions()) &&
+                        Objects.equals(getInitialGasDistribution(),
+                                that.getInitialGasDistribution());
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
+                        getMaxValidUntilBlockIncrement(), getMaxTraceableBlocks(),
+                        getAddressVersion(), getMaxTransactionsPerBlock(),
+                        getMemoryPoolMaxTransactions(),
+                        getInitialGasDistribution());
+            }
+
+            @Override
+            public String toString() {
+                return "Protocol{" +
+                        "network=" + network +
+                        ", validatorsCount=" + validatorsCount +
+                        ", milliSecondsPerBlock=" + msPerBlock +
+                        ", maxValidUntilBlockIncrement=" + maxValidUntilBlockIncrement +
+                        ", maxTraceableBlocks=" + maxTraceableBlocks +
+                        ", addressVersion=" + addressVersion +
+                        ", maxTransactionsPerBlock=" + maxTransactionsPerBlock +
+                        ", memoryPoolMaxTransactions=" + memoryPoolMaxTransactions +
+                        ", initialGasDistribution=" + initialGasDistribution +
+                        '}';
+            }
         }
     }
 

@@ -10,6 +10,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.annotations.ContractSourceCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.events.EventInterface;
@@ -43,6 +44,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.getAnnotations;
 import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getByteArrayAnnotationProperty;
@@ -458,12 +460,18 @@ public class Compiler {
 
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
+        String sourceUrl = getSourceUrl(compUnit.getContractClass());
         NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(),
-                compUnit.getNeoModule().getMethodTokens());
+                compUnit.getNeoModule().getMethodTokens(), sourceUrl);
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
         compUnit.setDebugInfo(buildDebugInfo(compUnit));
+    }
+
+    private String getSourceUrl(ClassNode contractClass) {
+        Optional<AnnotationNode> a = getAnnotationNode(contractClass, ContractSourceCode.class);
+        return a.map(annotationNode -> (String) annotationNode.values.get(1)).orElse(null);
     }
 
     private void collectSmartContractEvents(ClassNode asmClass) {

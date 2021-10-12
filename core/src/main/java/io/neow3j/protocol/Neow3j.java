@@ -60,7 +60,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public byte[] getNetworkMagicNumberBytes() throws IOException {
         if (config.getNetworkMagic() == null) {
-            config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
+            config.setNetworkMagic(getVersion().send().getVersion().getProtocol().getNetwork());
         }
         // transform from long to unsigned int:
         int networkMagicAsInt = (int) (config.getNetworkMagic() & 0xFFFFFFFFL);
@@ -82,7 +82,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public long getNetworkMagicNumber() throws IOException {
         if (config.getNetworkMagic() == null) {
-            config.setNetworkMagic(getVersion().send().getVersion().getNetwork());
+            config.setNetworkMagic(getVersion().send().getVersion().getProtocol().getNetwork());
         }
         return config.getNetworkMagic();
     }

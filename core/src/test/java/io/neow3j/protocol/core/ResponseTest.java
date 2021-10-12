@@ -14,7 +14,9 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -30,6 +32,8 @@ import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
 import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoExpressShutdown;
+import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
@@ -1486,19 +1490,40 @@ public class ResponseTest extends ResponseTester {
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
-                        "        \"network\": 769\n" +
+                        "        \"protocol\": {\n" +
+                        "            \"network\": 769,\n" +
+                        "            \"validatorscount\": 7,\n" +
+                        "            \"msperblock\": 15000,\n" +
+                        "            \"maxvaliduntilblockincrement\": 1,\n" +
+                        "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"addressversion\": 22,\n" +
+                        "            \"maxtransactionsperblock\": 150000,\n" +
+                        "            \"memorypoolmaxtransactions\": 34000,\n" +
+                        "            \"initialgasdistribution\": 14\n" +
+                        "        }\n" +
                         "    }\n" +
                         "}"
         );
 
-        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
-        assertThat(getVersion.getVersion(), is(notNullValue()));
-        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
-        assertThat(getVersion.getVersion().getWSPort(), is(40334));
-        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(769L));
+        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
+        NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
+        assertThat(version, is(notNullValue()));
+        assertThat(version.getTCPPort(), is(40333));
+        assertThat(version.getWSPort(), is(40334));
+        assertThat(version.getNonce(), is(224036820L));
+        assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
+        assertThat(protocol.getAddressVersion(), is(22));
+        assertThat(protocol.getNetwork(), is(769L));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
+        assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
+        assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
     }
+
 
     @Test
     public void testGetVersion_Network_Long() {
@@ -1511,18 +1536,37 @@ public class ResponseTest extends ResponseTester {
                         "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
-                        "        \"network\": 4232068425\n" +
+                        "        \"protocol\": {\n" +
+                        "            \"addressversion\": 22,\n" +
+                        "            \"network\": 4232068425,\n" +
+                        "            \"msperblock\": 15000,\n" +
+                        "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"maxvaliduntilblockincrement\": 1,\n" +
+                        "            \"maxtransactionsperblock\": 150000,\n" +
+                        "            \"memorypoolmaxtransactions\": 34000,\n" +
+                        "            \"initialgasdistribution\": 14\n" +
+                        "        }\n" +
                         "    }\n" +
                         "}"
         );
 
-        NeoGetVersion getVersion = deserialiseResponse(NeoGetVersion.class);
-        assertThat(getVersion.getVersion(), is(notNullValue()));
-        assertThat(getVersion.getVersion().getTCPPort(), is(40333));
-        assertThat(getVersion.getVersion().getWSPort(), is(40334));
-        assertThat(getVersion.getVersion().getNonce(), is(224036820L));
-        assertThat(getVersion.getVersion().getUserAgent(), is("/Neo:3.0.0/"));
-        assertThat(getVersion.getVersion().getNetwork(), is(4232068425L));
+        NeoGetVersion neoGetVersion = deserialiseResponse(NeoGetVersion.class);
+        NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
+        assertThat(version, is(notNullValue()));
+        assertThat(version.getTCPPort(), is(40333));
+        assertThat(version.getWSPort(), is(40334));
+        assertThat(version.getNonce(), is(224036820L));
+        assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
+        assertThat(protocol.getAddressVersion(), is(22));
+        assertThat(protocol.getNetwork(), is(4232068425L));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
+        assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
+        assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
     }
 
     @Test
@@ -2783,6 +2827,119 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(stateHeight.getLocalRootIndex(), is(212L));
         assertThat(stateHeight.getValidatedRootIndex(), is(211L));
+    }
+
+    @Test
+    public void testGetState() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": \"QQEhBwAA1VhfeRI=\"\n" +
+                "}"
+        );
+
+        NeoGetState neoGetState = deserialiseResponse(NeoGetState.class);
+        String state = neoGetState.getState();
+
+        assertThat(state, is("QQEhBwAA1VhfeRI="));
+    }
+
+    @Test
+    public void testFindStates() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"firstProof\": \"Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=\",\n" +
+                "        \"lastProof\": \"Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==\",\n" +
+                "        \"truncated\": false,\n" +
+                "        \"results\": [\n" +
+                "            {\n" +
+                "                \"key\": \"FA0WXJiZw4u/WZHF5HsEk3JYyuxp\",\n" +
+                "                \"value\": \"QQEhBQAqz3cC\"\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"key\": \"FH9l1DQ2JwiyVfDgaFa9y1zpnYUF\",\n" +
+                "                \"value\": \"QQEhBwAA1VhfeRI=\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoFindStates neoFindStates = deserialiseResponse(NeoFindStates.class);
+        NeoFindStates.States states = neoFindStates.getStates();
+
+        String firstProof = "Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=";
+        assertThat(states.getFirstProof(), is(firstProof));
+        String lastProof = "Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==";
+        assertThat(states.getLastProof(), is(lastProof));
+        assertFalse(states.isTruncated());
+        List<NeoFindStates.States.Result> results = states.getResults();
+        assertThat(results, hasSize(2));
+        String key1 = "FA0WXJiZw4u/WZHF5HsEk3JYyuxp";
+        String value1 = "QQEhBQAqz3cC";
+        System.out.println(results.get(1).getKey());
+        System.out.println(results.get(1).getValue());
+        String key2 = "FH9l1DQ2JwiyVfDgaFa9y1zpnYUF";
+        String value2 = "QQEhBwAA1VhfeRI=";
+        assertThat(results.get(0).getKey(), is(key1));
+        assertThat(results.get(0).getValue(), is(value1));
+
+        NeoFindStates.States.Result expectedResult1 = new NeoFindStates.States.Result(key1, value1);
+        NeoFindStates.States.Result expectedResult2 = new NeoFindStates.States.Result(key2, value2);
+        List<NeoFindStates.States.Result> expectedResults =
+                asList(expectedResult1, expectedResult2);
+        NeoFindStates.States expectedStates =
+                new NeoFindStates.States(firstProof, lastProof, false, expectedResults);
+        assertThat(states, is(expectedStates));
+    }
+
+    @Test
+    public void testFindStates_singleResult() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"firstProof\": \"Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku+ZjvbLJhWXn/lh6L+1yB0EA4k+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ/dr4V494mGlwcp9DAkCBwCY0uJieRI=\",\n" +
+                "        \"truncated\": true,\n" +
+                "        \"results\": [\n" +
+                "            {\n" +
+                "                \"key\": \"Cw==\",\n" +
+                "                \"value\": \"AJjS4mJ5Eg==\"\n" +
+                "            }\n" +
+                "        ]\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoFindStates neoFindStates = deserialiseResponse(NeoFindStates.class);
+        NeoFindStates.States states = neoFindStates.getStates();
+
+        assertThat(states.getFirstProof(), is("Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku+ZjvbLJhWXn/lh6L+1yB0EA4k+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ/dr4V494mGlwcp9DAkCBwCY0uJieRI="));
+        assertNull(states.getLastProof());
+        assertThat(states.getResults(), hasSize(1));
+    }
+
+    @Test
+    public void testFindStates_emptyResults() {
+        buildResponse("{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"truncated\": true,\n" +
+                "        \"results\": []\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoFindStates neoFindStates = deserialiseResponse(NeoFindStates.class);
+        NeoFindStates.States states = neoFindStates.getStates();
+
+        assertNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertTrue(states.isTruncated());
+        assertThat(states.getResults(), hasSize(0));
     }
 
     // Neo-express related tests

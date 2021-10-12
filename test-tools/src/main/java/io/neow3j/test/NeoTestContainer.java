@@ -19,8 +19,18 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final String DBFTCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "dbft.config.json";
     static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
     static final String ORACLECONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "oracle.config.json";
-    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config"
-            + ".json";
+    static final String ORACLECONFIG_FILE_DESTINATION =
+            "/neo-cli/Plugins/OracleService/config.json";
+    static final String APPLOGSCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "applicationlogs.config.json";
+    static final String APPLOGSCONFIG_FILE_DESTINATION =
+            "/neo-cli/Plugins/ApplicationLogs/config.json";
+    static final String RPCNEP17TRACKER_FILE_SOURCE = CONFIG_BASE_DIR +
+            "rpcnep17tracker.config.json";
+    static final String RPCNEP17TRACKER_FILE_DESTINATION =
+            "/neo-cli/Plugins/RpcNep17Tracker/config.json";
+    static final String STATE_SERVICE_FILE_SOURCE = CONFIG_BASE_DIR + "stateservice.config.json";
+    static final String STATE_SERVICE_FILE_DESTINATION =
+            "/neo-cli/Plugins/StateService/config.json";
 
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
@@ -43,6 +53,12 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withClasspathResourceMapping(RPCNEP17TRACKER_FILE_SOURCE, RPCNEP17TRACKER_FILE_DESTINATION,
+                BindMode.READ_ONLY);
+        withClasspathResourceMapping(STATE_SERVICE_FILE_SOURCE, STATE_SERVICE_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withExposedPorts(EXPOSED_JSONRPC_PORT);
         waitingFor(Wait.forListeningPort());

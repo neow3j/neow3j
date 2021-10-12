@@ -1,23 +1,14 @@
 package io.neow3j.contract;
 
-import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.types.StackItemType.BYTE_STRING;
-import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
-import static io.neow3j.utils.ArrayUtils.reverseArray;
-import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
-import static io.neow3j.utils.Numeric.toBigInt;
-import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.CallFlags;
-import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
 
@@ -29,6 +20,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static io.neow3j.crypto.Hash.hash256;
+import static io.neow3j.types.StackItemType.BYTE_STRING;
+import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.ArrayUtils.trimTrailingBytes;
+import static io.neow3j.utils.Numeric.toBigInt;
+import static java.lang.String.format;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 /**
  * ┌───────────────────────────────────────────────────────────────────────┐
  * │                    NEO Executable Format 3 (NEF3)                     │
@@ -38,6 +38,7 @@ import java.util.List;
  * │ Magic    │ uint32        │ Magic header                               │
  * │ Compiler │ byte[64]      │ Compiler name and version                  │
  * ├──────────┼───────────────┼────────────────────────────────────────────┤
+ * │ Source   │ byte[]        │ The url of the source files, max 255 bytes |
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
  * │ Tokens   │ MethodToken[] │ Method tokens                              │
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
@@ -52,16 +53,18 @@ public class NefFile extends NeoSerializable {
     private static final int COMPILER_SIZE = 64;
     private static final int MAX_SCRIPT_LENGTH = 512 * 1024;
     private static final int CHECKSUM_SIZE = 4;
-    private static final int RESERVED_BYTES_SIZE = 2;
+    private static final int MAX_SOURCE_URL_SIZE = 256;
 
     private static final int HEADER_SIZE = MAGIC_SIZE + COMPILER_SIZE;
 
     private String compiler;
+    private String sourceUrl;
     private List<MethodToken> methodTokens;
     private byte[] checkSum; // 4 bytes unsigned integer.
     private byte[] script;
 
     public NefFile() {
+        sourceUrl = "";
         methodTokens = new ArrayList<>();
         checkSum = new byte[]{};
         script = new byte[]{};
@@ -73,8 +76,10 @@ public class NefFile extends NeoSerializable {
      * @param compiler     the compiler name and version with which the contract has been compiled.
      * @param script       the contract's script.
      * @param methodTokens the method tokens of the contract.
+     * @param sourceUrl    The URL to the source code of the contract.
      */
-    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens) {
+    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens,
+            String sourceUrl) {
         int compilerSize = compiler.getBytes(UTF_8).length;
         if (compilerSize > COMPILER_SIZE) {
             throw new IllegalArgumentException(format("The compiler name and version string can " +
@@ -83,10 +88,25 @@ public class NefFile extends NeoSerializable {
         this.compiler = compiler;
         this.script = script;
         this.methodTokens = methodTokens == null ? new ArrayList<>() : methodTokens;
-
+        this.sourceUrl = sourceUrl == null ? "" : sourceUrl;
+        if (this.sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
+            throw new IllegalArgumentException("The source URL must not be longer than " +
+                    MAX_SOURCE_URL_SIZE + " bytes");
+        }
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
+    }
+
+    /**
+     * Constructs a new {@code NefFile} from the given contract information.
+     *
+     * @param compiler     the compiler name and version with which the contract has been compiled.
+     * @param script       the contract's script.
+     * @param methodTokens the method tokens of the contract.
+     */
+    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens) {
+        this(compiler, script, methodTokens, "");
     }
 
     /**
@@ -152,6 +172,15 @@ public class NefFile extends NeoSerializable {
     }
 
     /**
+     * Gets the source code URL of this NEF.
+     *
+     * @return the source code URL.
+     */
+    public String getSourceUrl() {
+        return sourceUrl;
+    }
+
+    /**
      * Gets the byte size of this NEF file when serialized.
      *
      * @return the byte size.
@@ -159,9 +188,10 @@ public class NefFile extends NeoSerializable {
     @Override
     public int getSize() {
         return HEADER_SIZE
-                + RESERVED_BYTES_SIZE
+                + IOUtils.getVarSize(sourceUrl)
+                + 1 // one reserved byte left
                 + IOUtils.getVarSize(methodTokens)
-                + RESERVED_BYTES_SIZE
+                + 2 // two reserved bytes left
                 + IOUtils.getVarSize(script)
                 + CHECKSUM_SIZE;
     }
@@ -170,7 +200,8 @@ public class NefFile extends NeoSerializable {
     public void serialize(BinaryWriter writer) throws IOException {
         writer.writeUInt32(MAGIC);
         writer.writeFixedString(compiler, COMPILER_SIZE);
-        writer.writeUInt16(0); // reserved bytes
+        writer.writeVarString(sourceUrl);
+        writer.writeByte((byte) 0); // reserved byte
         writer.writeSerializableVariable(methodTokens);
         writer.writeUInt16(0); // reserved bytes
         writer.writeVarBytes(script);
@@ -187,8 +218,14 @@ public class NefFile extends NeoSerializable {
             // Compiler
             byte[] compilerBytes = reader.readBytes(COMPILER_SIZE);
             compiler = new String(trimTrailingBytes(compilerBytes, (byte) 0), UTF_8);
+            // Source URL
+            sourceUrl = reader.readVarString();
+            if (sourceUrl != null && sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
+                throw new DeserializationException("Source URL must not be longer than "
+                        + MAX_SOURCE_URL_SIZE + " bytes.");
+            }
             // Reserved bytes
-            if (reader.readUInt16() != 0) {
+            if (reader.readByte() != 0) {
                 throw new DeserializationException("Reserve bytes in NEF file must be 0.");
             }
             // Method tokens
