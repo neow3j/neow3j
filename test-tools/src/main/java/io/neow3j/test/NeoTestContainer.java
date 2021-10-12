@@ -54,13 +54,13 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
-        withExposedPorts(EXPOSED_JSONRPC_PORT);
         withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(RPCNEP17TRACKER_FILE_SOURCE, RPCNEP17TRACKER_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(STATE_SERVICE_FILE_SOURCE, STATE_SERVICE_FILE_DESTINATION,
                 BindMode.READ_ONLY);
+        withExposedPorts(EXPOSED_JSONRPC_PORT);
         waitingFor(Wait.forListeningPort());
         try {
             withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE,
