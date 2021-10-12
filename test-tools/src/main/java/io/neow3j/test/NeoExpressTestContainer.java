@@ -9,6 +9,8 @@ import java.math.BigInteger;
 
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> {
 
+    public static final String DEFAULT_NEOXP_CONFIG_SRC = "default.neo-express";
+
     public static final String CONTAINER_WORKDIR = "/neoxp/";
     private static final String NEOXP_RUN_SCRIPT = CONTAINER_WORKDIR + "neoxp-run.sh";
     public static final String NEOXP_CONFIG_DEST = CONTAINER_WORKDIR + "default.neo-express";
