@@ -254,8 +254,18 @@ public class TransactionBuilder {
         return signerList.size() != signerSet.size();
     }
 
-    // package-private visible for testability purpose.
-    Transaction buildTransaction() throws Throwable {
+    /**
+     * Builds the transaction without signing it.
+     *
+     * @return the unsigned transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           Neo node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
+     */
+    public Transaction getUnsignedTransaction() throws Throwable {
         if (script == null || script.length == 0) {
             throw new TransactionConfigurationException("Cannot build a transaction without a " +
                     "script.");
@@ -475,7 +485,7 @@ public class TransactionBuilder {
      *                                           fees.
      */
     public Transaction sign() throws Throwable {
-        transaction = buildTransaction();
+        transaction = getUnsignedTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
             if (signer instanceof ContractSigner) {
@@ -492,21 +502,6 @@ public class TransactionBuilder {
             }
         });
         return transaction;
-    }
-
-    /**
-     * Builds the transaction without signing it.
-     *
-     * @return the unsigned transaction.
-     * @throws TransactionConfigurationException if the builder is mis-configured.
-     * @throws IOException                       if an error occurs when interacting with the
-     *                                           Neo node.
-     * @throws Throwable                         a custom exception if one was set to be thrown in
-     *                                           the case the sender cannot cover the transaction
-     *                                           fees.
-     */
-    public Transaction getUnsignedTransaction() throws Throwable {
-        return buildTransaction();
     }
 
     private void signWithAccount(byte[] txBytes, Account acc) {

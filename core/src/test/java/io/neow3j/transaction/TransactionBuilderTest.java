@@ -118,19 +118,19 @@ public class TransactionBuilderTest {
                 .script(new byte[]{1, 2, 3})
                 .signers(calledByEntry(account1));
 
-        Transaction t = b.nonce(nonce).buildTransaction();
+        Transaction t = b.nonce(nonce).getUnsignedTransaction();
         assertThat(t.getNonce(), is(nonce));
 
         nonce = 0L;
-        t = b.nonce(0L).buildTransaction();
+        t = b.nonce(0L).getUnsignedTransaction();
         assertThat(t.getNonce(), is(nonce));
 
         nonce = (long) Math.pow(2, 32) - 1;
-        t = b.nonce(nonce).buildTransaction();
+        t = b.nonce(nonce).getUnsignedTransaction();
         assertThat(t.getNonce(), is(nonce));
 
         nonce = Integer.toUnsignedLong(-1);
-        t = b.nonce(nonce).buildTransaction();
+        t = b.nonce(nonce).getUnsignedTransaction();
         assertThat(t.getNonce(), is(nonce));
     }
 
@@ -191,7 +191,7 @@ public class TransactionBuilderTest {
         Transaction transaction = new TransactionBuilder(neow)
                 .script(new byte[]{1, 2, 3})
                 .signers(calledByEntry(account1))
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(transaction.getNonce(), greaterThanOrEqualTo(0L));
         assertThat(transaction.getNonce(), lessThanOrEqualTo((long) Math.pow(2, 32)));
@@ -204,7 +204,7 @@ public class TransactionBuilderTest {
         new TransactionBuilder(neow)
                 .validUntilBlock(100L)
                 .script(new byte[]{1, 2, 3})
-                .buildTransaction();
+                .getUnsignedTransaction();
     }
 
     @Test
@@ -241,7 +241,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(account1))
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
         assertThat(tx.getAttributes().get(0).getType(),
@@ -265,7 +265,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(multiSigAccount))
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
         assertThat(tx.getAttributes().get(0).getType(),
@@ -287,7 +287,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .attributes(attr)
                 .signers(none(account2))
-                .buildTransaction();
+                .getUnsignedTransaction();
     }
 
     @Test
@@ -305,7 +305,7 @@ public class TransactionBuilderTest {
                 .signers(none(account1))
                 .attributes(attr1)
                 .attributes(attr2)
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
     }
@@ -372,7 +372,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getValidUntilBlock(), is(neow.getMaxValidUntilBlockIncrement() + 1000 - 1));
     }
@@ -386,7 +386,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
                 .validUntilBlock(1000)
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getSystemFee(), is(984060L));
         assertThat(tx.getNetworkFee(), is(1230610L));
@@ -486,7 +486,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(calledByEntry(Account.create()))
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
-                .buildTransaction();
+                .getUnsignedTransaction();
         // Don't add any witnesses, so it has one signer but no witness.
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage(new StringContains("The transaction does not have the same " +
@@ -620,7 +620,7 @@ public class TransactionBuilderTest {
                     assertThat(balance, is(expectedBalance));
                     tested.set(true);
                 })
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertTrue(tested.get()); // Assert that the test actually called the lambda function.
     }
@@ -659,7 +659,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(IllegalStateException.class);
         exceptionRule.expectMessage("test throwIfSenderCannotCoverFees");
-        b.buildTransaction();
+        b.getUnsignedTransaction();
     }
 
     @Test
@@ -705,7 +705,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("script");
-        b.buildTransaction();
+        b.getUnsignedTransaction();
     }
 
     @Test
@@ -718,7 +718,7 @@ public class TransactionBuilderTest {
                 .signers(calledByEntry(account1));
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("Instruction out of bounds.");
-        b.buildTransaction();
+        b.getUnsignedTransaction();
     }
 
     @Test
@@ -733,7 +733,7 @@ public class TransactionBuilderTest {
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
                 "either too large or too small for an Int32.");
-        b.buildTransaction();
+        b.getUnsignedTransaction();
     }
 
     @Test
@@ -777,7 +777,7 @@ public class TransactionBuilderTest {
         Transaction tx = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.create()))
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         long baseNetworkFee = 1230610L;
         assertThat(tx.getNetworkFee(), is(baseNetworkFee));
@@ -786,7 +786,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account))
                 .additionalNetworkFee(2000L)
-                .buildTransaction();
+                .getUnsignedTransaction();
 
         assertThat(tx.getNetworkFee(), is(baseNetworkFee + 2000L));
     }
