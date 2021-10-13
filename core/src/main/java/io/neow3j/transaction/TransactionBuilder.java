@@ -418,33 +418,6 @@ public class TransactionBuilder {
         return new VerificationScript(pubKeys, a.getSigningThreshold());
     }
 
-//    /**
-//     * Calculates the verification fee for a signature address.
-//     *
-//     * @return the fee.
-//     */
-//    public static long signatureContractCost() {
-//        return OpCode.PUSHDATA1.getPrice() * 2
-//                + OpCode.SYSCALL.getPrice()
-//                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getPrice();
-//    }
-//
-//    /**
-//     * Calculates the verification fee for a multi-signature address.
-//     *
-//     * @param nrOfKeys  The number of public keys in the account.
-//     * @param threshold The minimum number of correct signatures that need to be provided in order
-//     *                  for the verification to pass.
-//     * @return The calculated cost.
-//     */
-//    public static long multiSignatureContractCost(int nrOfKeys, int threshold) {
-//        return OpCode.PUSHDATA1.getPrice() * (nrOfKeys + threshold)
-//                + OpCode.get(new ScriptBuilder().pushInteger(nrOfKeys).toArray()[0]).getPrice()
-//                + OpCode.get(new ScriptBuilder().pushInteger(threshold).toArray()[0]).getPrice()
-//                + OpCode.SYSCALL.getPrice()
-//                + InteropService.SYSTEM_CRYPTO_CHECKSIG.getPrice() * nrOfKeys;
-//    }
-
     /**
      * Makes an {@code invokescript} call to the Neo node with the transaction in its current
      * configuration. No changes are made to the blockchain state.
