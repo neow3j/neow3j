@@ -244,7 +244,7 @@ public class Account {
      */
     public Integer getNrOfParticipants() {
         if (!isMultiSig()) {
-            throw new AccountStateException("Cannot get number of participiants from account " +
+            throw new AccountStateException("Cannot get number of participants from account " +
                     this.getAddress() + ", because it is not multi-sig.");
         }
         return nrOfParticipants;

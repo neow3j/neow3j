@@ -1,0 +1,18 @@
+{
+  "address": "NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3",
+  "label": null,
+  "isDefault": false,
+  "lock": false,
+  "key": "",
+  "contract": {
+    "script": "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6",
+    "parameters": [
+      {
+        "name": "parameter0",
+        "type": "Signature"
+      }
+    ],
+    "deployed": false
+  },
+  "extra": null
+}

@@ -26,6 +26,7 @@ import org.junit.rules.ExpectedException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -191,7 +192,7 @@ public class AccountTest {
     }
 
     @Test
-    public void loadAccountFromNEP6Account() throws URISyntaxException, IOException {
+    public void loadAccountFromNEP6() throws URISyntaxException, IOException {
         URL nep6AccountFileUrl =
                 AccountTest.class.getClassLoader().getResource("wallet/account.json");
         FileInputStream stream = new FileInputStream(new File(nep6AccountFileUrl.toURI()));
@@ -203,6 +204,21 @@ public class AccountTest {
         assertThat(a.getEncryptedPrivateKey(), is(defaultAccountEncryptedPrivateKey()));
         assertThat(a.getVerificationScript().getScript(),
                 is(hexStringToByteArray(defaultAccountVerificationScript())));
+    }
+
+    @Test
+    public void loadMultiSigAccountFromNEP6() throws URISyntaxException, IOException {
+        InputStream s = this.getClass().getClassLoader()
+                .getResourceAsStream("wallet/multiSigAccount.json");
+        NEP6Account nep6Acc = new ObjectMapper().readValue(s, NEP6Account.class);
+        Account a = Account.fromNEP6Account(nep6Acc);
+        assertFalse(a.isDefault());
+        assertFalse(a.isLocked());
+        assertThat(a.getAddress(), is(committeeAccountAddress()));
+        assertThat(a.getVerificationScript().getScript(),
+                is(hexStringToByteArray(committeeAccountVerificationScript())));
+        assertThat(a.getNrOfParticipants(), is(1));
+        assertThat(a.getSigningThreshold(), is(1));
     }
 
     @Test
@@ -356,4 +372,23 @@ public class AccountTest {
         assertEquals(wallet, a.getWallet());
     }
 
+    @Test
+    public void callingGetSigningThresholdWithSingleSigShouldFail() {
+        Account a = Account.fromAddress(defaultAccountAddress());
+
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot get signing threshold from " +
+                "account " + defaultAccountAddress()));
+        a.getSigningThreshold();
+    }
+
+    @Test
+    public void callingGetNrOfParticipantsWithSingleSigShouldFail() {
+        Account a = Account.fromAddress(defaultAccountAddress());
+
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot get number of participants from " +
+                "account " + defaultAccountAddress()));
+        a.getNrOfParticipants();
+    }
 }
