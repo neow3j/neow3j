@@ -58,5 +58,4 @@ public class TransactionBuilderIntegrationTest {
         assertThat(tx.getNetworkFee(), is(7557220L));
     }
 
-
 }

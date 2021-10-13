@@ -45,8 +45,6 @@ import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.wallet.Account.createMultiSigAccount;
-import static io.neow3j.wallet.Account.fromVerificationScript;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -121,7 +119,7 @@ public class AccountTest {
     @Test
     public void testCreateMultiSigAccountFromPublicKeys() {
         ECPublicKey pubKey = new ECPublicKey(defaultAccountPublicKey());
-        Account a = createMultiSigAccount(singletonList(pubKey), 1);
+        Account a = Account.createMultiSigAccount(singletonList(pubKey), 1);
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
         assertThat(a.getLabel(), is(committeeAccountAddress()));
@@ -131,7 +129,7 @@ public class AccountTest {
 
     @Test
     public void testCreateMultiSigAccountWithAddress() {
-        Account a = createMultiSigAccount(committeeAccountAddress(), 4, 7);
+        Account a = Account.createMultiSigAccount(committeeAccountAddress(), 4, 7);
         assertThat(a.getSigningThreshold(), is(4));
         assertThat(a.getNrOfParticipants(), is(7));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
@@ -142,7 +140,7 @@ public class AccountTest {
 
     @Test
     public void testCreateMultiSigAccountFromVerificationScript() {
-        Account a = fromVerificationScript(new VerificationScript(
+        Account a = Account.fromVerificationScript(new VerificationScript(
                 hexStringToByteArray(committeeAccountVerificationScript())));
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
@@ -260,7 +258,7 @@ public class AccountTest {
     @Test
     public void toNep6AccountWithMultiSigAccount() {
         ECPublicKey key = new ECPublicKey(hexStringToByteArray(defaultAccountPublicKey()));
-        Account a = createMultiSigAccount(singletonList(key), 1);
+        Account a = Account.createMultiSigAccount(singletonList(key), 1);
         NEP6Account nep6 = a.toNEP6Account();
 
         assertThat(nep6.getContract().getScript(),
