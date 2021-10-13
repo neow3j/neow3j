@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
@@ -86,6 +86,13 @@ public class ByteString {
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public native int toInt();
 
+    /**
+     * Converts this {@code ByteString} to an integer. If the underlying value is null, zero is
+     * returned. The bytes are read in little-endian format. E.g., the byte string {@code 0102}
+     * (in hexadecimal representation) is converted to 513.
+     *
+     * @return the integer.
+     */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
