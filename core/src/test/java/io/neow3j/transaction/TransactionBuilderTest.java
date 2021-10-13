@@ -446,7 +446,7 @@ public class TransactionBuilderTest {
         Account accountWithoutKeyPair =
                 Account.fromVerificationScript(account1.getVerificationScript());
 
-        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("does not hold a private key");
         new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
