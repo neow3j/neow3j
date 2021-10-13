@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
@@ -12,14 +11,14 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
-import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import org.hamcrest.core.StringContains;
-import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -27,6 +26,7 @@ import org.junit.rules.ExpectedException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -45,7 +45,6 @@ import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -118,9 +117,31 @@ public class AccountTest {
     }
 
     @Test
-    public void testFromMultiSigKeys() {
+    public void testCreateMultiSigAccountFromPublicKeys() {
         ECPublicKey pubKey = new ECPublicKey(defaultAccountPublicKey());
-        Account a = createMultiSigAccount(singletonList(pubKey), 1);
+        Account a = Account.createMultiSigAccount(singletonList(pubKey), 1);
+        assertThat(a.isMultiSig(), is(true));
+        assertThat(a.getAddress(), is(committeeAccountAddress()));
+        assertThat(a.getLabel(), is(committeeAccountAddress()));
+        assertThat(a.getVerificationScript().getScript(),
+                is(hexStringToByteArray(committeeAccountVerificationScript())));
+    }
+
+    @Test
+    public void testCreateMultiSigAccountWithAddress() {
+        Account a = Account.createMultiSigAccount(committeeAccountAddress(), 4, 7);
+        assertThat(a.getSigningThreshold(), is(4));
+        assertThat(a.getNrOfParticipants(), is(7));
+        assertThat(a.getAddress(), is(committeeAccountAddress()));
+        assertThat(a.isMultiSig(), is(true));
+        assertThat(a.getLabel(), is(committeeAccountAddress()));
+        assertThat(a.getVerificationScript(), is(nullValue()));
+    }
+
+    @Test
+    public void testCreateMultiSigAccountFromVerificationScript() {
+        Account a = Account.fromVerificationScript(new VerificationScript(
+                hexStringToByteArray(committeeAccountVerificationScript())));
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
         assertThat(a.getLabel(), is(committeeAccountAddress()));
@@ -169,7 +190,7 @@ public class AccountTest {
     }
 
     @Test
-    public void loadAccountFromNEP6Account() throws URISyntaxException, IOException {
+    public void loadAccountFromNEP6() throws URISyntaxException, IOException {
         URL nep6AccountFileUrl =
                 AccountTest.class.getClassLoader().getResource("wallet/account.json");
         FileInputStream stream = new FileInputStream(new File(nep6AccountFileUrl.toURI()));
@@ -181,6 +202,21 @@ public class AccountTest {
         assertThat(a.getEncryptedPrivateKey(), is(defaultAccountEncryptedPrivateKey()));
         assertThat(a.getVerificationScript().getScript(),
                 is(hexStringToByteArray(defaultAccountVerificationScript())));
+    }
+
+    @Test
+    public void loadMultiSigAccountFromNEP6() throws URISyntaxException, IOException {
+        InputStream s = this.getClass().getClassLoader()
+                .getResourceAsStream("wallet/multiSigAccount.json");
+        NEP6Account nep6Acc = new ObjectMapper().readValue(s, NEP6Account.class);
+        Account a = Account.fromNEP6Account(nep6Acc);
+        assertFalse(a.isDefault());
+        assertFalse(a.isLocked());
+        assertThat(a.getAddress(), is(committeeAccountAddress()));
+        assertThat(a.getVerificationScript().getScript(),
+                is(hexStringToByteArray(committeeAccountVerificationScript())));
+        assertThat(a.getNrOfParticipants(), is(1));
+        assertThat(a.getSigningThreshold(), is(1));
     }
 
     @Test
@@ -222,7 +258,7 @@ public class AccountTest {
     @Test
     public void toNep6AccountWithMultiSigAccount() {
         ECPublicKey key = new ECPublicKey(hexStringToByteArray(defaultAccountPublicKey()));
-        Account a = createMultiSigAccount(singletonList(key), 1);
+        Account a = Account.createMultiSigAccount(singletonList(key), 1);
         NEP6Account nep6 = a.toNEP6Account();
 
         assertThat(nep6.getContract().getScript(),
@@ -282,12 +318,24 @@ public class AccountTest {
     }
 
     @Test
-    public void isMultiSigShouldThrowIfVerificationScriptIsNotAvailable() {
+    public void testIsMultiSig() {
         Account a = Account.fromAddress(defaultAccountAddress());
-        exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                defaultAccountScriptHash(), "verification script")));
-        a.isMultiSig();
+        assertFalse(a.isMultiSig());
+
+        a = Account.createMultiSigAccount(committeeAccountAddress(), 1, 1);
+        assertTrue(a.isMultiSig());
+
+        a = Account.fromVerificationScript(new VerificationScript(
+                hexStringToByteArray(committeeAccountVerificationScript())));
+        assertTrue(a.isMultiSig());
+
+        a = Account.fromVerificationScript(new VerificationScript(
+                hexStringToByteArray(defaultAccountVerificationScript())));
+        assertFalse(a.isMultiSig());
+
+        ECPublicKey pubKey = new ECPublicKey(defaultAccountPublicKey());
+        a = Account.createMultiSigAccount(asList(pubKey), 1);
+        assertTrue(a.isMultiSig());
     }
 
     @Test
@@ -322,4 +370,23 @@ public class AccountTest {
         assertEquals(wallet, a.getWallet());
     }
 
+    @Test
+    public void callingGetSigningThresholdWithSingleSigShouldFail() {
+        Account a = Account.fromAddress(defaultAccountAddress());
+
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot get signing threshold from " +
+                "account " + defaultAccountAddress()));
+        a.getSigningThreshold();
+    }
+
+    @Test
+    public void callingGetNrOfParticipantsWithSingleSigShouldFail() {
+        Account a = Account.fromAddress(defaultAccountAddress());
+
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage(new StringContains("Cannot get number of participants from " +
+                "account " + defaultAccountAddress()));
+        a.getNrOfParticipants();
+    }
 }

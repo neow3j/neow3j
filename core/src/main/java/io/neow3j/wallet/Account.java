@@ -33,6 +33,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+/**
+ * Represents a Neo account.
+ * <p>
+ * An account can be a single-signature or multi-signature account. The latter does not contain
+ * EC key material because it is based on multiple EC key pairs.
+ */
 @SuppressWarnings("unchecked")
 public class Account {
 
@@ -43,10 +49,19 @@ public class Account {
     private boolean isLocked;
     private VerificationScript verificationScript;
     private Wallet wallet;
+    // The signing threshold is null if the account is single-sig.
+    private Integer signingThreshold;
+    // The nr of involved keys is null if the account is single-sig.
+    private Integer nrOfParticipants;
 
     protected Account() {
     }
 
+    /**
+     * Constructs a new account with the given EC key pair.
+     *
+     * @param ecKeyPair The key pair of the account.
+     */
     public Account(ECKeyPair ecKeyPair) {
         this.keyPair = ecKeyPair;
         this.address = ecKeyPair.getAddress();
@@ -108,7 +123,6 @@ public class Account {
     public void unlock() {
         this.isLocked = false;
     }
-
 
     void setWallet(Wallet wallet) {
         this.wallet = wallet;
@@ -202,16 +216,38 @@ public class Account {
     }
 
     /**
-     * Checks if this account its a multi-sig account or not.
+     * Checks if this account is a multi-sig account.
      *
      * @return true if this account is a multi-sig account. False otherwise.
      */
     public boolean isMultiSig() {
-        if (this.verificationScript == null) {
-            throw new AccountStateException("The account with script hash " + this.getScriptHash() +
-                    " does not have a verification script.");
+        return signingThreshold != null && nrOfParticipants != null;
+    }
+
+    /**
+     * Returns the signing threshold if this is a multi-sig account
+     *
+     * @return the signing threshold.
+     */
+    public Integer getSigningThreshold() {
+        if (!isMultiSig()) {
+            throw new AccountStateException("Cannot get signing threshold from account " +
+                    this.getAddress() + ", because it is not multi-sig.");
         }
-        return this.verificationScript.isMultiSigScript();
+        return signingThreshold;
+    }
+
+    /**
+     * Returns the number of involved keys if this is a multi-sig account.
+     *
+     * @return the number of involved keys.
+     */
+    public Integer getNrOfParticipants() {
+        if (!isMultiSig()) {
+            throw new AccountStateException("Cannot get number of participants from account " +
+                    this.getAddress() + ", because it is not multi-sig.");
+        }
+        return nrOfParticipants;
     }
 
     /**
@@ -271,6 +307,10 @@ public class Account {
         account.address = address;
         account.label = address;
         account.verificationScript = script;
+        if (script.isMultiSigScript()) {
+            account.signingThreshold = script.getSigningThreshold();
+            account.nrOfParticipants = script.getNrOfAccounts();
+        }
         return account;
     }
 
@@ -297,19 +337,39 @@ public class Account {
      * Creates a multi-sig account from the given public keys. Mind that the ordering of the
      * keys is important for later usage of the account.
      *
-     * @param publicKeys         The public keys from which to derive the multi-sig account.
-     * @param signatureThreshold The number of signatures needed when using this account for signing
-     *                           transactions.
+     * @param publicKeys       The public keys from which to derive the multi-sig account.
+     * @param signingThreshold The number of signatures needed when using this account for signing
+     *                         transactions.
      * @return the multi-sig account.
      */
     public static Account createMultiSigAccount(List<ECPublicKey> publicKeys,
-            int signatureThreshold) {
-        VerificationScript script = new VerificationScript(publicKeys, signatureThreshold);
+            int signingThreshold) {
+        VerificationScript script = new VerificationScript(publicKeys, signingThreshold);
         String address = Hash160.fromScript(script.getScript()).toAddress();
         Account account = new Account();
         account.address = address;
         account.label = address;
         account.verificationScript = script;
+        account.signingThreshold = signingThreshold;
+        account.nrOfParticipants = publicKeys.size();
+        return account;
+    }
+
+    /**
+     * Creates a multi-sig account holding the given address.
+     *
+     * @param address          The address of the multi-sig account.
+     * @param signingThreshold The number of signatures needed when using this account for signing
+     *                         transactions.
+     * @return the multi-sig account.
+     */
+    public static Account createMultiSigAccount(String address, int signingThreshold,
+            int nrOfParticipants) {
+        Account account = new Account();
+        account.address = address;
+        account.label = address;
+        account.signingThreshold = signingThreshold;
+        account.nrOfParticipants = nrOfParticipants;
         return account;
     }
 
@@ -346,6 +406,10 @@ public class Account {
         if (contr != null && contr.getScript() != null && !contr.getScript().isEmpty()) {
             byte[] script = Base64.decode(contr.getScript());
             account.verificationScript = new VerificationScript(script);
+            if (account.verificationScript.isMultiSigScript()) {
+                account.signingThreshold = account.verificationScript.getSigningThreshold();
+                account.nrOfParticipants = account.verificationScript.getNrOfAccounts();
+            }
         }
         return account;
     }
@@ -355,7 +419,9 @@ public class Account {
      * <p>
      * Note that an account created with this method does not contain a verification script nor
      * an EC key pair. Therefore, it cannot be used for transaction signing.
-     *
+     * <p>
+     * Don't use this method for creating a multi-sig account from an address. Use
+     * {@link Account#createMultiSigAccount(String, int, int)} instead.
      * @param address The address of the account. Must be a valid Neo address. Make sure that the
      *                address version used in this address is the same as the one configured in
      *                {@link Neow3jConfig#getAddressVersion()}.

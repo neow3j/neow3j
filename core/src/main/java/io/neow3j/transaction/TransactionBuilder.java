@@ -6,6 +6,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
@@ -40,6 +41,8 @@ public class TransactionBuilder {
     private static final Hash160 GAS_TOKEN_HASH =
             new Hash160("d2a4cff31913016155e38e474a2c06d08be276cf");
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
+    private static final String DUMMY_PUB_KEY =
+            "02ec143f00b88524caf36a0121c2de09eef0519ddbe1c710a00f0e2663201ee4c0";
 
     protected Neow3j neow3j;
     protected Transaction transaction;
@@ -251,8 +254,18 @@ public class TransactionBuilder {
         return signerList.size() != signerSet.size();
     }
 
-    // package-private visible for testability purpose.
-    Transaction buildTransaction() throws Throwable {
+    /**
+     * Builds the transaction without signing it.
+     *
+     * @return the unsigned transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the
+     *                                           Neo node.
+     * @throws Throwable                         a custom exception if one was set to be thrown in
+     *                                           the case the sender cannot cover the transaction
+     *                                           fees.
+     */
+    public Transaction getUnsignedTransaction() throws Throwable {
         if (script == null || script.length == 0) {
             throw new TransactionConfigurationException("Cannot build a transaction without a " +
                     "script.");
@@ -360,14 +373,14 @@ public class TransactionBuilder {
         return new BigInteger(response.getInvocationResult().getGasConsumed()).longValue();
     }
 
+    // For each signer a witness is added to a temporary transaction object that is serialized and
+    // sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
+    // verification script. Instead, their `verify` method will be consulted by the Neo node. The
+    // static method createContractWitness is used to instantiate a witness with the parameters for
+    // the verify method in its invocation script.
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0,
                 attributes, script, new ArrayList<>());
-        // For each signer a witness is added to a temporary transaction object that is serialized
-        // and sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
-        // verification script. Instead, their `verify` method will be consulted by the Neo node.
-        // The static method createContractWitness is used to instantiate a witness with the
-        // parameters for the verify method in its invocation script.
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
             if (signer instanceof ContractSigner) {
@@ -375,16 +388,14 @@ public class TransactionBuilder {
                 tx.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
                 Account a = ((AccountSigner) signer).getAccount();
-                if (a != null && a.getVerificationScript() != null) {
-                    tx.addWitness(new Witness(new byte[]{}, a.getVerificationScript().getScript()));
-                    hasAtLeastOneSigningAccount = true;
+                VerificationScript verificationScript;
+                if (a.isMultiSig()) {
+                    verificationScript = createFakeMultiSigVerificationScript(a);
                 } else {
-                    throw new TransactionConfigurationException("The signer with script hash '" +
-                            signer.getScriptHash() + "' does not hold a verification script. If " +
-                            "this signer is a contract, use the class 'ContractSigner' instead of" +
-                            " 'AccountSigner', otherwise, this signer requires a verification " +
-                            "script in order to be able to calculate the network fee.");
+                    verificationScript = createFakeSingleSigVerificationScript();
                 }
+                tx.addWitness(new Witness(new byte[]{}, verificationScript.getScript()));
+                hasAtLeastOneSigningAccount = true;
             }
         }
         if (!hasAtLeastOneSigningAccount) {
@@ -393,6 +404,18 @@ public class TransactionBuilder {
         }
         String txHex = toHexStringNoPrefix(tx.toArray());
         return neow3j.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
+    }
+
+    private VerificationScript createFakeSingleSigVerificationScript() {
+        return new VerificationScript(new ECPublicKey(DUMMY_PUB_KEY));
+    }
+
+    private VerificationScript createFakeMultiSigVerificationScript(Account a) {
+        List<ECPublicKey> pubKeys = new ArrayList<>();
+        for (int i = 0; i < a.getNrOfParticipants(); i++) {
+            pubKeys.add(new ECPublicKey(DUMMY_PUB_KEY));
+        }
+        return new VerificationScript(pubKeys, a.getSigningThreshold());
     }
 
     /**
@@ -435,7 +458,7 @@ public class TransactionBuilder {
      *                                           fees.
      */
     public Transaction sign() throws Throwable {
-        transaction = buildTransaction();
+        transaction = getUnsignedTransaction();
         byte[] txBytes = transaction.getHashData();
         transaction.getSigners().forEach(signer -> {
             if (signer instanceof ContractSigner) {
@@ -454,26 +477,11 @@ public class TransactionBuilder {
         return transaction;
     }
 
-    /**
-     * Builds the transaction without signing it.
-     *
-     * @return the unsigned transaction.
-     * @throws TransactionConfigurationException if the builder is mis-configured.
-     * @throws IOException                       if an error occurs when interacting with the
-     *                                           Neo node.
-     * @throws Throwable                         a custom exception if one was set to be thrown in
-     *                                           the case the sender cannot cover the transaction
-     *                                           fees.
-     */
-    public Transaction getUnsignedTransaction() throws Throwable {
-        return buildTransaction();
-    }
-
     private void signWithAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
         if (keyPair == null) {
-            throw new IllegalStateException("Cannot create transaction signature because account " +
-                    "with script hash" + acc.getScriptHash() + " does not hold a private key.");
+            throw new TransactionConfigurationException("Cannot create transaction signature " +
+                    "because account " + acc.getAddress() + " does not hold a private key.");
         }
         transaction.addWitness(Witness.create(txBytes, keyPair));
     }

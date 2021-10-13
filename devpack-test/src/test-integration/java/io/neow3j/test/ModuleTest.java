@@ -16,11 +16,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ContractTest(
         blockTime = 1,
-        contractClass = ExampleContract.class,
+        contractClass = TestContract.class,
         batchFile = "example.batch",
         neoxpConfig = "example.neo-express"
 )
-public class ExampleTest {
+public class ModuleTest {
 
     @RegisterExtension
     private static ContractTestExtension ext = new ContractTestExtension();
@@ -29,7 +29,7 @@ public class ExampleTest {
 
     private SmartContract contract;
 
-    public ExampleTest(Neow3jExpress neow3j, SmartContract contract) {
+    public ModuleTest(Neow3jExpress neow3j, SmartContract contract) {
         this.neow3j = neow3j;
         this.contract = contract;
     }

@@ -1,12 +1,14 @@
 package io.neow3j.transaction;
 
-import io.neow3j.script.VerificationScript;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 
 /**
  * A signer of a transaction. It defines a in which scope the witness/signature of an account is
  * valid, i.e., which contracts can use the witness in an invocation.
+ * <p>
+ * If an {@code AccountSigner} is created with an private key-holding {@code Account}, it can be
+ * used to automatically sign a transaction via {@link TransactionBuilder#sign()}.
  */
 public class AccountSigner extends Signer {
 

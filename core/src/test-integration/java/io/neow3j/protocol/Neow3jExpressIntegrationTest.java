@@ -42,7 +42,6 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neow3jExpressIntegrationTest {
 
-    private static final String NEOXP_CONFIG_SOURCE = "default.neo-express";
     private static final String NEF_FILE_SOURCE = "OracleTestContract.nef";
     private static final String MANIFEST_FILE_SOURCE = "OracleTestContract.manifest.json";
     private static final String INVOKE_FILE_SOURCE = "oracle-request-invoke.json";
@@ -55,7 +54,7 @@ public class Neow3jExpressIntegrationTest {
 
     @ClassRule
     public static NeoExpressTestContainer container = new NeoExpressTestContainer(1)
-            .withNeoxpConfig(NEOXP_CONFIG_SOURCE)
+            .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC)
             .withBatchFile(BATCH_SOURCE)
             .withInvokeFile(INVOKE_FILE_SOURCE) // Required in the batch file.
             .withNefAndManifestFiles(NEF_FILE_SOURCE, MANIFEST_FILE_SOURCE);
