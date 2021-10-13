@@ -41,7 +41,7 @@ public class TransactionBuilder {
     private static final Hash160 GAS_TOKEN_HASH =
             new Hash160("d2a4cff31913016155e38e474a2c06d08be276cf");
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
-    private static final String DEFAULT_PUB_KEY =
+    private static final String DUMMY_PUB_KEY =
             "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
 
     protected Neow3j neow3j;
@@ -407,13 +407,13 @@ public class TransactionBuilder {
     }
 
     private VerificationScript createFakeSingleSigVerificationScript() {
-        return new VerificationScript(new ECPublicKey(DEFAULT_PUB_KEY));
+        return new VerificationScript(new ECPublicKey(DUMMY_PUB_KEY));
     }
 
     private VerificationScript createFakeMultiSigVerificationScript(Account a) {
         List<ECPublicKey> pubKeys = new ArrayList<>();
         for (int i = 0; i < a.getNrOfParticipants(); i++) {
-            pubKeys.add(new ECPublicKey(DEFAULT_PUB_KEY));
+            pubKeys.add(new ECPublicKey(DUMMY_PUB_KEY));
         }
         return new VerificationScript(pubKeys, a.getSigningThreshold());
     }
