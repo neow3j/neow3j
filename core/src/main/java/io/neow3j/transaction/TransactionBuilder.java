@@ -42,7 +42,7 @@ public class TransactionBuilder {
             new Hash160("d2a4cff31913016155e38e474a2c06d08be276cf");
     private static final String BALANCE_OF_FUNCTION = "balanceOf";
     private static final String DUMMY_PUB_KEY =
-            "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+            "02ec143f00b88524caf36a0121c2de09eef0519ddbe1c710a00f0e2663201ee4c0";
 
     protected Neow3j neow3j;
     protected Transaction transaction;
