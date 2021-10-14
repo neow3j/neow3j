@@ -143,6 +143,15 @@ public class PermissionManifestTest {
     }
 
     @Test
+    public void withoutContractField() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("requires exactly one annotation value for " +
+                "the specification of the permissioned contract.");
+        new Compiler().compile(
+                PermissionManifestTestContractWithoutContract.class.getName());
+    }
+
+    @Test
     public void withNoneNativeContractValue() throws IOException {
         exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage("The provided native contract does not exist.");
@@ -236,6 +245,14 @@ public class PermissionManifestTest {
 
     @Permission(contract = CONTRACT_HASH_1, nativeContract = NativeContract.ContractManagement)
     static class PermissionManifestTestContractWithContractAndNativeContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(methods = "transfer")
+    static class PermissionManifestTestContractWithoutContract {
 
         public static void main() {
         }
