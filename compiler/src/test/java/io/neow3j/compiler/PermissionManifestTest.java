@@ -1,9 +1,12 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.GasToken;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Permission.Permissions;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.types.Hash160;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -35,13 +38,16 @@ public class PermissionManifestTest {
         CompilationUnit unit = new Compiler()
                 .compile(PermissionManifestTestContract.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
-        assertThat(permissions, hasSize(2));
+        assertThat(permissions, hasSize(3));
         assertThat(permissions.get(0).getContract(), is(CONTRACT_HASH_1));
         assertThat(permissions.get(0).getMethods(), hasSize(1));
         assertThat(permissions.get(0).getMethods().get(0), is("*"));
         assertThat(permissions.get(1).getContract(), is(CONTRACT_HASH_2));
         assertThat(permissions.get(1).getMethods().get(0), is(CONTRACT_METHOD_1));
         assertThat(permissions.get(1).getMethods().get(1), is(CONTRACT_METHOD_2));
+        assertThat(new Hash160(permissions.get(2).getContract()), is(GasToken.SCRIPT_HASH));
+        assertThat(permissions.get(2).getMethods(), hasSize(1));
+        assertThat(permissions.get(2).getMethods().get(0), is("*"));
     }
 
     @Test
@@ -127,8 +133,48 @@ public class PermissionManifestTest {
         assertThat(permissions.get(0).getMethods().get(0), is("*"));
     }
 
+    @Test
+    public void withBothContractAndNativeContract() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
+                "'nativeContract' set but not both");
+        new Compiler().compile(
+                PermissionManifestTestContractWithContractAndNativeContract.class.getName());
+    }
+
+    @Test
+    public void withoutBothContractAndNativeContract() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
+                "'nativeContract' set but not both");
+        new Compiler().compile(
+                PermissionManifestTestContractWithoutContract.class.getName());
+    }
+
+    @Test
+    public void withNoneNativeContractValue() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("The provided native contract does not exist.");
+        new Compiler().compile(
+                PermissionManifestTestContractWithNoneNativeContractValue.class.getName());
+    }
+
+    @Test
+    public void nativeContractFromHash() {
+        NativeContract nativeContract = NativeContract.valueOf(GasToken.SCRIPT_HASH);
+        assertThat(nativeContract, is(NativeContract.GasToken));
+    }
+
+    @Test
+    public void invalidNativeContract() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("There exists no native contract with ");
+        NativeContract.valueOf(new Hash160("6a3828e0378f9f331c69476f016fe91f5bba8dbd"));
+    }
+
     @Permission(contract = CONTRACT_HASH_1)
     @Permission(contract = CONTRACT_HASH_2, methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+    @Permission(nativeContract = NativeContract.GasToken)
     static class PermissionManifestTestContract {
 
         public static void main() {
@@ -191,6 +237,30 @@ public class PermissionManifestTest {
 
     @Permission(contract = "*", methods = "*")
     static class PermissionManifestWithWildCardTestContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(contract = CONTRACT_HASH_1, nativeContract = NativeContract.ContractManagement)
+    static class PermissionManifestTestContractWithContractAndNativeContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(methods = "transfer")
+    static class PermissionManifestTestContractWithoutContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(nativeContract = NativeContract.None)
+    static class PermissionManifestTestContractWithNoneNativeContractValue {
 
         public static void main() {
         }

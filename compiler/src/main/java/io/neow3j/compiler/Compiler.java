@@ -355,6 +355,7 @@ public class Compiler {
                     .forEach((it) -> processAnnotationNode(it, replaceMap));
     }
 
+    @SuppressWarnings("unchecked")
     private static void processAnnotationNode(AnnotationNode annotationNode,
             java.util.Map<String, String> replaceMap) {
 
