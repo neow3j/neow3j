@@ -150,8 +150,9 @@ public class ManifestBuilder {
     private static ContractPermission getContractPermission(AnnotationNode ann) {
         int contractIndex = ann.values.indexOf("contract");
         int nativeContractIndex = ann.values.indexOf("nativeContract");
-        if ((contractIndex != -1 && nativeContractIndex != -1) ||
-                (contractIndex == nativeContractIndex)) {
+        boolean bothPresent = contractIndex != -1 && nativeContractIndex != -1;
+        boolean bothAbsent = contractIndex == nativeContractIndex;
+        if (bothPresent || bothAbsent) {
             throw new CompilerException("A permission requires exactly one annotation value for " +
                     "the specification of the permissioned contract. Use either 'contract' or" +
                     "'nativeContract'.");
