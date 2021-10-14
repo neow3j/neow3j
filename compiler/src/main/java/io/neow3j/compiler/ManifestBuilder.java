@@ -153,9 +153,8 @@ public class ManifestBuilder {
         boolean bothPresent = contractIndex != -1 && nativeContractIndex != -1;
         boolean bothAbsent = contractIndex == nativeContractIndex;
         if (bothPresent || bothAbsent) {
-            throw new CompilerException("A permission requires exactly one annotation value for " +
-                    "the specification of the permissioned contract. Use either 'contract' or" +
-                    "'nativeContract'.");
+            throw new CompilerException("A @Permission annotation must either have the attribute " +
+                    "'contract' or 'nativeContract' set but not both at the same time.");
         }
         String hashOrPubKey;
         if (contractIndex != -1) {

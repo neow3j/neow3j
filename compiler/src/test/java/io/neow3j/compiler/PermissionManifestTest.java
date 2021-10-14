@@ -134,19 +134,19 @@ public class PermissionManifestTest {
     }
 
     @Test
-    public void withContractAndNativeContract() throws IOException {
+    public void withBothContractAndNativeContract() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("requires exactly one annotation value for " +
-                "the specification of the permissioned contract.");
+        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
+                "'nativeContract' set but not both");
         new Compiler().compile(
                 PermissionManifestTestContractWithContractAndNativeContract.class.getName());
     }
 
     @Test
-    public void withoutContractField() throws IOException {
+    public void withoutBothContractAndNativeContract() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("requires exactly one annotation value for " +
-                "the specification of the permissioned contract.");
+        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
+                "'nativeContract' set but not both");
         new Compiler().compile(
                 PermissionManifestTestContractWithoutContract.class.getName());
     }
