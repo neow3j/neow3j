@@ -24,7 +24,7 @@ public class PlaceholderSubstitutionTest {
     }
 
     // Annotations.value = List{key, value}
-    @Trust(value = "<INVALID_TRUST_HASH>")
+    @Trust(contract = "<INVALID_TRUST_HASH>")
     static class SingleAnnotationReplaceTest {
         public static void main() {
         }
@@ -48,8 +48,8 @@ public class PlaceholderSubstitutionTest {
     }
 
     // Annotations.value = List{key, List{trustNode1, trustNode2}}
-    @Trust(value = "<INVALID_TRUST_HASH1>")
-    @Trust(value = "<INVALID_TRUST_HASH2>")
+    @Trust(contract = "<INVALID_TRUST_HASH1>")
+    @Trust(contract = "<INVALID_TRUST_HASH2>")
     @Permission(contract = "<PERMISSION_HASH>", methods = "<PERMISSION_METHOD>")
     static class MultiAnnotationReplaceTest {
         public static void main() {
