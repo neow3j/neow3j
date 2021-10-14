@@ -12,6 +12,7 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -146,12 +148,27 @@ public class ManifestBuilder {
     }
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
-        int i = ann.values.indexOf("contract");
-        String hashOrPubKey = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKeyOrWildcard(hashOrPubKey);
-        hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
+        int contractIndex = ann.values.indexOf("contract");
+        int nativeContractIndex = ann.values.indexOf("nativeContract");
+        if ((contractIndex != -1 && nativeContractIndex != -1) ||
+                (contractIndex == nativeContractIndex)) {
+            throw new CompilerException("A permission requires exactly one annotation value for " +
+                    "the specification of the permissioned contract. Use either 'contract' or" +
+                    "'nativeContract'.");
+        }
+        String hashOrPubKey;
+        if (contractIndex != -1) {
+            hashOrPubKey = (String) ann.values.get(contractIndex + 1);
+            throwIfNotValidContractHashOrPubKeyOrWildcard(hashOrPubKey);
+            hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
+        } else {
+            NativeContract nativeContract = NativeContract.valueOf(
+                    asList((String[]) ann.values.get(nativeContractIndex + 1)).get(1));
+            throwIfNotValidNativeContract(nativeContract);
+            hashOrPubKey = addOrClearHexPrefix(nativeContract.getContractHash().toString());
+        }
 
-        i = ann.values.indexOf("methods");
+        int i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
         // if 'methods' is not found, it means we need to add a "wildcard"
         // to that manifest
@@ -187,6 +204,14 @@ public class ManifestBuilder {
         throwIfNotValidSignature(signature);
 
         return new ContractGroup(pubKey, signature);
+    }
+
+    private static void throwIfNotValidNativeContract(NativeContract nativeContract) {
+        if (nativeContract == NativeContract.None) {
+            throw new CompilerException("The provided native contract does not exist. The None " +
+                    "value exists for the sole purpose to serve as an internal default value and " +
+                    "is not meant to be used.");
+        }
     }
 
     private static void throwIfNotValidSignature(String signature) {
