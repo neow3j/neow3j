@@ -1,6 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.CompilerException;
@@ -35,6 +34,7 @@ import static io.neow3j.compiler.Compiler.addPushNumber;
 import static io.neow3j.compiler.Compiler.addReverseArguments;
 import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.handleInsn;
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
 import static io.neow3j.compiler.Compiler.isCallToCtor;
 import static io.neow3j.compiler.Compiler.isEvent;
 import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
@@ -64,7 +64,13 @@ public class ObjectsConverter implements Converter {
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
                 if (isEvent(fieldInsn.desc)) {
+                    if (neoMethod.isVerifyMethod()) {
+                        throw new CompilerException(neoMethod,
+                                "The verify method is not allowed to fire any event.");
+                    }
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
+                } else if (isAssertionDisabledStaticField(fieldInsn)) {
+                    insn = fieldInsn.getNext();
                 } else {
                     addLoadStaticField(fieldInsn, neoMethod, compUnit);
                 }
@@ -200,8 +206,7 @@ public class ObjectsConverter implements Converter {
     private static boolean isNewThrowable(TypeInsnNode typeInsn,
             CompilationUnit compUnit) throws IOException {
 
-        ClassNode type = AsmHelper.getAsmClassForInternalName(typeInsn.desc,
-                compUnit.getClassLoader());
+        ClassNode type = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
 
         if (getFullyQualifiedNameForInternalName(type.name).equals(
                 Throwable.class.getCanonicalName())) {
@@ -220,40 +225,71 @@ public class ObjectsConverter implements Converter {
     private static AbstractInsnNode handleNewThrowable(TypeInsnNode typeInsn,
             NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
-        if (!Exception.class.getCanonicalName()
-                .equals(getFullyQualifiedNameForInternalName(typeInsn.desc))) {
-            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type "
-                            + "%s but only %s is allowed.",
-                    getFullyQualifiedNameForInternalName(typeInsn.desc),
-                    Exception.class.getCanonicalName()));
+        String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
+        ThrowableType throwableType = getThrowableType(fullyQualifiedExceptionName);
+        if (throwableType.equals(ThrowableType.OTHER)) {
+            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
+                            " %s but only %s and %s are allowed.", fullyQualifiedExceptionName,
+                    Exception.class.getCanonicalName(), AssertionError.class.getCanonicalName()));
         }
         // Skip to the next instruction after DUP.
         AbstractInsnNode insn = typeInsn.getNext().getNext();
         // Process any instructions that come before the INVOKESPECIAL, e.g., a PUSHDATA insn.
-        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName())) {
+        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName()) &&
+                !isCallToCtor(insn, Type.getType(AssertionError.class).getInternalName())) {
             insn = handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
 
         Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
+        checkForInvalidExceptionArguments(argTypes, throwableType, callingNeoMethod);
+
+        if (argTypes.length == 0) {
+            // No exception message is given, thus a dummy message is added.
+            String dummyMessage = "error";
+            if (throwableType.equals(ThrowableType.ASSERTION)) {
+                dummyMessage = "assertion failed";
+            }
+            callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
+        }
+        return insn;
+    }
+
+    private static void checkForInvalidExceptionArguments(Type[] argTypes,
+            ThrowableType throwableType, NeoMethod callingNeoMethod) {
+
         if (argTypes.length > 1) {
             throw new CompilerException(callingNeoMethod, format("An exception thrown in a contract"
                     + " can either take no arguments or a String argument. You provided %d "
                     + "arguments.", argTypes.length));
         }
-        if (argTypes.length == 1 &&
+
+        // Only string messages are allowed in exceptions. In assert statements, this cannot
+        // be checked properly. Therefore, if an assertion message is not a string, it is
+        // ignored when converting it.
+        if (argTypes.length == 1 && !throwableType.equals(ThrowableType.ASSERTION) &&
                 !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
                         .equals(String.class.getCanonicalName())) {
-            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract can "
-                    + "either take no arguments or a String argument. You provided a non-string "
-                    + "argument.");
+            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
+                    "can either take no arguments or a String argument. You provided a " +
+                    "non-string argument.");
+        }
+    }
 
+    private static ThrowableType getThrowableType(String fullyQualifiedExceptionName) {
+        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            return ThrowableType.EXCEPTION;
         }
-        if (argTypes.length == 0) {
-            // No exception message is given, thus we add a dummy message.
-            callingNeoMethod.addInstruction(buildPushDataInsn("error"));
+        if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
+            return ThrowableType.ASSERTION;
         }
-        return insn;
+        return ThrowableType.OTHER;
+    }
+
+    private enum ThrowableType {
+        EXCEPTION,
+        ASSERTION,
+        OTHER
     }
 
     /**

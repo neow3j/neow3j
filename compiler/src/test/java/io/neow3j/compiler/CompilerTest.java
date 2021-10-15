@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
@@ -9,7 +8,9 @@ import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Transaction;
+import io.neow3j.devpack.annotations.ContractSourceCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
 import org.junit.Rule;
@@ -176,6 +177,12 @@ public class CompilerTest {
         assertThat(insn.getOperand(), is(operand));
     }
 
+    @Test
+    public void sourceCodeUrlIsAdded() throws IOException {
+        CompilationUnit res = new Compiler().compile(SourceUrlContract.class.getName());
+        assertThat(res.getNefFile().getSourceUrl(), is("https://github.com/neow3j/neow3j"));
+    }
+
     static class InstructionAnnotationWithOperandPrefixAndOperandContract {
 
         @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = 0x03, operand = {0x01, 0x02, 0x03})
@@ -190,5 +197,12 @@ public class CompilerTest {
 
     }
 
+    @ContractSourceCode("https://github.com/neow3j/neow3j")
+    static class SourceUrlContract {
+
+        public static String method() {
+            return "hello, world";
+        }
+    }
 
 }

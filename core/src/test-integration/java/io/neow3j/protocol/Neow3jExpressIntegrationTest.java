@@ -42,13 +42,10 @@ import static org.junit.Assert.assertThat;
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class Neow3jExpressIntegrationTest {
 
-    static final String NEF_FILE_SOURCE = "/OracleTestContract.nef";
-    static final String NEF_FILE_DESTINATION = "/app/OracleTestContract.nef";
-    static final String MANIFEST_FILE_SOURCE = "/OracleTestContract.manifest.json";
-    static final String MANIFEST_FILE_DESTINATION = "/app/OracleTestContract.manifest.json";
-    static final String INVOKE_FILE_SOURCE = "/oracle-request-invoke.json";
-    static final String INVOKE_FILE_DESTINATION = "/app/oracle-request-invoke.json";
-    static final String BATCH_SOURCE = "/setup.batch";
+    private static final String NEF_FILE_SOURCE = "OracleTestContract.nef";
+    private static final String MANIFEST_FILE_SOURCE = "OracleTestContract.manifest.json";
+    private static final String INVOKE_FILE_SOURCE = "oracle-request-invoke.json";
+    private static final String BATCH_SOURCE = "setup.batch";
 
     static final Hash160 oracleTestContractHash =
             new Hash160("8693a8d7d9c5633f9b27cb4366f98b4171dc8838");
@@ -56,12 +53,11 @@ public class Neow3jExpressIntegrationTest {
     protected static Neow3jExpress neow3jExpress;
 
     @ClassRule
-    public static NeoExpressTestContainer container = new NeoExpressTestContainer(1,
-            NEF_FILE_SOURCE, NEF_FILE_DESTINATION,
-            MANIFEST_FILE_SOURCE, MANIFEST_FILE_DESTINATION,
-            INVOKE_FILE_SOURCE, INVOKE_FILE_DESTINATION,
-            BATCH_SOURCE, NeoExpressTestContainer.BATCH_DEST
-    );
+    public static NeoExpressTestContainer container = new NeoExpressTestContainer(1)
+            .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC)
+            .withBatchFile(BATCH_SOURCE)
+            .withInvokeFile(INVOKE_FILE_SOURCE) // Required in the batch file.
+            .withNefAndManifestFiles(NEF_FILE_SOURCE, MANIFEST_FILE_SOURCE);
 
     @BeforeClass
     public static void setUp() {

@@ -10,7 +10,7 @@ public class EqualsVerifierResponseTest {
 
     @Test
     public void testGetVersion() {
-        EqualsVerifier.forClass(NeoGetVersion.Result.class)
+        EqualsVerifier.forClass(NeoGetVersion.NeoVersion.class)
                 .suppress(Warning.NONFINAL_FIELDS)
                 .suppress(Warning.STRICT_INHERITANCE)
                 .verify();

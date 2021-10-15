@@ -1,18 +1,34 @@
 package io.neow3j.crypto;
 
+import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.crypto.Sign.recoverSigningScriptHash;
+import static io.neow3j.crypto.Sign.signHexMessage;
+import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.crypto.Sign.signedMessageToKey;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.Numeric;
+
 import java.security.SignatureException;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class SignTest {
 
-    private static final byte[] TEST_MESSAGE = "A test message".getBytes();
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    private static final String TEST_MESSAGE = "A test message";
+    private static final byte[] TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes();
     static final ECPrivateKey PRIVATE_KEY = new ECPrivateKey(Numeric.toBigIntNoPrefix(
             "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"));
     static final ECPublicKey PUBLIC_KEY = new ECPublicKey(Numeric.toBigIntNoPrefix(
@@ -21,23 +37,66 @@ public class SignTest {
 
     @Test
     public void testSignMessage() {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
+        Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
 
         Sign.SignatureData expected = new Sign.SignatureData(
                 (byte) 27,
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655"),
-                Numeric.hexStringToByteArray(
+                hexStringToByteArray(
                         "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf")
         );
 
         assertThat(signatureData, is(expected));
+
+        signatureData = signMessage(sha256(TEST_MESSAGE_BYTES), KEY_PAIR, false);
+        assertThat(signatureData, is(expected));
+
+        signatureData = signMessage(TEST_MESSAGE, KEY_PAIR);
+        assertThat(signatureData, is(expected));
+
+        signatureData = signHexMessage(toHexString(TEST_MESSAGE_BYTES), KEY_PAIR);
+        assertThat(signatureData, is(expected));
+    }
+
+    @Test
+    public void testRecoverSigningScriptHash() throws SignatureException {
+        Sign.SignatureData signatureData = new Sign.SignatureData(
+                (byte) 27,
+                hexStringToByteArray(
+                        "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655"),
+                hexStringToByteArray(
+                        "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf")
+        );
+        Hash160 signer = recoverSigningScriptHash(TEST_MESSAGE_BYTES, signatureData);
+
+        assertThat(signer, is(KEY_PAIR.getScriptHash()));
+    }
+
+    @Test
+    public void testFromByteArray() {
+        byte[] r = hexStringToByteArray(
+                "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655");
+        byte[] s = hexStringToByteArray(
+                "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+
+        byte[] signature = hexStringToByteArray(
+                "147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
+        Sign.SignatureData signatureData = Sign.SignatureData.fromByteArray(signature);
+        assertThat(signatureData.getV(), is((byte) 0x00));
+        assertThat(signatureData.getR(), is(r));
+        assertThat(signatureData.getS(), is(s));
+
+        signatureData = Sign.SignatureData.fromByteArray((byte) 0x27, signature);
+        assertThat(signatureData.getV(), is((byte) 0x27));
+        assertThat(signatureData.getR(), is(r));
+        assertThat(signatureData.getS(), is(s));
     }
 
     @Test
     public void testSignedMessageToKey() throws SignatureException {
-        Sign.SignatureData signatureData = Sign.signMessage(TEST_MESSAGE, KEY_PAIR);
-        ECPublicKey key = Sign.signedMessageToKey(TEST_MESSAGE, signatureData);
+        Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
+        ECPublicKey key = signedMessageToKey(TEST_MESSAGE_BYTES, signatureData);
         assertThat(key, equalTo(PUBLIC_KEY));
     }
 
@@ -46,9 +105,12 @@ public class SignTest {
         assertThat(Sign.publicKeyFromPrivate(PRIVATE_KEY), equalTo(PUBLIC_KEY));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testInvalidSignature() throws SignatureException {
-        Sign.signedMessageToKey(
-                TEST_MESSAGE, new Sign.SignatureData((byte) 27, new byte[]{1}, new byte[]{0}));
+        exceptionRule.expect(RuntimeException.class);
+        exceptionRule.expectMessage("r must be 32 bytes.");
+        signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
+                        new byte[]{0}));
     }
+
 }

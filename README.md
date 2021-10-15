@@ -1,9 +1,9 @@
 [![neow3j Actions Status](https://github.com/neow3j/neow3j/workflows/neow3j-ci-cd/badge.svg)](https://github.com/neow3j/neow3j/actions)
-![Maven metadata URI](https://img.shields.io/maven-metadata/v/http/search.maven.org/maven2/io/neow3j/core/maven-metadata.xml.svg)
+![Maven Central](https://img.shields.io/maven-central/v/io.neow3j/core?label=maven%2Fgradle)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/http/oss.sonatype.org/io.neow3j/core.svg)
 [![javadoc](https://javadoc.io/badge2/io.neow3j/core/javadoc.svg)](https://javadoc.io/doc/io.neow3j)
 [![codecov](https://codecov.io/gh/neow3j/neow3j/branch/master-3.x/graph/badge.svg?token=Xd0m5I7cz0)](https://codecov.io/gh/neow3j/neow3j)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/f82a724b90a94df88e11c6462f2176ca)](https://www.codacy.com/manual/gsmachado/neow3j?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neow3j/neow3j&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ccbf3cfcfcf749a097774414362ae008)](https://www.codacy.com/gh/neow3j/neow3j/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neow3j/neow3j&amp;utm_campaign=Badge_Grade)
 
 # neow3j: A Java/Kotlin/Android Development Toolkit for the Neo Blockchain
 
@@ -29,7 +29,7 @@ To make use of all neow3j SDK features, add `io.neow3j:contract` to your depende
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.13.0'
+implementation 'io.neow3j:contract:3.13.1'
 ```
 
 __Maven__
@@ -38,7 +38,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>3.13.0</version>
+    <version>3.13.1</version>
 </dependency>
 ```
 
@@ -54,7 +54,7 @@ following dependency to your project.
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.13.0'
+implementation 'io.neow3j:devpack:3.13.1'
 ```
 
 __Maven__
@@ -63,7 +63,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>3.13.0</version>
+    <version>3.13.1</version>
 </dependency>
 ```
 
@@ -74,11 +74,12 @@ compile smart contracts that are compatible with Neo Legacy.
 
 Help the development of neow3j by donating to the following addresses:
 
-| Crypto   | Address                                      |
-|----------|----------------------------------------------|
-| NEO      | `AHb3PPUY6a36Gd6JXCkn8j8LKtbEUr3UfZ`         |
-| ETH      | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
-| BTC      | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
+| Crypto     | Address                                      |
+|------------|----------------------------------------------|
+| Neo N3     | `NfhQyNmMCLCKaaazL6gbvYxtkZNGVb8kRn`         |
+| Neo Legacy | `AHb3PPUY6a36Gd6JXCkn8j8LKtbEUr3UfZ`         |
+| ETH        | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
+| BTC        | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
 
 ## Thanks and Credits :pray:

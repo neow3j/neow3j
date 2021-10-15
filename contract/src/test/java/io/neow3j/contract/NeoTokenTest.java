@@ -1,26 +1,5 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.transaction.AccountSigner.global;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.publicKey;
-import static io.neow3j.test.WireMockTestHelper.loadFile;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
@@ -34,16 +13,38 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.loadFile;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.AccountSigner.global;
+import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class NeoTokenTest {
 
@@ -256,15 +257,19 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void voteForNonCandidateThrows() throws IOException {
+    public void cancelVoteWithAccountProducesCorrectScript() throws IOException {
         setUpWireMockForInvokeFunction("getCandidates", "invokefunction_getcandidates.json");
-        NeoToken neoToken = new NeoToken(neow);
-        Account nonCandidateAccount = Account.fromWIF(
-                "KyHFg26DHTUWZtmUVTRqDHg8uVvZi9dr5zV3tQ22JZUjvWVCFvtw");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("provided public key is not a candidate");
-        neoToken.vote(nonCandidateAccount.getScriptHash(),
-                nonCandidateAccount.getECKeyPair().getPublicKey());
+        setUpWireMockForCall("invokescript", "invokescript_vote.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+
+        byte[] expectedScript = new ScriptBuilder().contractCall(NeoToken.SCRIPT_HASH, VOTE,
+                asList(hash160(account1.getScriptHash()), any(null))).toArray();
+
+        TransactionBuilder b = new NeoToken(neow)
+                .cancelVote(account1)
+                .signers(global(account1));
+
+        assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
@@ -362,4 +367,13 @@ public class NeoTokenTest {
         assertNull(neoAccountState.getPublicKey());
     }
 
+    @Test
+    public void isCandidate() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                NEOTOKEN_SCRIPTHASH, "getCandidates");
+
+        ECPublicKey pubKey = new ECPublicKey(
+                        "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+        assertTrue(new NeoToken(neow).isCandidate(pubKey));
+    }
 }

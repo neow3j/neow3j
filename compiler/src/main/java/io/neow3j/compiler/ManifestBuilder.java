@@ -12,6 +12,7 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.annotations.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static java.util.Arrays.asList;
 import static java.util.Optional.ofNullable;
 
 /**
@@ -146,12 +148,8 @@ public class ManifestBuilder {
     }
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
-        int i = ann.values.indexOf("contract");
-        String hashOrPubKey = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKeyOrWildcard(hashOrPubKey);
-        hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
-
-        i = ann.values.indexOf("methods");
+        String hashOrPubKey = getHashOrPubKey(ann);
+        int i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
         // if 'methods' is not found, it means we need to add a "wildcard"
         // to that manifest
@@ -165,6 +163,39 @@ public class ManifestBuilder {
         }
 
         return new ContractPermission(hashOrPubKey, methods);
+    }
+
+    private static String getContractTrust(AnnotationNode ann) {
+        return getHashOrPubKey(ann);
+    }
+
+    // Retrieves the hash or public key from annotations which allow both fields 'contract' and
+    // 'nativeContract'.
+    private static String getHashOrPubKey(AnnotationNode ann) {
+        if (ann.values == null) {
+            throw new CompilerException("This annotation requires either the attribute " +
+                    "'contract' or 'nativeContract' to be set.");
+        }
+        int contractIndex = ann.values.indexOf("contract");
+        int nativeContractIndex = ann.values.indexOf("nativeContract");
+        boolean bothPresent = contractIndex != -1 && nativeContractIndex != -1;
+        boolean bothAbsent = contractIndex == nativeContractIndex;
+        if (bothPresent || bothAbsent) {
+            throw new CompilerException("A @Permission or @Trust annotation must either have the " +
+                    "attribute 'contract' or 'nativeContract' set but not both at the same time.");
+        }
+        String hashOrPubKey;
+        if (contractIndex != -1) {
+            hashOrPubKey = (String) ann.values.get(contractIndex + 1);
+            throwIfNotValidContractHashOrPubKeyOrWildcard(hashOrPubKey);
+            hashOrPubKey = addOrClearHexPrefix(hashOrPubKey);
+        } else {
+            NativeContract nativeContract = NativeContract.valueOf(
+                    asList((String[]) ann.values.get(nativeContractIndex + 1)).get(1));
+            throwIfNotValidNativeContract(nativeContract);
+            hashOrPubKey = addOrClearHexPrefix(nativeContract.getContractHash().toString());
+        }
+        return hashOrPubKey;
     }
 
     private static String addOrClearHexPrefix(String hashOrPubKey) {
@@ -187,6 +218,14 @@ public class ManifestBuilder {
         throwIfNotValidSignature(signature);
 
         return new ContractGroup(pubKey, signature);
+    }
+
+    private static void throwIfNotValidNativeContract(NativeContract nativeContract) {
+        if (nativeContract == NativeContract.None) {
+            throw new CompilerException("The provided native contract does not exist. The None " +
+                    "value exists for the sole purpose to serve as an internal default value and " +
+                    "is not meant to be used.");
+        }
     }
 
     private static void throwIfNotValidSignature(String signature) {
@@ -245,13 +284,6 @@ public class ManifestBuilder {
                     String.format("Invalid contract hash or public key: %s", contract)
             );
         }
-    }
-
-    private static String getContractTrust(AnnotationNode ann) {
-        int i = ann.values.indexOf("value");
-        String trust = (String) ann.values.get(i + 1);
-        throwIfNotValidContractHashOrPubKeyOrWildcard(trust);
-        return addOrClearHexPrefix(trust);
     }
 
     private static List<AnnotationNode> checkForSingleOrMultipleAnnotations(ClassNode asmClass,

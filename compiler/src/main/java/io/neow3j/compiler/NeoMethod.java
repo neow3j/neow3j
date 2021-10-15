@@ -52,6 +52,8 @@ public class NeoMethod {
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
 
+    private final String VERIFY_METHOD_NAME = "verify";
+
     // This method's instructions sorted by their address. The addresses in this map are only
     // relative to this method and not the whole `NeoModule` in which this method lives in.
     private SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
@@ -480,6 +482,13 @@ public class NeoMethod {
             insn = insn.getNext();
         }
         insertTryCatchBlocks();
+    }
+
+    /**
+     * @return if this method is the verify method.
+     */
+    public boolean isVerifyMethod() {
+        return name.equals(VERIFY_METHOD_NAME);
     }
 
     protected void insertTryCatchBlocks() {

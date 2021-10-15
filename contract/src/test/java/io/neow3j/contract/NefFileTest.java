@@ -1,19 +1,15 @@
 package io.neow3j.contract;
 
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.reverseHexString;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Arrays.asList;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.contract.NefFile.MethodToken;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.CallFlags;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.types.Hash160;
+import org.hamcrest.core.StringContains;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,11 +19,16 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
-import io.neow3j.types.Hash160;
-import org.hamcrest.core.StringContains;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class NefFileTest {
 
@@ -44,13 +45,6 @@ public class NefFileTest {
     private static final String TESTCONTRACT_SCRIPT_SIZE = "05";
     private static final String TESTCONTRACT_SCRIPT = "5700017840";
     private static final String TESTCONTRACT_CHECKSUM = "760f39a0";
-    private final static String TESTCONTRACT_NEF = MAGIC
-                                                   + TESTCONTRACT_COMPILER
-                                                   + RESERVED_BYTES
-                                                   + "00" // no method tokens
-                                                   + RESERVED_BYTES
-                                                   + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-                                                   + TESTCONTRACT_CHECKSUM;
 
     // Test contract with method tokens:
     private final static String TESTCONTRACT_WITH_TOKENS_FILE =
@@ -163,13 +157,13 @@ public class NefFileTest {
     @Test
     public void deserializeWithWrongMagicNumber() throws DeserializationException {
         String nef = ""
-                     + "00000000"
-                     + TESTCONTRACT_COMPILER_HEX
-                     + RESERVED_BYTES
-                     + "00" // no tokens
-                     + RESERVED_BYTES
-                     + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-                     + TESTCONTRACT_CHECKSUM;
+                + "00000000"
+                + TESTCONTRACT_COMPILER_HEX
+                + RESERVED_BYTES
+                + "00" // no tokens
+                + RESERVED_BYTES
+                + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
+                + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("magic"));
@@ -179,12 +173,12 @@ public class NefFileTest {
     @Test
     public void deserializeWithWrongCheckSum() throws DeserializationException {
         String nef = MAGIC
-                     + TESTCONTRACT_COMPILER_HEX
-                     + RESERVED_BYTES
-                     + "00" // no tokens
-                     + RESERVED_BYTES
-                     + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
-                     + "00000000";
+                + TESTCONTRACT_COMPILER_HEX
+                + RESERVED_BYTES
+                + "00" // no tokens
+                + RESERVED_BYTES
+                + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
+                + "00000000";
         byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("checksum"));
@@ -194,12 +188,12 @@ public class NefFileTest {
     @Test
     public void deserializeWithEmptyScript() throws DeserializationException {
         String nef = MAGIC
-                     + TESTCONTRACT_COMPILER_HEX
-                     + RESERVED_BYTES
-                     + "00" //no tokens
-                     + RESERVED_BYTES
-                     + "00" // empty script
-                     + TESTCONTRACT_CHECKSUM;
+                + TESTCONTRACT_COMPILER_HEX
+                + RESERVED_BYTES
+                + "00" //no tokens
+                + RESERVED_BYTES
+                + "00" // empty script
+                + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
         expectedException.expect(DeserializationException.class);
         expectedException.expectMessage(new StringContains("Script cannot be empty"));
@@ -235,6 +229,48 @@ public class NefFileTest {
         assertThat(nef.getScript(), is(hexStringToByteArray("00fd411af77b67")));
         assertThat(nef.getMethodTokens(), is(empty()));
         assertThat(nef.getCheckSumAsInteger(), is(3921333105L));
+    }
+
+    @Test
+    public void serializeDeserializeNefFileWithSourceUrl() throws DeserializationException {
+        String url = "github.com/neow3j/neow3j";
+        NefFile nef = new NefFile("neo-core-v3.0", hexStringToByteArray("00fd411af77b67"), null,
+                url);
+
+        byte[] bytes = nef.toArray();
+        String hexString = toHexString(bytes);
+        // first number "18" is the length of the url.
+        assertThat(hexString, containsString("186769746875622e636f6d2f6e656f77336a2f6e656f77336a"));
+
+        NefFile nefDes = NeoSerializableInterface.from(bytes, NefFile.class);
+        assertThat(nefDes.getSourceUrl(), is(url));
+    }
+
+    @Test
+    public void failDeserializationWithTooLongSourceUrl() throws DeserializationException {
+        String nefHex =
+                // beginning of nef
+                "4e4546336e656f2d636f72652d76332e30000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" +
+                        // size of the source url (256 bytes)
+                        "fd0001" +
+                        // the source url
+                        "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
+                        "186769746875622e636f6d2f6e656f77336a2f6e656f77336a000000000700fd411af77b679cc8d824";
+
+        expectedException.expect(DeserializationException.class);
+        expectedException.expectMessage(new StringContains("must not be longer than"));
+        NeoSerializableInterface.from(hexStringToByteArray(nefHex), NefFile.class);
+    }
+
+    @Test
+    public void failConstructingWithTooLongSourceUrl() throws DeserializationException {
+        // 256 bytes string
+        String url = "github.com/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/";
+
+        expectedException.expect(IllegalArgumentException.class);
+        expectedException.expectMessage(new StringContains("must not be longer than"));
+        new NefFile("neo-core-v3.0", hexStringToByteArray("00fd411af77b67"), null,
+                url);
     }
 
 }

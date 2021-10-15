@@ -54,6 +54,21 @@ public class Helper {
     public static native byte[] toByteArray(String source);
 
     /**
+     * Converts the given integer to a byte array.
+     * <p>
+     * Examples:
+     * <ul>
+     *     <li>12: [0x0c]</li>
+     *     <li>1123581321: [0x42f87d89]</li>
+     * </ul>
+     *
+     * @param value The value to convert.
+     * @return The converted byte array.
+     */
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public static native byte[] toByteArray(int value);
+
+    /**
      * Asserts that the given value is in the range [-128, 127], i.e., the value range of a signed
      * byte. Returns the value as a signed byte if true, faults if not.
      * <p>
@@ -67,7 +82,7 @@ public class Helper {
      * </ul>
      *
      * @param value The value to cast.
-     * @return the casted byte.
+     * @return the cast byte.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.SIZE)
@@ -90,7 +105,7 @@ public class Helper {
      * </ul>
      *
      * @param value The value to cast.
-     * @return the casted byte.
+     * @return the cast byte.
      */
     public static byte asSignedByte(int value) {
         assertTrue(within(value, 0, 256));

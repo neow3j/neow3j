@@ -6,6 +6,7 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.contracts.FungibleToken;
@@ -21,7 +22,6 @@ import org.objectweb.asm.tree.MethodNode;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
@@ -89,8 +89,8 @@ public class CompilerExceptionsTest {
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                "223344", "3", OpCode.PUSHINT16.name(), "2")));
+        exceptionRule.expectMessage(
+                new StringContainsInOrder(asList("223344", "3", OpCode.PUSHINT16.name(), "2")));
         Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
@@ -104,8 +104,8 @@ public class CompilerExceptionsTest {
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList(OpCode.PUSHDATA1.name(), "needs an operand prefix of size", "1", "2")));
         Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
@@ -121,8 +121,7 @@ public class CompilerExceptionsTest {
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                "Operand prefix", "1", "2")));
+        exceptionRule.expectMessage(new StringContainsInOrder(asList("Operand prefix", "1", "2")));
         Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
@@ -136,8 +135,8 @@ public class CompilerExceptionsTest {
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
 
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                "1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
+        exceptionRule.expectMessage(new StringContainsInOrder(
+                asList("1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
         Compiler.processInstructionAnnotations(method, neoMethod);
     }
 
@@ -259,6 +258,13 @@ public class CompilerExceptionsTest {
         exceptionRule.expectMessage(new StringContains(
                 "Couldn't find triggered event in list of events"));
         new Compiler().compile(ContractClassWithReferenceToEventInOtherClass.class.getName());
+    }
+
+    @Test
+    public void throwOnEventFiredInVerifyMethod() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("The verify method is not allowed to fire any event.");
+        new Compiler().compile(VerificationWithEvent.class.getName());
     }
 
     static class UnsupportedInheritanceInConstructor {
@@ -492,6 +498,16 @@ public class CompilerExceptionsTest {
 
     static class NonContractClassWithEventDeclaration {
         public static Event1Arg<String> event;
+    }
+
+    static class VerificationWithEvent {
+        static Event1Arg<String> e;
+
+        @OnVerification
+        public static boolean verif() {
+            e.fire("neowww");
+            return true;
+        }
     }
 
 }

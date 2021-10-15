@@ -13,6 +13,7 @@ import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
+import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
@@ -62,6 +63,7 @@ import static io.neow3j.test.TestProperties.contractManagementHash;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
+import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
@@ -101,7 +103,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
     private static final int TX_VERSION = 0;
     private static final String TX_SCRIPT_NEO_TRANSFER =
-            "CwHECQwURVEu00/nfUbhURye/qtSvc8LywMMFH9l1DQ2JwiyVfDgaFa9y1zpnYUFFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
+            "CwHECQwURVEu00/nfUbhURye" +
+                    "/qtSvc8LywMMFH9l1DQ2JwiyVfDgaFa9y1zpnYUFFMAfDAh0cmFuc2ZlcgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUjk=";
     private static final BigInteger TX_AMOUNT_NEO = new BigInteger("2500");
     private static final BigInteger TX_AMOUNT_GAS = new BigInteger("1000");
     // wif KzQMj6by8e8RaL6W2oaqbn2XMKnM7gueSEVUF4Fwg9LmDWuojqKb
@@ -132,8 +135,7 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static Neow3j neow3j;
 
     @ClassRule
-    public static NeoTestContainer neoTestContainer =
-            new NeoTestContainer("/node-config/configReadTests.json");
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
@@ -339,7 +341,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef1.getTokens(), hasSize(0));
-        assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef1.getScript(), is(
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef1.getChecksum(), is(1110259869L));
 
         ContractManifest manifest1 = contractState1.getManifest();
@@ -424,7 +427,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getScript(), is(
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef.getChecksum(), is(588003825L));
 
         ContractManifest manifest = contractState.getManifest();
@@ -482,8 +486,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
-        assertThat(nef.getChecksum(), is(529571427L));
+        assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef.getChecksum(), is(2663858513L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -498,15 +502,15 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractManifest.ContractABI abi = manifest.getAbi();
         assertNotNull(abi);
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(6));
-        ContractMethod method = abi.getMethods().get(2);
-        assertThat(method.getName(), is("refuel"));
-        assertThat(method.getParameters(), hasSize(2));
-        assertThat(method.getParameters().get(1).getParamName(), is("amount"));
-        assertThat(method.getParameters().get(1).getParamType(), is(ContractParameterType.INTEGER));
-        assertThat(method.getOffset(), is(14));
-        assertThat(method.getReturnType(), is(ContractParameterType.VOID));
-        assertFalse(method.isSafe());
+        assertThat(abi.getMethods(), hasSize(5));
+        ContractMethod method = abi.getMethods().get(0);
+        assertThat(method.getName(), is("balanceOf"));
+        assertThat(method.getParameters(), hasSize(1));
+        assertThat(method.getParameters().get(0).getParamName(), is("account"));
+        assertThat(method.getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(method.getOffset(), is(0));
+        assertThat(method.getReturnType(), is(ContractParameterType.INTEGER));
+        assertTrue(method.isSafe());
 
         assertNotNull(abi.getEvents());
         assertThat(abi.getEvents(), hasSize(1));
@@ -653,17 +657,27 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetVersion() throws IOException {
-        NeoGetVersion.Result versionResult = getNeow3j()
+        NeoGetVersion.NeoVersion neoVersion = getNeow3j()
                 .getVersion()
                 .send()
                 .getVersion();
 
-        assertNotNull(versionResult);
-        assertThat(versionResult.getUserAgent(), not(isEmptyString()));
-        assertThat(versionResult.getNonce(), is(greaterThanOrEqualTo(0L)));
-        assertThat(versionResult.getTCPPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getWSPort(), is(greaterThanOrEqualTo(0)));
-        assertThat(versionResult.getNetwork(), is(greaterThanOrEqualTo(0L)));
+        assertNotNull(neoVersion);
+        assertThat(neoVersion.getUserAgent(), not(isEmptyString()));
+        assertThat(neoVersion.getNonce(), is(greaterThanOrEqualTo(0L)));
+        assertThat(neoVersion.getTCPPort(), is(greaterThanOrEqualTo(0)));
+        assertThat(neoVersion.getWSPort(), is(greaterThanOrEqualTo(0)));
+
+        NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
+        assertThat(protocol.getValidatorsCount(), is(1));
+        assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(86_400L));
+        assertThat(protocol.getMaxTraceableBlocks(), is(2_102_400L));
+        assertThat(protocol.getAddressVersion(), is(53));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(512L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(50_000));
+        assertThat(protocol.getInitialGasDistribution(),
+                is(BigInteger.valueOf(5_200_000_000_000_000L)));
     }
 
     // SmartContract Methods
@@ -1011,24 +1025,24 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testGetStateRoot() throws IOException {
         StateRoot stateRoot = getNeow3j()
-                .getStateRoot(BigInteger.ZERO)
+                .getStateRoot(0L)
                 .send()
                 .getStateRoot();
 
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
         assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "6c72cd3171922509bca520ba510dcd9fa8515121a40ba780e44ee6ebf5af7ba3")));
+                "27c62816df41444d4c8a26f8916d4e8e4fe4b366c1fb21d3d9e4a75e84b90efb")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 
     @Test
     public void testGetProof() throws IOException {
-        int localRootIndex = 2;
+        long localRootIndex = 2L;
         String proof = null;
         while (localRootIndex < 5) {
             Hash256 rootHash = getNeow3j()
-                    .getStateRoot(BigInteger.valueOf(localRootIndex))
+                    .getStateRoot(localRootIndex)
                     .send()
                     .getStateRoot()
                     .getRootHash();
@@ -1050,7 +1064,8 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testVerifyProof() throws IOException {
         String storage = getNeow3j()
                 .verifyProof(
-                        new Hash256("0x1cd846c74d5f78565c7c50957330147e5c0ee7e298f1dabd43a5651e00c41fac"),
+                        new Hash256(
+                                "0x1cd846c74d5f78565c7c50957330147e5c0ee7e298f1dabd43a5651e00c41fac"),
                         "05fdffffff0e062401010f03e20708edd777e5afb3ddbaaed0a6cd78793086975c43897f4ec5361c36ef8930d200040404040404040403b97ce0716d448e55d75b39f2f03ef02679180ac52e419460b3bdf112da31a6260393049f1d2ea67548e395d3a6850346fc2b94f0f9f6e5b2f5a22b752e13d03d9c040366ddb2164ca79a31da0a1500e323be8c4d21658eaa326844fbba64ec3691d8fa03cbaa546787bdeaba7529da84f04b9206595fd633e1bd02b5a95f554d7e37e11b03fadfbaa3addaca4f81a78b8d665c20a21afbbbe5605bf977c2821eb5da5726ee040342eefd9168b302445d5780ba52ae2d762f62302fd65c8f3e4b662681e671ca36042901060f0f0f0f0f0f03b30f4847ae191de2be4bfe41aca92bdab8f54ca6558fd1c4d92d7bb73adf4cf45200037b51dba93dcf3e1b8d547b52c05f34a1d4f840ac205d70d73dfe28aae2471d17032509026b74fac8e7415ae27831390c22ef239f554ef5c19b30ad7151ea9bb0b404040404040404040404040404040472000403bf8b4ccf825a4db3c123889eedf9dcabf4640aaa4f2e74dfd425295f3e9f61db04040404040404040403e0f5608876eb84737d1e70b991a63da5884450400409171a91ec7e9759611db6040403281489452008c08da47651d740cb3ff679e2100cd5bddd8058cf5f1633b22bd504042d022b2940014102282102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60210000")
                 .send()
                 .verifyProof();
@@ -1067,6 +1082,95 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateHeight.getLocalRootIndex(), greaterThanOrEqualTo(0L));
         assertThat(stateHeight.getValidatedRootIndex(), greaterThanOrEqualTo(0L));
+    }
+
+    @Test
+    public void testGetState() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String state = getNeow3j().getState(rootHash, new Hash160(gasTokenHash()),
+                "147f65d434362708b255f0e06856bdcb5ce99d8505").send().getState();
+
+        assertNotNull(state);
+    }
+
+    @Test
+    public void testFindStates() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNotNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults(), hasSize(3));
+        assertNotNull(states.getResults().get(2));
+    }
+
+    @Test
+    public void testFindStates_startKey() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        String startKey = "147f";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, startKey).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults(), hasSize(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
+    }
+
+    @Test
+    public void testFindStates_count() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, 1).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertTrue(states.isTruncated());
+        assertThat(states.getResults(), hasSize(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
+    }
+
+    @Test
+    public void testFindStates_startKeyAndCount() throws IOException {
+        long stateHeight = getNeow3j().getStateHeight().send()
+                .getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
+                .getStateRoot().getRootHash();
+        String keyPrefix = "14";
+        String startKey = "147f";
+        Hash160 contractHash = new Hash160(gasTokenHash());
+        NeoFindStates.States states = getNeow3j()
+                .findStates(rootHash, contractHash, keyPrefix, startKey, 1).send()
+                .getStates();
+        assertNotNull(states.getFirstProof());
+        assertNull(states.getLastProof());
+        assertFalse(states.isTruncated());
+        assertThat(states.getResults().size(), greaterThanOrEqualTo(1));
+        assertNotNull(states.getResults().get(0).getKey());
+        assertNotNull(states.getResults().get(0).getValue());
     }
 
 }

@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.response.NeoCalculateNetworkFee;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetCommittee;
@@ -26,6 +27,7 @@ import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
 import io.neow3j.protocol.core.response.NeoGetStateRoot;
 import io.neow3j.protocol.core.response.NeoGetStorage;
@@ -996,7 +998,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoGetStateRoot> getStateRoot(BigInteger blockIndex) {
+    public Request<?, NeoGetStateRoot> getStateRoot(Long blockIndex) {
         return new Request<>(
                 "getstateroot",
                 singletonList(blockIndex),
@@ -1050,6 +1052,111 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 emptyList(),
                 neow3jService,
                 NeoGetStateHeight.class);
+    }
+
+    /**
+     * Gets the state.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyHex       The storage key.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetState> getState(Hash256 rootHash, Hash160 contractHash, String keyHex) {
+        return new Request<>(
+                "getstate",
+                asList(rootHash, contractHash, Base64.encode(keyHex)),
+                neow3jService,
+                NeoGetState.class);
+    }
+
+    /**
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
+     *
+     * @param rootHash             The root hash.
+     * @param contractHash         The contract hash.
+     * @param keyPrefixHex         The key prefix.
+     * @param startKeyHex          The start key.
+     * @param countFindResultItems The number of results. An upper limit is defined in the Neo
+     *                             core.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex, Integer countFindResultItems) {
+
+        List<Comparable<? extends Comparable<?>>> parameters =
+                asList(rootHash, contractHash, Base64.encode(keyPrefixHex));
+        if (startKeyHex != null && countFindResultItems != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex),
+                    Base64.encode(startKeyHex), countFindResultItems);
+        } else if (countFindResultItems != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex), "",
+                    countFindResultItems);
+        } else if (startKeyHex != null) {
+            parameters = asList(rootHash, contractHash, Base64.encode(keyPrefixHex),
+                    Base64.encode(startKeyHex));
+        }
+
+        return new Request<>(
+                "findstates",
+                parameters,
+                neow3jService,
+                NeoFindStates.class);
+    }
+
+    /**
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyPrefixHex The key prefix.
+     * @param startKeyHex  The start key.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, String startKeyHex) {
+        return findStates(rootHash, contractHash, keyPrefixHex, startKeyHex, null);
+    }
+
+    /**
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
+     *
+     * @param rootHash             The root hash.
+     * @param contractHash         The contract hash.
+     * @param keyPrefixHex         The key prefix.
+     * @param countFindResultItems The number of results. An upper limit is defined in the Neo
+     *                             core.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex, Integer countFindResultItems) {
+        return findStates(rootHash, contractHash, keyPrefixHex, null, countFindResultItems);
+    }
+
+    /**
+     * Gets a list of states that match the provided key prefix.
+     * <p>
+     * Includes proofs of the first and last entry.
+     *
+     * @param rootHash     The root hash.
+     * @param contractHash The contract hash.
+     * @param keyPrefixHex The key prefix.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
+            String keyPrefixHex) {
+        return findStates(rootHash, contractHash, keyPrefixHex, null, null);
     }
 
     // Neow3j Rx Convenience methods:

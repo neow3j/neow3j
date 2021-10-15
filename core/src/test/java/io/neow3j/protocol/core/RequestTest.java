@@ -771,7 +771,7 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testGetStateRoot() throws Exception {
-        neow3j.getStateRoot(new BigInteger("52")).send();
+        neow3j.getStateRoot(52L).send();
 
         verifyResult("{\"jsonrpc\": \"2.0\"," +
                 "\"method\": \"getstateroot\"," +
@@ -820,6 +820,101 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\": \"2.0\"," +
                 "\"method\": \"getstateheight\"," +
                 "\"params\": []," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testGetState() throws Exception {
+        neow3j.getState(
+                new Hash256("0x7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca"),
+                new Hash160("7c5832ba81fd0af40ec11e96b1c26613466dae02"),
+                "4101210780d1c5615f7912"
+        ).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"getstate\"," +
+                "\"params\": [" +
+                "\"7bf925dbd33af0e00d392b92313da59369ed86c82494d0e02040b24faac0a3ca\"," +
+                "\"7c5832ba81fd0af40ec11e96b1c26613466dae02\"," +
+                "\"QQEhB4DRxWFfeRI=\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                "0b",
+                2).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"Cw==\"," +
+                "2" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noCount() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                "0b").send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"Cw==\"" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noStartKey_withCount() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe",
+                53).send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"," +
+                "\"\"," +
+                "53" +
+                "]," +
+                "\"id\": 1}");
+    }
+
+    @Test
+    public void testFindStates_noStartKey() throws Exception {
+        neow3j.findStates(
+                new Hash256("0x76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f"),
+                new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf"),
+                "0bfe").send();
+
+        verifyResult("{\"jsonrpc\": \"2.0\"," +
+                "\"method\": \"findstates\"," +
+                "\"params\": [" +
+                "\"76d6bddf6d9b5979d532877f0617bf31abd03d663c73357dfb2e2417a287b09f\"," +
+                "\"d2a4cff31913016155e38e474a2c06d08be276cf\"," +
+                "\"C/4=\"" +
+                "]," +
                 "\"id\": 1}");
     }
 

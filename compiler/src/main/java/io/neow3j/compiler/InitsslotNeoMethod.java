@@ -4,17 +4,20 @@ import io.neow3j.script.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
 import static io.neow3j.compiler.Compiler.isEvent;
 
 public class InitsslotNeoMethod extends NeoMethod {
 
     private static final String INITSSLOT_METHOD_NAME = "_initialize";
+    private static final String DESIRED_ASSERTION_STATUS = "desiredAssertionStatus";
 
     /**
      * Constructs a new INITSSLOT method.
@@ -38,6 +41,22 @@ public class InitsslotNeoMethod extends NeoMethod {
         return (int) fields.stream()
                 .filter(f -> !isEvent(f.desc))
                 .count();
+    }
+
+    protected boolean containsOnlyAssertionRelatedInstructions() {
+        AbstractInsnNode insn = getAsmMethod().instructions.getFirst().getNext().getNext();
+        if (insn.getType() == AbstractInsnNode.LDC_INSN &&
+                insn.getNext().getType() == AbstractInsnNode.METHOD_INSN) {
+            MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
+            if (methodInsn.name.equals(DESIRED_ASSERTION_STATUS)) {
+                insn = insn.getNext();
+                while (!isAssertionDisabledStaticField(insn)) {
+                    insn = insn.getNext();
+                }
+                return insn.getNext().getOpcode() == JVMOpcode.RETURN.getOpcode();
+            }
+        }
+        return false;
     }
 
     @Override
@@ -73,4 +92,5 @@ public class InitsslotNeoMethod extends NeoMethod {
         throw new UnsupportedOperationException("The INITSSLOT method cannotneed to be " +
                 "initialized with local variable and parameter slots.");
     }
+
 }

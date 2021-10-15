@@ -52,7 +52,7 @@
           "name": "Alice-account",
           "private-key": "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5",
           "script-hash": "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP",
-          "label": "CommitteeMember",
+          "label": "Alice",
           "is-default": true,
           "contract": {
             "script": "0c21033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b4156e7b327",
@@ -70,7 +70,7 @@
           "name": "Bob-account",
           "private-key": "beae38739915555a75a9281a5928b10ebc265f9c881aa21e963610a6c606a3dc",
           "script-hash": "NV1Q1dTdvzPbThPbSFz7zudTmsmgnCwX6c",
-          "label": "client1",
+          "label": "Bob",
           "is-default": true,
           "contract": {
             "script": "0c2102607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f4156e7b327",

@@ -1,10 +1,12 @@
 {
   "PluginConfiguration": {
     "Network": 5195086,
-    "Nodes": [ ],
+    "Nodes": [],
     "MaxTaskTimeout": 432000000,
     "AllowPrivateHost": true,
-    "AllowedContentTypes": [ "application/json" ],
+    "AllowedContentTypes": [
+      "application/json"
+    ],
     "Https": {
       "Timeout": 5000
     },
@@ -13,5 +15,8 @@
       "Timeout": 15000
     },
     "AutoStart": false
-  }
+  },
+  "Dependency": [
+    "RpcServer"
+  ]
 }

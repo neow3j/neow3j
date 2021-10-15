@@ -10,6 +10,8 @@ import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
 import java.io.IOException;
 import java.util.List;
+
+import io.neow3j.devpack.constants.NativeContract;
 import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Rule;
 import org.junit.Test;
@@ -79,8 +81,34 @@ public class TrustManifestTest {
         assertThat(trusts.get(0), is("*"));
     }
 
-    @Trust(CONTRACT_HASH_1)
-    @Trust(CONTRACT_HASH_2)
+    @Test
+    public void withBothContractAndNativeContract() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
+                "'nativeContract' set but not both");
+        new Compiler().compile(
+                TrustManifestTest.TrustManifestTestContractWithContractAndNativeContract.class.getName());
+    }
+
+    @Test
+    public void withoutBothContractAndNativeContract() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("requires either the attribute 'contract' or " +
+                "'nativeContract' to be set.");
+        new Compiler().compile(
+                TrustManifestTest.TrustManifestTestContractWithoutContract.class.getName());
+    }
+
+    @Test
+    public void withNoneNativeContractValue() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("The provided native contract does not exist.");
+        new Compiler().compile(
+                TrustManifestTest.TrustManifestTestContractWithNoneNativeContractValue.class.getName());
+    }
+
+    @Trust(contract = CONTRACT_HASH_1)
+    @Trust(contract = CONTRACT_HASH_2)
     static class TrustManifestTestContract {
 
         public static void main() {
@@ -88,7 +116,7 @@ public class TrustManifestTest {
 
     }
 
-    @Trust(CONTRACT_HASH_1)
+    @Trust(contract = CONTRACT_HASH_1)
     static class TrustManifestTestContractWithSingleAnnotation {
 
         public static void main() {
@@ -97,8 +125,8 @@ public class TrustManifestTest {
     }
 
     @Trusts({
-            @Trust(CONTRACT_HASH_1),
-            @Trust(GROUP_PUBKEY_1),
+            @Trust(contract = CONTRACT_HASH_1),
+            @Trust(contract = GROUP_PUBKEY_1),
     })
     static class TrustManifestTestContractWithTrustsAnnotation {
 
@@ -114,8 +142,8 @@ public class TrustManifestTest {
 
     }
 
-    @Trust(CONTRACT_HASH_1)
-    @Trust("invalidContractHashOrPubKey")
+    @Trust(contract = CONTRACT_HASH_1)
+    @Trust(contract = "invalidContractHashOrPubKey")
     static class TrustManifestTestContractWithNotValidContractHashNorGroupKey {
 
         public static void main() {
@@ -123,8 +151,32 @@ public class TrustManifestTest {
 
     }
 
-    @Trust("*")
+    @Trust(contract = "*")
     static class TrustManifestTestContractWithWildcard {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust(contract = CONTRACT_HASH_1, nativeContract = NativeContract.StdLib)
+    static class TrustManifestTestContractWithContractAndNativeContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust()
+    static class TrustManifestTestContractWithoutContract {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust(nativeContract = NativeContract.None)
+    static class TrustManifestTestContractWithNoneNativeContractValue {
 
         public static void main() {
         }

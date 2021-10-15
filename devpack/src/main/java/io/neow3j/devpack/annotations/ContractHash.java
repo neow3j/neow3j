@@ -1,8 +1,6 @@
 package io.neow3j.devpack.annotations;
 
-import io.neow3j.devpack.contracts.GasToken;
 import io.neow3j.devpack.contracts.NeoToken;
-import io.neow3j.devpack.contracts.PolicyContract;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;

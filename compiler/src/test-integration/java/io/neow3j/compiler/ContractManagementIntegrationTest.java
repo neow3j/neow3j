@@ -14,7 +14,6 @@ import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Manifest;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.ObjectMapperFactory;

@@ -41,7 +41,8 @@ public class NeoGetStateHeight extends Response<NeoGetStateHeight.StateHeight> {
         public boolean equals(Object o) {
             if (this == o) {
                 return true;
-            } else if (!(o instanceof StateHeight)) {
+            }
+            if (!(o instanceof StateHeight)) {
                 return false;
             }
 
