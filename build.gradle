@@ -281,8 +281,7 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
                     // excluded from the jacoco reports
                     exclude: [
                             '**/io/neow3j/devpack/**',
-                            '**/io/neow3j/test-tools/**',
-                            '**/io/neow3j/devpack-test/**',
+                            '**/io/neow3j/test/**',
                     ]
             )
         }))
