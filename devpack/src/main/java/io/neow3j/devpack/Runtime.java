@@ -35,7 +35,7 @@ public class Runtime {
     public static native String getPlatform();
 
     /**
-     * Gets the timestamp of the current block.
+     * Gets the timestamp of the current block in milliseconds since the start of the Unix epoch
      *
      * @return the timestamp
      */
