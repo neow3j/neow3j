@@ -44,6 +44,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class NeoTokenTest {
 
@@ -366,4 +367,13 @@ public class NeoTokenTest {
         assertNull(neoAccountState.getPublicKey());
     }
 
+    @Test
+    public void isCandidate() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
+                NEOTOKEN_SCRIPTHASH, "getCandidates");
+
+        ECPublicKey pubKey = new ECPublicKey(
+                        "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+        assertTrue(new NeoToken(neow).isCandidate(pubKey));
+    }
 }
