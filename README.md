@@ -20,7 +20,8 @@ developed by the community and maintained by [AxLabs](https://axlabs.com).
 # Quickstart
 
 Neow3j is composed of an **SDK** for dApp development and a **devpack** for smart contract
-development. The following sections describe how to get started with them! :rocket:
+development -- which also includes a **compiler** (JVM to NeoVM). The following sections describe
+how to get started with them! :rocket:
 
 ## SDK
 
@@ -45,7 +46,7 @@ __Maven__
 Releases are available for Neo Legacy and Neo N3. The example above shows the newest release of neow3j for
 Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
 
-## Devpack
+## Devpack/Compiler
 
 For smart contract development you require the `io.neow3j:devpack`. It provides all the Neo-related
 utilities that are needed in a smart contracts. If you want to play around with the devpack add the
@@ -70,9 +71,20 @@ __Maven__
 > **Note:** The devpack and compiler are only available for Neo N3. Thus, Java cannot be used to
 compile smart contracts that are compatible with Neo Legacy.
 
+## Who's using neow3j? :rocket:
+
+* [Binance](https//binance.com)
+* [OKEx](https://okex.com)
+* [AxLabs](https://axlabs.com)
+* [Neo Playground](https://neo-playground.dev)
+* [Neo Blockchain Toolkit](https://marketplace.visualstudio.com/items?itemName=ngd-seattle.neo-blockchain-toolkit)
+* [NekoHit](https://nekohit.com)
+* [intellij-neo](https://github.com/intellij-neo/intellij-neo)
+* Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
+
 ## Donate :moneybag:
 
-Help the development of neow3j by donating to the following addresses:
+Help the development of neow3j by sponsoring us using the following addresses:
 
 | Crypto     | Address                                      |
 |------------|----------------------------------------------|
