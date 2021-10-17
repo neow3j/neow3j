@@ -48,9 +48,10 @@ Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
 
 ## Devpack/Compiler
 
-For smart contract development you require the `io.neow3j:devpack`. It provides all the Neo-related
-utilities that are needed in a smart contracts. If you want to play around with the devpack add the
-following dependency to your project.
+For smart contract development, you need the `io.neow3j:devpack` dependency. It provides all Neo-related
+utilities to write your first smart contract on the Neo blockchain!
+
+Then, add the following dependency to your project.
 
 __Gradle__
 
