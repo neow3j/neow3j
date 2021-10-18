@@ -140,6 +140,20 @@ public class ArraysConverterIntegrationTest {
                 is("hello, world!"));
     }
 
+    @Test
+    public void multiArray() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
+                is(new byte[]{1, 2, 3, 4, 5, 6}));
+    }
+
+    @Test
+    public void threeDimMultiArray() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
+                is(new byte[]{1, 3, 8, 12, 6}));
+    }
+
     static class ArraysConverterIntegrationTestContract {
 
         public static String[] createStringArrayWithTwoEntries() {
@@ -199,6 +213,21 @@ public class ArraysConverterIntegrationTest {
                 s += st;
             }
             return s;
+        }
+
+        public static byte[] multiArray() {
+            byte[][] bytes = {new byte[]{1, 2}, new byte[]{3, 4}, new byte[]{5, 6}};
+            return new byte[]{bytes[0][0], bytes[0][1], bytes[1][0], bytes[1][1], bytes[2][0],
+                    bytes[2][1]};
+        }
+
+        public static byte[] threeDimMultiArray() {
+            byte[][][] bytes = new byte[][][]{
+                    new byte[][]{new byte[]{1, 2, 3}, new byte[]{4, 5, 6}},
+                    new byte[][]{new byte[]{7, 8, 9}, new byte[]{10, 11, 12}}
+            };
+            return new byte[]{bytes[0][0][0], bytes[0][0][2], bytes[1][0][1], bytes[1][1][2],
+                    bytes[0][1][2]};
         }
 
     }
