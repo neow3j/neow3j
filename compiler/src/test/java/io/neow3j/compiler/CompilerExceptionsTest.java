@@ -267,6 +267,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(VerificationWithEvent.class.getName());
     }
 
+    @Test
+    public void multiDimensionalArraySize() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("MULTIANEWARRAY is not supported. To use " +
+                "multi-dimensional arrays, only set the size of the first dimension.");
+        new Compiler().compile(MultiDimensionalArraySize.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -507,6 +515,13 @@ public class CompilerExceptionsTest {
         public static boolean verif() {
             e.fire("neowww");
             return true;
+        }
+    }
+
+    static class MultiDimensionalArraySize {
+
+        public static String[][] method() {
+            return new String[10][4];
         }
     }
 
