@@ -39,7 +39,8 @@ public class ByteString {
     }
 
     /**
-     * Gets the item at the given index in this {@code ByteString}.
+     * Gets the item at the given index in this {@code ByteString}. If the index is out of bounds
+     * the NeoVM will throw an exception that needs to be catched. Otherwise, the NeoVM will FAULT.
      *
      * @param index The index.
      * @return the item at the given index.
