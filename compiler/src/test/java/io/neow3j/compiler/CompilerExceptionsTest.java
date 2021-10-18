@@ -270,8 +270,8 @@ public class CompilerExceptionsTest {
     @Test
     public void multiDimensionalArraySize() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("MULTIANEWARRAY is not supported. To use " +
-                "multi-dimensional arrays, only set the size of the first dimension.");
+        exceptionRule.expectMessage("Only the first dimension of a multi-dimensional array " +
+                "declaration can be defined");
         new Compiler().compile(MultiDimensionalArraySize.class.getName());
     }
 
@@ -526,4 +526,3 @@ public class CompilerExceptionsTest {
     }
 
 }
-
