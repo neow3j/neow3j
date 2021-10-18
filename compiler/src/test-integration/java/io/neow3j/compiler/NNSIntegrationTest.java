@@ -1,6 +1,5 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
@@ -39,7 +38,7 @@ public class NNSIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract smartContract = ct.deployContract(ConcreteNeoNameService.class.getName());
+        ct.deployContract(ConcreteNeoNameService.class.getName());
     }
 
     @Test
@@ -220,7 +219,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("e81c2d8c275eeab156d6e55256a3dc26eda04fe1")
+    @ContractHash("268e62f0bd1a8395d2f36e413bf323cc3b2cbf77")
     static class CustomNeoNameService extends NeoNameService {
     }
 
