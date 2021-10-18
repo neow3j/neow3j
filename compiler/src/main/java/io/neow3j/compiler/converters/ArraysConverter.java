@@ -85,7 +85,9 @@ public class ArraysConverter implements Converter {
                 addGetField(insn, neoMethod, compUnit);
                 break;
             case MULTIANEWARRAY:
-                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
+                throw new CompilerException(neoMethod, format("JVM opcode MULTIANEWARRAY is not " +
+                                "supported. To use multi-dimensional arrays, only set the size " +
+                                "of the first dimension.",
                         opcode.name()));
         }
         return insn;
