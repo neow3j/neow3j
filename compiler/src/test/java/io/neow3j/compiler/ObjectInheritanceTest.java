@@ -76,6 +76,7 @@ public class ObjectInheritanceTest {
 
     @Test
     public void testClone() throws IOException {
+        exceptionRule.expect(CompilerException.class);
         exceptionRule.expectMessage("'clone' and 'finalize' of the superclass Object are not ");
         exceptionRule.expectMessage("avoid a 'super' call to");
         new Compiler().compile(ObjectClone.class.getName());
