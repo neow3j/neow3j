@@ -585,12 +585,13 @@ public class Compiler {
     }
 
     private static void throwIfObjectCloneOrFinalize(MethodInsnNode insn) {
-        if (insn.name.equals("clone") || insn.name.equals("finalize")) {
-            if (getFullyQualifiedNameForInternalName(insn.desc).contains(Object.class.getName())) {
-                throw new CompilerException("The methods 'clone' and 'finalize' of the superclass" +
-                        " Object are not supported. To use these method names, avoid a 'super' " +
-                        "call to the class Object.");
-            }
+        boolean isCloneOrFinalize = insn.name.equals("clone") || insn.name.equals("finalize");
+        if (isCloneOrFinalize &&
+                getFullyQualifiedNameForInternalName(insn.desc).contains(Object.class.getName())) {
+
+            throw new CompilerException("The methods 'clone' and 'finalize' of the superclass" +
+                    " Object are not supported. To use these method names, avoid a 'super' " +
+                    "call to the class Object.");
         }
     }
 
