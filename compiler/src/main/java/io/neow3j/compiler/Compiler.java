@@ -566,6 +566,9 @@ public class Compiler {
         if (insn.getType() == AbstractInsnNode.LABEL) {
             neoMethod.setCurrentLabel(((LabelNode) insn).getLabel());
         }
+        if (insn.getType() == AbstractInsnNode.METHOD_INSN) {
+            throwIfObjectIsOwner((MethodInsnNode) insn);
+        }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
             return insn;
@@ -578,6 +581,15 @@ public class Compiler {
                             getFullyQualifiedNameForInternalName(neoMethod.getOwnerClass().name)));
         }
         return converter.convert(insn, neoMethod, compUnit);
+    }
+
+    private static void throwIfObjectIsOwner(MethodInsnNode insn) {
+        if (getFullyQualifiedNameForInternalName(insn.owner)
+                .equals(Object.class.getCanonicalName())) {
+            throw new CompilerException("Inherited methods that are not specifically implemented " +
+                    "are not supported. Implement the method '" + insn.name + "' without a " +
+                    "'super' call to the class Object to use it.");
+        }
     }
 
     /**
