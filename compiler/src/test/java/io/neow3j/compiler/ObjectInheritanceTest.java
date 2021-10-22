@@ -77,16 +77,14 @@ public class ObjectInheritanceTest {
     @Test
     public void testClone() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("'clone' and 'finalize' of the superclass Object are not ");
-        exceptionRule.expectMessage("avoid a 'super' call to");
+        exceptionRule.expectMessage("are not supported. Implement the method 'clone'");
         new Compiler().compile(ObjectClone.class.getName());
     }
 
     @Test
     public void testFinalize() throws IOException {
         exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("'finalize' of the superclass Object are not supported");
-        exceptionRule.expectMessage("avoid a 'super' call to");
+        exceptionRule.expectMessage("are not supported. Implement the method 'finalize'");
         new Compiler().compile(ObjectFinalize.class.getName());
     }
 
@@ -166,8 +164,8 @@ public class ObjectInheritanceTest {
     }
 
     static class ObjectFinalize {
-        public static void test() throws CloneNotSupportedException {
-            new TestClassWithSuper().clone();
+        public static void test() throws Throwable {
+            new TestClassWithSuper().finalize();
         }
     }
 

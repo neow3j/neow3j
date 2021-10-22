@@ -568,7 +568,6 @@ public class Compiler {
         }
         if (insn.getType() == AbstractInsnNode.METHOD_INSN) {
             throwIfObjectIsOwner((MethodInsnNode) insn);
-            throwIfObjectCloneOrFinalize((MethodInsnNode) insn);
         }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
@@ -584,23 +583,12 @@ public class Compiler {
         return converter.convert(insn, neoMethod, compUnit);
     }
 
-    private static void throwIfObjectCloneOrFinalize(MethodInsnNode insn) {
-        boolean isCloneOrFinalize = insn.name.equals("clone") || insn.name.equals("finalize");
-        if (isCloneOrFinalize &&
-                getFullyQualifiedNameForInternalName(insn.desc).contains(Object.class.getName())) {
-
-            throw new CompilerException("The methods 'clone' and 'finalize' of the superclass" +
-                    " Object are not supported. To use these method names, avoid a 'super' " +
-                    "call to the class Object.");
-        }
-    }
-
     private static void throwIfObjectIsOwner(MethodInsnNode insn) {
         if (getFullyQualifiedNameForInternalName(insn.owner)
                 .equals(Object.class.getCanonicalName())) {
             throw new CompilerException("Inherited methods that are not specifically implemented " +
-                    "are not supported. Implement the method '" + insn.name +
-                    "' without a 'super' call to the class Object to use it.");
+                    "are not supported. Implement the method '" + insn.name + "' without a " +
+                    "'super' call to the class Object to use it.");
         }
     }
 
