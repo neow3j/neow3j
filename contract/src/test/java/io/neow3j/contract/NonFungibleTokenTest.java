@@ -80,7 +80,7 @@ public class NonFungibleTokenTest {
         assertThat(b.getScript(), is(expectedScript));
         assertThat(((AccountSigner)b.getSigners().get(0)).getAccount(), is(account1));
 
-        b = nfTestToken.transfer(account1.getScriptHash(), account2.getScriptHash(), TOKEN_ID);
+        b = nfTestToken.transfer(account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().size(), is(0));
     }
