@@ -65,18 +65,23 @@ public class SmartContract {
      * @return a {@link TransactionBuilder} allowing to set further details of the invocation.
      */
     public TransactionBuilder invokeFunction(String function, ContractParameter... params) {
+        byte[] script = buildInvokeFunctionScript(function, params);
+        return new TransactionBuilder(neow3j).script(script);
+    }
 
+    /**
+     * Builds a script to invoke a function on this smart contract.
+     *
+     * @param function The function to invoke.
+     * @param params   The parameters to pass to the function.
+     * @return the script.
+     */
+    public byte[] buildInvokeFunctionScript(String function, ContractParameter... params) {
         if (Strings.isEmpty(function)) {
             throw new IllegalArgumentException(
                     "The invocation function must not be null or empty.");
         }
-        byte[] script = new ScriptBuilder()
-                .contractCall(
-                        scriptHash,
-                        function,
-                        asList(params))
-                .toArray();
-        return new TransactionBuilder(neow3j).script(script);
+        return new ScriptBuilder().contractCall(scriptHash, function, asList(params)).toArray();
     }
 
     /**
@@ -209,8 +214,8 @@ public class SmartContract {
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as
      *                                       script hash.
      */
-    public List<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
-            throws IOException {
+    public List<StackItem> callFunctionReturningIterator(String function,
+            ContractParameter... params) throws IOException {
 
         StackItem stackItem = callInvokeFunction(function, asList(params))
                 .getInvocationResult().getStack().get(0);

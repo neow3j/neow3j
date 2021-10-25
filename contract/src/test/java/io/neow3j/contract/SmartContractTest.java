@@ -1,21 +1,9 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.transaction.AccountSigner.none;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
@@ -24,7 +12,6 @@ import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.transaction.Transaction;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
@@ -37,6 +24,17 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class SmartContractTest {
 
@@ -121,25 +119,36 @@ public class SmartContractTest {
     }
 
     @Test
-    public void invokeShouldProduceCorrectScript() throws Throwable {
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForGetBlockCount(1000);
+    public void testBuildInvokeFunctionScript() {
         byte[] expectedScript = new ScriptBuilder()
                 .contractCall(NEO_SCRIPT_HASH, NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()),
                         hash160(recipient),
-                        integer(5))).toArray();
+                        integer(42)))
+                .toArray();
+
+        byte[] script = new SmartContract(NEO_SCRIPT_HASH, neow)
+                .buildInvokeFunctionScript(NEP17_TRANSFER, hash160(account1), hash160(recipient),
+                        integer(42));
+        assertThat(script, is(expectedScript));
+    }
+
+    @Test
+    public void invokeShouldProduceCorrectScript() {
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NEO_SCRIPT_HASH, NEP17_TRANSFER, asList(
+                        hash160(account1.getScriptHash()),
+                        hash160(recipient),
+                        integer(5)))
+                .toArray();
 
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
-        Transaction tx = sc.invokeFunction(NEP17_TRANSFER,
+        TransactionBuilder b = sc.invokeFunction(NEP17_TRANSFER,
                 hash160(account1.getScriptHash()),
                 hash160(recipient),
-                integer(5))
-                .signers(none(account1))
-                .sign();
+                integer(5));
 
-        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
