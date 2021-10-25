@@ -72,8 +72,10 @@ public class WalletTest {
         assertThat(wallet.getAccounts(), containsInAnyOrder(acct1, acct2));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCreateWalletWithAccounts_noAccounts() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("No accounts provided to initialize a wallet");
         Wallet.withAccounts();
     }
 
@@ -133,8 +135,10 @@ public class WalletTest {
         );
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testCreateWalletFromNEP6File_noDefaultAccount() throws IOException {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("wallet does not contain any default account.");
         Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json");
     }
 
@@ -205,7 +209,7 @@ public class WalletTest {
         assertEquals(acct2, wallet.getDefaultAccount());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testRemoveAccounts_lastRemainingAccount() {
 
         Wallet w = Wallet.create();
@@ -213,6 +217,9 @@ public class WalletTest {
 
         assertEquals(w, lastRemainingAccount.getWallet());
         assertEquals(lastRemainingAccount, w.getDefaultAccount());
+
+        exceptionRule.expect(IllegalStateException.class);
+        exceptionRule.expectMessage("is the only account in the wallet. It cannot be removed.");
         w.removeAccount(lastRemainingAccount.getScriptHash());
     }
 
@@ -234,7 +241,7 @@ public class WalletTest {
         assertEquals(nep6w, w.toNEP6Wallet());
     }
 
-    @Test(expected = AccountStateException.class)
+    @Test
     public void testToNEP6WalletWithUnencryptedPrivateKey()
             throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
@@ -242,6 +249,9 @@ public class WalletTest {
         Account a = new Account(ECKeyPair.createEcKeyPair());
         Wallet w = Wallet.withAccounts(a);
         w.addAccounts(a);
+
+        exceptionRule.expect(AccountStateException.class);
+        exceptionRule.expectMessage("Account private key is available but not encrypted.");
         w.toNEP6Wallet();
     }
 
@@ -407,10 +417,12 @@ public class WalletTest {
         assertEquals(a, w.getDefaultAccount());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void failSettingDefaultAccountNotContainedInWallet() {
         Wallet w = Wallet.create();
         Account a = Account.create();
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Wallet does not contain the account");
         w.defaultAccount(a.getScriptHash());
     }
 
