@@ -57,12 +57,12 @@ public class OracleContractIntegrationTest {
     @Rule
     public TestName testName = new TestName();
 
+    @Rule
+    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
+
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(
             OracleContractIntegrationTestContract.class.getName());
-
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
 
     @Test
     public void getScriptHash() throws IOException {

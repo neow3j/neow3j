@@ -33,8 +33,11 @@ import static org.junit.Assert.assertEquals;
 @RunWith(Parameterized.class)
 public class Base58DecodeTest {
 
-    private String input;
-    private byte[] expected;
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
+    private final String input;
+    private final byte[] expected;
 
     public Base58DecodeTest(String input, byte[] expected) {
         this.input = input;
@@ -49,9 +52,6 @@ public class Base58DecodeTest {
                 {"1111", new byte[4]}
         });
     }
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testDecode() {

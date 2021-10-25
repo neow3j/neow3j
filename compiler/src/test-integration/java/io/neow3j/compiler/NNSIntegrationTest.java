@@ -33,8 +33,7 @@ public class NNSIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            NNSTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(NNSTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {

@@ -95,7 +95,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 // This test class uses a static container which is started once for the whole class and reused in
-// every test. Therefore only tests that don't need a new and clean blockchain should be added here.
+// every test. Therefore, only tests that don't need a new and clean blockchain should be added
+// here.
 public class Neow3jReadOnlyIntegrationTest {
 
     // Hashes of the transactions that are sent before all tests.
@@ -118,26 +119,26 @@ public class Neow3jReadOnlyIntegrationTest {
     protected static final String APPLICATION_LOG_TRIGGER = "Application";
 
     // Invoke function variables
-    protected static final String INVOKE_SYMBOL = "symbol";
-    protected static final String INVOKE_BALANCE = "balanceOf";
+    private static final String INVOKE_SYMBOL = "symbol";
+    private static final String INVOKE_BALANCE = "balanceOf";
 
-    protected static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
-    private static Hash256 BLOCK_0_HASH =
+    private static final BigInteger BLOCK_0_IDX = BigInteger.ZERO;
+    private static final Hash256 BLOCK_0_HASH =
             new Hash256("442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014");
-    protected static final String BLOCK_0_HEADER_RAW_STRING =
+    private static final String BLOCK_0_HEADER_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAARE=";
-    protected static final String BLOCK_0_RAW_STRING =
+    private static final String BLOCK_0_RAW_STRING =
             "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACI6hnvVQEAAB2sK3wAAAAAAAAAAAB/ZdQ0NicIslXw4GhWvctc6Z2FBQEAAREA";
 
     // Total supply of NEO tokens.
-    static final int NEO_TOTAL_SUPPLY = 100000000;
+    private static final int NEO_TOTAL_SUPPLY = 100000000;
+
+    private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
     protected static Neow3j neow3j;
 
     @ClassRule
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
-
-    private static final String NEXT_VALIDATORS_PREFIX = "0e";
 
     @BeforeClass
     public static void setUp() throws Exception {
