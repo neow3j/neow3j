@@ -215,7 +215,7 @@ public abstract class StackItem {
      * This can only be used if the expected stack item type is
      * {@link StackItemType#INTEROP_INTERFACE}.
      *
-     * @return the pointer.
+     * @return the iterator.
      * @throws StackItemCastException if the stack item cannot be converted to an {@code
      *                                InteropInterface} or if its value is null.
      */
