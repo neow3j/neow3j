@@ -54,7 +54,7 @@ public class SmartContractTest {
     private Hash160 recipient;
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
@@ -74,15 +74,15 @@ public class SmartContractTest {
 
     @Test
     public void constructSmartContractWithoutScriptHash() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("script hash"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("script hash"));
         new SmartContract(null, neow);
     }
 
     @Test
     public void constructSmartContractWithoutNeow3j() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("Neow3j"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("Neow3j"));
         new SmartContract(NEO_SCRIPT_HASH, null);
     }
 
@@ -110,15 +110,15 @@ public class SmartContractTest {
 
     @Test
     public void invokeWithNullString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("null"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("null"));
         new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction(null);
     }
 
     @Test
     public void invokeWithEmptyString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("empty"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("empty"));
         new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction("");
     }
 
@@ -169,8 +169,8 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_NAME);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage(new StringContains(StackItemType.INTEGER.jsonValue()));
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage(new StringContains(StackItemType.INTEGER.jsonValue()));
         sc.callFuncReturningString(NEP17_NAME);
     }
 
@@ -198,8 +198,8 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage(
                 new StringContains("but expected " + StackItemType.INTEGER.jsonValue()));
         sc.callFuncReturningInt(NEP17_TRANSFER);
     }
@@ -246,8 +246,8 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
                 NEO_SCRIPT_HASH.toString(), "getCandidates");
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage(
                 new StringContains("but expected " + StackItemType.BOOLEAN.jsonValue()));
         sc.callFuncReturningBool("getCandidates");
     }
@@ -265,16 +265,16 @@ public class SmartContractTest {
     @Test
     public void testCallFunctionReturningIteratorNoIterator() throws IOException {
         setUpWireMockForInvokeFunction("noiterator", "interopInterface_noIterator.json");
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage("Return did not contain an iterator.");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("Return did not contain an iterator.");
         new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("noiterator");
     }
 
     @Test
     public void testCallFunctionReturningIteratorOtherReturnType() throws IOException {
         setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage("expected InteropInterface");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("expected InteropInterface");
         new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("symbol");
     }
 
@@ -302,16 +302,16 @@ public class SmartContractTest {
 
     @Test
     public void callInvokeFunction_missingFunction() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The invocation function must not be null or empty.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The invocation function must not be null or empty.");
         new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("",
                 singletonList(hash160(account1.getScriptHash())));
     }
 
     @Test
     public void callInvokeFunctionWithoutParameters_missingFunction() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The invocation function must not be null or empty.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The invocation function must not be null or empty.");
         new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("");
     }
 

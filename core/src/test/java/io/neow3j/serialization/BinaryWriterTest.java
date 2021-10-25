@@ -6,6 +6,7 @@ import static org.junit.Assert.fail;
 
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import org.junit.Before;

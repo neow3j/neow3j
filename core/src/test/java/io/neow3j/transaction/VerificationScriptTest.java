@@ -1,14 +1,5 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
@@ -18,10 +9,21 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.utils.Numeric;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
+
 import org.junit.Test;
+
+import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class VerificationScriptTest {
 
@@ -82,7 +84,7 @@ public class VerificationScriptTest {
     @Test
     public void testDeserialize() throws DeserializationException {
         final String key = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
-        String script =  ""
+        String script = ""
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key // public key
                 + OpCode.SYSCALL.toString()
@@ -344,4 +346,5 @@ public class VerificationScriptTest {
         assertThat(Numeric.toHexStringNoPrefix(pubKeys.get(2).getEncoded(true)),
                 is("03f0f9b358dfed564e74ffe242713f8bc866414226649f59859b140a130818898b"));
     }
+
 }
