@@ -2,7 +2,6 @@ package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.ContractSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -12,12 +11,10 @@ import io.neow3j.wallet.Wallet;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static java.util.Arrays.asList;
 
 /**
  * Represents a fungible token contract that is compliant with the NEP-17 standard and provides
@@ -115,7 +112,7 @@ public class FungibleToken extends Token {
      * The {@code from} account is set as a signer of the transaction.
      *
      * @param from   the sender account.
-     * @param to     the address of the receiver.
+     * @param to     the address of the recipient.
      * @param amount the amount to transfer in token fractions.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -131,13 +128,13 @@ public class FungibleToken extends Token {
      * <p>
      * The {@code from} account is set as a signer of the transaction.
      * <p>
-     * Only use this method when the receiver is a deployed smart contract to avoid unnecessary
+     * Only use this method when the recipient is a deployed smart contract to avoid unnecessary
      * additional fees. Otherwise, use the method without a contract parameter for data.
      *
      * @param from   the sender account.
-     * @param to     the script hash of the receiver.
+     * @param to     the script hash of the recipient.
      * @param amount the amount to transfer in token fractions.
-     * @param data   the data that is passed to the {@code onPayment} method if the receiver is a
+     * @param data   the data that is passed to the {@code onPayment} method if the recipient is a
      *               contract.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -155,7 +152,7 @@ public class FungibleToken extends Token {
      * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
      *
      * @param from   the sender hash.
-     * @param to     the hash of the receiver.
+     * @param to     the hash of the recipient.
      * @param amount the amount to transfer in token fractions.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -173,9 +170,9 @@ public class FungibleToken extends Token {
      * ones, e.g., a {@link ContractSigner} in case the {@code from} address is a contract.
      *
      * @param from   the sender account.
-     * @param to     the script hash of the receiver.
+     * @param to     the script hash of the recipient.
      * @param amount the amount to transfer in token fractions.
-     * @param data   the data that is passed to the {@code onPayment} method if the receiver is a
+     * @param data   the data that is passed to the {@code onPayment} method if the recipient is a
      *               contract.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -186,16 +183,24 @@ public class FungibleToken extends Token {
         if (amount.signum() < 0) {
             throw new IllegalArgumentException("The amount must be greater than or equal to 0");
         }
-        byte[] transferScript = buildSingleTransferScript(from, to, amount, data);
+        byte[] transferScript = buildTransferScript(from, to, amount, data);
         return new TransactionBuilder(neow3j).script(transferScript);
     }
 
-    private byte[] buildSingleTransferScript(Hash160 from, Hash160 to, BigInteger amount,
+    /**
+     * Builds a script that invokes the transfer method on the fungible token.
+     *
+     * @param from   The sender.
+     * @param to     The recipient.
+     * @param amount The transfer amount.
+     * @param data   The data that is passed to the {@code onPayment} method if the recipient is a
+     *               contract.
+     * @return a transfer script.
+     */
+    public byte[] buildTransferScript(Hash160 from, Hash160 to, BigInteger amount,
             ContractParameter data) {
-        List<ContractParameter> params;
-        params = asList(hash160(from), hash160(to), integer(amount), data);
 
-        return new ScriptBuilder().contractCall(scriptHash, TRANSFER, params).toArray();
+        return buildInvokeFunctionScript(TRANSFER, hash160(from), hash160(to), integer(amount), data);
     }
 
 }
