@@ -160,9 +160,10 @@ public class NFTIntegrationTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     static class ConcreteNonFungibleToken {
         static final StorageContext ctx = Storage.getStorageContext();
-        static final byte[] mapPrefix = Helper.toByteArray((byte) 1);
+        static final byte[] tokensOfMap = Helper.toByteArray((byte) 1);
 
         public static String symbol() {
             return "CNFT";
@@ -181,11 +182,11 @@ public class NFTIntegrationTest {
         }
 
         public static Iterator<ByteString> tokensOf(io.neow3j.devpack.Hash160 account) {
-            StorageMap map = ctx.createMap(mapPrefix);
+            StorageMap map = ctx.createMap(tokensOfMap);
             map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("token1"));
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("token2"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("token3"));
-            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, tokensOfMap, FindOptions.ValuesOnly);
         }
 
         public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
@@ -193,12 +194,12 @@ public class NFTIntegrationTest {
         }
 
         public static Iterator<ByteString> tokens() {
-            StorageMap map = ctx.createMap(mapPrefix);
+            StorageMap map = ctx.createMap(tokensOfMap);
             map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("tokenOne"));
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("tokenTwo"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("tokenThree"));
             map.put(Helper.toByteArray((byte) 4), Helper.toByteArray("tokenFour"));
-            return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, tokensOfMap, FindOptions.ValuesOnly);
         }
 
         public static Map<String, String> properties(ByteString tokenId) {
