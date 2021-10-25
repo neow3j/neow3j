@@ -3,7 +3,9 @@ package io.neow3j.protocol.core;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,6 +24,9 @@ public class JsonRpc2_0Neow3jTest {
             .setPollingInterval(10)
             .setScheduledExecutorService(scheduledExecutorService));
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     @Test
     public void testStopExecutorOnShutdown() throws Exception {
         neow3j.shutdown();
@@ -30,11 +35,14 @@ public class JsonRpc2_0Neow3jTest {
         verify(service).close();
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testThrowsRuntimeExceptionIfFailedToCloseService() throws Exception {
         doThrow(new IOException("Failed to close"))
                 .when(service).close();
 
+        exceptionRule.expect(RuntimeException.class);
+        exceptionRule.expectMessage("Failed to close");
         neow3j.shutdown();
     }
+
 }

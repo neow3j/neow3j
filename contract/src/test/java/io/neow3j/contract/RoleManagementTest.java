@@ -47,7 +47,7 @@ public class RoleManagementTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -94,8 +94,8 @@ public class RoleManagementTest {
 
     @Test
     public void testGetDesignatedByRole_negativeIndex() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("The block index has to be positive."));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("The block index has to be positive."));
         roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1"));
     }
 
@@ -103,8 +103,8 @@ public class RoleManagementTest {
     public void testGetDesignatedByRole_indexTooHigh() throws IOException {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
                 new StringContains("The provided block index (1001) is too high."));
         roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001"));
     }
@@ -135,15 +135,15 @@ public class RoleManagementTest {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
         pubKeys.add(account1.getECKeyPair().getPublicKey());
 
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("role cannot be null"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("role cannot be null"));
         roleManagement.designateAsRole(null, pubKeys);
     }
 
     @Test
     public void testDesignate_pubKeysNull() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
                 new StringContains("one public key is required for designation"));
         roleManagement.designateAsRole(Role.ORACLE, null);
     }
@@ -152,8 +152,8 @@ public class RoleManagementTest {
     public void testDesignate_pubKeysEmpty() {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
 
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
                 new StringContains("one public key is required for designation"));
         roleManagement.designateAsRole(Role.ORACLE, pubKeys);
     }

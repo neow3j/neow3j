@@ -52,7 +52,7 @@ public class NeoTokenTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private static final String NEOTOKEN_SCRIPTHASH = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
