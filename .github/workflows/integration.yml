@@ -24,6 +24,6 @@ jobs:
           java-version: '8'
           cache: 'gradle'
       - name: Build with Integration Tests
-        run: ./gradlew --info --warning-mode=all clean integrationTest
+        run: ./gradlew --stacktrace --info --warning-mode=all clean integrationTest
       - name: Cleanup
         run: rm -rf /tmp/*

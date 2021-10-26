@@ -13,7 +13,7 @@ pluginBundle {
     website = "https://github.com/neow3j/neow3j"
     vcsUrl = "https://github.com/neow3j/neow3j"
     description = "Gradle plugin to compile Java smart contracts to NeoVM"
-    tags = [ "javac", "neo", "blockchain", "neow3j", "java" ]
+    tags = ["javac", "neo", "blockchain", "neow3j", "java"]
 
     mavenCoordinates {
         groupId = project.group.toString()
@@ -29,8 +29,8 @@ pluginBundle {
 
 }
 
-// from:
-// https://docs.gradle.org/current/userguide/test_kit.html#sec:working_with_gradle_versions_prior_to_213
+from:
+https://docs.gradle.org/6.8.1/userguide/test_kit.html#sec:working_with_gradle_versions_prior_to_213
 task createClasspathManifest {
     def outputDir = file("$buildDir/$name")
 
