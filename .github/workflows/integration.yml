@@ -22,6 +22,6 @@ jobs:
         with:
           distribution: adopt-hotspot
           java-version: '8'
-          cache: 'gradle'
+#          cache: 'gradle'
       - name: Build with Integration Tests
-        run: ./gradlew --stacktrace --info --warning-mode=all clean integrationTest
+        run: ./gradlew --stacktrace --info --warning-mode=all clean :gradle-plugin:integrationTest
