@@ -25,5 +25,3 @@ jobs:
           cache: 'gradle'
       - name: Build with Integration Tests
         run: ./gradlew --stacktrace --info --warning-mode=all clean integrationTest
-      - name: Cleanup
-        run: rm -rf /tmp/*
