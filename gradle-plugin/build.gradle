@@ -29,8 +29,8 @@ pluginBundle {
 
 }
 
-from:
-https://docs.gradle.org/6.8.1/userguide/test_kit.html#sec:working_with_gradle_versions_prior_to_213
+// from:
+// https://docs.gradle.org/6.8.1/userguide/test_kit.html#sec:working_with_gradle_versions_prior_to_213
 task createClasspathManifest {
     def outputDir = file("$buildDir/$name")
 
