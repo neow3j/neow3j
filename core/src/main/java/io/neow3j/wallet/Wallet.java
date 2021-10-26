@@ -183,7 +183,7 @@ public class Wallet {
         }
         // The wallet must have at least one account at all times.
         if (this.accounts.size() == 1) {
-            throw new IllegalArgumentException("The account " + hash160.toAddress() +
+            throw new IllegalStateException("The account " + hash160.toAddress() +
                     " is the only account in the wallet. It cannot be removed.");
         }
         // Remove the link to this wallet in the account instance.

@@ -21,8 +21,7 @@ public class MapTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            MapTests.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(MapTests.class.getName());
 
     @Test
     public void putAndGetFromMap() throws IOException {

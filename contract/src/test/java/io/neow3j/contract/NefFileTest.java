@@ -59,7 +59,7 @@ public class NefFileTest {
 
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void newNefFile() {
@@ -85,7 +85,7 @@ public class NefFileTest {
 
     @Test
     public void failConstructorWithToLongCompilerName() {
-        expectedException.expect(IllegalArgumentException.class);
+        exceptionRule.expect(IllegalArgumentException.class);
         NefFile nef = new NefFile(
                 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 65 bytes
                 hexStringToByteArray(TESTCONTRACT_SCRIPT),
@@ -109,7 +109,7 @@ public class NefFileTest {
             IOException {
         File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
                 .getResource("contracts/too_large.nef")).toURI());
-        expectedException.expect(IllegalArgumentException.class);
+        exceptionRule.expect(IllegalArgumentException.class);
         NefFile.readFromFile(file);
     }
 
@@ -165,8 +165,8 @@ public class NefFileTest {
                 + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
                 + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
-        expectedException.expect(DeserializationException.class);
-        expectedException.expectMessage(new StringContains("magic"));
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage(new StringContains("magic"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
     }
 
@@ -180,8 +180,8 @@ public class NefFileTest {
                 + TESTCONTRACT_SCRIPT_SIZE + TESTCONTRACT_SCRIPT
                 + "00000000";
         byte[] nefBytes = hexStringToByteArray(nef);
-        expectedException.expect(DeserializationException.class);
-        expectedException.expectMessage(new StringContains("checksum"));
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage(new StringContains("checksum"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
     }
 
@@ -195,8 +195,8 @@ public class NefFileTest {
                 + "00" // empty script
                 + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
-        expectedException.expect(DeserializationException.class);
-        expectedException.expectMessage(new StringContains("Script cannot be empty"));
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage(new StringContains("Script cannot be empty"));
         NeoSerializableInterface.from(nefBytes, NefFile.class);
     }
 
@@ -257,8 +257,8 @@ public class NefFileTest {
                         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
                         "186769746875622e636f6d2f6e656f77336a2f6e656f77336a000000000700fd411af77b679cc8d824";
 
-        expectedException.expect(DeserializationException.class);
-        expectedException.expectMessage(new StringContains("must not be longer than"));
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage(new StringContains("must not be longer than"));
         NeoSerializableInterface.from(hexStringToByteArray(nefHex), NefFile.class);
     }
 
@@ -267,8 +267,8 @@ public class NefFileTest {
         // 256 bytes string
         String url = "github.com/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/";
 
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(new StringContains("must not be longer than"));
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(new StringContains("must not be longer than"));
         new NefFile("neo-core-v3.0", hexStringToByteArray("00fd411af77b67"), null,
                 url);
     }

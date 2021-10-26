@@ -43,7 +43,7 @@ public class ContractParameterTest {
     private ContractParameter contractParameter;
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -89,8 +89,8 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParamCreationFromInvalidHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Argument is not a valid hex number.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Argument is not a valid hex number.");
         String value = "value";
         byteArray(value);
     }
@@ -147,30 +147,30 @@ public class ContractParameterTest {
 
     @Test
     public void testArrayParamCreationFromObjects_failUnSupportedObject() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
                 "provided object could not be casted into a supported contract");
         array(new Object());
     }
 
     @Test
     public void testArrayParam_NullObject() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
         array((Object) null);
     }
 
     @Test
     public void testArrayParam_NullContractParameter() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
         array((ContractParameter) null);
     }
 
     @Test
     public void testArrayParam_Empty() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("At least one parameter is required");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("At least one parameter is required");
         array();
     }
 
@@ -217,8 +217,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromTooShortString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 63.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f2";
@@ -227,8 +227,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromTooLongString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 65.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213ff";
@@ -237,8 +237,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromNoHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Argument is not a valid hex number.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Argument is not a valid hex number.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         signature(sig);
@@ -299,8 +299,8 @@ public class ContractParameterTest {
 
     @Test
     public void testHash160_null() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The script hash argument must not be null");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The script hash argument must not be null");
         hash160((Hash160) null);
     }
 
@@ -334,24 +334,24 @@ public class ContractParameterTest {
 
     @Test
     public void testHash256ParamCreationFromTooShortString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 32 bytes but was 31 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 32 bytes but was 31 bytes.");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6";
         hash256(sig);
     }
 
     @Test
     public void testHash256ParamCreationFromTooLongString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 32 bytes but was 33 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 32 bytes but was 33 bytes.");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cfaa";
         hash256(sig);
     }
 
     @Test
     public void testHash256ParamCreationFromNoHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("is not a valid hex number");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("is not a valid hex number");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cg";
         hash256(sig);
     }
@@ -367,8 +367,8 @@ public class ContractParameterTest {
 
     @Test
     public void testPublicKeyParamCreationFromInvalidByteArray() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 33 bytes but was 32 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 33 bytes but was 32 bytes.");
         // one byte too short
         byte[] pubKey = hexStringToByteArray(
                 "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368");
@@ -385,8 +385,8 @@ public class ContractParameterTest {
 
     @Test
     public void testPublicKeyParamCreationFromInvalidHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 33 bytes but was 32 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 33 bytes but was 32 bytes.");
         // one byte too short.
         String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368";
         publicKey(pubKey);
@@ -414,8 +414,8 @@ public class ContractParameterTest {
 
     @Test
     public void testMap_invalidKeyType() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The provided map contains an invalid key.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided map contains an invalid key.");
 
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
         map.put(array(integer(1), string("test")), string("first"));
@@ -424,8 +424,8 @@ public class ContractParameterTest {
 
     @Test
     public void testMap_empty() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("At least one map entry is required to create a map " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("At least one map entry is required to create a map " +
                 "contract parameter.");
 
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();

@@ -52,7 +52,7 @@ public class NeoTokenTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private static final String NEOTOKEN_SCRIPTHASH = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
@@ -273,6 +273,28 @@ public class NeoTokenTest {
     }
 
     @Test
+    public void buildVoteScript() {
+        ECPublicKey pubKey = account1.getECKeyPair().getPublicKey();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NeoToken.SCRIPT_HASH, VOTE,
+                        asList(hash160(account1.getScriptHash()),
+                                publicKey(pubKey.getEncoded(true))))
+                .toArray();
+        byte[] script = new NeoToken(neow).buildVoteScript(account1.getScriptHash(), pubKey);
+        assertThat(script, is(expectedScript));
+    }
+
+    @Test
+    public void buildCancelVoteScript() {
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NeoToken.SCRIPT_HASH, VOTE,
+                        asList(hash160(account1.getScriptHash()), any(null)))
+                .toArray();
+        byte[] script = new NeoToken(neow).buildVoteScript(account1.getScriptHash(), null);
+        assertThat(script, is(expectedScript));
+    }
+
+    @Test
     public void getGasPerBlockInvokesCorrectFunctionAndHandlesReturnValueCorrectly()
             throws IOException {
 
@@ -373,7 +395,7 @@ public class NeoTokenTest {
                 NEOTOKEN_SCRIPTHASH, "getCandidates");
 
         ECPublicKey pubKey = new ECPublicKey(
-                        "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+                "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
         assertTrue(new NeoToken(neow).isCandidate(pubKey));
     }
 }

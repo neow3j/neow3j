@@ -13,9 +13,7 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -26,9 +24,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 public class CompilerTest {
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
 
     @Test
     public void mapTypeToParameterTypeShouldReturnTheCorrectTypes() {

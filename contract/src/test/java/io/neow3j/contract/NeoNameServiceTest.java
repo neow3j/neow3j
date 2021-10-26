@@ -44,7 +44,7 @@ public class NeoNameServiceTest {
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private Account account2;
@@ -131,8 +131,8 @@ public class NeoNameServiceTest {
     public void properties_unexpectedReturnType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(PROPERTIES, "invokefunction_returnInt.json");
-        expectedException.expect(UnexpectedReturnTypeException.class);
-        expectedException.expectMessage("Integer but expected Map");
+        exceptionRule.expect(UnexpectedReturnTypeException.class);
+        exceptionRule.expectMessage("Integer but expected Map");
         nameServiceContract.properties("client1.neo");
     }
 
@@ -163,8 +163,8 @@ public class NeoNameServiceTest {
 
     @Test
     public void addRoot_checkRegexMatch() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The provided input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided input does not match the required regex.");
         nameServiceContract.addRoot("invalid.root");
     }
 
@@ -188,22 +188,22 @@ public class NeoNameServiceTest {
 
     @Test
     public void setPrice_negative() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The price needs to be");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The price needs to be");
         new NeoNameService(nameServiceHash, neow).setPrice(new BigInteger("-1"));
     }
 
     @Test
     public void setPrice_zero() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The price needs to be");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The price needs to be");
         nameServiceContract.setPrice(new BigInteger("0"));
     }
 
     @Test
     public void setPrice_tooHigh() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The price needs to be");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The price needs to be");
         nameServiceContract.setPrice(new BigInteger("1000000000001"));
     }
 
@@ -222,30 +222,30 @@ public class NeoNameServiceTest {
     @Test
     public void isAvailable_rootNotExisting() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "nns_invalidOperation_dueToState.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The root domain 'neow' does not exist");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The root domain 'neow' does not exist");
         nameServiceContract.isAvailable("client1.neow");
     }
 
     @Test
     public void isAvailable_invalidDomainName() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The provided input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided input does not match the required regex.");
         nameServiceContract.isAvailable("Test.Neo");
     }
 
     @Test
     public void isAvailable_invalidDomainName_nameTooLong() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The provided input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided input does not match the required regex.");
         nameServiceContract.isAvailable(
                 "thistextis63byteslonganditisnotvalidforadomainnametobeusedinneo.neo");
     }
 
     @Test
     public void isAvailable_invalidDomainName_moreThanTwoLevels() throws IOException {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Only second-level domain names are allowed to be " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Only second-level domain names are allowed to be " +
                 "registered");
         nameServiceContract.isAvailable("third.second.first");
     }
@@ -269,8 +269,8 @@ public class NeoNameServiceTest {
     @Test
     public void register_domainNotAvailable() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The domain name 'client1.neo' is already taken.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The domain name 'client1.neo' is already taken.");
         nameServiceContract.register("client1.neo", account2.getScriptHash());
     }
 
@@ -323,8 +323,8 @@ public class NeoNameServiceTest {
     @Test
     public void setRecord_typeA_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("input does not match the required regex.");
         nameServiceContract.setRecord("client1.neo", RecordType.A, "notipv4");
     }
 
@@ -381,8 +381,8 @@ public class NeoNameServiceTest {
     @Test
     public void setRecord_typeCNAME_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("input does not match the required regex.");
         nameServiceContract.setRecord("client1.neo", RecordType.CNAME, "notcname");
     }
 
@@ -405,8 +405,8 @@ public class NeoNameServiceTest {
     @Test
     public void setRecord_typeTXT_tooLong() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("data is not valid for the record type TXT.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("data is not valid for the record type TXT.");
         nameServiceContract.setRecord("client1.neo", RecordType.TXT,
                 "thistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesx");
     }
@@ -465,8 +465,8 @@ public class NeoNameServiceTest {
     @Test
     public void setRecord_typeAAAA_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("input does not match the required regex.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("input does not match the required regex.");
         nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "12345::2");
     }
 
@@ -506,8 +506,8 @@ public class NeoNameServiceTest {
     public void getRecord_noRecord() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_returnAny.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("No record of type AAAA found for the domain name " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("No record of type AAAA found for the domain name " +
                 "'client1.neo'.");
         nameServiceContract.getRecord("client1.neo", RecordType.AAAA);
     }
@@ -515,8 +515,8 @@ public class NeoNameServiceTest {
     @Test
     public void getRecord_noDomainRegistered() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnTrue.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The domain name 'client1.neow' is not registered.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The domain name 'client1.neow' is not registered.");
         nameServiceContract.getRecord("client1.neow", RecordType.AAAA);
     }
 
@@ -572,8 +572,8 @@ public class NeoNameServiceTest {
     public void resolve_noRecord() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_returnAny.json");
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("No record of type AAAA found for the domain name " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("No record of type AAAA found for the domain name " +
                 "'client1.neo'.");
         nameServiceContract.resolve("client1.neo", RecordType.AAAA);
     }

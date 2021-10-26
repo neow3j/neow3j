@@ -4,10 +4,14 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 
 import io.neow3j.serialization.exceptions.DeserializationException;
+
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 public class BinaryReaderTest extends TestBinaryUtils {
 
@@ -17,15 +21,21 @@ public class BinaryReaderTest extends TestBinaryUtils {
     private BigInteger readResultInt;
     private String readResultString;
 
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
+
     // region Read push data byte array
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failReadPushDataByteArray() throws DeserializationException {
         // Uses a prefix different from any of the PUSHDATA OpCodes and should therefore fail.
         this.arrayBuilder = new ByteArrayBuilder()
                 .setPrefix("4b")
                 .setAnyDataWithSize(1)
                 .setSuffix("0000");
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("Stream did not contain a PUSHDATA OpCode at the current " +
+                "position.");
         readPushDataByteArray();
     }
 
@@ -135,9 +145,11 @@ public class BinaryReaderTest extends TestBinaryUtils {
         assertThat(this.readResultInt, is(BigInteger.valueOf(16)));
     }
 
-    @Test(expected = DeserializationException.class)
+    @Test
     public void failReadPushIntegerUnsupported() throws DeserializationException {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0e"); // Not a PUSH OpCode
+        exceptionRule.expect(DeserializationException.class);
+        exceptionRule.expectMessage("Couldn't parse PUSHINT OpCode");
         readPushInteger();
     }
 
