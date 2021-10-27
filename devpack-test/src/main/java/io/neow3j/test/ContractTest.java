@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @ExtendWith({
-//        ContractParameterResolver.class,
+        DeployContextParameterResolver.class,
         Neow3jParameterResolver.class,
         ContainerParameterResolver.class
 })
