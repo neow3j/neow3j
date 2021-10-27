@@ -123,7 +123,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 
         boolean tooManyParams = method.getParameterCount() > 1;
         boolean paramIsNotDeployConfig = method.getParameterCount() == 1 &&
-                !method.getParameterTypes()[0].equals(DeployConfig.class);
+                !method.getParameterTypes()[0].equals(DeployContext.class);
         if (tooManyParams || paramIsNotDeployConfig) {
             throw new ExtensionConfigurationException("Methods annotated with " +
                     DeployConfig.class.getSimpleName() + " must have either no parameters or one " +
