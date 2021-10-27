@@ -2,6 +2,7 @@ package io.neow3j.test;
 
 import io.neow3j.contract.SmartContract;
 import io.neow3j.types.Hash256;
+import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +24,11 @@ public class DeployContext {
      * @return the {@code SmartContract} instance of the deployed contract.
      */
     public SmartContract getDeployedContract(Class<?> contractClass) {
-        return deployedContracts.get(contractClass);
+        if (deployedContracts.containsKey(contractClass)) {
+            return deployedContracts.get(contractClass);
+        }
+        throw new ExtensionConfigurationException("The contract " + contractClass.getSimpleName() +
+                " is not (yet) deployed.");
     }
 
     protected void addDeployedContract(Class<?> contractClass, SmartContract contract) {
@@ -37,7 +42,11 @@ public class DeployContext {
      * @return the transaction hash.
      */
     public Hash256 getDeployTxHash(Class<?> contractClass) {
-        return deployTxHashes.get(contractClass);
+        if (deployTxHashes.containsKey(contractClass)) {
+            return deployTxHashes.get(contractClass);
+        }
+        throw new ExtensionConfigurationException("The contract " + contractClass.getSimpleName() +
+                " is not (yet) deployed.");
     }
 
     protected void addDeployTxHash(Class<?> contractClass, Hash256 tx) {

@@ -29,8 +29,13 @@ public @interface ContractTest {
 
     /**
      * The contracts to compile and deploy before running the test instance.
+     * <p>
+     * Note that the order of the contracts here is the order in which the contracts will be
+     * deployed. If you use deployment configuration methods (annotated with {@link DeployConfig})
+     * in your test class that require information of another deployed contract, beware that a
+     * contract is only available if it is in a previous position in the deployment order.
      *
-     * @return the contracts to compile and deploy
+     * @return the contracts to compile and deploy.
      */
     Class<?>[] contracts();
 
