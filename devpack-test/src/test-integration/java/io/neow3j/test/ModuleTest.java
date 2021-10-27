@@ -31,7 +31,7 @@ public class ModuleTest {
     private static SmartContract sc2;
 
     @DeployConfig(ExampleContract1.class)
-    public static ContractParameter config1(DeployContext ctx) {
+    public static ContractParameter config1() {
         return ContractParameter.integer(5);
     }
 

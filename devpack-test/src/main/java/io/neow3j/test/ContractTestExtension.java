@@ -80,7 +80,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             Method m = findCorrespondingDeployConfigMethod(c, context);
             ContractParameter deployParam = null;
             if (m != null) {
-                if (m.getParameterCount() > 1) {
+                if (m.getParameterCount() == 1) {
                     deployParam = (ContractParameter) m.invoke(null, deployCtx);
                 } else {
                     deployParam = (ContractParameter) m.invoke(null);
