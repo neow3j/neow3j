@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
@@ -37,8 +37,8 @@ public class Helper {
     /**
      * Converts the given string to a byte array using UTF-8 encoding.
      * <p>
-     * This method cannot be used to convert a Neo address to a valid script hash byte array, or
-     * a script hash in hexadecimal format into its corresponding byte array.
+     * This method cannot be used to convert a Neo address to a valid script hash byte array, or a
+     * script hash in hexadecimal format into its corresponding byte array.
      * <p>
      * Examples
      * <ul>
@@ -299,5 +299,33 @@ public class Helper {
      */
     @Instruction(opcode = OpCode.POW)
     public static native int pow(int base, int exponent);
+
+    /**
+     * Copies n consecutive bytes from the given source starting at the given source index, and
+     * places to the given destination starting at the given destination index.
+     *
+     * @param destination The array where the data should be copied to.
+     * @param dstIndex    The start index where the data is copied to (inclusive).
+     * @param source      The array where the data should be copied from.
+     * @param srcIndex    The start index where the data is copied from (inclusive).
+     * @param n           The size of data to be copied, i.e. number of bytes to be copied.
+     */
+    @Instruction(opcode = OpCode.MEMCPY)
+    public static native void memcpy(byte[] destination, int dstIndex, byte[] source,
+            int srcIndex, int n);
+
+    /**
+     * Copies n consecutive bytes from the given source starting at the given source index, and
+     * places to the given destination starting at the given destination index.
+     *
+     * @param destination The array where the data should be copied to.
+     * @param dstIndex    The start index where the data is copied to (inclusive).
+     * @param source      The array where the data should be copied from.
+     * @param srcIndex    The start index where the data is copied from (inclusive).
+     * @param n           The size of data to be copied, i.e. number of bytes to be copied.
+     */
+    @Instruction(opcode = OpCode.MEMCPY)
+    public static native void memcpy(byte[] destination, int dstIndex, ByteString source,
+            int srcIndex, int n);
 
 }
