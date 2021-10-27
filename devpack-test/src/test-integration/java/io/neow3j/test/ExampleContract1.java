@@ -1,24 +1,24 @@
 package io.neow3j.test;
 
+import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.events.Event2Args;
 
-@ManifestExtra(key = "name", value = "Example")
+@ManifestExtra(key = "name", value = "ExampleContractOne")
 public class ExampleContract1 {
 
-    static Event2Args<String, String> onDeploy;
+    static final byte[] KEY = new byte[]{1};
+    static StorageContext ctx = Storage.getStorageContext();
 
     @OnDeployment
     public static void deploy(Object data, boolean update) throws Exception {
         if (!update) {
-            onDeploy.fire("deployed!", (String) data);
+            Storage.put(ctx, KEY, (int) data);
         }
     }
 
-    public static int method() {
-        int i = 0;
-        i++;
-        return i;
+    public static int getInt() {
+        return Storage.getInteger(ctx, KEY);
     }
 }
