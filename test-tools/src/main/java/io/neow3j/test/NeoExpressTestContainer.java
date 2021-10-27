@@ -1,10 +1,13 @@
 package io.neow3j.test;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigInteger;
 
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> {
@@ -87,6 +90,18 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return this.
      */
     public NeoExpressTestContainer withNeoxpConfig(String configFile) {
+        InputStream s = NeoExpressTestContainer.class.getClassLoader()
+                .getResourceAsStream(configFile);
+        NeoExpressConfig config;
+        try {
+            config = new ObjectMapper().readValue(s, NeoExpressConfig.class);
+        } catch (IOException e) {
+            throw new RuntimeException("Couldn't load the neo-express configuration file.", e);
+        }
+        if (config.getConsensusNodes().size() > 1) {
+            throw new IllegalStateException("Can't handle multi-node neo-express setups.");
+        }
+
         withCopyFileToContainer(MountableFile.forClasspathResource(configFile, 777),
                 NEOXP_CONFIG_DEST);
         return this;

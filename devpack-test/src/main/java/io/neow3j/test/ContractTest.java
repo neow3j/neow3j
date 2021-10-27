@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @ExtendWith({
-        ContractParameterResolver.class,
+        DeployContextParameterResolver.class,
         Neow3jParameterResolver.class,
         ContainerParameterResolver.class
 })
@@ -28,11 +28,16 @@ public @interface ContractTest {
     int blockTime() default 0;
 
     /**
-     * The contract class to compile and deploy before running the test instance.
+     * The contracts to compile and deploy before running the test instance.
+     * <p>
+     * Note that the order of the contracts here is the order in which the contracts will be
+     * deployed. If you use deployment configuration methods (annotated with {@link DeployConfig})
+     * in your test class that require information of another deployed contract, beware that a
+     * contract is only available if it is in a previous position in the deployment order.
      *
-     * @return the contract class to compile and deploy
+     * @return the contracts to compile and deploy.
      */
-    Class<?> contractClass();
+    Class<?>[] contracts();
 
     /**
      * The batch file to run before all tests of the test instance. The batch file must be placed
