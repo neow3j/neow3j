@@ -74,7 +74,7 @@ compile smart contracts that are compatible with Neo Legacy.
 
 ## Who's using neow3j? :rocket:
 
-* [Binance](https//binance.com)
+* [Binance](https://binance.com)
 * [OKEx](https://okex.com)
 * [AxLabs](https://axlabs.com)
 * [Neo Playground](https://neo-playground.dev)
