@@ -4,6 +4,7 @@ import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3jExpress;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -12,13 +13,11 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
-import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -36,6 +35,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
 
     private static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
@@ -43,13 +44,16 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     // Extension Context Store
     final static String CONTAINER_STORE_KEY = "neoExpressContainer";
     final static String NEOW3J_STORE_KEY = "neow3j";
-    final static String CONTRACT_STORE_KEY = "contracts";
+    final static String DEPLOY_CTX_STORE_KEY = "contracts";
 
     private String neoxpConfigFileName = DEFAULT_NEOXP_CONFIG;
 
     private NeoExpressTestContainer container;
     private Neow3jExpress neow3j;
-    private DeployContext deployCtx;
+    private DeployContext deployCtx = new DeployContext();
+
+    private List<Account> councilAccounts;
+    private Account councilMultiSigAccount;
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
@@ -72,25 +76,32 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         container.start();
         neow3j = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
 
-        deployCtx = new DeployContext();
         for (Class<?> c : annotation.contracts()) {
             Method m = findCorrespondingDeployConfigMethod(c, context);
             ContractParameter deployParam = null;
             if (m != null) {
-                deployParam = (ContractParameter) m.invoke(null, deployCtx);
+                if (m.getParameterCount() > 1) {
+                    deployParam = (ContractParameter) m.invoke(null, deployCtx);
+                } else {
+                    deployParam = (ContractParameter) m.invoke(null);
+                }
             }
-            SmartContract deployedContract = compileAndDeploy(c, deployParam, container, neow3j);
+            SmartContract deployedContract = null;
+            try {
+                deployedContract = compileAndDeploy(c, deployParam, neow3j);
+            } catch (Throwable t) {
+                throw new Exception(t);
+            }
             deployCtx.addDeployedContract(c, deployedContract);
         }
 
         ExtensionContext.Store store = context.getStore(ExtensionContext.Namespace.GLOBAL);
         store.put(CONTAINER_STORE_KEY, container);
         store.put(NEOW3J_STORE_KEY, neow3j);
-        store.put(CONTRACT_STORE_KEY, deployCtx);
+        store.put(DEPLOY_CTX_STORE_KEY, deployCtx);
     }
 
     private Method findCorrespondingDeployConfigMethod(Class<?> contract, ExtensionContext ctx) {
-        // TODO: Check for correct signature of the method, i.e., if it returns ContractParameter.
         List<Method> methods = Arrays.stream(ctx.getTestClass().get().getMethods())
                 .filter(m -> Modifier.isStatic(m.getModifiers()) &&
                         m.isAnnotationPresent(DeployConfig.class) &&
@@ -103,29 +114,36 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             throw new ExtensionConfigurationException("Specified more than one deployment " +
                     "configuration method for contract class " + contract.getCanonicalName());
         }
-        return methods.get(0);
-    }
+        Method method = methods.get(0);
+        if (!method.getReturnType().equals(ContractParameter.class)) {
+            throw new ExtensionConfigurationException("Methods annotated with " +
+                    DeployConfig.class.getSimpleName() + " must have " +
+                    ContractParameter.class.getSimpleName() + " as return type.");
+        }
 
-    private SmartContract compileAndDeploy(Class<?> contractClass,
-            NeoExpressTestContainer container, Neow3jExpress neow3j) throws Throwable {
-        return compileAndDeploy(contractClass, null, container, neow3j);
+        boolean tooManyParams = method.getParameterCount() > 1;
+        boolean paramIsNotDeployConfig = method.getParameterCount() == 1 &&
+                !method.getParameterTypes()[0].equals(DeployConfig.class);
+        if (tooManyParams || paramIsNotDeployConfig) {
+            throw new ExtensionConfigurationException("Methods annotated with " +
+                    DeployConfig.class.getSimpleName() + " must have either no parameters or one " +
+                    "parameter of type " + DeployContext.class.getSimpleName() + ".");
+        }
+        return method;
     }
 
     private SmartContract compileAndDeploy(Class<?> contractClass, ContractParameter deployParam,
-            NeoExpressTestContainer container, Neow3jExpress neow3j) throws IOException {
+            Neow3jExpress neow3j) throws Throwable {
 
         CompilationUnit res = new Compiler().compile(contractClass.getCanonicalName());
-        Account sender = getAccount("Alice");
-        TransactionBuilder txBuilder = new ContractManagement(neow3j)
+        Account multiSigAcc = getCouncilMultiSigAccount();
+        Transaction tx = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest(), deployParam)
-                // TODO: this account needs to be generic or set by the dev.
-                .signers(AccountSigner.global(sender)); // TODO: Global needed?
-        Transaction tx;
-        try {
-            tx = txBuilder.sign();
-        } catch (Throwable t) {
-            throw new ExtensionConfigurationException("Error when signing deploy transaction.", t);
-        }
+                .signers(AccountSigner.calledByEntry(multiSigAcc))
+                .getUnsignedTransaction()
+                .addMultiSigWitness(multiSigAcc.getVerificationScript(),
+                        getCouncilAccounts().toArray(new Account[]{}));
+
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
@@ -133,8 +151,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
                     "error message: " + log.getExecutions().get(0).getException());
         }
-        Hash160 contractHash = SmartContract.calcContractHash(sender.getScriptHash(),
+        Hash160 contractHash = SmartContract.calcContractHash(multiSigAcc.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
+        deployCtx.addDeployTxHash(contractClass, txHash);
         return new SmartContract(contractHash, neow3j);
     }
 
@@ -148,7 +167,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      *
      * @return the contract under test.
      */
-    public SmartContract getContractUnderTest(Class<?> contractClass) {
+    public SmartContract getDeployedContract(Class<?> contractClass) {
         return deployCtx.getDeployedContract(contractClass);
     }
 
@@ -159,6 +178,15 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      */
     public Neow3jExpress getNeow3j() {
         return neow3j;
+    }
+
+    /**
+     * Gets the context holding information about the contracts deployed in a test.
+     *
+     * @return the deployment context.
+     */
+    public DeployContext getDeployContext() {
+        return deployCtx;
     }
 
     /**
@@ -227,18 +255,54 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         Optional<NeoExpressConfig.Wallet.Account> acc = Stream.concat(
                         config.getConsensusNodes().stream().flatMap(n -> n.getWallet().getAccounts().stream()),
                         config.getWallets().stream().flatMap(w -> w.getAccounts().stream()))
-                .filter(a -> a.label != null && a.label.equals(name)).findFirst();
+                .filter(a -> a.getLabel() != null && a.getLabel().equals(name)).findFirst();
 
         if (!acc.isPresent()) {
             throw new ExtensionConfigurationException("Account '" + name + "' not found.");
         }
         VerificationScript verifScript = new VerificationScript(
-                Numeric.hexStringToByteArray(acc.get().getContract().getScript()));
+                hexStringToByteArray(acc.get().getContract().getScript()));
         if (verifScript.isMultiSigScript()) {
             return Account.fromVerificationScript(verifScript);
         }
         return Account.fromWIF(WIF.getWIFFromPrivateKey(
-                Numeric.hexStringToByteArray(acc.get().privateKey)));
+                hexStringToByteArray(acc.get().getPrivateKey())));
+    }
+
+    public List<Account> getCouncilAccounts() throws IOException {
+        if (councilAccounts == null) {
+            collectCouncilMemberAccounts();
+        }
+        return councilAccounts;
+    }
+
+    public Account getCouncilMultiSigAccount() throws IOException {
+        if (councilMultiSigAccount == null) {
+            collectCouncilMemberAccounts();
+        }
+        return councilMultiSigAccount;
+    }
+
+    private void collectCouncilMemberAccounts() throws IOException {
+        InputStream s = ContractTestExtension.class.getClassLoader()
+                .getResourceAsStream(neoxpConfigFileName);
+        NeoExpressConfig config = ObjectMapperFactory.getObjectMapper()
+                .readValue(s, NeoExpressConfig.class);
+
+        List<NeoExpressConfig.Wallet.Account> accounts = config.getConsensusNodes().stream()
+                .flatMap(n -> n.getWallet().getAccounts().stream())
+                .filter(a -> new VerificationScript(hexStringToByteArray(a.getContract().getScript())).isMultiSigScript())
+                .collect(Collectors.toList());
+
+        if (accounts.isEmpty()) {
+            throw new ExtensionConfigurationException("Couldn't extract council member accounts " +
+                    "from neo-express configuration file. No council members found.");
+        }
+        councilMultiSigAccount = Account.fromVerificationScript(new VerificationScript(
+                hexStringToByteArray(accounts.get(0).getContract().getScript())));
+        councilAccounts = accounts.stream()
+                .map(a -> new Account(ECKeyPair.create(hexStringToByteArray(a.getPrivateKey()))))
+                .collect(Collectors.toList());
     }
 
 }
