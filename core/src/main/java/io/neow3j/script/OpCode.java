@@ -741,8 +741,14 @@ public enum OpCode {
 
 //region Splice
 
+    /**
+     * Creates a new Buffer and pushes it onto the stack.
+     */
     NEWBUFFER(0x88, 1 << 8),
 
+    /**
+     * Copies a range of bytes from one Buffer to another.
+     */
     MEMCPY(0x89, 1 << 11),
 
     /**
