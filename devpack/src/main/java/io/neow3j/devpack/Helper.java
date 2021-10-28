@@ -301,28 +301,28 @@ public class Helper {
     public static native int pow(int base, int exponent);
 
     /**
-     * Copies n consecutive bytes from the given source starting at the given source index, and
-     * places to the given destination starting at the given destination index.
+     * Copies {@code n} consecutive bytes from the given source starting at {@srcIndex} to the
+     * destination at {@code dstIndex}.
      *
      * @param destination The array where the data should be copied to.
      * @param dstIndex    The start index where the data is copied to (inclusive).
      * @param source      The array where the data should be copied from.
      * @param srcIndex    The start index where the data is copied from (inclusive).
-     * @param n           The size of data to be copied, i.e. number of bytes to be copied.
+     * @param n           The number of bytes to be copied.
      */
     @Instruction(opcode = OpCode.MEMCPY)
     public static native void memcpy(byte[] destination, int dstIndex, byte[] source,
             int srcIndex, int n);
 
     /**
-     * Copies n consecutive bytes from the given source starting at the given source index, and
-     * places to the given destination starting at the given destination index.
+     * Copies {@code n} consecutive bytes from the given source starting at {@srcIndex} to the
+     * destination at {@code dstIndex}.
      *
      * @param destination The array where the data should be copied to.
      * @param dstIndex    The start index where the data is copied to (inclusive).
      * @param source      The array where the data should be copied from.
      * @param srcIndex    The start index where the data is copied from (inclusive).
-     * @param n           The size of data to be copied, i.e. number of bytes to be copied.
+     * @param n           The number of bytes to be copied.
      */
     @Instruction(opcode = OpCode.MEMCPY)
     public static native void memcpy(byte[] destination, int dstIndex, ByteString source,
