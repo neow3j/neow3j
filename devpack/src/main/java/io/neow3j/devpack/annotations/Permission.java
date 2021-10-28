@@ -30,6 +30,8 @@ public @interface Permission {
      * <p>
      * If the field {@code nativeContract} is used, this field may not be used. Otherwise, it is
      * mandatory.
+     *
+     * @return the contract hash or group key.
      */
     String contract() default "";
 
@@ -38,12 +40,16 @@ public @interface Permission {
      * <p>
      * If the field {@code contract} is used, this field may not be used. Otherwise, it is
      * mandatory.
+     *
+     * @return the native contract.
      */
     NativeContract nativeContract() default NativeContract.None;
 
     /**
      * Indicates which methods are permitted. This corresponds to the contract set in this
      * permission. A wildcard "*" means that any method can be called.
+     *
+     * @return the list of methods.
      */
     String[] methods() default "*";
 

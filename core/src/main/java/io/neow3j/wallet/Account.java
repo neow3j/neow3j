@@ -361,6 +361,7 @@ public class Account {
      * @param address          The address of the multi-sig account.
      * @param signingThreshold The number of signatures needed when using this account for signing
      *                         transactions.
+     * @param nrOfParticipants The number of participating accounts.
      * @return the multi-sig account.
      */
     public static Account createMultiSigAccount(String address, int signingThreshold,

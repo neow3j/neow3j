@@ -301,7 +301,7 @@ public class Helper {
     public static native int pow(int base, int exponent);
 
     /**
-     * Copies {@code n} consecutive bytes from the given source starting at {@srcIndex} to the
+     * Copies {@code n} consecutive bytes from the given source starting at {@code srcIndex} to the
      * destination at {@code dstIndex}.
      *
      * @param destination The array where the data should be copied to.
@@ -315,7 +315,7 @@ public class Helper {
             int srcIndex, int n);
 
     /**
-     * Copies {@code n} consecutive bytes from the given source starting at {@srcIndex} to the
+     * Copies {@code n} consecutive bytes from the given source starting at {@code srcIndex} to the
      * destination at {@code dstIndex}.
      *
      * @param destination The array where the data should be copied to.

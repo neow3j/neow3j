@@ -163,9 +163,11 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Gets the contract that is under test. Use the contract class to make calls to the contract.
+     * Gets an instance of {@code SmartContract} for the given contract under test. It can be
+     * used as a handle to interact with the contract.
      *
-     * @return the contract under test.
+     * @param contractClass The contract to get the {@code SmartContract} instance for.
+     * @return the {@code SmartContract} instance.
      */
     public SmartContract getDeployedContract(Class<?> contractClass) {
         return deployCtx.getDeployedContract(contractClass);

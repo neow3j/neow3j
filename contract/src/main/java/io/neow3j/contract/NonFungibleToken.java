@@ -326,6 +326,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    The sender.
      * @param to      The recipient.
+     * @param amount  The amount to transfer.
      * @param tokenId The token id.
      * @param data    The data that is passed to the {@code onPayment} method if the recipient is a
      *                contract.
