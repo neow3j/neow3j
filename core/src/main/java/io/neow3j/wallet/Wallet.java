@@ -1,7 +1,6 @@
 package io.neow3j.wallet;
 
 import io.neow3j.types.Hash160;
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.NEP2;
@@ -12,6 +11,7 @@ import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,10 +26,10 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+
 /**
- * The wallet manages a collection of accounts. Exactly one of these contained accounts is
- * the default account of this wallet, which is used, e.g., when doing contract invocations
- * and no account is mentioned specifically.
+ * The wallet manages a collection of accounts.
  */
 public class Wallet {
 
@@ -72,11 +72,13 @@ public class Wallet {
      * Sets the account with the given script hash to the default account of this wallet.
      *
      * @param accountHash160 The new default account.
+     * @return the wallet.
      * @throws IllegalArgumentException if the given account is not in this wallet.
-     * @return the Wallet
      */
     public Wallet defaultAccount(Hash160 accountHash160) {
-        if (accountHash160 == null) throw new IllegalArgumentException("No account provided to set default.");
+        if (accountHash160 == null) {
+            throw new IllegalArgumentException("No account provided to set default.");
+        }
         if (!this.accounts.containsKey(accountHash160)) {
             throw new IllegalArgumentException("Cannot set default account on wallet. Wallet does "
                     + "not contain the account with script hash "
@@ -147,9 +149,10 @@ public class Wallet {
                 continue;
             }
             // An account is only allowed to be in one wallet at a time.
-            if (acct.getWallet() != null) throw new IllegalArgumentException("The account " + acct.getAddress() +
-                    " is already contained in a wallet. Please remove this account from its containing wallet" +
-                    " before adding it to another wallet.");
+            if (acct.getWallet() != null)
+                throw new IllegalArgumentException("The account " + acct.getAddress() +
+                        " is already contained in a wallet. Please remove this account from its " +
+                        "containing wallet before adding it to another wallet.");
             this.accounts.put(acct.getScriptHash(), acct);
             // Create a link for the account
             acct.setWallet(this);
@@ -247,7 +250,8 @@ public class Wallet {
                 .findFirst();
 
         if (defaultAccount.isPresent()) {
-            Hash160 defaultAccountHash160 = Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
+            Hash160 defaultAccountHash160 =
+                    Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
             return new Wallet()
                     .name(nep6Wallet.getName())
                     .version(nep6Wallet.getVersion())
@@ -255,7 +259,8 @@ public class Wallet {
                     .addAccounts(accs)
                     .defaultAccount(defaultAccountHash160);
         } else {
-            throw new IllegalArgumentException("The Nep-6 wallet does not contain any default account.");
+            throw new IllegalArgumentException("The Nep-6 wallet does not contain any default " +
+                    "account.");
         }
     }
 
@@ -268,7 +273,7 @@ public class Wallet {
      */
     public Wallet saveNEP6Wallet(File destination) throws IOException {
         if (destination == null) {
-            throw new IllegalArgumentException("Destination file cannot be null");
+            throw new IllegalArgumentException("Destination file cannot be null.");
         }
         NEP6Wallet nep6Wallet = toNEP6Wallet();
         if (destination.isDirectory()) {
@@ -367,6 +372,7 @@ public class Wallet {
 
     /**
      * Gets the account with the given script hash if it is in this wallet.
+     *
      * @param hash160 The script hash of the account.
      * @return the account if it is in this wallet. Null, otherwise.
      */
