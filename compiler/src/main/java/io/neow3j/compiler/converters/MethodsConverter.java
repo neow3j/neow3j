@@ -61,6 +61,22 @@ import static org.objectweb.asm.Type.getInternalName;
 
 public class MethodsConverter implements Converter {
 
+    private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
+            "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
+    private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES = Arrays.asList(
+            "java/lang/Integer", "java/lang/Long", "java/lang/Byte", "java/lang/Short",
+            "java/lang/Boolean", "java/lang/Character");
+
+    private static final String VALUEOF_METHOD_NAME = "valueOf";
+    private static final String HASH_CODE_METHOD_NAME = "hashCode";
+    private static final String ADDRESS_TO_SCRIPTHASH_METHOD_NAME = "addressToScriptHash";
+    private static final String HEX_TO_BYTES_METHOD_NAME = "hexToBytes";
+    private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
+    private static final String EQUALS_METHOD_NAME = "equals";
+    private static final String LENGTH_METHOD_NAME = "length";
+    private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
+    private static final String THROWABLE_GET_MESSAGE = "getMessage";
+
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {
@@ -85,23 +101,6 @@ public class MethodsConverter implements Converter {
         }
         return insn;
     }
-
-    private static final List<String> PRIMITIVE_TYPE_CAST_METHODS = Arrays.asList(
-            "intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
-    private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES = Arrays.asList(
-            "java/lang/Integer", "java/lang/Long", "java/lang/Byte", "java/lang/Short",
-            "java/lang/Boolean", "java/lang/Character");
-
-    private static final String VALUEOF_METHOD_NAME = "valueOf";
-    private static final String HASH_CODE_METHOD_NAME = "hashCode";
-    private static final String ADDRESS_TO_SCRIPTHASH_METHOD_NAME = "addressToScriptHash";
-    private static final String HEX_TO_BYTES_METHOD_NAME = "hexToBytes";
-    private static final String STRING_TO_INT_METHOD_NAME = "stringToInt";
-    private static final String EQUALS_METHOD_NAME = "equals";
-    private static final String LENGTH_METHOD_NAME = "length";
-    private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
-    private static final String THROWABLE_GET_MESSAGE = "getMessage";
-
 
     /**
      * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
@@ -408,7 +407,7 @@ public class MethodsConverter implements Converter {
                     annotation.values.get(1), getClassNameForInternalName(owner.name)));
         }
 
-        // If its a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
+        // If it's a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
         if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
             callingNeoMethod.addInstruction(
                     // The contract hash is pushed in little-endian ordering because the NeoVM
@@ -440,4 +439,5 @@ public class MethodsConverter implements Converter {
         throw new CompilerException(neoMethod, format("Tried to skip to an instruction of type %d "
                 + "but reached the end of the method.", type));
     }
+
 }
