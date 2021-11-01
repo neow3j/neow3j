@@ -100,6 +100,7 @@ public class MethodsConverter implements Converter {
     private static final String EQUALS_METHOD_NAME = "equals";
     private static final String LENGTH_METHOD_NAME = "length";
     private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
+    private static final String THROWABLE_GET_MESSAGE = "getMessage";
 
 
     /**
@@ -183,6 +184,9 @@ public class MethodsConverter implements Converter {
             callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
             return methodInsn;
         }
+        if (isThrowableGetMessage(owner, methodInsn)) {
+            return methodInsn;
+        }
         NeoMethod calledNeoMethod = new NeoMethod(calledAsmMethod, owner);
         compUnit.getNeoModule().addMethod(calledNeoMethod);
         calledNeoMethod.initialize(compUnit);
@@ -192,6 +196,12 @@ public class MethodsConverter implements Converter {
         callingNeoMethod.addInstruction(
                 new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
         return methodInsn;
+    }
+
+    private static boolean isThrowableGetMessage(ClassNode owner, MethodInsnNode methodInsn) {
+        return getFullyQualifiedNameForInternalName(owner.name).equals(
+                Throwable.class.getCanonicalName()) &&
+                methodInsn.name.equals(THROWABLE_GET_MESSAGE);
     }
 
     private static boolean isStringLengthCall(MethodInsnNode methodInsn) {
