@@ -274,4 +274,40 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         return execResult.getStdout().split(" ")[3];
     }
 
+    /**
+     * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
+     *
+     * @param n The number of blocks to mint.
+     * @return The message emitted by neo-express on minting the blocks.
+     * @throws Exception if the execution failed.
+     */
+    public String fastForward(int n) throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "fastfwd", Integer.toString(n));
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout();
+    }
+
+    /**
+     * Executes the given command on the neo-express instance.
+     * <p>
+     * The command has to be provided in its separate parts, e.g.,
+     * {@code "neoxp", "contract", "run", "NeoToken", "balanceOf",
+     * "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP", "--account genesis"}
+     *
+     * @param commandParts The command separated into its parts.
+     * @return The message emitted by neo-express on minting the blocks.
+     * @throws Exception if the execution failed.
+     */
+    public String execCommand(String... commandParts) throws Exception {
+        ExecResult execResult = execInContainer(commandParts);
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " +
+                    execResult.getStderr());
+        }
+        return execResult.getStdout();
+    }
+
 }
