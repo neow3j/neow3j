@@ -48,20 +48,39 @@ public class StorageMapIntegrationTest {
     private static final String KEY3 = "neow";
     private static final Integer DATA3 = 13;
 
+    private static final Integer KEY4 = 1001;
+    private static final String DATA4 = "moon";
+
+    private static final Integer KEY5 = 1234;
+    private static final Integer DATA5 = 255;
+
     @BeforeClass
     public static void setUp() throws Throwable {
+        String storeData = "storeData";
+        String storeInteger = "storeInteger";
+
         ContractParameter key = byteArray(KEY);
         ContractParameter data = byteArray(DATA);
-        ct.invokeFunctionAndAwaitExecution("putData", key, data);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
 
         key = byteArrayFromString(KEY2);
         data = byteArrayFromString(DATA2);
-        ct.invokeFunctionAndAwaitExecution("putData", key, data);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
 
         key = byteArrayFromString(KEY3);
         data = integer(DATA3);
-        ct.invokeFunctionAndAwaitExecution("putIntegerData", key, data);
+        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+
+        key = integer(KEY4);
+        data = byteArrayFromString(DATA4);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+
+        key = integer(KEY5);
+        data = integer(DATA5);
+        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
     }
+
+    // region get bytestring key
 
     @Test
     public void getByByteStringKey() throws IOException {
@@ -91,6 +110,9 @@ public class StorageMapIntegrationTest {
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
     }
 
+    // endregion get bytestring key
+    // region get bytearray key
+
     @Test
     public void getByByteArrayKey() throws IOException {
         ContractParameter param = byteArray(KEY);
@@ -118,6 +140,9 @@ public class StorageMapIntegrationTest {
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
     }
+
+    // endregion get bytearray key
+    // region get string key
 
     @Test
     public void getByStringKey() throws IOException {
@@ -147,6 +172,40 @@ public class StorageMapIntegrationTest {
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
     }
+
+    // endregion get string key
+    // region get integer key
+
+    @Test
+    public void getByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY4);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(DATA4));
+    }
+
+    @Test
+    public void getByteArrayByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY4);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(DATA4.getBytes()));
+    }
+
+    @Test
+    public void getStringByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY4);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(DATA4));
+    }
+
+    @Test
+    public void getIntegerByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY5);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA5)));
+    }
+
+    // endregion get integer key
+    // region put bytearray key
 
     @Test
     public void putByteArrayKeyByteArrayValue() throws IOException {
@@ -202,6 +261,9 @@ public class StorageMapIntegrationTest {
         assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
     }
 
+    // endregion put bytearray key
+    // region put bytestring key
+
     @Test
     public void putByteStringKeyByteArrayValue() throws IOException {
         String v = "050607";
@@ -255,6 +317,9 @@ public class StorageMapIntegrationTest {
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
     }
+
+    // endregion put bytestring key
+    // region put string key
 
     @Test
     public void putStringKeyByteArrayValue() throws IOException {
@@ -310,6 +375,62 @@ public class StorageMapIntegrationTest {
         assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
     }
 
+    // endregion put string key
+    // region put integer key
+
+    @Test
+    public void putIntegerKeyByteArrayValue() throws IOException {
+        ContractParameter key = integer(513);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putIntegerKeyByteStringValue() throws IOException {
+        ContractParameter key = integer(513);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putIntegerKeyIntegerValue() throws IOException {
+        ContractParameter key = integer(513);
+        ContractParameter value = integer(28);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(value.getValue()));
+    }
+
+    @Test
+    public void putIntegerKeyStringValue() throws IOException {
+        ContractParameter key = integer(513);
+        ContractParameter value = string("hello neow3j");
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is("hello neow3j"));
+    }
+
+    @Test
+    public void putIntegerKeyHash160Value() throws IOException {
+        Hash160 v = ct.getClient1().getScriptHash();
+        ContractParameter key = integer(515);
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putIntegerKeyHash256Value() throws IOException {
+        Hash256 v = ct.getBlockHashOfDeployTx();
+        ContractParameter key = integer(143);
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
+    }
+
+    // endregion put integer key
+    // region delete
+
     @Test
     public void deleteByByteArrayKey() throws IOException {
         ContractParameter key = byteArray(KEY);
@@ -339,19 +460,35 @@ public class StorageMapIntegrationTest {
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
     }
 
+    @Test
+    public void deleteByInteger() throws IOException {
+        ContractParameter key = integer(KEY5);
+        InvocationResult res = ct.callInvokeFunction("getByIntegerKey", key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA5)));
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getValue(), is(nullValue()));
+    }
+
+    // endregion delete
+
     static class StorageMapIntegrationTestContract {
 
         static ByteString prefix = hexToBytes("0001");
         static StorageContext ctx = Storage.getStorageContext();
         static StorageMap map = new StorageMap(ctx, prefix.toByteArray());
 
-        public static void putData(ByteString key, ByteString data) {
+        // region store data
+
+        public static void storeData(ByteString key, ByteString data) {
             Storage.put(ctx, prefix.concat(key), data);
         }
 
-        public static void putIntegerData(ByteString key, int data) {
+        public static void storeInteger(ByteString key, int data) {
             Storage.put(ctx, prefix.concat(key), data);
         }
+
+        // endregion store data
+        // region get bytestring key
 
         public static ByteString getByByteStringKey(ByteString s) {
             return map.get(s);
@@ -369,6 +506,9 @@ public class StorageMapIntegrationTest {
             return map.getInteger(s);
         }
 
+        // endregion get bytestring key
+        // region get bytearray key
+
         public static ByteString getByByteArrayKey(byte[] b) {
             return map.get(b);
         }
@@ -385,6 +525,9 @@ public class StorageMapIntegrationTest {
             return map.getInteger(b);
         }
 
+        // endregion get bytearray key
+        // region get string key
+
         public static ByteString getByStringKey(String s) {
             return map.get(s);
         }
@@ -400,6 +543,28 @@ public class StorageMapIntegrationTest {
         public static int getIntegerByStringKey(String s) {
             return map.getInteger(s);
         }
+
+        // endregion get string key
+        // region get integer key
+
+        public static ByteString getByIntegerKey(int i) {
+            return map.get(i);
+        }
+
+        public static byte[] getByteArrayByIntegerKey(int i) {
+            return map.getByteArray(i);
+        }
+
+        public static String getStringByIntegerKey(int i) {
+            return map.getString(i);
+        }
+
+        public static int getIntegerByIntegerKey(int i) {
+            return map.getInteger(i);
+        }
+
+        // endregion get integer key
+        // region put bytearray key
 
         public static ByteString putByteArrayKeyByteArrayValue(byte[] key, byte[] value) {
             map.put(key, value);
@@ -433,6 +598,9 @@ public class StorageMapIntegrationTest {
             return Storage.get(ctx, prefix.concat(key));
         }
 
+        // endregion put bytearray key
+        // region put bytestring key
+
         public static ByteString putByteStringKeyByteArrayValue(ByteString key, byte[] value) {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
@@ -464,6 +632,9 @@ public class StorageMapIntegrationTest {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
         }
+
+        // endregion put bytestring key
+        // region put string key
 
         public static ByteString putStringKeyByteArrayValue(String key, byte[] value) {
             map.put(key, value);
@@ -497,6 +668,44 @@ public class StorageMapIntegrationTest {
             return Storage.get(ctx, prefix.concat(key));
         }
 
+        // endregion put string key
+        // region put integer key
+
+        public static ByteString putIntegerKeyByteArrayValue(int key, byte[] value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyByteStringValue(int key, ByteString value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyIntegerValue(int key, int value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyStringValue(int key, String value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyHash160Value(int key,
+                io.neow3j.devpack.Hash160 value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyHash256Value(int key,
+                io.neow3j.devpack.Hash256 value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        // endregion put integer key
+        // region delete
+
         public static ByteString deleteByByteArrayKey(byte[] key) {
             map.delete(key);
             return Storage.get(ctx, prefix.concat(key));
@@ -511,6 +720,13 @@ public class StorageMapIntegrationTest {
             map.delete(key);
             return Storage.get(ctx, prefix.concat(key));
         }
+
+        public static ByteString deleteByInteger(int key) {
+            map.delete(key);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        // endregion delete
 
     }
 
