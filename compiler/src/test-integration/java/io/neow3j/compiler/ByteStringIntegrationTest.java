@@ -18,6 +18,9 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -143,6 +146,17 @@ public class ByteStringIntegrationTest {
     }
 
     @Test
+    public void concatenateWithInteger() throws IOException {
+        ContractParameter s = byteArrayFromString("hello number ");
+        InvocationResult res = ct.callInvokeFunction(testName, s).getInvocationResult();
+        StackItem item = res.getStack().get(0);
+        assertThat(item.getType(), is(StackItemType.BYTE_STRING));
+        byte[] concatenated = concatenate(
+                "hello number ".getBytes(), reverseArray(BigInteger.valueOf(456).toByteArray()));
+        assertThat(item.getHexString(), is(toHexStringNoPrefix(concatenated)));
+    }
+
+    @Test
     public void getRangeOfByteString() throws IOException {
         ContractParameter s = byteArray("0001020304");
         InvocationResult res = ct.callInvokeFunction(testName, s, integer(2), integer(3))
@@ -227,6 +241,10 @@ public class ByteStringIntegrationTest {
 
         public static ByteString concatenateWithString(ByteString s) {
             return s.concat("moon!");
+        }
+
+        public static ByteString concatenateWithInteger(ByteString s) {
+            return s.concat(456);
         }
 
         public static ByteString getRangeOfByteString(ByteString s, int start, int n) {

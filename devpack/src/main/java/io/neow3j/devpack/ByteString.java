@@ -115,8 +115,8 @@ public class ByteString {
     public native ByteString concat(ByteString other);
 
     /**
-     * Concatenates this and the given byte string. The returned value is a new byte string
-     * instance.
+     * Concatenates this byte string and the given byte array. The returned value is a new byte
+     * string instance.
      *
      * @param other The byte string to append.
      * @return the concatenated byte string.
@@ -137,6 +137,17 @@ public class ByteString {
     @Instruction(opcode = OpCode.CAT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public native ByteString concat(String other);
+
+    /**
+     * Concatenates this byte string and the given integer. The returned value is a new byte
+     * string instance.
+     *
+     * @param other The integer to append.
+     * @return the concatenated byte string.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public native ByteString concat(int other);
 
     /**
      * Returns n consecutive characters of this byte string starting at the given index.
@@ -180,4 +191,5 @@ public class ByteString {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
 }
