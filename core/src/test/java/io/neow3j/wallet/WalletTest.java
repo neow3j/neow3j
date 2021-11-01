@@ -1,22 +1,5 @@
 package io.neow3j.wallet;
 
-import static io.neow3j.test.TestProperties.committeeAccountAddress;
-import static io.neow3j.test.TestProperties.defaultAccountAddress;
-import static io.neow3j.test.TestProperties.gasTokenHash;
-import static io.neow3j.test.TestProperties.neoTokenHash;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
@@ -48,6 +31,23 @@ import java.util.Map;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.gasTokenHash;
+import static io.neow3j.test.TestProperties.neoTokenHash;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class WalletTest {
 
@@ -168,6 +168,17 @@ public class WalletTest {
     }
 
     @Test
+    public void testAddAccountContainedInAnotherWallet() {
+        Wallet w1 = Wallet.create();
+        Account acc = Account.create();
+        w1.addAccounts(acc);
+        Wallet w2 = Wallet.create();
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("is already contained in a wallet.");
+        w2.addAccounts(acc);
+    }
+
+    @Test
     public void testRemoveAccounts() throws InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
@@ -268,6 +279,19 @@ public class WalletTest {
     }
 
     @Test
+    public void fromNEP6WalletFileToNEP6Wallet() throws IOException, URISyntaxException {
+        File nep6WalletFile = new File(WalletTest.class.getClassLoader()
+                .getResource("wallet/wallet.json").getFile());
+        assertNotNull(nep6WalletFile);
+        Wallet w = Wallet.fromNEP6Wallet(nep6WalletFile);
+
+        ObjectMapper mapper = new ObjectMapper();
+        NEP6Wallet nep6Wallet = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
+
+        assertEquals(nep6Wallet, w.toNEP6Wallet());
+    }
+
+    @Test
     public void testCreateGenericWallet() {
         Wallet w = Wallet.create();
         assertEquals("neow3jWallet", w.getName());
@@ -298,6 +322,14 @@ public class WalletTest {
         w2.decryptAllAccounts("12345678");
 
         assertEquals(w2.toNEP6Wallet(), w1.toNEP6Wallet());
+    }
+
+    @Test
+    public void failSaveToFileWithoutDestination() throws IOException {
+        Wallet w = Wallet.create();
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Destination file cannot be null.");
+        w.saveNEP6Wallet(null);
     }
 
     @Test
@@ -424,6 +456,14 @@ public class WalletTest {
         exceptionRule.expect(IllegalArgumentException.class);
         exceptionRule.expectMessage("Wallet does not contain the account");
         w.defaultAccount(a.getScriptHash());
+    }
+
+    @Test
+    public void provideNoAccountToSetDefault() {
+        Wallet w = Wallet.create();
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("No account provided");
+        w.defaultAccount(null);
     }
 
     @Test
