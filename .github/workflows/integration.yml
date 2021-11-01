@@ -20,7 +20,7 @@ jobs:
       - name: Set up JDK 1.8
         uses: actions/setup-java@v2
         with:
-          distribution: adopt-hotspot
+          distribution: temurin
           java-version: '8'
           cache: 'gradle'
       - name: Build with Integration Tests
