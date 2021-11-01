@@ -4,7 +4,9 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.NeoVMStateType;
 import org.junit.ClassRule;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +18,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class TryCatchBlocksTest {
+
+    @Rule
+    public TestName testName = new TestName();
 
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(
@@ -204,23 +209,44 @@ public class TryCatchBlocksTest {
 
     @Test
     public void innerVarAssignmentAndEmptyCatch() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("innerVarAssignmentAndEmptyCatch");
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         StackItem res = response.getInvocationResult().getStack().get(0);
         assertTrue(res.getBoolean());
     }
 
     @Test
     public void innerInitVarAndEmptyCatch() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("innerInitVarAndEmptyCatch");
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         StackItem res = response.getInvocationResult().getStack().get(0);
         assertTrue(res.getBoolean());
     }
 
     @Test
     public void emptyTryCatch() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("emptyTryCatch");
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
         StackItem res = response.getInvocationResult().getStack().get(0);
         assertTrue(res.getBoolean());
+    }
+
+    @Test
+    public void getCaughtExceptionMessage() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertThat(res.getString(), is("Not allowed."));
+    }
+
+    @Test
+    public void getCaughtAssertionMessage() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertThat(res.getString(), is("Assert not passed."));
+    }
+
+    @Test
+    public void getCaughtAssertionMessageInAssertionError() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        StackItem res = response.getInvocationResult().getStack().get(0);
+        assertThat(res.getString(), is("Assertion not passed."));
     }
 
     static class TryCatchBlocks {
@@ -392,6 +418,31 @@ public class TryCatchBlocksTest {
 
             }
             return true;
+        }
+
+        public static String getCaughtExceptionMessage() {
+            try {
+                throw new Exception("Not allowed.");
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+
+        public static String getCaughtAssertionMessage() {
+            try {
+                assert false : "Assert not passed.";
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+            return "";
+        }
+
+        public static String getCaughtAssertionMessageInAssertionError() {
+            try {
+                throw new AssertionError("Assertion not passed.");
+            } catch (Exception e) {
+                return e.getMessage();
+            }
         }
 
     }
