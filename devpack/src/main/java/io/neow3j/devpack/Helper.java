@@ -207,6 +207,16 @@ public class Helper {
     public static native byte[] concat(byte[] first, String second);
 
     /**
+     * Concatenates the given byte array with the integer.
+     *
+     * @param first The first byte array.
+     * @param second The integer to append.
+     * @return the concatenation.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    public static native byte[] concat(byte[] first, int second);
+
+    /**
      * Returns n consecutive characters from the given string starting at the given index.
      *
      * @param source The string to take the bytes from.
