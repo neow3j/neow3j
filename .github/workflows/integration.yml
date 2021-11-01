@@ -22,6 +22,6 @@ jobs:
         with:
           distribution: temurin
           java-version: '8'
-          cache: 'gradle'
+#          cache: 'gradle'
       - name: Build with Integration Tests
         run: ./gradlew --info --warning-mode=all clean integrationTest
