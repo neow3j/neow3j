@@ -111,6 +111,8 @@ public class NeoToken extends FungibleToken {
         return DECIMALS;
     }
 
+    // region unclaimed gas
+
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
      *
@@ -137,7 +139,8 @@ public class NeoToken extends FungibleToken {
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
-// region Candidate registration
+    // endregion unclaimed gas
+    // region candidate registration
 
     /**
      * Creates a transaction script for registering a committee candidate with the given
@@ -163,8 +166,8 @@ public class NeoToken extends FungibleToken {
         return invokeFunction(UNREGISTER_CANDIDATE, publicKey(candidateKey.getEncoded(true)));
     }
 
-// endregion Candidate registration
-// region Committee and candidates information
+    // endregion candidate registration
+    // region committee and candidates information
 
     /**
      * Gets the public keys of the current committee members.
@@ -262,8 +265,8 @@ public class NeoToken extends FungibleToken {
         }
     }
 
-// endregion Committee and candidates information
-// region Voting
+    // endregion committee and candidates information
+    // region voting
 
     /**
      * Creates a transaction script to vote for the given validators and initializes a
@@ -336,8 +339,8 @@ public class NeoToken extends FungibleToken {
                 publicKey(candidate.getEncoded(true)));
     }
 
-// endregion Voting
-// region Network settings
+    // endregion voting
+    // region network settings
 
     /**
      * Gets the number of GAS generated in each block.
@@ -385,7 +388,7 @@ public class NeoToken extends FungibleToken {
         return invokeFunction(SET_REGISTER_PRICE, integer(registerPrice));
     }
 
-// endregion Network settings
+    // endregion network settings
 
     /**
      * Gets the state of an account.
