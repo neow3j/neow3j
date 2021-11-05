@@ -358,7 +358,9 @@ public class Transaction extends NeoSerializable {
             this.signers = reader.readSerializableList(Signer.class);
             readTransactionAttributes(reader);
             this.script = reader.readVarBytes();
-            this.witnesses = reader.readSerializableList(Witness.class);
+            if (reader.available() > 0) {
+                this.witnesses = reader.readSerializableList(Witness.class);
+            }
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
