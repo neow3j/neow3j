@@ -1,17 +1,17 @@
 package io.neow3j.serialization;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.serialization.exceptions.DeserializationException;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
 
 public class BinaryReaderTest extends TestBinaryUtils {
 
@@ -305,6 +305,14 @@ public class BinaryReaderTest extends TestBinaryUtils {
         buildBinaryReader(data);
         value = this.testBinaryReader.readInt64();
         assertThat(value, is(749_675_361_041L));
+    }
+
+    @Test
+    public void availableIsNonZero() throws IOException {
+        byte[] data = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff,
+                (byte) 0xff, (byte) 0xff, (byte) 0x7f};
+        buildBinaryReader(data);
+        assertThat(testBinaryReader.available(), is(greaterThan(0)));
     }
 
     private void buildBinaryReader(byte[] data) {
