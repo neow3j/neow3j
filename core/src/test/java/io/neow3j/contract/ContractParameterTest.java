@@ -1,5 +1,26 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.Sign;
+import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.wallet.Account;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -18,25 +39,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
-
-import io.neow3j.crypto.Sign;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.neow3j.wallet.Account;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class ContractParameterTest {
 
@@ -454,6 +456,13 @@ public class ContractParameterTest {
     public void testHashCode() {
         int result = contractParameter.hashCode();
         assertNotEquals(0, result);
+    }
+
+    @Test
+    public void deserialise() throws IOException {
+        String json = "{\"type\":\"Integer\",\"value\":\"10\"}";
+        ObjectMapper m = ObjectMapperFactory.getObjectMapper();
+        ContractParameter contractParameter = m.readValue(json, ContractParameter.class);
     }
 
 }
