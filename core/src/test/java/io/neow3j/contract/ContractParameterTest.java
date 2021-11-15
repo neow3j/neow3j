@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -20,6 +21,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.bool;
@@ -34,6 +36,7 @@ import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -459,10 +462,120 @@ public class ContractParameterTest {
     }
 
     @Test
-    public void deserialise() throws IOException {
-        String json = "{\"type\":\"Integer\",\"value\":\"10\"}";
+    public void deserializeWithAllTypesAndBuildScriptWithParameter() throws IOException {
+        String json = "{\n" +
+                "    \"type\":\"Array\",\n" +
+                "    \"value\": [\n" +
+                "        {\n" +
+                "            \"type\":\"Integer\",\n" +
+                "            \"value\":1000\n" + // integer without quotes
+                "        },\n" +
+                "        {\n" +
+                "            \"type\":\"Integer\",\n" +
+                "            \"value\":\"1000\"\n" + // integer with quotes
+                "        },\n" +
+                "        {\n" +
+                "            \"type\":\"Array\",\n" +
+                "            \"value\":[\n" +
+                "                {\n" +
+                "                    \"type\":\"String\",\n" +
+                "                    \"value\":\"hello, world!\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"ByteArray\",\n" +
+                "                    \"value\":\"AQID\"\n" + // 010203 Base64
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Signature\",\n" +
+                "                    \"value\":\"AQID\"\n" + // 010203 Base64
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"PublicKey\",\n" +
+                "                    \"value\":\"010203\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Boolean\",\n" +
+                "                    \"value\":true\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Boolean\",\n" +
+                "                    \"value\":\"true\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Hash160\",\n" +
+                "                    \"value\":\"69ecca587293047be4c59159bf8bc399985c160d\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Hash256\",\n" +
+                "                    " +
+                "\"value\":\"fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Any\",\n" +
+                "                    \"value\":\"\"\n" +
+                "                },\n" +
+                "               {\n" +
+                "                   \"type\": \"Map\",\n" +
+                "                   \"value\": [\n" +
+                "                   {\n" +
+                "                       \"key\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"Integer\",\n" +
+                "                           \"value\": \"5\"\n" +
+                "                       },\n" +
+                "                       \"value\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"String\",\n" +
+                "                           \"value\": \"value\"\n" +
+                "                       }\n" +
+                "                   },\n" +
+                "                   {\n" +
+                "                       \"key\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"ByteArray\",\n" +
+                "                           \"value\":\"AQID\"\n" + // 010203 Base64
+                "                       },\n" +
+                "                       \"value\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"Integer\",\n" +
+                "                           \"value\": \"5\"\n" +
+                "                       }\n" +
+                "                   }\n" +
+                "               ]\n" +
+                "               }" +
+                "            ]\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
         ObjectMapper m = ObjectMapperFactory.getObjectMapper();
-        ContractParameter contractParameter = m.readValue(json, ContractParameter.class);
-    }
+        ContractParameter p = m.readValue(json, ContractParameter.class);
 
+        ContractParameter[] arr = (ContractParameter[]) p.getValue();
+        assertThat((BigInteger) arr[0].getValue(), is(new BigInteger("1000")));
+        assertThat((BigInteger) arr[1].getValue(), is(new BigInteger("1000")));
+        ContractParameter[] arr2 = (ContractParameter[]) arr[2].getValue();
+        assertThat((String) arr2[0].getValue(), is("hello, world!"));
+        assertThat((byte[]) arr2[1].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((byte[]) arr2[2].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((byte[]) arr2[3].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((boolean) arr2[4].getValue(), is(true));
+        assertThat((boolean) arr2[5].getValue(), is(true));
+        assertThat((Hash160) arr2[6].getValue(), is(new Hash160(
+                "69ecca587293047be4c59159bf8bc399985c160d")));
+        assertThat((Hash256) arr2[7].getValue(), is(new Hash256(
+                "fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b")));
+        assertThat(arr2[8].getValue(), is(nullValue()));
+        Map<ContractParameter, ContractParameter> map =
+                (Map<ContractParameter, ContractParameter>) arr2[9].getValue();
+        List<Object> keys = map.keySet().stream().map(ContractParameter::getValue)
+                .collect(Collectors.toList());
+        List<Object> values = map.values().stream().map(ContractParameter::getValue)
+                .collect(Collectors.toList());
+        assertThat(keys, containsInAnyOrder(new BigInteger("5"), new byte[]{0x01, 0x02, 0x03}));
+        assertThat(values, containsInAnyOrder("value", new BigInteger("5")));
+
+        // Must not fail.
+        ScriptBuilder b = new ScriptBuilder();
+        b.pushParam(p);
+    }
 }

@@ -547,8 +547,11 @@ public class ContractParameter {
         public ContractParameter deserialize(JsonParser p, DeserializationContext ctx)
                 throws IOException {
 
-            Map param = p.getCodec().readValue(p, Map.class);
+            Map<String, Object> param = p.getCodec().readValue(p, Map.class);
+            return deserializeParam(param);
+        }
 
+        private ContractParameter deserializeParam(Map<String, Object> param) throws IOException {
             String name = (String) param.get("name");
             String typeString = (String) param.get("type");
             ContractParameterType type = null;
@@ -557,73 +560,65 @@ public class ContractParameter {
             }
             Object value = null;
             if (param.containsKey("value")) {
-                deserializeValue(param.get("value"), type);
+                value = deserializeValue(param.get("value"), type);
             }
-
             return new ContractParameter(name, type, value);
         }
 
-//         private ContractParameter deserializeParam() {
-//
-//         }
-
-        private Object deserializeValue(Object value, ContractParameterType type) {
+        private Object deserializeValue(Object value, ContractParameterType type) throws IOException {
             switch (type) {
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
                     return hexStringToByteArray((String) value);
-                    break;
                 case BYTE_ARRAY:
                 case SIGNATURE:
                     return Base64.decode((String) value);
                 case BOOLEAN:
                     // Convert to true or false without quotes
-                    return Boolean.valueOf((String) value);
-                    break;
+                    if (value instanceof String) {
+                        return Boolean.valueOf((String) value);
+                    } else {
+                        return value;
+                    }
                 case INTEGER:
-                    // Convert to a string, i.e. in the final json the number has quotes around it.
+                    if (value instanceof String) {
+                        return new BigInteger((String) value);
+                    } else {
+                        return BigInteger.valueOf((int) value);
+                    }
                 case HASH256:
+                    return new Hash256((String) value);
                 case HASH160:
-                    // In case of a hash, the toString() method returns a big-endian hex string.
+                    return new Hash160((String) value);
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
                 case STRING:
-                    gen.writeStringField("value", p.getValue().toString());
-                    break;
+                    return (String) value;
                 case ARRAY:
-                    gen.writeArrayFieldStart("value");
-                    for (final ContractParameter param : (ContractParameter[]) p.getValue()) {
-                        gen.writeStartObject();
-                        serializeParameter(param, gen);
-                        gen.writeEndObject();
+                    List<Map<String, Object>> array = (List<Map<String, Object>>) value;
+                    ContractParameter[] params = new ContractParameter[array.size()];
+                    for (int i = 0; i < params.length; i++) {
+                        Map<String, Object> param = array.get(i);
+                        params[i] = deserializeParam(param);
                     }
-                    gen.writeEndArray();
-                    break;
+                    return params;
                 case MAP:
-                    gen.writeArrayFieldStart("value");
-                    HashMap<ContractParameter, ContractParameter> map =
-                            (HashMap<ContractParameter, ContractParameter>) p.getValue();
-                    for (final ContractParameter key : map.keySet()) {
-                        gen.writeStartObject();
-
-                        gen.writeFieldName("key");
-                        gen.writeStartObject();
-                        serializeParameter(key, gen);
-                        gen.writeEndObject();
-
-                        gen.writeFieldName("value");
-                        gen.writeStartObject();
-                        serializeParameter(map.get(key), gen);
-                        gen.writeEndObject();
-
-                        gen.writeEndObject();
+                    List<Map<String, Object>> mapArray = (List<Map<String, Object>>) value;
+                    Map<ContractParameter, ContractParameter> map = new HashMap<>();
+                    for (Map<String, Object> keyValuePair : mapArray) {
+                        ContractParameter key = deserializeParam(
+                                (Map<String, Object>) keyValuePair.get("key"));
+                        ContractParameter val = deserializeParam(
+                                (Map<String, Object>) keyValuePair.get("value"));
+                        map.put(key, val);
                     }
-                    gen.writeEndArray();
-                    break;
+                    return map;
+                case ANY:
+                    return null;
                 default:
-                    throw new UnsupportedOperationException("Parameter type '" +
-                            p.getParamType().toString() + "' not supported.");
+                    throw new UnsupportedOperationException("Parameter type '" + type
+                            + "' not supported.");
             }
         }
     }
