@@ -238,6 +238,17 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
+     * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
+     * Can be used on a running or stopped node.
+     *
+     * @param n The number of blocks to mint.
+     * @throws Exception if minting new blocks failed.
+     */
+    public void fastForward(int n) throws Exception {
+        container.fastForward(n);
+    }
+
+    /**
      * Gets the account for the given name if it exists on the neo-express instance. If the
      * account is a multi-sig account, it will not have a private key available for transaction
      * signing.
@@ -260,7 +271,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                 .filter(a -> a.getLabel() != null && a.getLabel().equals(name)).findFirst();
 
         if (!acc.isPresent()) {
-            throw new ExtensionConfigurationException("Account '" + name + "' not found.");
+            throw new ExtensionConfigurationException("Account '" + name + "' not found. Make " +
+                    "sure to set the name of the account in the 'label'-attribute in the " +
+                    ".neo-express config file.");
         }
         VerificationScript verifScript = new VerificationScript(
                 hexStringToByteArray(acc.get().getContract().getScript()));
