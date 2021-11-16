@@ -183,21 +183,22 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
+     * Gets the hash of the transaction in which the given contract was deployed.
+     *
+     * @param contractClass The class of the deployed contract.
+     * @return the transaction hash.
+     */
+    public Hash256 getDeployTxHash(Class<?> contractClass) {
+        return deployCtx.getDeployTxHash(contractClass);
+    }
+
+    /**
      * Gets the Neow3j instance that allows for calls to the underlying neo-express instance.
      *
      * @return the Neow3j instance.
      */
     public Neow3jExpress getNeow3j() {
         return neow3j;
-    }
-
-    /**
-     * Gets the context holding information about the contracts deployed in a test.
-     *
-     * @return the deployment context.
-     */
-    public DeployContext getDeployContext() {
-        return deployCtx;
     }
 
     /**

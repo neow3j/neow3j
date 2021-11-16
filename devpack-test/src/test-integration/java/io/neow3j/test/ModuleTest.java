@@ -47,10 +47,10 @@ public class ModuleTest {
     }
 
     @BeforeAll
-    public static void setUp(Neow3jExpress neow3jExpress, DeployContext ctx) {
+    public static void setUp(Neow3jExpress neow3jExpress) {
         neow3j = neow3jExpress;
-        sc1 = ctx.getDeployedContract(ExampleContract1.class);
-        sc2 = ctx.getDeployedContract(ExampleContract2.class);
+        sc1 = ext.getDeployedContract(ExampleContract1.class);
+        sc2 = ext.getDeployedContract(ExampleContract2.class);
     }
 
     @Test
