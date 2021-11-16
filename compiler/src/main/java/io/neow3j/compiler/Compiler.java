@@ -328,7 +328,7 @@ public class Compiler {
             throws IOException {
 
         substitutePlaceholdersInMethodBodies(classNode, replaceMap);
-        substitutePlaceholdersInClassAnnotations(classNode, replaceMap);
+        substitutePlaceholdersInAnnotations(classNode, replaceMap);
         return compile(classNode);
     }
 
@@ -347,12 +347,19 @@ public class Compiler {
         });
     }
 
-    private static void substitutePlaceholdersInClassAnnotations(ClassNode classNode,
+    private static void substitutePlaceholdersInAnnotations(ClassNode classNode,
             java.util.Map<String, String> replaceMap) {
 
-        if (classNode.invisibleAnnotations != null)
-            classNode.invisibleAnnotations
-                    .forEach((it) -> processAnnotationNode(it, replaceMap));
+        List<AnnotationNode> annotations = new ArrayList<>();
+        if (classNode.invisibleAnnotations != null) {
+            annotations.addAll(classNode.invisibleAnnotations);
+        }
+        annotations.addAll(classNode.fields.stream().filter(f -> f.invisibleAnnotations != null)
+                .flatMap(f -> f.invisibleAnnotations.stream()).collect(Collectors.toList()));
+        annotations.addAll(classNode.methods.stream().filter(m -> m.invisibleAnnotations != null)
+                .flatMap(m -> m.invisibleAnnotations.stream()).collect(Collectors.toList()));
+
+       annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
     }
 
     @SuppressWarnings("unchecked")

@@ -13,7 +13,6 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
-import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -36,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.lang.String.format;
 
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
 
@@ -78,17 +78,17 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 
         for (Class<?> c : annotation.contracts()) {
             Method m = findCorrespondingDeployConfigMethod(c, context);
-            ContractParameter deployParam = null;
+            DeployConfiguration config = new DeployConfiguration();
             if (m != null) {
                 if (m.getParameterCount() == 1) {
-                    deployParam = (ContractParameter) m.invoke(null, deployCtx);
-                } else {
-                    deployParam = (ContractParameter) m.invoke(null);
+                    m.invoke(null, config);
+                } else if (m.getParameterCount() == 2) {
+                    m.invoke(null, config, deployCtx);
                 }
             }
             SmartContract deployedContract = null;
             try {
-                deployedContract = compileAndDeploy(c, deployParam, neow3j);
+                deployedContract = compileAndDeploy(c, config, neow3j);
             } catch (Throwable t) {
                 throw new Exception(t);
             }
@@ -115,30 +115,39 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                     "configuration method for contract class " + contract.getCanonicalName());
         }
         Method method = methods.get(0);
-        if (!method.getReturnType().equals(ContractParameter.class)) {
+        if (!method.getReturnType().equals(void.class)) {
             throw new ExtensionConfigurationException("Methods annotated with " +
-                    DeployConfig.class.getSimpleName() + " must have " +
-                    ContractParameter.class.getSimpleName() + " as return type.");
+                    DeployConfig.class.getSimpleName() + " must return void.");
         }
 
-        boolean tooManyParams = method.getParameterCount() > 1;
-        boolean paramIsNotDeployConfig = method.getParameterCount() == 1 &&
-                !method.getParameterTypes()[0].equals(DeployContext.class);
-        if (tooManyParams || paramIsNotDeployConfig) {
-            throw new ExtensionConfigurationException("Methods annotated with " +
-                    DeployConfig.class.getSimpleName() + " must have either no parameters or one " +
-                    "parameter of type " + DeployContext.class.getSimpleName() + ".");
+        boolean hasOneDeployConfigParam = method.getParameterCount() == 1 &&
+                method.getParameterTypes()[0].equals(DeployConfiguration.class);
+        boolean hasDeployConfigAndContextParams = method.getParameterCount() == 2
+                && method.getParameterTypes()[0].equals(DeployConfiguration.class)
+                && method.getParameterTypes()[1].equals(DeployContext.class);
+        if (!hasOneDeployConfigParam && !hasDeployConfigAndContextParams) {
+            throw new ExtensionConfigurationException(format("Methods annotated with '%s' must " +
+                            "have a '%s' as the first parameter, optionally followed by a '%s' " +
+                            "parameter.",
+                    DeployConfig.class.getSimpleName(),
+                    DeployConfiguration.class.getSimpleName(),
+                    DeployContext.class.getSimpleName()));
         }
         return method;
     }
 
-    private SmartContract compileAndDeploy(Class<?> contractClass, ContractParameter deployParam,
+    private SmartContract compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
             Neow3jExpress neow3j) throws Throwable {
 
-        CompilationUnit res = new Compiler().compile(contractClass.getCanonicalName());
+        CompilationUnit res;
+        if (conf.getSubstitutions().isEmpty()) {
+            res = new Compiler().compile(contractClass.getCanonicalName());
+        } else {
+            res = new Compiler().compile(contractClass.getCanonicalName(), conf.getSubstitutions());
+        }
         Account multiSigAcc = getCouncilMultiSigAccount();
         Transaction tx = new ContractManagement(neow3j)
-                .deploy(res.getNefFile(), res.getManifest(), deployParam)
+                .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
                 .signers(AccountSigner.calledByEntry(multiSigAcc))
                 .getUnsignedTransaction()
                 .addMultiSigWitness(multiSigAcc.getVerificationScript(),
@@ -174,21 +183,22 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
+     * Gets the hash of the transaction in which the given contract was deployed.
+     *
+     * @param contractClass The class of the deployed contract.
+     * @return the transaction hash.
+     */
+    public Hash256 getDeployTxHash(Class<?> contractClass) {
+        return deployCtx.getDeployTxHash(contractClass);
+    }
+
+    /**
      * Gets the Neow3j instance that allows for calls to the underlying neo-express instance.
      *
      * @return the Neow3j instance.
      */
     public Neow3jExpress getNeow3j() {
         return neow3j;
-    }
-
-    /**
-     * Gets the context holding information about the contracts deployed in a test.
-     *
-     * @return the deployment context.
-     */
-    public DeployContext getDeployContext() {
-        return deployCtx;
     }
 
     /**
