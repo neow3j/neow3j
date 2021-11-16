@@ -23,6 +23,9 @@ import static org.hamcrest.Matchers.is;
 )
 public class ModuleTest {
 
+    private static final String OWNER_ADDRESS = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+    private static final String PERMISSION = "*";
+
     @RegisterExtension
     private static ContractTestExtension ext = new ContractTestExtension();
 
@@ -31,14 +34,16 @@ public class ModuleTest {
     private static SmartContract sc2;
 
     @DeployConfig(ExampleContract1.class)
-    public static ContractParameter config1() {
-        return ContractParameter.integer(5);
+    public static void config1(DeployConfiguration config) {
+        config.setDeployParam(ContractParameter.integer(5));
     }
 
     @DeployConfig(ExampleContract2.class)
-    public static ContractParameter config2(DeployContext ctx) {
+    public static void config2(DeployConfiguration config, DeployContext ctx) {
         SmartContract sc = ctx.getDeployedContract(ExampleContract1.class);
-        return ContractParameter.hash160(sc.getScriptHash());
+        config.setDeployParam(ContractParameter.hash160(sc.getScriptHash()));
+        config.setSubstitution("<owner_address>", OWNER_ADDRESS);
+        config.setSubstitution("<contract_hash>", PERMISSION);
     }
 
     @BeforeAll
@@ -56,8 +61,13 @@ public class ModuleTest {
         InvocationResult result = sc1.callInvokeFunction("getInt").getInvocationResult();
         assertThat(result.getStack().get(0).getInteger().intValue(), is(5));
 
-        result = sc2.callInvokeFunction("getOwner").getInvocationResult();
+        result = sc2.callInvokeFunction("getDeployer").getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(sc1.getScriptHash().toAddress()));
+
+        result = sc2.callInvokeFunction("getOwner").getInvocationResult();
+        assertThat(result.getStack().get(0).getAddress(), is(OWNER_ADDRESS));
+
+        assertThat(sc2.getManifest().getPermissions().get(0).getContract(), is(PERMISSION));
     }
 
 }
