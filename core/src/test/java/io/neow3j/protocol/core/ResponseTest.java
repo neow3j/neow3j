@@ -1,5 +1,101 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ContractStorageEntry;
+import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.HighPriorityAttribute;
+import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoAddress;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
+import io.neow3j.protocol.core.response.NeoCloseWallet;
+import io.neow3j.protocol.core.response.NeoConnectionCount;
+import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
+import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
+import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
+import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
+import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
+import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.NeoGetMemPool;
+import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
+import io.neow3j.protocol.core.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPeers;
+import io.neow3j.protocol.core.response.NeoGetProof;
+import io.neow3j.protocol.core.response.NeoGetRawBlock;
+import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetState;
+import io.neow3j.protocol.core.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.response.NeoGetStateRoot;
+import io.neow3j.protocol.core.response.NeoGetStorage;
+import io.neow3j.protocol.core.response.NeoGetTransaction;
+import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.response.NeoGetWalletUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.protocol.core.response.NeoListAddress;
+import io.neow3j.protocol.core.response.NeoListPlugins;
+import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoSendFrom;
+import io.neow3j.protocol.core.response.NeoSendMany;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyProof;
+import io.neow3j.protocol.core.response.NeoWitness;
+import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.OracleRequest;
+import io.neow3j.protocol.core.response.OracleResponse;
+import io.neow3j.protocol.core.response.OracleResponseAttribute;
+import io.neow3j.protocol.core.response.OracleResponseCode;
+import io.neow3j.protocol.core.response.PopulatedBlocks;
+import io.neow3j.protocol.core.response.Transaction;
+import io.neow3j.protocol.core.response.TransactionAttribute;
+import io.neow3j.protocol.core.response.TransactionSigner;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.types.NodePluginType;
+import io.neow3j.types.StackItemType;
+import io.neow3j.utils.Numeric;
+import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -19,101 +115,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.protocol.core.response.ContractState;
-import io.neow3j.protocol.core.response.ContractStorageEntry;
-import io.neow3j.protocol.core.response.ExpressContractState;
-import io.neow3j.protocol.core.response.NativeContractState;
-import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
-import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
-import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
-import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
-import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
-import io.neow3j.protocol.core.response.NeoExpressListContracts;
-import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
-import io.neow3j.protocol.core.response.NeoExpressShutdown;
-import io.neow3j.protocol.core.response.NeoFindStates;
-import io.neow3j.protocol.core.response.NeoGetState;
-import io.neow3j.protocol.core.response.Nep17Contract;
-import io.neow3j.protocol.core.response.OracleRequest;
-import io.neow3j.protocol.core.response.OracleResponse;
-import io.neow3j.protocol.core.response.PopulatedBlocks;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.NeoVMStateType;
-import io.neow3j.types.NodePluginType;
-import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
-import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
-import io.neow3j.protocol.core.response.ContractNef;
-import io.neow3j.protocol.core.response.HighPriorityAttribute;
-import io.neow3j.protocol.core.response.NeoAddress;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoBlockCount;
-import io.neow3j.protocol.core.response.NeoBlockHash;
-import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
-import io.neow3j.protocol.core.response.NeoCloseWallet;
-import io.neow3j.protocol.core.response.NeoConnectionCount;
-import io.neow3j.protocol.core.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.response.NeoGetNativeContracts;
-import io.neow3j.protocol.core.response.NeoGetProof;
-import io.neow3j.protocol.core.response.NeoGetStateHeight;
-import io.neow3j.protocol.core.response.NeoGetStateRoot;
-import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.response.NeoGetWalletBalance;
-import io.neow3j.protocol.core.response.NeoGetBlock;
-import io.neow3j.protocol.core.response.NeoGetContractState;
-import io.neow3j.protocol.core.response.NeoGetMemPool;
-import io.neow3j.protocol.core.response.NeoGetNep17Balances;
-import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
-import io.neow3j.protocol.core.response.NeoGetNewAddress;
-import io.neow3j.protocol.core.response.NeoGetPeers;
-import io.neow3j.protocol.core.response.NeoGetRawBlock;
-import io.neow3j.protocol.core.response.NeoGetRawMemPool;
-import io.neow3j.protocol.core.response.NeoGetRawTransaction;
-import io.neow3j.protocol.core.response.NeoGetStorage;
-import io.neow3j.protocol.core.response.NeoGetTransaction;
-import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
-import io.neow3j.protocol.core.response.NeoGetVersion;
-import io.neow3j.protocol.core.response.NeoImportPrivKey;
-import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoInvokeScript;
-import io.neow3j.protocol.core.response.NeoListAddress;
-import io.neow3j.protocol.core.response.NeoListPlugins;
-import io.neow3j.protocol.core.response.NeoOpenWallet;
-import io.neow3j.protocol.core.response.NeoSendFrom;
-import io.neow3j.protocol.core.response.NeoSendMany;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.response.NeoSendToAddress;
-import io.neow3j.protocol.core.response.NeoSubmitBlock;
-import io.neow3j.protocol.core.response.NeoValidateAddress;
-import io.neow3j.protocol.core.response.NeoVerifyProof;
-import io.neow3j.protocol.core.response.NeoWitness;
-import io.neow3j.protocol.core.response.OracleResponseAttribute;
-import io.neow3j.protocol.core.response.OracleResponseCode;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.protocol.core.response.TransactionAttribute;
-import io.neow3j.protocol.core.response.TransactionSigner;
-import io.neow3j.protocol.ResponseTester;
-import io.neow3j.transaction.TransactionAttributeType;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.Numeric;
-
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-
-import org.junit.Test;
 
 /**
  * Core Protocol Response tests.
@@ -1746,19 +1747,59 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testInvokeFunction_empty_Stack() {
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
-                        "        \"state\": \"HALT\",\n" +
-                        "        \"gasconsumed\": \"2.489\",\n" +
-                        "        \"stack\": []\n" +
-                        "    }\n" +
-                        "}"
-        );
+    public void testInvokeFunction_pending_signatures() {
+        String s = "{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\"," +
+                "\n" +
+                "        \"state\": \"HALT\",\n" +
+                "        \"gasconsumed\": \"2.489\",\n" +
+                "        \"stack\": [],\n" +
+                "        \"pendingsignature\": {\n" +
+                "            \"type\": \"Transaction\",\n" +
+                "            \"data\": \"base64 string of the tx bytes\",\n" +
+                "            \"network\": 305419896, \n" +
+                "            \"items\": {\n" +
+                "                \"0x69ecca587293047be4c59159bf8bc399985c160d\": {\n" +
+                "                    \"script\": \"base64 script\",\n" +
+                "                    \"parameters\": [\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\",\n" +
+                "                            \"value\": \"\"\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"signatures\": {\n" +
+                "                        " +
+                "\"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": " +
+                "\"base64 string of signature\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
+                "                    \"script\": \"base64 script\",\n" +
+                "                    \"parameters\": [\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\"\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\"\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"signatures\": {\n" +
+                "                        " +
+                "\"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81\": " +
+                "\"base64 string of signature\",\n" +
+                "                        " +
+                "\"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10\": " +
+                "\"base64 string of signature\"\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        buildResponse(s);
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
@@ -1769,6 +1810,19 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+        InvocationResult.PendingSignature pendingSig =
+                invokeFunction.getInvocationResult().getPendingSignature();
+        assertThat(pendingSig.getType(), is("Transaction"));
+        assertThat(pendingSig.getData(), is("base64 string of the tx bytes"));
+        assertThat(pendingSig.getNetwork(), is(305419896L));
+        Map<String, InvocationResult.PendingSignature.Item> items = pendingSig.getItems();
+        InvocationResult.PendingSignature.Item item =
+                items.get("0x05859de95ccbbd5668e0f055b208273634d4657f");
+        assertThat(item.getScript(), is("base64 script"));
+        assertThat(item.getParameters().get(1).getParamType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getSignatures()
+                        .get("033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81"),
+                is("base64 string of signature"));
     }
 
     @Test
