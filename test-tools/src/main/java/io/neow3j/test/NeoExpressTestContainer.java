@@ -29,20 +29,14 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     /**
      * Creates a new instance of a docker container running a neo-express private network.
      *
-     * @param secondsPerBlock The block time to use by neo-express.
      * @param resources       Names of files that should be copied into the container. For each
      *                        file you need to set a source and a destination (in the container)
      *                        path consecutively.
      */
-    public NeoExpressTestContainer(int secondsPerBlock, String... resources) {
+    public NeoExpressTestContainer(String... resources) {
         super(DockerImageName.parse(TestProperties.neoExpressDockerImage()));
         withExposedPorts(EXPOSED_JSONRPC_PORT);
         waitingFor(Wait.forListeningPort());
-
-        if (secondsPerBlock != 0) {
-            withCommand("-s " + secondsPerBlock);
-            this.secondsPerBlock = secondsPerBlock;
-        }
 
         int i = 0;
         while (resources != null && i + 1 < resources.length) {
@@ -50,6 +44,21 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             String dest = resources[i++];
             withCopyFileToContainer(MountableFile.forClasspathResource(src, 777), dest);
         }
+    }
+
+   /**
+     * Sets the given block time.
+     *
+     * @param secondsPerBlock The block time.
+     * @return this.
+     */
+    public NeoExpressTestContainer withSecondsPerBlock(int secondsPerBlock) {
+        if (secondsPerBlock < 1) {
+            throw new IllegalArgumentException("Seconds per block must be 1 or higher.");
+        }
+        withCommand("-s " + secondsPerBlock);
+        this.secondsPerBlock = secondsPerBlock;
+        return this;
     }
 
     /**

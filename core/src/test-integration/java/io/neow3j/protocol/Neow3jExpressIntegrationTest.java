@@ -53,7 +53,8 @@ public class Neow3jExpressIntegrationTest {
     protected static Neow3jExpress neow3jExpress;
 
     @ClassRule
-    public static NeoExpressTestContainer container = new NeoExpressTestContainer(1)
+    public static NeoExpressTestContainer container = new NeoExpressTestContainer()
+            .withSecondsPerBlock(1)
             .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC)
             .withBatchFile(BATCH_SOURCE)
             .withInvokeFile(INVOKE_FILE_SOURCE) // Required in the batch file.
