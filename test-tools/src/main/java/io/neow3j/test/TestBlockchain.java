@@ -44,20 +44,7 @@ public interface TestBlockchain {
      * @param configFile The config file name.
      * @return this.
      */
-    TestBlockchain withNeoxpConfig(String configFile);
-
-    /**
-     * Adds the given NEF and manifest files to the test container. They can then be used with the
-     * neo-express command {@code neoxp contract deploy}.
-     * The files must be located in the resources directory.
-     * <p>
-     * The copied files in the container will have the same name as the given sources.
-     *
-     * @param nefFile      The NEF file name.
-     * @param manifestFile The manifest file name.
-     * @return this.
-     */
-    TestBlockchain withNefAndManifestFiles(String nefFile, String manifestFile);
+    TestBlockchain withConfigFile(String configFile);
 
     /**
      * Gets the URL of the neo-express node running in the container.

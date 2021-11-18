@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer>
         implements TestBlockchain {
 
-    public static final String DEFAULT_NEOXP_CONFIG_SRC = "default.neo-express";
+    public static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
 
     public static final String CONTAINER_WORKDIR = "/neoxp/";
     private static final String NEOXP_RUN_SCRIPT = CONTAINER_WORKDIR + "neoxp-run.sh";
@@ -51,12 +51,23 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         }
     }
 
+    @Override
+    public void start() {
+        if (neoxpConfigFile == null) {
+            this.neoxpConfigFile = DEFAULT_NEOXP_CONFIG;
+            withCopyFileToContainer(MountableFile.forClasspathResource(this.neoxpConfigFile, 777),
+                    NEOXP_CONFIG_DEST);
+        }
+        super.start();
+    }
+
     /**
      * Sets the given block time.
      *
      * @param secondsPerBlock The block time.
      * @return this.
      */
+    @Override
     public NeoExpressTestContainer withSecondsPerBlock(int secondsPerBlock) {
         if (secondsPerBlock < 1) {
             throw new IllegalArgumentException("Seconds per block must be 1 or higher.");
@@ -74,6 +85,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @param batchFile The batch file name.
      * @return this.
      */
+    @Override
     public NeoExpressTestContainer withBatchFile(String batchFile) {
         withCopyFileToContainer(MountableFile.forClasspathResource(batchFile), BATCH_FILE_DEST);
         return this;
@@ -89,6 +101,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @param checkpointFile The checkpoint file name.
      * @return this.
      */
+    @Override
     public NeoExpressTestContainer withCheckpoint(String checkpointFile) {
         withCopyFileToContainer(MountableFile.forClasspathResource(checkpointFile),
                 CHECKPOINT_FILE_DEST);
@@ -103,7 +116,8 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @param configFile The config file name.
      * @return this.
      */
-    public NeoExpressTestContainer withNeoxpConfig(String configFile) {
+    @Override
+    public NeoExpressTestContainer withConfigFile(String configFile) {
         this.neoxpConfigFile = configFile;
         InputStream s = NeoExpressTestContainer.class.getClassLoader()
                 .getResourceAsStream(configFile);
@@ -111,30 +125,13 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         try {
             config = new ObjectMapper().readValue(s, NeoExpressConfig.class);
         } catch (IOException e) {
-            throw new RuntimeException("Couldn't load the neo-express configuration file.", e);
+            throw new RuntimeException("Config file is not a valid neo-express configuration.", e);
         }
         if (config.getConsensusNodes().size() > 1) {
             throw new IllegalStateException("Can't handle multi-node neo-express setups.");
         }
-
         withCopyFileToContainer(MountableFile.forClasspathResource(configFile, 777),
                 NEOXP_CONFIG_DEST);
-        return this;
-    }
-
-    /**
-     * Adds the given invoke file to the test container. It can then be used with the neo-express
-     * command {@code neoxp contract invoke}.
-     * The file must be located in the resources directory.
-     * <p>
-     * The copied file in the container will have the same name as the given source.
-     *
-     * @param invokeFile The invoke file name.
-     * @return this.
-     */
-    public NeoExpressTestContainer withInvokeFile(String invokeFile) {
-        withCopyFileToContainer(MountableFile.forClasspathResource(invokeFile, 777),
-                CONTAINER_WORKDIR + invokeFile);
         return this;
     }
 
@@ -162,6 +159,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      *
      * @return the neo-express node URL.
      */
+    @Override
     public String getNodeUrl() {
         return "http://" + this.getContainerIpAddress() + ":" +
                 this.getMappedPort(EXPOSED_JSONRPC_PORT);
@@ -173,6 +171,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on startup.
      * @throws Exception if an error occurs while trying to start neo-express.
      */
+    @Override
     public String resume() throws Exception {
         String cmd;
         if (secondsPerBlock != 0) {
@@ -194,6 +193,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on stopping.
      * @throws Exception if an error occurs when trying to stop neo-express.
      */
+    @Override
     public String halt() throws Exception {
         ExecResult execResult = execInContainer("neoxp", "stop");
         if (execResult.getExitCode() != 0) {
@@ -210,6 +210,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The new account's address.
      * @throws Exception if an error occurs when trying to create the account.
      */
+    @Override
     public String createAccount(String name) throws Exception {
         ExecResult execResult = execInContainer("neoxp", "wallet", "create", name);
         if (execResult.getExitCode() != 0) {
@@ -219,16 +220,13 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         return execResult.getStdout().replaceAll(" ", "").split("\n")[1];
     }
 
-//    public GenesisAccount getGenesisAccount() {
-//        getAccount("genesis");
-//    }
-
     /**
      * Enables the oracle service on the neo-express instance
      *
      * @return The hash of the oracle designate transaction.
      * @throws Exception if the execution failed.
      */
+    @Override
     public String enableOracle() throws Exception {
         ExecResult execResult = execInContainer("neoxp", "oracle", "enable", "genesis");
         if (execResult.getExitCode() != 0) {
@@ -245,6 +243,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on minting the blocks.
      * @throws Exception if the execution failed.
      */
+    @Override
     public String fastForward(int n) throws Exception {
         ExecResult execResult = execInContainer("neoxp", "fastfwd", Integer.toString(n));
         if (execResult.getExitCode() != 0) {
@@ -265,6 +264,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on minting the blocks.
      * @throws Exception if the execution failed.
      */
+    @Override
     public String execCommand(String... commandParts) throws Exception {
         ExecResult execResult = execInContainer(commandParts);
         if (execResult.getExitCode() != 0) {
@@ -274,6 +274,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         return execResult.getStdout();
     }
 
+    @Override
     public String getAccount(String address) throws IOException {
         InputStream s = this.getClass().getClassLoader().getResourceAsStream(neoxpConfigFile);
         NeoExpressConfig config = objectMapper.readValue(s, NeoExpressConfig.class);
@@ -293,6 +294,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         return acc.get().getPrivateKey();
     }
 
+    @Override
     public GenesisAccount getGenesisAccount() throws IOException {
         InputStream s = this.getClass().getClassLoader().getResourceAsStream(neoxpConfigFile);
         NeoExpressConfig config = objectMapper.readValue(s, NeoExpressConfig.class);

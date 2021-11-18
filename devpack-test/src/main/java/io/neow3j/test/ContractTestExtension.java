@@ -5,7 +5,7 @@ import io.neow3j.compiler.Compiler;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.protocol.Neow3jExpress;
+import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
@@ -32,21 +32,14 @@ import static java.lang.String.format;
 
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
 
-    private static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
-
     // Extension Context Store
     final static String CHAIN_STORE_KEY = "testChain";
     final static String NEOW3J_STORE_KEY = "neow3j";
     final static String DEPLOY_CTX_STORE_KEY = "contracts";
 
-    private String neoxpConfigFileName = DEFAULT_NEOXP_CONFIG;
-
-    private Neow3jExpress neow3j;
+    private Neow3j neow3j;
     private DeployContext deployCtx = new DeployContext();
     private TestBlockchain chain;
-
-    private List<Account> councilAccounts;
-    private Account councilMultiSigAccount;
 
     public ContractTestExtension() {
         chain = new NeoExpressTestContainer();
@@ -66,10 +59,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         if (annotation.blockTime() != 0) {
             chain.withSecondsPerBlock(annotation.blockTime());
         }
-        if (!annotation.neoxpConfig().isEmpty()) {
-            neoxpConfigFileName = annotation.neoxpConfig();
+        if (!annotation.configFile().isEmpty()) {
+            chain.withConfigFile(annotation.configFile());
         }
-        chain.withNeoxpConfig(neoxpConfigFileName);
         if (!annotation.batchFile().isEmpty()) {
             chain.withBatchFile(annotation.batchFile());
         }
@@ -77,7 +69,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             chain.withCheckpoint(annotation.checkpoint());
         }
         chain.start();
-        neow3j = Neow3jExpress.build(new HttpService(chain.getNodeUrl()));
+        neow3j = Neow3j.build(new HttpService(chain.getNodeUrl()));
 
         for (Class<?> c : annotation.contracts()) {
             Method m = findCorrespondingDeployConfigMethod(c, context);
@@ -140,7 +132,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     private SmartContract compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
-            Neow3jExpress neow3j) throws Throwable {
+            Neow3j neow3j) throws Throwable {
 
         CompilationUnit res;
         if (conf.getSubstitutions().isEmpty()) {
@@ -200,35 +192,34 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Gets the Neow3j instance that allows for calls to the underlying neo-express instance.
+     * Gets the Neow3j instance that allows for calls to the underlying blockchain instance.
      *
      * @return the Neow3j instance.
      */
-    public Neow3jExpress getNeow3j() {
+    public Neow3j getNeow3j() {
         return neow3j;
     }
 
     /**
-     * Starts neo-express in the test container if it is not running yet.
+     * Resumes the blockchain if it was stopped before.
      *
-     * @throws Exception if running neo-express failed, or it was already running.
+     * @throws Exception if resuming the blockchain failed.
      */
     public void resume() throws Exception {
         chain.resume();
     }
 
     /**
-     * Stops neo-express in the test container if it is not already stopped. The container will
-     * continue running, allowing you to start up neo-express again.
+     * Halts the blockchain, i.e., stops block production.
      *
-     * @throws Exception if stopping neo-express failed, or it was already stopped.
+     * @throws Exception if halting the blockchain failed.
      */
     public void halt() throws Exception {
         chain.halt();
     }
 
     /**
-     * Creates a new account on the neo-express instance and returns its Neo address.
+     * Creates a new account and returns its Neo address.
      *
      * @param name The desired name of the account.
      * @return The account's address

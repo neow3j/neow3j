@@ -54,7 +54,7 @@ public class Neow3jExpressIntegrationTest {
     @ClassRule
     public static NeoExpressTestContainer container = new NeoExpressTestContainer()
             .withSecondsPerBlock(1)
-            .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC)
+            .withConfigFile(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG)
             .withBatchFile(BATCH_SOURCE)
             .withNefAndManifestFiles(NEF_FILE_SOURCE, MANIFEST_FILE_SOURCE);
 

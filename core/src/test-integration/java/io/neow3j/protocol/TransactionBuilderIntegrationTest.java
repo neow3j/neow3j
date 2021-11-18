@@ -31,7 +31,7 @@ public class TransactionBuilderIntegrationTest {
     @ClassRule
     public static NeoExpressTestContainer container = new NeoExpressTestContainer()
             .withSecondsPerBlock(1)
-            .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC);
+            .withConfigFile(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG);
 
     @BeforeClass
     public static void setUp() {
