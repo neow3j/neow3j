@@ -44,7 +44,6 @@ public class Neow3jExpressIntegrationTest {
 
     private static final String NEF_FILE_SOURCE = "OracleTestContract.nef";
     private static final String MANIFEST_FILE_SOURCE = "OracleTestContract.manifest.json";
-    private static final String INVOKE_FILE_SOURCE = "oracle-request-invoke.json";
     private static final String BATCH_SOURCE = "setup.batch";
 
     static final Hash160 oracleTestContractHash =
@@ -57,7 +56,6 @@ public class Neow3jExpressIntegrationTest {
             .withSecondsPerBlock(1)
             .withNeoxpConfig(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG_SRC)
             .withBatchFile(BATCH_SOURCE)
-            .withInvokeFile(INVOKE_FILE_SOURCE) // Required in the batch file.
             .withNefAndManifestFiles(NEF_FILE_SOURCE, MANIFEST_FILE_SOURCE);
 
     @BeforeClass
