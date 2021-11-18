@@ -4,13 +4,9 @@ import io.neow3j.contract.SmartContract;
 import io.neow3j.protocol.Neow3jExpress;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-
-import java.math.BigInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -27,7 +23,8 @@ public class ModuleTest {
     private static final String PERMISSION = "*";
 
     @RegisterExtension
-    private static ContractTestExtension ext = new ContractTestExtension();
+    private static ContractTestExtension ext =
+            new ContractTestExtension(new NeoExpressTestContainer());
 
     private static Neow3jExpress neow3j;
     private static SmartContract sc1;
@@ -55,9 +52,6 @@ public class ModuleTest {
 
     @Test
     public void test() throws Throwable {
-        Hash256 transferTx = ext.transfer(new BigInteger("1000000000"), "GAS", "genesis", "Alice");
-        Await.waitUntilTransactionIsExecuted(transferTx, neow3j);
-
         InvocationResult result = sc1.callInvokeFunction("getInt").getInvocationResult();
         assertThat(result.getStack().get(0).getInteger().intValue(), is(5));
 

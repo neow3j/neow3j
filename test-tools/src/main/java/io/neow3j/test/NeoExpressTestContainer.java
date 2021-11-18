@@ -8,9 +8,11 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.math.BigInteger;
+import java.util.Optional;
+import java.util.stream.Stream;
 
-public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> {
+public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer>
+        implements TestBlockchain {
 
     public static final String DEFAULT_NEOXP_CONFIG_SRC = "default.neo-express";
 
@@ -23,15 +25,18 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     // This is the port of neo-express node which is exposed by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
 
+    static final ObjectMapper objectMapper = new ObjectMapper();
+
     // Can be set if the container is initialized with a specific block time.
     private int secondsPerBlock = 0;
+    private String neoxpConfigFile;
 
     /**
      * Creates a new instance of a docker container running a neo-express private network.
      *
-     * @param resources       Names of files that should be copied into the container. For each
-     *                        file you need to set a source and a destination (in the container)
-     *                        path consecutively.
+     * @param resources Names of files that should be copied into the container. For each
+     *                  file you need to set a source and a destination (in the container)
+     *                  path consecutively.
      */
     public NeoExpressTestContainer(String... resources) {
         super(DockerImageName.parse(TestProperties.neoExpressDockerImage()));
@@ -46,7 +51,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         }
     }
 
-   /**
+    /**
      * Sets the given block time.
      *
      * @param secondsPerBlock The block time.
@@ -99,6 +104,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return this.
      */
     public NeoExpressTestContainer withNeoxpConfig(String configFile) {
+        this.neoxpConfigFile = configFile;
         InputStream s = NeoExpressTestContainer.class.getClassLoader()
                 .getResourceAsStream(configFile);
         NeoExpressConfig config;
@@ -167,7 +173,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on startup.
      * @throws Exception if an error occurs while trying to start neo-express.
      */
-    public String runExpress() throws Exception {
+    public String resume() throws Exception {
         String cmd;
         if (secondsPerBlock != 0) {
             cmd = NEOXP_RUN_SCRIPT + " " + secondsPerBlock;
@@ -188,7 +194,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return The message emitted by neo-express on stopping.
      * @throws Exception if an error occurs when trying to stop neo-express.
      */
-    public String stopExpress() throws Exception {
+    public String halt() throws Exception {
         ExecResult execResult = execInContainer("neoxp", "stop");
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
@@ -213,60 +219,9 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         return execResult.getStdout().replaceAll(" ", "").split("\n")[1];
     }
 
-    /**
-     * Deploys the contract with the given NEF. The NEF has to be available on the container
-     *
-     * @param nefFilePath The file path of the NEF.
-     * @return The hash of the deployment transaction.
-     * @throws Exception if the execution failed.
-     */
-    public String deployContract(String nefFilePath) throws Exception {
-        ExecResult execResult = execInContainer(
-                "neoxp", "contract", "deploy", nefFilePath, "genesis");
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " +
-                    execResult.getStderr());
-        }
-        return execResult.getStdout().split(" ")[2];
-    }
-
-    /**
-     * @param amount   The amount of assets to transfer.
-     * @param asset    The asset to transfer. Can be a symbol, e.g., "NEO", or the hash of a
-     *                 contract.
-     * @param sender   The sender. Can be a name of a wallet, e.g., "genesis", or an address.
-     * @param receiver The receiver. Can be a name of a wallet, e.g., "genesis", or an address.
-     * @return The transaction hash of the transfer.
-     * @throws Exception if an error occurs when executing the transfer on the neo-express instance.
-     */
-    public String transfer(BigInteger amount, String asset, String sender, String receiver)
-            throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "transfer", amount.toString(), asset,
-                sender, receiver);
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " +
-                    execResult.getStderr());
-        }
-        return execResult.getStdout().split(" ")[2];
-    }
-
-    /**
-     * Executes a contract invocation according to the given invoke file. The invoke file has to be
-     * available on the container.
-     *
-     * @param invokeFile The invoke file to use for the invocation.
-     * @return The hash of the invocation transaction.
-     * @throws Exception if the execution failed.
-     */
-    public String invokeContract(String invokeFile) throws Exception {
-        ExecResult execResult = execInContainer(
-                "neoxp", "contract", "invoke", invokeFile, "genesis");
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " +
-                    execResult.getStderr());
-        }
-        return execResult.getStdout().split(" ")[2];
-    }
+//    public GenesisAccount getGenesisAccount() {
+//        getAccount("genesis");
+//    }
 
     /**
      * Enables the oracle service on the neo-express instance
@@ -317,6 +272,40 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
                     execResult.getStderr());
         }
         return execResult.getStdout();
+    }
+
+    public String getAccount(String address) throws IOException {
+        InputStream s = this.getClass().getClassLoader().getResourceAsStream(neoxpConfigFile);
+        NeoExpressConfig config = objectMapper.readValue(s, NeoExpressConfig.class);
+
+        Optional<NeoExpressConfig.Wallet.Account> acc = Stream.concat(
+                        config.getConsensusNodes().stream().flatMap(n -> n.getWallet().getAccounts().stream()),
+                        config.getWallets().stream().flatMap(w -> w.getAccounts().stream()))
+                .filter(a -> a.getLabel() != null && a.getScriptHash().equals(address)).findFirst();
+
+        if (!acc.isPresent()) {
+            throw new IllegalArgumentException("Account with address '" + address + "' not found.");
+        }
+        if (acc.get().getPrivateKey() == null) {
+            throw new IllegalStateException("Private key for account with address '" + address +
+                    "' not available.");
+        }
+        return acc.get().getPrivateKey();
+    }
+
+    public GenesisAccount getGenesisAccount() throws IOException {
+        InputStream s = this.getClass().getClassLoader().getResourceAsStream(neoxpConfigFile);
+        NeoExpressConfig config = objectMapper.readValue(s, NeoExpressConfig.class);
+        // We only deal with single node neo-express setups in the container, i.e., exactly one
+        // occurrence of a consensus node entry is expected in the neoxp config.
+        NeoExpressConfig.Wallet w = config.getConsensusNodes().get(0).getWallet();
+        Optional<NeoExpressConfig.Wallet.Account> genesisAcc = w.getAccounts().stream()
+                .filter(a -> a.getContract().getScript().length() >= 2 * 42).findFirst();
+        if (!genesisAcc.isPresent()) {
+            throw new IllegalStateException("Couldn't find genesis account in Neo Express config.");
+        }
+        return new GenesisAccount(genesisAcc.get().getContract().getScript(),
+                genesisAcc.get().getPrivateKey());
     }
 
 }

@@ -5,9 +5,7 @@ import io.neow3j.compiler.Compiler;
 import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.crypto.WIF;
 import io.neow3j.protocol.Neow3jExpress;
-import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
@@ -17,24 +15,19 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
@@ -42,18 +35,26 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     private static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
 
     // Extension Context Store
-    final static String CONTAINER_STORE_KEY = "neoExpressContainer";
+    final static String CHAIN_STORE_KEY = "testChain";
     final static String NEOW3J_STORE_KEY = "neow3j";
     final static String DEPLOY_CTX_STORE_KEY = "contracts";
 
     private String neoxpConfigFileName = DEFAULT_NEOXP_CONFIG;
 
-    private NeoExpressTestContainer container;
     private Neow3jExpress neow3j;
     private DeployContext deployCtx = new DeployContext();
+    private TestBlockchain chain;
 
     private List<Account> councilAccounts;
     private Account councilMultiSigAccount;
+
+    public ContractTestExtension() {
+        chain = new NeoExpressTestContainer();
+    }
+
+    public ContractTestExtension(TestBlockchain chain) {
+        this.chain = chain;
+    }
 
     @Override
     public void beforeAll(ExtensionContext context) throws Exception {
@@ -62,19 +63,21 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             throw new ExtensionConfigurationException("Using the " + this.getClass().getSimpleName()
                     + " without the @" + ContractTest.class.getSimpleName() + " annotation.");
         }
-        container = new NeoExpressTestContainer(annotation.blockTime());
+        if (annotation.blockTime() != 0) {
+            chain.withSecondsPerBlock(annotation.blockTime());
+        }
         if (!annotation.neoxpConfig().isEmpty()) {
             neoxpConfigFileName = annotation.neoxpConfig();
         }
-        container.withNeoxpConfig(neoxpConfigFileName);
+        chain.withNeoxpConfig(neoxpConfigFileName);
         if (!annotation.batchFile().isEmpty()) {
-            container.withBatchFile(annotation.batchFile());
+            chain.withBatchFile(annotation.batchFile());
         }
         if (!annotation.checkpoint().isEmpty()) {
-            container.withCheckpoint(annotation.checkpoint());
+            chain.withCheckpoint(annotation.checkpoint());
         }
-        container.start();
-        neow3j = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
+        chain.start();
+        neow3j = Neow3jExpress.build(new HttpService(chain.getNodeUrl()));
 
         for (Class<?> c : annotation.contracts()) {
             Method m = findCorrespondingDeployConfigMethod(c, context);
@@ -96,7 +99,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         }
 
         ExtensionContext.Store store = context.getStore(ExtensionContext.Namespace.GLOBAL);
-        store.put(CONTAINER_STORE_KEY, container);
+        store.put(CHAIN_STORE_KEY, chain);
         store.put(NEOW3J_STORE_KEY, neow3j);
         store.put(DEPLOY_CTX_STORE_KEY, deployCtx);
     }
@@ -145,13 +148,17 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         } else {
             res = new Compiler().compile(contractClass.getCanonicalName(), conf.getSubstitutions());
         }
-        Account multiSigAcc = getCouncilMultiSigAccount();
+        TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
+        Account genesisAccount = Account.fromVerificationScript(new VerificationScript(
+                Numeric.hexStringToByteArray(genAcc.getVerificationScript())));
+        Account[] signerAccounts = genAcc.getPrivateKeys().stream()
+                .map(k -> new Account(ECKeyPair.create(Numeric.hexStringToByteArray(k))))
+                .toArray(Account[]::new);
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
-                .signers(AccountSigner.calledByEntry(multiSigAcc))
+                .signers(AccountSigner.calledByEntry(genesisAccount))
                 .getUnsignedTransaction()
-                .addMultiSigWitness(multiSigAcc.getVerificationScript(),
-                        getCouncilAccounts().toArray(new Account[]{}));
+                .addMultiSigWitness(genesisAccount.getVerificationScript(), signerAccounts);
 
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
@@ -160,7 +167,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
                     "error message: " + log.getExecutions().get(0).getException());
         }
-        Hash160 contractHash = SmartContract.calcContractHash(multiSigAcc.getScriptHash(),
+        Hash160 contractHash = SmartContract.calcContractHash(genesisAccount.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         deployCtx.addDeployTxHash(contractClass, txHash);
         return new SmartContract(contractHash, neow3j);
@@ -168,7 +175,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 
     @Override
     public void afterAll(ExtensionContext context) {
-        container.stop();
+        chain.stop();
     }
 
     /**
@@ -206,8 +213,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      *
      * @throws Exception if running neo-express failed, or it was already running.
      */
-    public void runExpress() throws Exception {
-        container.runExpress();
+    public void resume() throws Exception {
+        chain.resume();
     }
 
     /**
@@ -216,8 +223,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      *
      * @throws Exception if stopping neo-express failed, or it was already stopped.
      */
-    public void stopExpress() throws Exception {
-        container.stopExpress();
+    public void halt() throws Exception {
+        chain.halt();
     }
 
     /**
@@ -228,23 +235,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * @throws Exception if creating the account failed.
      */
     public String createAccount(String name) throws Exception {
-        return container.createAccount(name);
-    }
-
-    /**
-     * Transfers assets.
-     *
-     * @param amount   The amount of assets to transfer.
-     * @param asset    The asset to transfer. Can be a symbol, e.g., "NEO", or the hash of a
-     *                 contract.
-     * @param sender   The sender. Can be a name of a wallet, e.g., "genesis", or an address.
-     * @param receiver The receiver. Can be a name of a wallet, e.g., "genesis", or an address.
-     * @return The transaction hash of the transfer.
-     * @throws Exception if the transfer transaction cannot be created or propagated.
-     */
-    public Hash256 transfer(BigInteger amount, String asset, String sender, String receiver)
-            throws Exception {
-        return new Hash256(container.transfer(amount, asset, sender, receiver));
+        return chain.createAccount(name);
     }
 
     /**
@@ -255,79 +246,18 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * @throws Exception if minting new blocks failed.
      */
     public void fastForward(int n) throws Exception {
-        container.fastForward(n);
+        chain.fastForward(n);
     }
 
     /**
-     * Gets the account for the given name if it exists on the neo-express instance. If the
-     * account is a multi-sig account, it will not have a private key available for transaction
-     * signing.
+     * Gets the account for the given address if it exists on the blockchain.
      *
-     * @param name The account's name
-     * @return The account
-     * @throws IOException                     if an error occurs reading the neo-express
-     *                                         configuration.
-     * @throws ExtensionConfigurationException if the account name cannot be found.
+     * @param address The account's address.
+     * @return The account.
      */
-    public Account getAccount(String name) throws IOException {
-        InputStream s = ContractTestExtension.class.getClassLoader()
-                .getResourceAsStream(neoxpConfigFileName);
-        NeoExpressConfig config = ObjectMapperFactory.getObjectMapper()
-                .readValue(s, NeoExpressConfig.class);
-
-        Optional<NeoExpressConfig.Wallet.Account> acc = Stream.concat(
-                        config.getConsensusNodes().stream().flatMap(n -> n.getWallet().getAccounts().stream()),
-                        config.getWallets().stream().flatMap(w -> w.getAccounts().stream()))
-                .filter(a -> a.getLabel() != null && a.getLabel().equals(name)).findFirst();
-
-        if (!acc.isPresent()) {
-            throw new ExtensionConfigurationException("Account '" + name + "' not found. Make " +
-                    "sure to set the name of the account in the 'label'-attribute in the " +
-                    ".neo-express config file.");
-        }
-        VerificationScript verifScript = new VerificationScript(
-                hexStringToByteArray(acc.get().getContract().getScript()));
-        if (verifScript.isMultiSigScript()) {
-            return Account.fromVerificationScript(verifScript);
-        }
-        return Account.fromWIF(WIF.getWIFFromPrivateKey(
-                hexStringToByteArray(acc.get().getPrivateKey())));
-    }
-
-    public List<Account> getCouncilAccounts() throws IOException {
-        if (councilAccounts == null) {
-            collectCouncilMemberAccounts();
-        }
-        return councilAccounts;
-    }
-
-    public Account getCouncilMultiSigAccount() throws IOException {
-        if (councilMultiSigAccount == null) {
-            collectCouncilMemberAccounts();
-        }
-        return councilMultiSigAccount;
-    }
-
-    private void collectCouncilMemberAccounts() throws IOException {
-        InputStream s = ContractTestExtension.class.getClassLoader()
-                .getResourceAsStream(neoxpConfigFileName);
-        NeoExpressConfig config = ObjectMapperFactory.getObjectMapper()
-                .readValue(s, NeoExpressConfig.class);
-
-        List<NeoExpressConfig.Wallet.Account> accounts = config.getConsensusNodes().stream()
-                .flatMap(n -> n.getWallet().getAccounts().stream())
-                .filter(a -> new VerificationScript(hexStringToByteArray(a.getContract().getScript())).isMultiSigScript())
-                .collect(Collectors.toList());
-
-        if (accounts.isEmpty()) {
-            throw new ExtensionConfigurationException("Couldn't extract council member accounts " +
-                    "from neo-express configuration file. No council members found.");
-        }
-        councilMultiSigAccount = Account.fromVerificationScript(new VerificationScript(
-                hexStringToByteArray(accounts.get(0).getContract().getScript())));
-        councilAccounts = accounts.stream()
-                .map(a -> new Account(ECKeyPair.create(hexStringToByteArray(a.getPrivateKey()))))
-                .collect(Collectors.toList());
+    public Account getAccount(String address) throws Exception {
+        return new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+                chain.getAccount(address))));
     }
 
 }

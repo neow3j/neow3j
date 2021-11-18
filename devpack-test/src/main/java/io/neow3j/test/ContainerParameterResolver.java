@@ -5,7 +5,7 @@ import org.junit.jupiter.api.extension.ParameterContext;
 import org.junit.jupiter.api.extension.ParameterResolutionException;
 import org.junit.jupiter.api.extension.ParameterResolver;
 
-import static io.neow3j.test.ContractTestExtension.CONTAINER_STORE_KEY;
+import static io.neow3j.test.ContractTestExtension.CHAIN_STORE_KEY;
 
 public class ContainerParameterResolver implements ParameterResolver {
 
@@ -21,6 +21,6 @@ public class ContainerParameterResolver implements ParameterResolver {
             ExtensionContext context) throws ParameterResolutionException {
 
         return (NeoExpressTestContainer) context.getStore(ExtensionContext.Namespace.GLOBAL)
-                .get(CONTAINER_STORE_KEY);
+                .get(CHAIN_STORE_KEY);
     }
 }
