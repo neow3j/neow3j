@@ -72,4 +72,14 @@ public class LedgerContract extends ContractInterface {
      */
     public static native int getTransactionHeight(Hash256 hash);
 
+    /**
+     * Gets the VM state with which the transaction ended.
+     * <p>
+     * Compare the state byte with the values in {@link io.neow3j.devpack.constants.VMState}.
+     *
+     * @param hash The transaction hash.
+     * @return the VM state of the transaction.
+     */
+    public static native byte getTransactionVMState(Hash256 hash);
+
 }
