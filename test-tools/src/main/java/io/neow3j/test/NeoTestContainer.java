@@ -6,7 +6,7 @@ import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-public class NeoTestContainer extends GenericContainer<NeoTestContainer> implements TestBlockchain {
+public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
     public static final String CONFIG_BASE_DIR = "neo-cli-config/";
 
@@ -72,69 +72,12 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> impleme
         }
     }
 
-    @Override
-    public TestBlockchain withSecondsPerBlock(int secondsPerBlock) {
-        return null;
+    public static String getResultFilePath(String testClassName, String methodName) {
+        return "responses/" + testClassName + "/" + methodName + ".json";
     }
 
-    @Override
-    public TestBlockchain withBatchFile(String batchFile) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TestBlockchain withCheckpoint(String checkpointFile) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public TestBlockchain withConfigFile(String configFile) {
-        return null;
-    }
-
-    @Override
     public String getNodeUrl() {
         return "http://" + getContainerIpAddress() + ":" + getMappedPort(EXPOSED_JSONRPC_PORT);
-    }
-
-    @Override
-    public String resume() throws Exception {
-        return null;
-    }
-
-    @Override
-    public String halt() throws Exception {
-        return null;
-    }
-
-    @Override
-    public String createAccount(String name) throws Exception {
-        return null;
-    }
-
-    @Override
-    public String enableOracle() throws Exception {
-        return null;
-    }
-
-    @Override
-    public String fastForward(int n) throws Exception {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String execCommand(String... commandParts) throws Exception {
-        return null;
-    }
-
-    @Override
-    public GenesisAccount getGenesisAccount() throws Exception {
-        return null;
-    }
-
-    @Override
-    public String getAccount(String address) throws Exception {
-        return null;
     }
 
 }
