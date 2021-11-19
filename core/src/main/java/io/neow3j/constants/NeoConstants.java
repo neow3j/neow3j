@@ -6,7 +6,6 @@ import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 
 public class NeoConstants {
@@ -26,19 +25,6 @@ public class NeoConstants {
     public static BigInteger halfCurveOrder() {
         return curveParams().getN().shiftRight(1);
     }
-
-    //endregion
-
-    //region Data Types
-
-    public static final int FIXED8_SCALE = 8;
-
-    public static final BigDecimal FIXED8_DECIMALS = BigDecimal.TEN.pow(FIXED8_SCALE);
-
-    /**
-     * Length of a Fixed8 byte array.
-     */
-    public static final int FIXED8_LENGTH = 8;
 
     //endregion
 
