@@ -182,6 +182,12 @@ public class LedgerContractIntegrationTest {
                 is(Numeric.reverseHexString(ledgerContractHash())));
     }
 
+    @Test
+    public void getTransactionVMState() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(1));
+    }
+
     static class LedgerContractIntegrationTestContract {
 
         public static int getTransactionHeight(Hash256 blockHash) {
@@ -213,6 +219,10 @@ public class LedgerContractIntegrationTest {
 
         public static Block getBlockWithBlockNumber(int blockNr) {
             return LedgerContract.getBlock(blockNr);
+        }
+
+        public static byte getTransactionVMState(Hash256 hash) {
+            return LedgerContract.getTransactionVMState(hash);
         }
 
         public static int currentIndex() {
