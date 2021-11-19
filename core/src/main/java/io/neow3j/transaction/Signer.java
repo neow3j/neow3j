@@ -8,6 +8,7 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
@@ -42,6 +43,11 @@ public class Signer extends NeoSerializable {
      * The group hashes of contracts that are allowed to use the witness.
      */
     private List<ECKeyPair.ECPublicKey> allowedGroups;
+
+    /**
+     * The rules that the witness must meet.
+     */
+    public List<WitnessRule> rules;
 
     public Signer() {
     }
@@ -104,6 +110,19 @@ public class Signer extends NeoSerializable {
         return this;
     }
 
+    public Signer setRule(WitnessRule rule) {
+        if (scopes.contains(WitnessScope.GLOBAL)) {
+            throw new SignerConfigurationException("Trying to set more witness rules on a Signer " +
+                    "with global scope.");
+        }
+        if (rules.size() > MAX_SIGNER_SUBITEMS) {
+            throw new SignerConfigurationException("Tyring to set more than " + MAX_SIGNER_SUBITEMS
+                    + " allowed contract groups on a signer.");
+        }
+        rules.add(rule);
+        return this;
+    }
+
     public Hash160 getScriptHash() {
         return signerHash;
     }
@@ -118,6 +137,10 @@ public class Signer extends NeoSerializable {
 
     public List<ECKeyPair.ECPublicKey> getAllowedGroups() {
         return allowedGroups;
+    }
+
+    public List<WitnessRule> getRules() {
+        return rules;
     }
 
     @Override
@@ -141,6 +164,14 @@ public class Signer extends NeoSerializable {
                             "contained " + allowedGroups.size() + " groups.");
                 }
             }
+            if (scopes.contains(WitnessScope.WITNESS_RULES)) {
+                rules = reader.readSerializableList(WitnessRule.class);
+                if (rules.size() > MAX_SIGNER_SUBITEMS) {
+                    throw new DeserializationException("A signer's scope can only contain "
+                            + MAX_SIGNER_SUBITEMS + " rules. The input data " +
+                            "contained " + rules.size() + " groups.");
+                }
+            }
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -156,6 +187,9 @@ public class Signer extends NeoSerializable {
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             writer.writeSerializableVariable(allowedGroups);
         }
+        if (scopes.contains(WitnessScope.WITNESS_RULES)) {
+            writer.writeSerializableVariable(rules);
+        }
     }
 
     @Override
@@ -167,6 +201,9 @@ public class Signer extends NeoSerializable {
         }
         if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             size += IOUtils.getVarSize(this.allowedGroups);
+        }
+        if (this.scopes.contains(WitnessScope.WITNESS_RULES)) {
+            size += IOUtils.getVarSize(rules);
         }
         return size;
     }
@@ -183,12 +220,14 @@ public class Signer extends NeoSerializable {
         return Objects.equals(this.signerHash, that.signerHash) &&
                 Objects.equals(this.scopes, that.scopes) &&
                 Objects.equals(this.allowedContracts, that.allowedContracts) &&
-                Objects.equals(this.allowedGroups, that.allowedGroups);
+                Objects.equals(this.allowedGroups, that.allowedGroups) &&
+                Objects.equals(this.rules, that.rules);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups);
+        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups,
+                rules);
     }
 
 }
