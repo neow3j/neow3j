@@ -13,7 +13,7 @@ import java.io.IOException;
 public abstract class WitnessCondition extends NeoSerializable {
 
     protected static final int MAX_SUBITEMS = 16;
-    private static final int MAX_NESTING_DEPTH = 2;
+    public static final int MAX_NESTING_DEPTH = 2;
 
     protected WitnessConditionType type;
 

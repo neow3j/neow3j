@@ -5,12 +5,14 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
 /**
  * Reverses another condition.
  */
-public class NotCondition extends WitnessCondition {
+public class NotCondition extends CompositeCondition {
 
     private WitnessCondition condition;
 
@@ -24,6 +26,7 @@ public class NotCondition extends WitnessCondition {
      * @param condition the condition to reverse.
      */
     public NotCondition(WitnessCondition condition) {
+        this();
         this.condition = condition;
     }
 
@@ -40,5 +43,10 @@ public class NotCondition extends WitnessCondition {
     @Override
     public int getSize() {
         return condition.getSize();
+    }
+
+    @Override
+    public List<WitnessCondition> getConditions() {
+        return Arrays.asList(condition);
     }
 }

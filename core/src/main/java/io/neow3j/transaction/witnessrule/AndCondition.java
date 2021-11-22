@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Represents the condition that all its sub-conditions must be met.
  */
-public class AndCondition extends WitnessCondition {
+public class AndCondition extends CompositeCondition {
 
     private List<WitnessCondition> conditions;
 
@@ -49,4 +49,10 @@ public class AndCondition extends WitnessCondition {
     public int getSize() {
         return IOUtils.getVarSize(conditions);
     }
+
+    @Override
+    public List<WitnessCondition> getConditions() {
+        return conditions;
+    }
+
 }
