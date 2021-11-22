@@ -7,12 +7,26 @@ import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 
+/**
+ * This condition defines that the calling contract must match the specified script hash. I.e., a
+ * contract can only use the witness when it is invoked by the here specified contract.
+ */
 public class CalledByContractCondition extends WitnessCondition {
 
     private Hash160 hash;
 
     public CalledByContractCondition() {
         type = WitnessConditionType.CALLED_BY_CONTRACT;
+    }
+
+    /**
+     * Constructs a condition with the given contract script hash.
+     *
+     * @param hash The contract script hash.
+     */
+    public CalledByContractCondition(Hash160 hash) {
+        this();
+        this.hash = hash;
     }
 
     @Override

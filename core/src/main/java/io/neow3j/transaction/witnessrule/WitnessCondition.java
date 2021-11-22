@@ -7,9 +7,12 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.IOException;
 
+/**
+ * A witness condition specifies under which conditions a contract can make use of a witness.
+ */
 public abstract class WitnessCondition extends NeoSerializable {
 
-    private static final int MAX_SUBITEMS = 16;
+    protected static final int MAX_SUBITEMS = 16;
     private static final int MAX_NESTING_DEPTH = 2;
 
     protected WitnessConditionType type;
