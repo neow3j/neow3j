@@ -6,6 +6,12 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+import io.neow3j.transaction.witnessrule.AndCondition;
+import io.neow3j.transaction.witnessrule.NotCondition;
+import io.neow3j.transaction.witnessrule.ScriptHashCondition;
+import io.neow3j.transaction.witnessrule.WitnessCondition;
+import io.neow3j.transaction.witnessrule.WitnessRule;
+import io.neow3j.transaction.witnessrule.WitnessRuleAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
@@ -13,6 +19,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -349,6 +356,43 @@ public class SignerTest {
                 .setAllowedContracts(contract1, contract2);
 
         assertThat(signer1, equalTo(signer2));
+    }
+
+    @Test
+    public void failOnSteppingOverMaxConditionNestingDepth() {
+        ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
+        NotCondition not = new NotCondition(cond);
+        AndCondition and = new AndCondition(Arrays.asList(not));
+
+        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, and);
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("A maximum nesting depth of " +
+                WitnessCondition.MAX_NESTING_DEPTH + " is allowed for witness conditions."));
+        AccountSigner.none(acc).setRules(rule);
+    }
+
+    @Test
+    public void failAddingRuleToGlobalSigner() {
+        ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
+        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, cond);
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("Trying to set more witness rules on a " +
+                "Signer with global scope."));
+        AccountSigner.global(acc).setRules(rule);
+    }
+
+    @Test
+    public void failAddingTooManyRules() {
+        ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
+        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, cond);
+        AccountSigner signer = AccountSigner.none(acc);
+        for (int i = 0; i < MAX_SIGNER_SUBITEMS; i++) {
+            signer.setRules(rule);
+        }
+        exceptionRule.expect(SignerConfigurationException.class);
+        exceptionRule.expectMessage(new StringContains("Tyring to set more than "
+                + MAX_SIGNER_SUBITEMS + " allowed witness rules on a signer."));
+        signer.setRules(rule);
     }
 
 }

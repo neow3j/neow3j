@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Represents the condition that at least one of the sub-conditions must meet.
  */
-public class OrCondition extends WitnessCondition {
+public class OrCondition extends CompositeCondition {
 
     private List<WitnessCondition> conditions;
 
@@ -49,4 +49,10 @@ public class OrCondition extends WitnessCondition {
     public int getSize() {
         return IOUtils.getVarSize(conditions);
     }
+
+    @Override
+    public List<WitnessCondition> getConditions() {
+        return conditions;
+    }
+
 }

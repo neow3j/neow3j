@@ -8,6 +8,8 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+import io.neow3j.transaction.witnessrule.CompositeCondition;
+import io.neow3j.transaction.witnessrule.WitnessCondition;
 import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.Hash160;
 
@@ -18,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
+import static io.neow3j.transaction.witnessrule.WitnessCondition.MAX_NESTING_DEPTH;
+import static java.util.Arrays.asList;
 
 /**
  * A signer of a transaction. It defines a scope in which the signer's signature is valid.
@@ -58,6 +62,7 @@ public class Signer extends NeoSerializable {
         scopes.add(scope);
         allowedContracts = new ArrayList<>();
         allowedGroups = new ArrayList<>();
+        rules = new ArrayList<>();
     }
 
     /**
@@ -81,7 +86,7 @@ public class Signer extends NeoSerializable {
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
         scopes.add(WitnessScope.CUSTOM_CONTRACTS);
-        this.allowedContracts.addAll(Arrays.asList(allowedContracts));
+        this.allowedContracts.addAll(asList(allowedContracts));
         return this;
     }
 
@@ -106,28 +111,38 @@ public class Signer extends NeoSerializable {
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
         scopes.add(WitnessScope.CUSTOM_GROUPS);
-        this.allowedGroups.addAll(Arrays.asList(allowedGroups));
+        this.allowedGroups.addAll(asList(allowedGroups));
         return this;
     }
 
     /**
-     * Adds the given witness rule to this signer.
+     * Adds the given witness rules to this signer.
      *
-     * @param rule The rule.
+     * @param rules The rules.
      * @return this.
-     *
      */
-    public Signer setRule(WitnessRule rule) {
+    public Signer setRules(WitnessRule... rules) {
         if (scopes.contains(WitnessScope.GLOBAL)) {
-            throw new SignerConfigurationException("Trying to set more witness rules on a Signer " +
-                    "with global scope.");
+            throw new SignerConfigurationException("Trying to set witness rules on a Signer with " +
+                    "global scope.");
         }
-        if (rules.size() > MAX_SIGNER_SUBITEMS) {
+        if (this.rules.size() + rules.length > MAX_SIGNER_SUBITEMS) {
             throw new SignerConfigurationException("Tyring to set more than " + MAX_SIGNER_SUBITEMS
                     + " allowed witness rules on a signer.");
         }
-        rules.add(rule);
+        Arrays.stream(rules).forEach(r -> checkDepth(r.getCondition(), MAX_NESTING_DEPTH));
+        this.rules.addAll(asList(rules));
         return this;
+    }
+
+    private void checkDepth(WitnessCondition condition, int depth) {
+        if (depth == 0) {
+            throw new SignerConfigurationException("A maximum nesting depth of " +
+                    MAX_NESTING_DEPTH + " is allowed for witness conditions.");
+        }
+        if (condition instanceof CompositeCondition) {
+            ((CompositeCondition) condition).getConditions().forEach(c -> checkDepth(c, depth - 1));
+        }
     }
 
     public Hash160 getScriptHash() {
