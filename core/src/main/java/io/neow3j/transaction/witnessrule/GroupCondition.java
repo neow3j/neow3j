@@ -44,7 +44,7 @@ public class GroupCondition extends WitnessCondition {
 
     @Override
     public int getSize() {
-        return group.getSize();
+        return super.getSize() + group.getSize();
     }
 
     public ECKeyPair.ECPublicKey getGroup() {

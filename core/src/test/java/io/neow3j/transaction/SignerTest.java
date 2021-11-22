@@ -7,6 +7,7 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
 import io.neow3j.transaction.witnessrule.AndCondition;
+import io.neow3j.transaction.witnessrule.BooleanCondition;
 import io.neow3j.transaction.witnessrule.CalledByContractCondition;
 import io.neow3j.transaction.witnessrule.NotCondition;
 import io.neow3j.transaction.witnessrule.ScriptHashCondition;
@@ -21,12 +22,12 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -339,7 +340,7 @@ public class SignerTest {
     }
 
     @Test
-    public void failDeserializingWithTooManyRules() throws DeserializationException {
+    public void failDeserializingWithTooManyRules() {
         StringBuilder serialized = new StringBuilder(""
                 + reverseHexString(accScriptHash.toString())
                 + "41" // calledByEntry, custom contracts
@@ -360,16 +361,35 @@ public class SignerTest {
 
     @Test
     public void getSize() {
+        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, new AndCondition(
+                asList(new BooleanCondition(true), new BooleanCondition(false))));
+
         Signer signer = AccountSigner.calledByEntry(accScriptHash)
                 .setAllowedGroups(groupPubKey1, groupPubKey2)
-                .setAllowedContracts(contract1, contract2);
+                .setAllowedContracts(contract1, contract2)
+                .setRules(rule, rule);
 
         int expectedSize = 20 // Account script hash
                 + 1 // Scope byte
                 + 1 // length byte of allowed contracts list
                 + 20 + 20 // Script hashes of two allowed contracts
                 + 1 // length byte of allowed groups list
-                + 33 + 33; // Public keys of two allowed groups
+                + 33 + 33 // Public keys of two allowed groups
+                + 1 // length byte of rules list
+                + 1 // byte for WitnessRuleAction Allow
+                + 1 // byte for WitnessCondition type (AndCondition)
+                + 1 // length of AND condition list
+                + 1 // byte for WitnessCondition type (BooleanCondition)
+                + 1 // byte for value of BooleanCondition
+                + 1 // byte for WitnessCondition type (BooleanCondition)
+                + 1 // byte for value of BooleanCondition
+                + 1 // byte for WitnessRuleAction Allow
+                + 1 // byte for WitnessCondition type (AndCondition)
+                + 1 // length of AND condition list
+                + 1 // byte for WitnessCondition type (BooleanCondition)
+                + 1 // byte for value of BooleanCondition
+                + 1 // byte for WitnessCondition type (BooleanCondition)
+                + 1; // byte for value of BooleanCondition
 
         assertThat(signer.getSize(), is(expectedSize));
     }
@@ -399,7 +419,7 @@ public class SignerTest {
     public void failOnSteppingOverMaxConditionNestingDepth() {
         ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
         NotCondition not = new NotCondition(cond);
-        AndCondition and = new AndCondition(Arrays.asList(not));
+        AndCondition and = new AndCondition(asList(not));
 
         WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, and);
 

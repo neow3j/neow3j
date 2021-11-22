@@ -40,7 +40,7 @@ public class BooleanCondition extends WitnessCondition {
 
     @Override
     public int getSize() {
-        return 1; // one byte for boolean
+        return super.getSize() + 1; // one byte for boolean
     }
 
     public boolean getCondition() {

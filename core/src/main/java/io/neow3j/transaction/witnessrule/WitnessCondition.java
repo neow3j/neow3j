@@ -57,4 +57,9 @@ public abstract class WitnessCondition extends NeoSerializable {
     public WitnessConditionType getType() {
         return type;
     }
+
+    @Override
+    public int getSize() {
+        return 1; // type byte
+    }
 }
