@@ -6,6 +6,7 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +18,7 @@ public class OrCondition extends CompositeCondition {
 
     public OrCondition() {
         type = WitnessConditionType.OR;
+        conditions = new ArrayList<>();
     }
 
     /**
@@ -37,12 +39,19 @@ public class OrCondition extends CompositeCondition {
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
-        conditions = reader.readSerializableList(WitnessCondition.class);
+        try {
+            long nrOfConditions = reader.readVarInt();
+            for (int i = 0; i < nrOfConditions; i++) {
+                this.conditions.add(WitnessCondition.deserializeWitnessCondition(reader));
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
     }
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(conditions);
+        writer.writeSerializableVariable(conditions);
     }
 
     @Override

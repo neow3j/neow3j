@@ -32,7 +32,7 @@ public class NotCondition extends CompositeCondition {
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
-        condition = reader.readSerializable(WitnessCondition.class);
+        condition = WitnessCondition.deserializeWitnessCondition(reader);
     }
 
     @Override
@@ -48,5 +48,9 @@ public class NotCondition extends CompositeCondition {
     @Override
     public List<WitnessCondition> getConditions() {
         return Arrays.asList(condition);
+    }
+
+    public WitnessCondition getCondition() {
+        return condition;
     }
 }

@@ -43,4 +43,8 @@ public class ScriptHashCondition extends WitnessCondition {
     public int getSize() {
         return hash.getSize();
     }
+
+    public Hash160 getScriptHash() {
+        return hash;
+    }
 }

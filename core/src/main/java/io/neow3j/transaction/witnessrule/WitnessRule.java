@@ -22,6 +22,9 @@ public class WitnessRule extends NeoSerializable {
      */
     private WitnessCondition condition;
 
+    public WitnessRule() {
+    }
+
     public WitnessRule(WitnessRuleAction action, WitnessCondition condition) {
         this.action = action;
         this.condition = condition;
@@ -31,7 +34,7 @@ public class WitnessRule extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             action = WitnessRuleAction.valueOf(reader.readByte());
-            condition = reader.readSerializable(WitnessCondition.class);
+            condition = WitnessCondition.deserializeWitnessCondition(reader);
         } catch (IOException e) {
             throw new DeserializationException(e);
         }

@@ -74,6 +74,9 @@ public enum WitnessScope {
         if ((combinedScopes & CUSTOM_GROUPS.byteValue()) != 0) {
             scopes.add(CUSTOM_GROUPS);
         }
+        if ((combinedScopes & WITNESS_RULES.byteValue()) != 0) {
+            scopes.add(WITNESS_RULES);
+        }
         return scopes;
     }
 

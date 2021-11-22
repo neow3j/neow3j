@@ -85,7 +85,9 @@ public class Signer extends NeoSerializable {
                     + " allowed contracts on a signer.");
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
-        scopes.add(WitnessScope.CUSTOM_CONTRACTS);
+        if (!scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
+            scopes.add(WitnessScope.CUSTOM_CONTRACTS);
+        }
         this.allowedContracts.addAll(asList(allowedContracts));
         return this;
     }
@@ -110,7 +112,9 @@ public class Signer extends NeoSerializable {
                     + " allowed contract groups on a signer.");
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
-        scopes.add(WitnessScope.CUSTOM_GROUPS);
+        if (!scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+            scopes.add(WitnessScope.CUSTOM_GROUPS);
+        }
         this.allowedGroups.addAll(asList(allowedGroups));
         return this;
     }
@@ -131,6 +135,10 @@ public class Signer extends NeoSerializable {
                     + " allowed witness rules on a signer.");
         }
         Arrays.stream(rules).forEach(r -> checkDepth(r.getCondition(), MAX_NESTING_DEPTH));
+        scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
+        if (!scopes.contains(WitnessScope.WITNESS_RULES)) {
+            scopes.add(WitnessScope.WITNESS_RULES);
+        }
         this.rules.addAll(asList(rules));
         return this;
     }
