@@ -85,6 +85,8 @@ import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.transaction.witnessrule.WitnessConditionType;
+import io.neow3j.transaction.witnessrule.WitnessRuleAction;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -1163,6 +1165,14 @@ public class ResponseTest extends ResponseTester {
                         "               ]," +
                         "               \"allowedgroups\": [" +
                         "                   \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"" +
+                        "               ]," +
+                        "               \"rules\": [" +
+                        "                   {" +
+                        "                       \"action\": \"Allow\",\n" +
+                        "                       \"condition\": {\n" +
+                        "                           \"type\":\"ScriptHash\"\n" +
+                        "                       }" +
+                        "                   }" +
                         "               ]" +
                         "           }" +
                         "        ]," +
@@ -1216,6 +1226,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(signers.get(0).getAllowedContracts().get(0), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
         assertThat(signers.get(0).getAllowedContracts().get(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
         assertThat(signers.get(0).getAllowedGroups().get(0), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+        TransactionSigner.WitnessRule rule = signers.get(0).getRules().get(0);
+        assertThat(rule.getAction(), is(WitnessRuleAction.ALLOW));
+        assertThat(rule.getCondition().getType(), is(WitnessConditionType.SCRIPT_HASH));
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));

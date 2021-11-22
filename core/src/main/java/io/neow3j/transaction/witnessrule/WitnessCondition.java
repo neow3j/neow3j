@@ -38,4 +38,7 @@ public abstract class WitnessCondition extends NeoSerializable {
 
     protected abstract void serializeWithoutType(BinaryWriter writer) throws IOException;
 
+    public WitnessConditionType getType() {
+        return type;
+    }
 }
