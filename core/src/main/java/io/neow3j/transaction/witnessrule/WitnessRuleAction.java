@@ -1,5 +1,7 @@
 package io.neow3j.transaction.witnessrule;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 /**
  * Indicates the action to be taken if the current context meets with the rule.
  */
@@ -31,6 +33,11 @@ public enum WitnessRuleAction {
         }
         throw new IllegalArgumentException(String.format("%s value type not found.",
                 WitnessRuleAction.class.getName()));
+    }
+
+    @JsonValue
+    public String jsonValue() {
+        return jsonValue;
     }
 
     public byte byteValue() {

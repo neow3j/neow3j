@@ -44,4 +44,11 @@ public class WitnessRule extends NeoSerializable {
                 + condition.getSize();
     }
 
+    public WitnessRuleAction getAction() {
+        return action;
+    }
+
+    public WitnessCondition getCondition() {
+        return condition;
+    }
 }

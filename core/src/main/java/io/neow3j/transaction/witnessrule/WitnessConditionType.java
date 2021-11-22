@@ -1,5 +1,7 @@
 package io.neow3j.transaction.witnessrule;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum WitnessConditionType {
 
     /**
@@ -62,6 +64,11 @@ public enum WitnessConditionType {
         this.conditionClass = conditionClass;
     }
 
+    @JsonValue
+    public String jsonValue() {
+        return jsonValue;
+    }
+
     public byte byteValue() {
         return this.byteValue;
     }
@@ -76,12 +83,4 @@ public enum WitnessConditionType {
                 WitnessConditionType.class.getName()));
     }
 
-    public int getSize()  {
-        // TODO: If the size is fixed then move it to the enum definition.
-        try {
-            return this.conditionClass.getDeclaredField("size").getInt(null);
-        } catch (Exception ignore) {
-            return 0;
-        }
-    }
 }
