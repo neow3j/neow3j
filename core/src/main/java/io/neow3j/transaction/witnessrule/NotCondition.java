@@ -42,7 +42,7 @@ public class NotCondition extends CompositeCondition {
 
     @Override
     public int getSize() {
-        return condition.getSize();
+        return super.getSize() + condition.getSize();
     }
 
     @Override

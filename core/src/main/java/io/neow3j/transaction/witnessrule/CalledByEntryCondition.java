@@ -30,6 +30,6 @@ public class CalledByEntryCondition extends WitnessCondition {
 
     @Override
     public int getSize() {
-        return 0;
+        return super.getSize();
     }
 }

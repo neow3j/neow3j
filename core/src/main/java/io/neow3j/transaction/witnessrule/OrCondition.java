@@ -56,7 +56,7 @@ public class OrCondition extends CompositeCondition {
 
     @Override
     public int getSize() {
-        return IOUtils.getVarSize(conditions);
+        return super.getSize() + IOUtils.getVarSize(conditions);
     }
 
     @Override
