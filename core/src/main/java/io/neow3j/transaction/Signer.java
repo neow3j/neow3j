@@ -110,6 +110,13 @@ public class Signer extends NeoSerializable {
         return this;
     }
 
+    /**
+     * Adds the given witness rule to this signer.
+     *
+     * @param rule The rule.
+     * @return this.
+     *
+     */
     public Signer setRule(WitnessRule rule) {
         if (scopes.contains(WitnessScope.GLOBAL)) {
             throw new SignerConfigurationException("Trying to set more witness rules on a Signer " +
@@ -117,7 +124,7 @@ public class Signer extends NeoSerializable {
         }
         if (rules.size() > MAX_SIGNER_SUBITEMS) {
             throw new SignerConfigurationException("Tyring to set more than " + MAX_SIGNER_SUBITEMS
-                    + " allowed contract groups on a signer.");
+                    + " allowed witness rules on a signer.");
         }
         rules.add(rule);
         return this;
@@ -169,7 +176,7 @@ public class Signer extends NeoSerializable {
                 if (rules.size() > MAX_SIGNER_SUBITEMS) {
                     throw new DeserializationException("A signer's scope can only contain "
                             + MAX_SIGNER_SUBITEMS + " rules. The input data " +
-                            "contained " + rules.size() + " groups.");
+                            "contained " + rules.size() + " rules.");
                 }
             }
         } catch (IOException e) {
