@@ -7,7 +7,7 @@ import static java.util.Arrays.asList;
 public interface TestBlockchain {
 
     /**
-     * Sets the given block time.
+     * Sets the given block time to be used by the blockchain.
      *
      * @param secondsPerBlock The block time.
      * @return this.
@@ -15,8 +15,9 @@ public interface TestBlockchain {
     TestBlockchain withSecondsPerBlock(int secondsPerBlock);
 
     /**
-     * Adds the given batch file to the test container and executes it before the neo-express
-     * instance is started.
+     * Adds the given batch file to the blockchain. A batch file specifies commands (e.g., token
+     * transfers or other contract invocations) that set up the blockchain state for tests.
+     * <p>
      * The batch file must be located in the resources directory.
      *
      * @param batchFile The batch file name.
@@ -25,11 +26,12 @@ public interface TestBlockchain {
     TestBlockchain withBatchFile(String batchFile);
 
     /**
-     * Adds the given checkpoint file to the test container and executes it before the neo-express
-     * instance is started.
-     * The file must be located in the resources directory.
+     * Adds the given checkpoint file to the blockchain. A checkpoint specifies a pre-generated
+     * blockchain state that is used to set up the blockchain to that state before tests.
      * <p>
-     * If both a batch and a checkpoint file is added, the checkpoint is first applied.
+     * The checkpoint file must be located in the resources directory.
+     * <p>
+     * If both a batch and a checkpoint file are added, the checkpoint is first applied.
      *
      * @param checkpointFile The checkpoint file name.
      * @return this.
@@ -37,8 +39,9 @@ public interface TestBlockchain {
     TestBlockchain withCheckpoint(String checkpointFile);
 
     /**
-     * Adds the given neo-express config file to the test container. It will be used to configure
-     * the neo-express instance in the container.
+     * Adds the given config file to the blockchain. It will be used to configure the blockchain
+     * instance.
+     * <p>
      * The file must be located in the resources directory.
      *
      * @param configFile The config file name.
@@ -47,33 +50,32 @@ public interface TestBlockchain {
     TestBlockchain withConfigFile(String configFile);
 
     /**
-     * Gets the URL of the neo-express node running in the container.
+     * Gets the URL of the test blockchain node.
      *
-     * @return the neo-express node URL.
+     * @return the node URL.
      */
     String getNodeUrl();
 
     /**
      * Resumes the blockchain if it was stopped before.
      *
-     * @return The message emitted by the chain on startup.
+     * @return The message emitted by the chain on startup or null if no message is emitted.
      */
     String resume() throws Exception;
 
     /**
      * Halts the blockchain, i.e., stops block production.
      *
-     * @return The message emitted by the chain on stopping.
+     * @return The message emitted by the chain on stopping or null if no message is emitted.
      */
     String halt() throws Exception;
 
     /**
-     * Creates a new account with the given name.
+     * Creates a new account.
      *
-     * @param name The name of the account to create.
      * @return The new account's address.
      */
-    String createAccount(String name) throws Exception;
+    String createAccount() throws Exception;
 
     /**
      * Enables the oracle service.
@@ -86,7 +88,7 @@ public interface TestBlockchain {
      * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
      *
      * @param n The number of blocks to mint.
-     * @return The message emitted on minting the blocks.
+     * @return The message emitted on minting the blocks or null if no message is emitted.
      */
     String fastForward(int n) throws Exception;
 
@@ -94,7 +96,7 @@ public interface TestBlockchain {
      * Executes the given command.
      *
      * @param commandParts The command separated into its parts.
-     * @return The message emitted on executing the command.
+     * @return The message emitted on executing the command or null if no message is emitted.
      */
     String execCommand(String... commandParts) throws Exception;
 
@@ -110,6 +112,9 @@ public interface TestBlockchain {
 
     /**
      * Gets the genesis account this blockchain is based on.
+     * <p>
+     * This is for test blockchains that provide control over the genesis account. The genesis
+     * account owns all NEO and GAS tokens starting from the first block.
      *
      * @return the genesis account.
      */

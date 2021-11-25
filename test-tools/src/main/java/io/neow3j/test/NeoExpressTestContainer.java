@@ -31,6 +31,8 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     private int secondsPerBlock = 0;
     private String neoxpConfigFile;
 
+    private int accountCtr = 0;
+
     /**
      * Creates a new instance of a docker container running a neo-express private network.
      *
@@ -204,15 +206,14 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     }
 
     /**
-     * Creates a new account with the given name on the neo-express instance.
+     * Creates a new account on the neo-express instance.
      *
-     * @param name The name of the account to create.
      * @return The new account's address.
      * @throws Exception if an error occurs when trying to create the account.
      */
     @Override
-    public String createAccount(String name) throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "wallet", "create", name);
+    public String createAccount() throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "wallet", "create", "acc" + accountCtr);
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
                     execResult.getStderr());

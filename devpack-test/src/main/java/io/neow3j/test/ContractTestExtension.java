@@ -221,12 +221,11 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     /**
      * Creates a new account and returns its Neo address.
      *
-     * @param name The desired name of the account.
      * @return The account's address
      * @throws Exception if creating the account failed.
      */
-    public String createAccount(String name) throws Exception {
-        return chain.createAccount(name);
+    public String createAccount() throws Exception {
+        return chain.createAccount();
     }
 
     /**
