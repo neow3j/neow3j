@@ -1,7 +1,0 @@
-[
-  {
-    "contract": "OracleTestContract",
-    "operation": "request",
-    "args": [1000000000]
-  }
-]
