@@ -15,7 +15,6 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
@@ -28,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 
 public class ContractTestExtension implements BeforeAllCallback, AfterAllCallback {
@@ -142,9 +142,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         }
         TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
         Account genesisAccount = Account.fromVerificationScript(new VerificationScript(
-                Numeric.hexStringToByteArray(genAcc.getVerificationScript())));
+                hexStringToByteArray(genAcc.getVerificationScript())));
         Account[] signerAccounts = genAcc.getPrivateKeys().stream()
-                .map(k -> new Account(ECKeyPair.create(Numeric.hexStringToByteArray(k))))
+                .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
                 .toArray(Account[]::new);
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
@@ -224,8 +224,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * @return The account's address
      * @throws Exception if creating the account failed.
      */
-    public String createAccount() throws Exception {
-        return chain.createAccount();
+    public Account createAccount() throws Exception {
+        return new Account(ECKeyPair.create(
+                hexStringToByteArray(chain.getAccount(chain.createAccount()))));
     }
 
     /**
@@ -246,8 +247,47 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * @return The account.
      */
     public Account getAccount(String address) throws Exception {
-        return new Account(ECKeyPair.create(Numeric.hexStringToByteArray(
+        return new Account(ECKeyPair.create(hexStringToByteArray(
                 chain.getAccount(address))));
+    }
+
+    /**
+     * If the underlying test blockchain implementation has control over the genesis account, it
+     * will be returned with all signer accounts.
+     *
+     * @return The genesis account's verification script and private keys.
+     */
+    public GenesisAccount getGenesisAccount() {
+        try {
+            TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
+            Account multiSigAccount = Account.fromVerificationScript(
+                    new VerificationScript(hexStringToByteArray(genAcc.getVerificationScript())));
+            List<Account> signerAccounts = genAcc.getPrivateKeys().stream()
+                    .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
+                    .collect(Collectors.toList());
+            return new GenesisAccount(multiSigAccount, signerAccounts);
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
+        }
+    }
+
+    public static class GenesisAccount {
+
+        private Account multiSigAccount;
+        private List<Account> signerAccounts;
+
+        public GenesisAccount(Account multiSigAccount, List<Account> signerAccounts) {
+            this.multiSigAccount = multiSigAccount;
+            this.signerAccounts = signerAccounts;
+        }
+
+        public Account getMultiSigAccount() {
+            return multiSigAccount;
+        }
+
+        public List<Account> getSignerAccounts() {
+            return signerAccounts;
+        }
     }
 
 }

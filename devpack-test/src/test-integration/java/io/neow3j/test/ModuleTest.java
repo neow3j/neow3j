@@ -1,12 +1,18 @@
 package io.neow3j.test;
 
+import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.utils.Await;
+import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
+import java.math.BigInteger;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -51,7 +57,7 @@ public class ModuleTest {
     }
 
     @Test
-    public void test() throws Throwable {
+    public void invokeBothContracts() throws Throwable {
         InvocationResult result = sc1.callInvokeFunction("getInt").getInvocationResult();
         assertThat(result.getStack().get(0).getInteger().intValue(), is(5));
 
@@ -60,8 +66,27 @@ public class ModuleTest {
 
         result = sc2.callInvokeFunction("getOwner").getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(OWNER_ADDRESS));
+    }
 
+    @Test
+    public void checkContractPermission() throws Throwable {
         assertThat(sc2.getManifest().getPermissions().get(0).getContract(), is(PERMISSION));
+    }
+
+    @Test
+    public void transferTokensFromGenesisAccount() throws Throwable {
+        Account newAcc = ext.createAccount();
+        ContractTestExtension.GenesisAccount gen = ext.getGenesisAccount();
+        NeoToken neoToken = new NeoToken(neow3j);
+        NeoSendRawTransaction resp = neoToken
+                .transfer(gen.getMultiSigAccount(), newAcc.getScriptHash(), BigInteger.ONE)
+                .getUnsignedTransaction()
+                .addMultiSigWitness(gen.getMultiSigAccount().getVerificationScript(),
+                        gen.getSignerAccounts().toArray(new Account[]{}))
+                .send();
+
+        Await.waitUntilTransactionIsExecuted(resp.getSendRawTransaction().getHash(), neow3j);
+        assertThat(neoToken.getBalanceOf(newAcc), is(BigInteger.ONE));
     }
 
 }

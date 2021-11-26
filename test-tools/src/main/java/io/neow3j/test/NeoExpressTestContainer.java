@@ -1,6 +1,7 @@
 package io.neow3j.test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
@@ -132,8 +133,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         if (config.getConsensusNodes().size() > 1) {
             throw new IllegalStateException("Can't handle multi-node neo-express setups.");
         }
-        withCopyFileToContainer(MountableFile.forClasspathResource(configFile, 777),
-                NEOXP_CONFIG_DEST);
+        withClasspathResourceMapping(configFile, NEOXP_CONFIG_DEST, BindMode.READ_WRITE);
         return this;
     }
 
@@ -213,7 +213,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String createAccount() throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "wallet", "create", "acc" + accountCtr);
+        ExecResult execResult = execInContainer("neoxp", "wallet", "create", "acc" + accountCtr++);
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " +
                     execResult.getStderr());
@@ -283,7 +283,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         Optional<NeoExpressConfig.Wallet.Account> acc = Stream.concat(
                         config.getConsensusNodes().stream().flatMap(n -> n.getWallet().getAccounts().stream()),
                         config.getWallets().stream().flatMap(w -> w.getAccounts().stream()))
-                .filter(a -> a.getLabel() != null && a.getScriptHash().equals(address)).findFirst();
+                .filter(a -> a.getScriptHash().equals(address)).findFirst();
 
         if (!acc.isPresent()) {
             throw new IllegalArgumentException("Account with address '" + address + "' not found.");
