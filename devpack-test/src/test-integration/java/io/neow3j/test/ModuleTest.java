@@ -50,8 +50,8 @@ public class ModuleTest {
     }
 
     @BeforeAll
-    public static void setUp(Neow3j n) {
-        neow3j = n;
+    public static void setUp() {
+        neow3j = ext.getNeow3j();
         sc1 = ext.getDeployedContract(ExampleContract1.class);
         sc2 = ext.getDeployedContract(ExampleContract2.class);
     }

@@ -65,7 +65,6 @@ public class WitnessScopeTest {
                 WitnessScope.CALLED_BY_ENTRY,
                 WitnessScope.CUSTOM_GROUPS,
                 WitnessScope.CUSTOM_CONTRACTS));
-
     }
 
     @Test
