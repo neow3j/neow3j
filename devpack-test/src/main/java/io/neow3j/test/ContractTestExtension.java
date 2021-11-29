@@ -271,6 +271,11 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         }
     }
 
+    /**
+     * Contains all necessary information to make transactions with the genesis account of a
+     * blockchain. The genesis account is the account that holds all native assets at the
+     * beginning of a new chain.
+     */
     public static class GenesisAccount {
 
         private Account multiSigAccount;
@@ -281,10 +286,21 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             this.signerAccounts = signerAccounts;
         }
 
+        /**
+         * Gets the genesis account, i.e., the multi-sig account that is the genesis account.
+         *
+         * @return the genesis account.
+         */
         public Account getMultiSigAccount() {
             return multiSigAccount;
         }
 
+        /**
+         * Gets the accounts, including their private keys, that are part of the genesis
+         * multi-sig account.
+         *
+         * @return the participating accounts.
+         */
         public List<Account> getSignerAccounts() {
             return signerAccounts;
         }
