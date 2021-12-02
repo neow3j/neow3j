@@ -18,6 +18,9 @@ import io.neow3j.protocol.core.response.NeoGetCommittee;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool;
 import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances;
+import io.neow3j.protocol.core.response.NeoGetNep11Properties;
+import io.neow3j.protocol.core.response.NeoGetNep11Transfers;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
@@ -987,6 +990,93 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(scriptHash.toAddress(), from.getTime(), until.getTime()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
+    }
+
+    /**
+     * Gets all NEP-11 balances of the specified account.
+     *
+     * @param scriptHash the account's script hash.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNep11Balances> getNep11Balances(Hash160 scriptHash) {
+        return new Request<>(
+                "getnep11balances",
+                singletonList(scriptHash.toAddress()),
+                neow3jService,
+                NeoGetNep11Balances.class);
+    }
+
+    /**
+     * Gets all NEP-11 transaction of the given account.
+     *
+     * @param scriptHash The account's script hash.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash) {
+        return new Request<>(
+                "getnep11transfers",
+                singletonList(scriptHash.toAddress()),
+                neow3jService,
+                NeoGetNep11Transfers.class);
+    }
+
+    /**
+     * Gets all NEP-11 transaction of the given account since the given time.
+     *
+     * @param scriptHash The account's script hash.
+     * @param from       From when to report transactions.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash, Date from) {
+        return new Request<>(
+                "getnep11transfers",
+                asList(scriptHash.toAddress(), from.getTime()),
+                neow3jService,
+                NeoGetNep11Transfers.class);
+    }
+
+    /**
+     * Gets all NEP-11 transactions of the given account in the time span between {@code from} and
+     * {@code to}.
+     *
+     * @param scriptHash the account's script hash.
+     * @param from       the start timestamp.
+     * @param to         the end timestamp.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash, Date from,
+            Date to) {
+        return new Request<>(
+                "getnep11transfers",
+                asList(scriptHash.toAddress(), from.getTime(), to.getTime()),
+                neow3jService,
+                NeoGetNep11Transfers.class);
+    }
+
+    /**
+     * Gets the properties of the token with {@code tokenId} from the NEP-11 contract with {@code
+     * scriptHash}.
+     * <p>
+     * The properties are a mapping from the property name string to the value string. The value
+     * is plain text if the key is one of the properties defined in the NEP-11 standard.
+     * Otherwise, the value is a Base64-encoded byte array.
+     *
+     * @param scriptHash The script hash of the token contract.
+     * @param tokenId    The ID of the token as a hexadecimal string.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetNep11Properties> getNep11Properties(Hash160 scriptHash,
+            String tokenId) {
+        return new Request<>(
+                "getnep11properties",
+                asList(scriptHash.toAddress(), tokenId),
+                neow3jService,
+                NeoGetNep11Properties.class);
     }
 
     // StateService

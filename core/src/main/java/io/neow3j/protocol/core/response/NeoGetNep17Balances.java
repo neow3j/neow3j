@@ -2,75 +2,33 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
-import io.neow3j.types.Hash160;
 import io.neow3j.protocol.core.Response;
+import io.neow3j.types.Hash160;
 
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
-public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> {
+public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Nep17Balances> {
 
-    public Balances getBalances() {
+    public Nep17Balances getBalances() {
         return getResult();
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Balances {
+    public static class Nep17Balances extends NeoGetTokenBalances.TokenBalances<Nep17Balance> {
 
-        @JsonProperty("balance")
-        @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep17Balance> balances;
-
-        @JsonProperty("address")
-        private String address;
-
-        public Balances() {
+        public Nep17Balances() {
         }
 
-        public Balances(List<Nep17Balance> balances, String address) {
-            this.balances = balances;
-            this.address = address;
+        public Nep17Balances(List<Nep17Balance> balances, String address) {
+            super(balances, address);
         }
 
-        public List<Nep17Balance> getBalances() {
-            return balances;
-        }
-
-        public String getAddress() {
-            return address;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Balances)) return false;
-            Balances balances1 = (Balances) o;
-            return Objects.equals(getBalances(), balances1.getBalances()) &&
-                    Objects.equals(getAddress(), balances1.getAddress());
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getBalances(), getAddress());
-        }
-
-        @Override
-        public String toString() {
-            return "Balances{" +
-                    "balances=" + balances +
-                    ", address='" + address + '\'' +
-                    '}';
-        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class Nep17Balance {
-
-        @JsonProperty("assethash")
-        private Hash160 assetHash;
+    public static class Nep17Balance extends NeoGetTokenBalances.TokenBalance {
 
         @JsonProperty("amount")
         private String amount;
@@ -82,13 +40,9 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> 
         }
 
         public Nep17Balance(Hash160 assetHash, String amount, BigInteger lastUpdatedBlock) {
-            this.assetHash = assetHash;
+            super(assetHash);
             this.amount = amount;
             this.lastUpdatedBlock = lastUpdatedBlock;
-        }
-
-        public Hash160 getAssetHash() {
-            return assetHash;
         }
 
         public String getAmount() {
@@ -101,30 +55,17 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Balances> 
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof Nep17Balance)) {
-                return false;
-            }
+            if (this == o) return true;
+            if (!(o instanceof Nep17Balance)) return false;
+            if (!super.equals(o)) return false;
             Nep17Balance that = (Nep17Balance) o;
-            return Objects.equals(assetHash, that.assetHash) &&
-                    Objects.equals(amount, that.amount) &&
+            return Objects.equals(amount, that.amount) &&
                     Objects.equals(lastUpdatedBlock, that.lastUpdatedBlock);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(assetHash, amount, lastUpdatedBlock);
-        }
-
-        @Override
-        public String toString() {
-            return "Nep17Balance{" +
-                    "assetHash='" + assetHash + '\'' +
-                    ", amount='" + amount + '\'' +
-                    ", lastUpdatedBlock=" + lastUpdatedBlock +
-                    '}';
+            return Objects.hash(super.hashCode(), amount, lastUpdatedBlock);
         }
     }
 

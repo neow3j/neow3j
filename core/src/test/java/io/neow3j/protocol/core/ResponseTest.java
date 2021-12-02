@@ -2555,7 +2555,7 @@ public class ResponseTest extends ResponseTester {
         NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
 
         List<NeoGetNep17Transfers.Nep17Transfer> sent =
-                getNep17Transfers.getNep17Transfer().getSent();
+                getNep17Transfers.getNep17Transfers().getSent();
 
         assertThat(sent, is(notNullValue()));
         assertThat(sent, hasSize(2));
@@ -2582,7 +2582,7 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         List<NeoGetNep17Transfers.Nep17Transfer> received =
-                getNep17Transfers.getNep17Transfer().getReceived();
+                getNep17Transfers.getNep17Transfers().getReceived();
 
         assertThat(received, is(notNullValue()));
         assertThat(received, hasSize(1));
