@@ -4,12 +4,14 @@ import io.neow3j.devpack.Map;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.StackItemType;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
 
@@ -19,6 +21,7 @@ import static io.neow3j.types.ContractParameter.map;
 import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class MapTest {
 
@@ -84,8 +87,17 @@ public class MapTest {
         List<StackItem> values = ct.getNeow3j().getApplicationLog(hash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getList();
 
-        assertThat(values.get(0).getHexString(), is("7365636f6e64"));
-        assertThat(values.get(1).getString(), is("string"));
+        if (values.get(0).getType().equals(StackItemType.BYTE_STRING)) {
+            assertThat(values.get(0).getHexString(), is("7365636f6e64"));
+            assertThat(values.get(1).getInteger(), is(BigInteger.ONE));
+            assertTrue(values.get(2).getBoolean());
+            assertThat(values.get(3).getString(), is("string"));
+        } else {
+            assertThat(values.get(0).getInteger(), is(BigInteger.ONE));
+            assertThat(values.get(1).getHexString(), is("7365636f6e64"));
+            assertThat(values.get(2).getString(), is("string"));
+            assertTrue(values.get(3).getBoolean());
+        }
     }
 
     static class MapTests {
@@ -125,8 +137,15 @@ public class MapTest {
             return m.keys();
         }
 
-        public static Object[] passMapAsParameter(Map<Object, Object> map) {
-            return map.values();
+        public static io.neow3j.devpack.List<Object> passMapAsParameter(Map<Object, Object> map) {
+            io.neow3j.devpack.List<Object> keysAndValues = new io.neow3j.devpack.List<>();
+            for (Object o : map.keys()) {
+                keysAndValues.add(o);
+            }
+            for (Object o : map.values()) {
+                keysAndValues.add(o);
+            }
+            return keysAndValues;
         }
 
     }
