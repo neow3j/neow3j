@@ -202,7 +202,7 @@ public class TransactionSigner {
         public static class WitnessCondition {
 
             @JsonProperty("type")
-            WitnessConditionType type;
+            private WitnessConditionType type;
 
             public WitnessCondition() {
             }
