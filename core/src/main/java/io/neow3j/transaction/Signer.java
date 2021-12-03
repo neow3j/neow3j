@@ -144,7 +144,7 @@ public class Signer extends NeoSerializable {
     }
 
     private void checkDepth(WitnessCondition condition, int depth) {
-        if (depth == 0) {
+        if (depth < 0) {
             throw new SignerConfigurationException("A maximum nesting depth of " +
                     MAX_NESTING_DEPTH + " is allowed for witness conditions.");
         }
