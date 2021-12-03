@@ -51,7 +51,7 @@ public class Signer extends NeoSerializable {
     /**
      * The rules that the witness must meet.
      */
-    public List<WitnessRule> rules;
+    private List<WitnessRule> rules;
 
     public Signer() {
     }
