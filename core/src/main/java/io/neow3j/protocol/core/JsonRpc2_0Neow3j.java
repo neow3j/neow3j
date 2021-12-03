@@ -924,7 +924,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 NeoGetApplicationLog.class);
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     /**
      * Gets the balance of all NEP-17 token assets in the specified script hash.
@@ -991,6 +991,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }
+
+    // TokenTracker: Nep11
 
     /**
      * Gets all NEP-11 balances of the specified account.

@@ -702,7 +702,7 @@ public class RequestTest extends RequestTester {
                 "\"id\":1}");
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     @Test
     public void testGetNep17Transfers() throws Exception {
@@ -1024,7 +1024,7 @@ public class RequestTest extends RequestTester {
                 "}");
     }
 
-    // RpcNep11Tracker
+    // TokenTracker: Nep11
 
     @Test
     public void testGetNep11Balances() throws Exception {

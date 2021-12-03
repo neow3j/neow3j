@@ -31,7 +31,7 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Nep11Balance extends NeoGetTokenBalances.TokenBalance {
 
-        @JsonProperty("token")
+        @JsonProperty("tokens")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<Nep11Token> tokens;
 
