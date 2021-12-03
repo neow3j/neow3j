@@ -34,6 +34,7 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
+import io.neow3j.transaction.Witness;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -41,6 +42,10 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
+import java.io.File;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -51,11 +56,13 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
+import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.contractManagementHash;
@@ -67,6 +74,7 @@ import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -895,7 +903,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     @Test
     public void testGetNep17Transfers() throws IOException {
@@ -980,7 +988,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
     }
 
-    // Nep11Tracker
+    // TokenTracker: Nep11
 
     @Test
     public void testGetNep11Transfers() throws IOException {
