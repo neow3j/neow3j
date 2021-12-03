@@ -86,7 +86,7 @@ public class WitnessConditionTest {
     public void serializeAndCondition() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new AndCondition(asList(new BooleanCondition(true), new BooleanCondition(false)))
+        new AndCondition(new BooleanCondition(true), new BooleanCondition(false))
                 .serialize(writer);
         byte[] expected = Numeric.hexStringToByteArray(""
                 + "02"

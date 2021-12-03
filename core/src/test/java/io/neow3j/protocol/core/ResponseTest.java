@@ -1159,7 +1159,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"signers\": [" +
                         "           {" +
                         "               \"account\": \"0x69ecca587293047be4c59159bf8bc399985c160d\"," +
-                        "               \"scopes\": \"CustomContracts, CustomGroups\"," +
+                        "               \"scopes\": \"CustomContracts, CustomGroups, WitnessRules\"," +
                         "               \"allowedcontracts\": [" +
                         "                   \"0xd2a4cff31913016155e38e474a2c06d08be276cf\"," +
                         "                   \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"" +
@@ -1222,9 +1222,10 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(signers.get(0).getAccount(),
                 is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
-        assertThat(signers.get(0).getScopes(), hasSize(2));
+        assertThat(signers.get(0).getScopes(), hasSize(3));
         assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CUSTOM_CONTRACTS));
         assertThat(signers.get(0).getScopes().get(1), is(WitnessScope.CUSTOM_GROUPS));
+        assertThat(signers.get(0).getScopes().get(2), is(WitnessScope.WITNESS_RULES));
         assertThat(signers.get(0).getAllowedContracts().get(0), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
         assertThat(signers.get(0).getAllowedContracts().get(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
         assertThat(signers.get(0).getAllowedGroups().get(0), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));

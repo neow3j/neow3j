@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.util.Arrays.asList;
+
 /**
  * Represents the condition that all its sub-conditions must be met.
  */
@@ -28,13 +30,13 @@ public class AndCondition extends CompositeCondition {
      * @throws IllegalArgumentException if more than {@link WitnessCondition#MAX_SUBITEMS} are
      *                                  added.
      */
-    public AndCondition(List<WitnessCondition> conditions) {
+    public AndCondition(WitnessCondition... conditions) {
         this();
-        if (conditions.size() > MAX_SUBITEMS) {
+        if (conditions.length > MAX_SUBITEMS) {
             throw new IllegalArgumentException("A maximum of " + MAX_SUBITEMS + " subitems is " +
                     "allowed for the AND witness condition.");
         }
-        this.conditions = conditions;
+        this.conditions = asList(conditions);
     }
 
     @Override

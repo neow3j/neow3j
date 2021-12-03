@@ -31,7 +31,6 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Arrays.asList;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
@@ -361,7 +360,7 @@ public class SignerTest {
     @Test
     public void getSize() {
         WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, new AndCondition(
-                asList(new BooleanCondition(true), new BooleanCondition(false))));
+                new BooleanCondition(true), new BooleanCondition(false)));
 
         Signer signer = AccountSigner.calledByEntry(accScriptHash)
                 .setAllowedGroups(groupPubKey1, groupPubKey2)
@@ -418,8 +417,10 @@ public class SignerTest {
     @Test
     public void failOnSteppingOverMaxConditionNestingDepth() {
         ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
-        NotCondition not = new NotCondition(cond);
-        AndCondition and = new AndCondition(asList(not));
+        AndCondition and = new AndCondition(
+                new AndCondition(
+                        new AndCondition(
+                                new NotCondition(cond))));
 
         WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, and);
         exceptionRule.expect(SignerConfigurationException.class);
@@ -450,6 +451,23 @@ public class SignerTest {
         exceptionRule.expectMessage(new StringContains("Tyring to set more than "
                 + MAX_SIGNER_SUBITEMS + " allowed witness rules on a signer."));
         signer.setRules(rule);
+    }
+
+    @Test
+    public void serialize_deserialize_max_nested_rules() throws IOException {
+        ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        BinaryWriter writer = new BinaryWriter(outStream);
+        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW,
+                new AndCondition(
+                        new AndCondition(
+                                new BooleanCondition(true))));
+
+        AccountSigner.none(Hash160.ZERO).setRules(rule).serialize(writer);
+        byte[] actual = outStream.toByteArray();
+
+        byte[] expected = hexStringToByteArray(
+                "0000000000000000000000000000000000000000400101020102010001");
+        assertArrayEquals(expected, actual);
     }
 
 }
