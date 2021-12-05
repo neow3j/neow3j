@@ -34,6 +34,10 @@ import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool;
 import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances.Nep11Balance.Nep11Token;
+import io.neow3j.protocol.core.response.NeoGetNep11Properties;
+import io.neow3j.protocol.core.response.NeoGetNep11Transfers;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
@@ -2507,7 +2511,7 @@ public class ResponseTest extends ResponseTester {
                 ));
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     @Test
     public void testGetNep17Transfers() {
@@ -2555,7 +2559,7 @@ public class ResponseTest extends ResponseTester {
         NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
 
         List<NeoGetNep17Transfers.Nep17Transfer> sent =
-                getNep17Transfers.getNep17Transfer().getSent();
+                getNep17Transfers.getNep17Transfers().getSent();
 
         assertThat(sent, is(notNullValue()));
         assertThat(sent, hasSize(2));
@@ -2582,7 +2586,7 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         List<NeoGetNep17Transfers.Nep17Transfer> received =
-                getNep17Transfers.getNep17Transfer().getReceived();
+                getNep17Transfers.getNep17Transfers().getReceived();
 
         assertThat(received, is(notNullValue()));
         assertThat(received, hasSize(1));
@@ -3201,4 +3205,223 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoExpressShutdown.getExpressShutdown().getProcessId(), is(73625));
     }
 
+    // TokenTracker: Nep11
+
+    @Test
+    public void testGetNep11Balances() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"balance\": [\n" +
+                        "            {\n" +
+                        "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
+                        "                \"tokens\": [\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"1\",\n" +
+                        "                        \"amount\": 251600,\n" +
+                        "                        \"lastupdatedblock\": 12345\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"2\",\n" +
+                        "                        \"amount\": 211122,\n" +
+                        "                        \"lastupdatedblock\": 123456\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"tokens\": [\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"1\",\n" +
+                        "                        \"amount\": 543211,\n" +
+                        "                        \"lastupdatedblock\": 12345\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"2\",\n" +
+                        "                        \"amount\": 112345,\n" +
+                        "                        \"lastupdatedblock\": 654321\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"address\": \"AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Balances getNep11Balances = deserialiseResponse(NeoGetNep11Balances.class);
+        assertThat(getNep11Balances.getBalances().getBalances(), is(notNullValue()));
+        assertThat(getNep11Balances.getBalances().getBalances(), hasSize(2));
+        assertThat(getNep11Balances.getBalances().getBalances(),
+                containsInAnyOrder(
+                        new NeoGetNep11Balances.Nep11Balance(
+                                new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"),
+                                asList(
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", BigInteger.valueOf(251600L), 12345L),
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", BigInteger.valueOf(211122L), 123456L)
+                                )
+                        ),
+                        new NeoGetNep11Balances.Nep11Balance(
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                asList(
+                                        new Nep11Token("1", BigInteger.valueOf(543211L), 12345L),
+                                        new Nep11Token("2", BigInteger.valueOf(112345L), 654321L)
+                                )
+                        )
+                ));
+
+        // First Entry
+        assertThat(getNep11Balances.getBalances().getBalances().get(0).getAssetHash(),
+                is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
+        assertThat(getNep11Balances.getBalances().getBalances().get(0).getTokens().get(0).getAmount(),
+                is(BigInteger.valueOf(251600L)));
+
+        // Second Entry
+        assertThat(getNep11Balances.getBalances().getBalances().get(1).getTokens().get(1).getLastUpdatedBlock(),
+                is(654321L));
+
+        assertThat(getNep11Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep11Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
+    }
+
+    @Test
+    public void testGetNep11Transfers() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"sent\": [\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"1\",\n" +
+                        "                \"timestamp\": 1554283931,\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"100000000000\",\n" +
+                        "                \"blockindex\": 368082,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"2\",\n" +
+                        "                \"timestamp\": 1554880287,\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"100000000000\",\n" +
+                        "                \"blockindex\": 397769,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"received\": [\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"3\",\n" +
+                        "                \"timestamp\": 1555651816,\n" +
+                        "                \"assethash\": \"600c4f5200db36177e3e8a09e9f18e2fc7d12a0f\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"1000000\",\n" +
+                        "                \"blockindex\": 436036,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"address\": \"AbHgdBaWEnHkCiLtDZXjhvhaAK2cwFh5pF\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Transfers getNep11Transfers = deserialiseResponse(NeoGetNep11Transfers.class);
+
+        List<NeoGetNep11Transfers.Nep11Transfer> sent =
+                getNep11Transfers.getNep11Transfers().getSent();
+
+        assertThat(sent, is(notNullValue()));
+        assertThat(sent, hasSize(2));
+        assertThat(sent,
+                containsInAnyOrder(
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1554283931L,
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("100000000000"),
+                                368082L,
+                                0L,
+                                new Hash256("240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"),
+                                "1"
+                        ),
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1554880287L,
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("100000000000"),
+                                397769L,
+                                0L,
+                                new Hash256("12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834"),
+                                "2"
+                        )
+                ));
+
+        List<NeoGetNep11Transfers.Nep11Transfer> received =
+                getNep11Transfers.getNep11Transfers().getReceived();
+
+        assertThat(received, is(notNullValue()));
+        assertThat(received, hasSize(1));
+        assertThat(received,
+                hasItem(
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1555651816L,
+                                new Hash160("600c4f5200db36177e3e8a09e9f18e2fc7d12a0f"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("1000000"),
+                                436036L,
+                                0L,
+                                new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"),
+                                "3"
+                        )
+                ));
+
+        // First Sent Entry
+        assertThat(sent.get(0).getTimestamp(), is(1554283931L));
+        assertThat(sent.get(0).getAssetHash(),
+                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
+        assertThat(sent.get(0).getTransferAddress(),
+                is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
+        assertThat(sent.get(0).getTokenId(),
+                is("1"));
+
+        // Second Sent Entry
+        assertThat(sent.get(1).getAmount(), is(new BigInteger("100000000000")));
+        assertThat(sent.get(1).getBlockIndex(), is(397769L));
+        assertThat(sent.get(1).getTokenId(),
+                is("2"));
+
+        // Received Entry
+        assertThat(received.get(0).getTransferNotifyIndex(), is(0L));
+        assertThat(received.get(0).getTxHash(),
+                is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
+        assertThat(received.get(0).getTokenId(),
+                is("3"));
+    }
+
+    @Test
+    public void testGetNep11Properties() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"keyProp1\": \"valueProp1\"," +
+                        "        \"keyProp2\": \"valueProp2\"" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Properties getNep11Properties = deserialiseResponse(NeoGetNep11Properties.class);
+        assertThat(getNep11Properties.getProperties(), is(notNullValue()));
+        assertThat(getNep11Properties.getProperties().size(), is(2));
+        assertThat(getNep11Properties.getProperties().get("keyProp1"), is("valueProp1"));
+        assertThat(getNep11Properties.getProperties().get("keyProp2"), is("valueProp2"));
+    }
 }

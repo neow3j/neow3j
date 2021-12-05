@@ -14,6 +14,9 @@ import io.neow3j.protocol.core.response.NeoGetCommittee;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoGetMemPool;
 import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances;
+import io.neow3j.protocol.core.response.NeoGetNep11Properties;
+import io.neow3j.protocol.core.response.NeoGetNep11Transfers;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
@@ -186,15 +189,25 @@ public interface Neo {
 
     //endregion
 
-    //region RpcNep17Tracker
+    //region TokenTracker
 
     Request<?, NeoGetNep17Balances> getNep17Balances(Hash160 scriptHash);
 
     Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash);
 
-    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date until);
+    Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from);
 
     Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash, Date from, Date to);
+
+    Request<?, NeoGetNep11Balances> getNep11Balances(Hash160 scriptHash);
+
+    Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash);
+
+    Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash, Date from);
+
+    Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash, Date from, Date to);
+
+    Request<?, NeoGetNep11Properties> getNep11Properties(Hash160 scriptHash, String tokenId);
 
     //endregion
 

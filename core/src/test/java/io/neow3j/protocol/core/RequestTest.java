@@ -702,7 +702,7 @@ public class RequestTest extends RequestTester {
                 "\"id\":1}");
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     @Test
     public void testGetNep17Transfers() throws Exception {
@@ -1022,6 +1022,69 @@ public class RequestTest extends RequestTester {
                 " \"params\":[],\n" +
                 " \"id\": 1\n" +
                 "}");
+    }
+
+    // TokenTracker: Nep11
+
+    @Test
+    public void testGetNep11Balances() throws Exception {
+        neow3j.getNep11Balances(new Hash160("5d75775015b024970bfeacf7c6ab1b0ade974886")).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getnep11balances\"," +
+                "\"params\":[\"NY9zhKwcmht5cQJ3oRqjJGo3QuVLwXwTzL\"]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep11Transfers() throws Exception {
+        neow3j.getNep11Transfers(new Hash160("04457ce4219e462146ac00b09793f81bc5bca2ce")).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getnep11transfers\"," +
+                "\"params\":[\"NekZLTu93WgrdFHxzBEJUYgLTQMAT85GLi\"]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep11Transfers_Date() throws Exception {
+        neow3j.getNep11Transfers(new Hash160("8bed27d0e88266807a6339270f0593510967cb45"),
+                new Date(1553105830L)).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getnep11transfers\"," +
+                "\"params\":[\"NSH1UeM96PKhjuzVBKcyWeNNuQkT3sHGmA\",1553105830]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep11Transfers_DateFromTo() throws Exception {
+        neow3j.getNep11Transfers(new Hash160("2eeda865e7824c71b3fe14bed35d04d0f2f0e9d6"),
+                new Date(1553105830),
+                new Date(1557305830)
+        ).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getnep11transfers\"," +
+                "\"params\":[\"NfWL3Kx7qtZzXrajmggAD4b6r2kGzajbaJ\",1553105830,1557305830]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testGetNep11Properties() throws Exception {
+        neow3j.getNep11Properties(new Hash160("2eeda865e7824c71b3fe14bed35d04d0f2f0e9d6"),
+                "12345"
+        ).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getnep11properties\"," +
+                "\"params\":[\"NfWL3Kx7qtZzXrajmggAD4b6r2kGzajbaJ\",\"12345\"]," +
+                "\"id\":1}"
+        );
     }
 
 }

@@ -1,10 +1,13 @@
 {
   "PluginConfiguration": {
-    "DBPath": "Nep17BalanceData",
+    "DBPath": "TokenBalanceData",
     "TrackHistory": true,
-    "RecordNullAddressHistory": false,
     "MaxResults": 1000,
-    "Network": 5195086
+    "Network": 5195086,
+    "EnabledTrackers": [
+      "NEP-11",
+      "NEP-17"
+    ]
   },
   "Dependency": [
     "RpcServer"
