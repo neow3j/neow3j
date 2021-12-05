@@ -48,6 +48,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -991,6 +992,8 @@ public class Neow3jReadOnlyIntegrationTest {
     // TokenTracker: Nep11
 
     @Test
+    // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
+    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers() throws IOException {
 //        NeoGetNep17Transfers.Nep17Transfers nep17Transfers = getNeow3j()
 //                .getNep17Transfers(COMMITTEE_HASH)
@@ -1017,10 +1020,11 @@ public class Neow3jReadOnlyIntegrationTest {
 //        assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
 //        assertThat(transfer.getTransferNotifyIndex(), is(0L));
 //        assertThat(transfer.getTxHash(), instanceOf(Hash256.class));
-        fail();
     }
 
     @Test
+    // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
+    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers_Date() throws IOException {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.add(Calendar.HOUR_OF_DAY, -1);
@@ -1034,10 +1038,11 @@ public class Neow3jReadOnlyIntegrationTest {
 //        assertThat(nep17Transfers.getSent().size(), greaterThanOrEqualTo(1));
 //        NeoGetNep17Transfers.Nep17Transfer transfer = nep17Transfers.getSent().get(0);
 //        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
-        fail();
     }
 
     @Test
+    // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
+    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers_DateFromTo() throws IOException {
 //        Calendar from = Calendar.getInstance();
 //        from.add(Calendar.HOUR_OF_DAY, -1);
@@ -1053,10 +1058,11 @@ public class Neow3jReadOnlyIntegrationTest {
 //        assertThat(nep17Transfers.getSent().size(), greaterThanOrEqualTo(1));
 //        NeoGetNep17Transfers.Nep17Transfer transfer = nep17Transfers.getSent().get(0);
 //        assertThat(transfer.getTimestamp(), is(greaterThanOrEqualTo(0L)));
-        fail();
     }
 
     @Test
+    // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
+    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Balances() throws IOException {
 //        Nep17Balances balances = getNeow3j()
 //                .getNep17Balances(COMMITTEE_HASH)
@@ -1074,12 +1080,13 @@ public class Neow3jReadOnlyIntegrationTest {
 //        assertThat(balances.getBalances().get(1).getAssetHash(), is(NEO_HASH));
 //        assertNotNull(balances.getBalances().get(1).getAmount());
 //        assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
-        fail();
     }
 
     @Test
-    public void testGetNep11Properties() throws IOException {
-        fail();
+    // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
+    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    public void testGetNep11Attributes() throws IOException {
+
     }
 
     // ApplicationLogs
