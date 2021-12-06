@@ -1,9 +1,9 @@
 package io.neow3j.script;
 
+import io.neow3j.types.CallFlags;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.types.CallFlags;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.BigIntegers;
 import io.neow3j.utils.Numeric;
@@ -246,8 +246,7 @@ public class ScriptBuilder {
                 paddedData[i] = (byte) 255;
             }
             return ArrayUtils.reverseArray(paddedData);
-        }
-        else {
+        } else {
             // If the number is positive we just pad it with zeros.
             byte[] data = BigIntegers.toLittleEndianByteArray(v);
             byte[] paddedData = new byte[desiredLength];
@@ -316,15 +315,12 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder pushMap(HashMap<ContractParameter, ContractParameter> map) {
-        opCode(OpCode.NEWMAP);
-        if (map != null) {
-            for (Map.Entry<ContractParameter, ContractParameter> entry : map.entrySet()) {
-                opCode(OpCode.DUP);
-                pushParam(entry.getKey());
-                pushParam(entry.getValue());
-                opCode(OpCode.SETITEM);
-            }
+        for (Map.Entry<ContractParameter, ContractParameter> entry : map.entrySet()) {
+            pushParam(entry.getValue());
+            pushParam(entry.getKey());
         }
+        pushInteger(map.size());
+        opCode(OpCode.PACKMAP);
         return this;
     }
 
