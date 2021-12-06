@@ -43,6 +43,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
+@SuppressWarnings("unchecked")
 public class ContractParameterTest {
 
     private ContractParameter contractParameter;

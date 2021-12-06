@@ -24,6 +24,7 @@ import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
+@SuppressWarnings("unchecked")
 public class IteratorTest {
 
     @Rule

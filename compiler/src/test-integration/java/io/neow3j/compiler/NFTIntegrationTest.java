@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
@@ -48,7 +49,7 @@ public class NFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        ct.deployContract(ConcreteNonFungibleToken.class.getName());
+        SmartContract sm = ct.deployContract(ConcreteNonFungibleToken.class.getName());
     }
 
     @Test
@@ -209,7 +210,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("6c969fb4c5ee33dea2efc809a6387ba8b1c82af8")
+    @ContractHash("ae174ce9d30c3b2bf6feddf022b9417113ca1604")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 
