@@ -1,5 +1,18 @@
 package io.neow3j.crypto;
 
+import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.types.Hash160;
+import io.neow3j.utils.Numeric;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SignatureException;
+import java.security.spec.InvalidKeySpecException;
+
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.Sign.recoverSigningScriptHash;
 import static io.neow3j.crypto.Sign.signHexMessage;
@@ -10,17 +23,7 @@ import static io.neow3j.utils.Numeric.toHexString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
-
-import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
-import io.neow3j.crypto.ECKeyPair.ECPublicKey;
-import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
-
-import java.security.SignatureException;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import static org.junit.Assert.assertTrue;
 
 public class SignTest {
 
@@ -111,6 +114,13 @@ public class SignTest {
         exceptionRule.expectMessage("r must be 32 bytes.");
         signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
                         new byte[]{0}));
+    }
+
+    @Test
+    public void verifySignature() throws NoSuchAlgorithmException, InvalidKeySpecException,
+            SignatureException, InvalidKeyException {
+        Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
+        assertTrue(Sign.verifySignature(TEST_MESSAGE_BYTES, signatureData, PUBLIC_KEY));
     }
 
 }

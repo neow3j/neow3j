@@ -1,22 +1,23 @@
 package io.neow3j.crypto;
 
-import io.neow3j.constants.NeoConstants;
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import org.bouncycastle.asn1.x9.X9IntegerConverter;
+import org.bouncycastle.crypto.params.ECPublicKeyParameters;
+import org.bouncycastle.crypto.signers.ECDSASigner;
+import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.FixedPointCombMultiplier;
+import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
 
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 import java.util.Arrays;
 
-import org.bouncycastle.asn1.x9.X9IntegerConverter;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.math.ec.FixedPointCombMultiplier;
-import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
-
+import static io.neow3j.constants.NeoConstants.secp256r1DomainParams;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
@@ -140,7 +141,7 @@ public class Sign {
 
         // 1.0 For j from 0 to h   (h == recId here and the loop is outside this function)
         //   1.1 Let x = r + jn
-        BigInteger n = NeoConstants.curve().getN();  // Curve order.
+        BigInteger n = secp256r1DomainParams().getN();  // Curve order.
         BigInteger i = BigInteger.valueOf((long) recId / 2);
         BigInteger x = sig.r.add(i.multiply(n));
         //   1.2. Convert the integer x to an octet string X of length mlen using the conversion
@@ -183,7 +184,7 @@ public class Sign {
         BigInteger rInv = sig.r.modInverse(n);
         BigInteger srInv = rInv.multiply(sig.s).mod(n);
         BigInteger eInvrInv = rInv.multiply(eInv).mod(n);
-        ECPoint q = sumOfTwoMultiplies(NeoConstants.curve().getG(), eInvrInv, R, srInv);
+        ECPoint q = sumOfTwoMultiplies(secp256r1DomainParams().getG(), eInvrInv, R, srInv);
 
         return new ECPublicKey(q);
     }
@@ -196,9 +197,9 @@ public class Sign {
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
         byte[] compEnc = x9.integerToBytes(xBN,
-                1 + x9.getByteLength(NeoConstants.curve().getCurve()));
+                1 + x9.getByteLength(secp256r1DomainParams().getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
-        return NeoConstants.curve().getCurve().decodePoint(compEnc);
+        return secp256r1DomainParams().getCurve().decodePoint(compEnc);
     }
 
     /**
@@ -263,10 +264,10 @@ public class Sign {
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
          */
-        if (key.bitLength() > NeoConstants.curve().getN().bitLength()) {
-            key = key.mod(NeoConstants.curve().getN());
+        if (key.bitLength() > secp256r1DomainParams().getN().bitLength()) {
+            key = key.mod(secp256r1DomainParams().getN());
         }
-        return new FixedPointCombMultiplier().multiply(NeoConstants.curve().getG(), key)
+        return new FixedPointCombMultiplier().multiply(secp256r1DomainParams().getG(), key)
                 .normalize();
     }
 
@@ -302,6 +303,15 @@ public class Sign {
             inc = 1;
         }
         return (byte) (realV + inc);
+    }
+
+    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey) {
+        ECDSASigner verifier = new ECDSASigner();
+        verifier.init(false, new ECPublicKeyParameters(
+                pubKey.getECPoint(), secp256r1DomainParams()));
+        return verifier.verifySignature(Hash.sha256(message),
+                new BigInteger(1, sig.getR()),
+                new BigInteger(1, sig.getS()));
     }
 
     public static class SignatureData {

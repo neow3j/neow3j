@@ -1,25 +1,24 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.test.TestProperties.defaultAccountAddress;
-import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
-import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
-import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-
-import java.math.BigInteger;
-
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import java.math.BigInteger;
+
+import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
+import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThat;
 
 public class ECKeyPairTest {
 
@@ -63,7 +62,7 @@ public class ECKeyPairTest {
         ECKeyPair.ECPublicKey pubKey = NeoSerializableInterface.from(
                 data, ECKeyPair.ECPublicKey.class);
 
-        ECPoint g = NeoConstants.curveParams().getG().normalize();
+        ECPoint g = NeoConstants.secp256r1CurveParams().getG().normalize();
         java.security.spec.ECPoint g_ = new java.security.spec.ECPoint(
                 g.getAffineXCoord().toBigInteger(),
                 g.getAffineYCoord().toBigInteger());

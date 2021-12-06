@@ -1,13 +1,7 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
-import static io.neow3j.crypto.Hash.sha256;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.Numeric;
-import java.nio.ByteBuffer;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
@@ -16,6 +10,13 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.nio.ByteBuffer;
+
+import static io.neow3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
+import static io.neow3j.crypto.Hash.sha256;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * BIP-32 implementation test.
@@ -204,11 +205,11 @@ public class Bip32Test {
             ECDomainParameters curve = new ECDomainParameters(
                     secp256k1.getCurve(), secp256k1.getG(),
                     secp256k1.getN(), secp256k1.getH());
-            mockNeoConstants.when(NeoConstants::curve)
+            mockNeoConstants.when(NeoConstants::secp256r1DomainParams)
                     .thenReturn(curve);
-            mockNeoConstants.when(NeoConstants::curveParams)
+            mockNeoConstants.when(NeoConstants::secp256r1CurveParams)
                     .thenReturn(secp256k1);
-            mockNeoConstants.when(NeoConstants::halfCurveOrder)
+            mockNeoConstants.when(NeoConstants::secp256r1HalfCurveOrder)
                     .thenReturn(secp256k1.getN().shiftRight(1));
         }
     }
