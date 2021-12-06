@@ -305,13 +305,45 @@ public class Sign {
         return (byte) (realV + inc);
     }
 
-    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey) {
+    /**
+     * Verifies the that the signature is appropriate for the given message and public key.
+     *
+     * @param message     The message
+     * @param sig         The signature to verify
+     * @param pubKey      The public key.
+     * @param hashMessage If the message should be hashed before verification.
+     * @return true, if the verification was successful. False otherwise.
+     */
+    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey,
+            boolean hashMessage) {
+
+        byte[] messageHash;
+        if (hashMessage) {
+            messageHash = Hash.sha256(message);
+        } else {
+            messageHash = message;
+        }
+
         ECDSASigner verifier = new ECDSASigner();
         verifier.init(false, new ECPublicKeyParameters(
                 pubKey.getECPoint(), secp256r1DomainParams()));
-        return verifier.verifySignature(Hash.sha256(message),
+        return verifier.verifySignature(messageHash,
                 new BigInteger(1, sig.getR()),
                 new BigInteger(1, sig.getS()));
+    }
+
+    /**
+     * Verifies the that the signature is appropriate for the given message and public key.
+     * <p>
+     * Beware that the message is hashed before verification.
+     *
+     * @param message The message
+     * @param sig     The signature to verify
+     * @param pubKey  The public key.
+     * @return true, if the verification was successful. False otherwise.
+     */
+    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey) {
+        return verifySignature(message, sig, pubKey, true);
     }
 
     public static class SignatureData {

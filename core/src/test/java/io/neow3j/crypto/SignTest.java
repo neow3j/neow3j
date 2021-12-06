@@ -8,10 +8,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.SignatureException;
-import java.security.spec.InvalidKeySpecException;
 
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.Sign.recoverSigningScriptHash;
@@ -113,12 +110,11 @@ public class SignTest {
         exceptionRule.expect(RuntimeException.class);
         exceptionRule.expectMessage("r must be 32 bytes.");
         signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
-                        new byte[]{0}));
+                new byte[]{0}));
     }
 
     @Test
-    public void verifySignature() throws NoSuchAlgorithmException, InvalidKeySpecException,
-            SignatureException, InvalidKeyException {
+    public void verifySignature() {
         Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
         assertTrue(Sign.verifySignature(TEST_MESSAGE_BYTES, signatureData, PUBLIC_KEY));
     }
