@@ -1,13 +1,14 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.crypto.Hash.hmacSha512;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.Numeric;
+import org.bouncycastle.math.ec.ECPoint;
+
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
-import org.bouncycastle.math.ec.ECPoint;
+
+import static io.neow3j.crypto.Hash.hmacSha512;
 
 /**
  * BIP-32 key pair.
@@ -137,7 +138,7 @@ public class Bip32ECKeyPair extends ECKeyPair {
             Arrays.fill(i, (byte) 0);
             BigInteger ilInt = new BigInteger(1, il);
             Arrays.fill(il, (byte) 0);
-            BigInteger privateKey = getPrivateKey().getInt().add(ilInt).mod(NeoConstants.curve().getN());
+            BigInteger privateKey = getPrivateKey().getInt().add(ilInt).mod(NeoConstants.secp256r1DomainParams().getN());
             ECPrivateKey ecPrivateKey = new ECPrivateKey(privateKey);
             ECPublicKey ecPublicKey = Sign.publicKeyFromPrivate(ecPrivateKey);
 

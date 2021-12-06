@@ -236,7 +236,7 @@ public class BinaryReader implements AutoCloseable {
             default:
                 throw new IOException();
         }
-        return NeoConstants.curve().getCurve().decodePoint(encoded);
+        return NeoConstants.secp256r1DomainParams().getCurve().decodePoint(encoded);
     }
 
     public <T extends NeoSerializable> T readSerializable(Class<T> t)

@@ -103,7 +103,7 @@ public class ECKeyPair {
     public BigInteger[] sign(byte[] messageHash) {
         ECDSASigner signer = new ECDSASigner(new HMacDSAKCalculator(new SHA256Digest()));
         ECPrivateKeyParameters privKey = new ECPrivateKeyParameters(privateKey.getInt(),
-                NeoConstants.curve());
+                NeoConstants.secp256r1DomainParams());
         signer.init(true, privKey);
         return signer.generateSignature(messageHash);
     }
@@ -135,7 +135,7 @@ public class ECKeyPair {
     }
 
     /**
-     * Creates an EC key pair from a key pair.
+     * Creates an EC key pair from the given key pair.
      *
      * @param keyPair The key pair.
      * @return the EC key pair.
@@ -160,7 +160,7 @@ public class ECKeyPair {
     }
 
     /**
-     * Creates an EC key pair from a private key.
+     * Creates a secp256r1 EC key pair from the private key.
      *
      * @param privateKey The private key.
      * @return the EC key pair.
@@ -170,7 +170,7 @@ public class ECKeyPair {
     }
 
     /**
-     * Creates an EC key pair from a private key.
+     * Creates a secp256r1 EC key pair from the private key.
      *
      * @param privateKey The private key.
      * @return the EC key pair.
@@ -180,11 +180,7 @@ public class ECKeyPair {
     }
 
     /**
-     * <p>Create a keypair using SECP-256r1 curve.</p>
-     * <br>
-     * <p>Private keypairs are encoded using PKCS8.</p>
-     * <br>
-     * <p>Private keys are encoded using X.509.</p>
+     * <p>Create a fresh secp256r1 EC keypair.</p>
      *
      * @return the created {@link ECKeyPair}.
      * @throws InvalidAlgorithmParameterException throws if the algorithm parameter used is
@@ -332,6 +328,8 @@ public class ECKeyPair {
          * must be encoded as defined in section 2.3.3 of
          * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>.
          * It can be in compressed or uncompressed format.
+         * <p>
+         * Assumes the public key EC point is from the secp256r1 named curve.
          *
          * @param publicKey The public key in hex format.
          */
@@ -345,7 +343,7 @@ public class ECKeyPair {
          * @param ecPoint The EC point (x,y) to construct the public key.
          */
         public ECPublicKey(ECPoint ecPoint) {
-            if (!ecPoint.getCurve().equals(NeoConstants.curveParams().getCurve())) {
+            if (!ecPoint.getCurve().equals(NeoConstants.secp256r1CurveParams().getCurve())) {
                 throw new IllegalArgumentException("Given EC point is not of the required curve.");
             }
             this.ecPoint = ecPoint;
@@ -355,6 +353,8 @@ public class ECKeyPair {
          * Creates a new instance from the given encoded public key. The public key must be encoded
          * as defined in section 2.3.3 of <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a>. It can
          * be in compressed or uncompressed format.
+         * <p>
+         * Assumes the public key EC point is from the secp256r1 named curve.
          *
          * @param publicKey The public key.
          */
@@ -364,7 +364,7 @@ public class ECKeyPair {
                         NeoConstants.PUBLIC_KEY_SIZE + " long but was " + publicKey.length
                         + " bytes");
             }
-            this.ecPoint = decodePoint(publicKey);
+            this.ecPoint = NeoConstants.secp256r1CurveParams().getCurve().decodePoint(publicKey);
         }
 
         /**
@@ -390,17 +390,26 @@ public class ECKeyPair {
             return ecPoint.getEncoded(compressed);
         }
 
-        public java.security.spec.ECPoint getECPoint() {
-            ECPoint normPoint = this.ecPoint.normalize();
-            return new java.security.spec.ECPoint(
-                    normPoint.getAffineXCoord().toBigInteger(),
-                    normPoint.getAffineYCoord().toBigInteger());
+        /**
+         * Get the EC point of this public key.
+         *
+         * @return the EC point.
+         */
+        public ECPoint getECPoint() {
+            return this.ecPoint;
         }
 
+        /**
+         * Deserializes an EC point, which is assumed to be on the secp256r1 curve.
+         *
+         * @param reader
+         * @throws DeserializationException
+         */
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {
-                ecPoint = decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE));
+                ecPoint = NeoConstants.secp256r1CurveParams().getCurve().decodePoint(
+                        reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE));
             } catch (IOException e) {
                 throw new DeserializationException();
             }
@@ -414,10 +423,6 @@ public class ECKeyPair {
         @Override
         public int getSize() {
             return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE;
-        }
-
-        private ECPoint decodePoint(byte[] encodedPoint) {
-            return NeoConstants.curve().getCurve().decodePoint(encodedPoint);
         }
 
         @Override
