@@ -33,13 +33,11 @@ public class ECKeyPairTest {
                 "b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816", 16);
         BigInteger expectedY = new BigInteger(
                 "5f4f7fb1c5862465543c06dd5a2aa414f6583f92a5cc3e1d4259df79bf6839c9", 16);
-        java.security.spec.ECPoint expectedECPoint =
-                new java.security.spec.ECPoint(expectedX, expectedY);
-
+        ECPoint expectedECPoint = NeoConstants.secp256r1CurveParams().getCurve()
+                .createPoint(expectedX, expectedY);
         String encECPoint = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(
                 hexStringToByteArray(encECPoint));
-
         assertThat(pubKey.getECPoint(), is(expectedECPoint));
         assertArrayEquals(pubKey.getEncoded(true), hexStringToByteArray(encECPoint));
     }
@@ -63,10 +61,7 @@ public class ECKeyPairTest {
                 data, ECKeyPair.ECPublicKey.class);
 
         ECPoint g = NeoConstants.secp256r1CurveParams().getG().normalize();
-        java.security.spec.ECPoint g_ = new java.security.spec.ECPoint(
-                g.getAffineXCoord().toBigInteger(),
-                g.getAffineYCoord().toBigInteger());
-        assertThat(pubKey.getECPoint(), is(g_));
+        assertThat(pubKey.getECPoint(), is(g));
     }
 
     @Test
