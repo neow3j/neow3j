@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Helper;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.types.NeoVMStateType;
@@ -314,6 +315,47 @@ public class HelperIntegrationTest {
         assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(), is(10000));
     }
 
+    @Test
+    public void memcpyOfByteArray() throws IOException {
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(
+                        testName,
+                        byteArray("000000000000"),
+                        integer(0),
+                        byteArray("010203040506"),
+                        integer(3),
+                        integer(3));
+
+        assertThat(response.getInvocationResult().getStack().get(0).getType(),
+                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
+                is(new byte[]{0x04, 0x05, 0x06, 0x00, 0x00, 0x00}));
+    }
+
+    @Test
+    public void memcpyOfByteString() throws IOException {
+        NeoInvokeFunction response =
+                ct.callInvokeFunction(
+                        testName,
+                        byteArray("0000000000000000000000000000000000000000"),
+                        integer(17),
+                        byteArray("000102030405060708090A0B0C0D0E0F10111213"),
+                        integer(10),
+                        integer(3));
+
+        assertThat(response.getInvocationResult().getStack().get(0).getType(),
+                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
+                is(new byte[]{
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x00, 0x00, 0x00,
+                        0x00, 0x0A, 0x0B, 0x0C
+                })
+        );
+    }
+
     static class HelperIntegrationTestContract {
 
         public static void assertTrue(boolean bool) {
@@ -401,6 +443,19 @@ public class HelperIntegrationTest {
         public static int pow(int x, int y) {
             return Helper.pow(x, y);
         }
+
+        public static byte[] memcpyOfByteArray(ByteString d, int di, byte[] s, int si, int n) {
+            byte[] destination = d.toByteArray();
+            Helper.memcpy(destination, di, s, si, n);
+            return destination;
+        }
+
+        public static byte[] memcpyOfByteString(ByteString d, int di, ByteString s, int si, int n) {
+            byte[] destination = d.toByteArray();
+            Helper.memcpy(destination, di, s, si, n);
+            return destination;
+        }
+
     }
 
 }

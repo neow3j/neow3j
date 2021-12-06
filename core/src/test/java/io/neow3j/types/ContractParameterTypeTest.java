@@ -32,7 +32,7 @@ public class ContractParameterTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testValueOf_NotFound() {
-        assertThat(ContractParameterType.valueOf((byte) 0xab), is(ContractParameterType.STRING));
+        ContractParameterType.valueOf((byte) 0xab);
     }
 
     @Test
@@ -42,6 +42,7 @@ public class ContractParameterTypeTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testFromJsonValue_NotFound() {
-        assertThat(ContractParameterType.fromJsonValue("Anything"), is(ContractParameterType.STRING));
+        ContractParameterType.fromJsonValue("Anything");
     }
+
 }

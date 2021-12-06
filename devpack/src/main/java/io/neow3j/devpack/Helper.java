@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
@@ -37,8 +37,8 @@ public class Helper {
     /**
      * Converts the given string to a byte array using UTF-8 encoding.
      * <p>
-     * This method cannot be used to convert a Neo address to a valid script hash byte array, or
-     * a script hash in hexadecimal format into its corresponding byte array.
+     * This method cannot be used to convert a Neo address to a valid script hash byte array, or a
+     * script hash in hexadecimal format into its corresponding byte array.
      * <p>
      * Examples
      * <ul>
@@ -207,6 +207,16 @@ public class Helper {
     public static native byte[] concat(byte[] first, String second);
 
     /**
+     * Concatenates the given byte array with the integer.
+     *
+     * @param first The first byte array.
+     * @param second The integer to append.
+     * @return the concatenation.
+     */
+    @Instruction(opcode = OpCode.CAT)
+    public static native byte[] concat(byte[] first, int second);
+
+    /**
      * Returns n consecutive characters from the given string starting at the given index.
      *
      * @param source The string to take the bytes from.
@@ -299,5 +309,33 @@ public class Helper {
      */
     @Instruction(opcode = OpCode.POW)
     public static native int pow(int base, int exponent);
+
+    /**
+     * Copies {@code n} consecutive bytes from the given source starting at {@code srcIndex} to the
+     * destination at {@code dstIndex}.
+     *
+     * @param destination The array where the data should be copied to.
+     * @param dstIndex    The start index where the data is copied to (inclusive).
+     * @param source      The array where the data should be copied from.
+     * @param srcIndex    The start index where the data is copied from (inclusive).
+     * @param n           The number of bytes to be copied.
+     */
+    @Instruction(opcode = OpCode.MEMCPY)
+    public static native void memcpy(byte[] destination, int dstIndex, byte[] source,
+            int srcIndex, int n);
+
+    /**
+     * Copies {@code n} consecutive bytes from the given source starting at {@code srcIndex} to the
+     * destination at {@code dstIndex}.
+     *
+     * @param destination The array where the data should be copied to.
+     * @param dstIndex    The start index where the data is copied to (inclusive).
+     * @param source      The array where the data should be copied from.
+     * @param srcIndex    The start index where the data is copied from (inclusive).
+     * @param n           The number of bytes to be copied.
+     */
+    @Instruction(opcode = OpCode.MEMCPY)
+    public static native void memcpy(byte[] destination, int dstIndex, ByteString source,
+            int srcIndex, int n);
 
 }

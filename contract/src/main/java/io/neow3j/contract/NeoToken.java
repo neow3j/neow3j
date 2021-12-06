@@ -111,6 +111,8 @@ public class NeoToken extends FungibleToken {
         return DECIMALS;
     }
 
+    // region unclaimed gas
+
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
      *
@@ -137,6 +139,9 @@ public class NeoToken extends FungibleToken {
         return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
+    // endregion unclaimed gas
+    // region candidate registration
+
     /**
      * Creates a transaction script for registering a committee candidate with the given
      * public key and initializes a {@link TransactionBuilder} based on this script.
@@ -160,6 +165,9 @@ public class NeoToken extends FungibleToken {
     public TransactionBuilder unregisterCandidate(ECPublicKey candidateKey) {
         return invokeFunction(UNREGISTER_CANDIDATE, publicKey(candidateKey.getEncoded(true)));
     }
+
+    // endregion candidate registration
+    // region committee and candidates information
 
     /**
      * Gets the public keys of the current committee members.
@@ -208,6 +216,17 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
+     * Checks if there is a committee candidate or member with {@code publicKey}.
+     *
+     * @param publicKey The candidates public key.
+     * @return true if the public key belongs to a candidate. False otherwise.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public boolean isCandidate(ECPublicKey publicKey) throws IOException {
+        return getCandidates().containsKey(publicKey);
+    }
+
+    /**
      * Gets the public keys of the next block's validators.
      *
      * @return the validators' public keys.
@@ -245,6 +264,9 @@ public class NeoToken extends FungibleToken {
                     "public key in expected format.", e);
         }
     }
+
+    // endregion committee and candidates information
+    // region voting
 
     /**
      * Creates a transaction script to vote for the given validators and initializes a
@@ -302,15 +324,23 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Checks if there is a committee candidate or member with {@code publicKey}.
+     * Builds a script to vote for a candidate.
      *
-     * @param publicKey The candidates public key.
-     * @return true if the public key belongs to a candidate. False otherwise.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @param voter     the account that casts the vote.
+     * @param candidate the candidate to vote for. If null, then the current vote of the voter is
+     *                  withdrawn (see {@link NeoToken#cancelVote(Hash160)}).
+     * @return the script.
      */
-    public boolean isCandidate(ECPublicKey publicKey) throws IOException {
-        return getCandidates().containsKey(publicKey);
+    public byte[] buildVoteScript(Hash160 voter, ECPublicKey candidate) {
+        if (candidate == null) {
+            return buildInvokeFunctionScript(VOTE, hash160(voter), any(null));
+        }
+        return buildInvokeFunctionScript(VOTE, hash160(voter),
+                publicKey(candidate.getEncoded(true)));
     }
+
+    // endregion voting
+    // region network settings
 
     /**
      * Gets the number of GAS generated in each block.
@@ -357,6 +387,8 @@ public class NeoToken extends FungibleToken {
     public TransactionBuilder setRegisterPrice(BigInteger registerPrice) {
         return invokeFunction(SET_REGISTER_PRICE, integer(registerPrice));
     }
+
+    // endregion network settings
 
     /**
      * Gets the state of an account.

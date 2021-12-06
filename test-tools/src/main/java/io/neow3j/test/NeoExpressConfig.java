@@ -3,16 +3,23 @@ package io.neow3j.test;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 
 import java.util.List;
 
+/**
+ * Covers parts of a neo-express configuration JSON file.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NeoExpressConfig {
 
     @JsonProperty()
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<Wallet> wallets;
 
     @JsonProperty("consensus-nodes")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<ConsensusNode> consensusNodes;
 
     public NeoExpressConfig() {
@@ -30,6 +37,7 @@ public class NeoExpressConfig {
         return consensusNodes;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ConsensusNode {
 
         private Wallet wallet;
@@ -46,13 +54,14 @@ public class NeoExpressConfig {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Wallet {
 
         @JsonProperty
-        String name;
+        private String name;
 
         @JsonProperty
-        List<Account> accounts;
+        private List<Account> accounts;
 
         public Wallet() {
         }
@@ -70,22 +79,23 @@ public class NeoExpressConfig {
             return accounts;
         }
 
+        @JsonIgnoreProperties(ignoreUnknown = true)
         public static class Account {
 
             @JsonProperty("private-key")
-            String privateKey;
+            private String privateKey;
 
             @JsonProperty("script-hash")
-            String scriptHash;
+            private String scriptHash;
 
             @JsonProperty
-            String label;
+            private String label;
 
             @JsonProperty("is-default")
-            boolean isDefault;
+            private boolean isDefault;
 
             @JsonPropertyOrder
-            Contract contract;
+            private Contract contract;
 
             public Account() {
             }
@@ -119,13 +129,14 @@ public class NeoExpressConfig {
                 return contract;
             }
 
+            @JsonIgnoreProperties(ignoreUnknown = true)
             public static class Contract {
 
                 @JsonProperty
-                String script;
+                private String script;
 
                 @JsonProperty
-                List<String> parameters;
+                private List<String> parameters;
 
                 public Contract() {
                 }

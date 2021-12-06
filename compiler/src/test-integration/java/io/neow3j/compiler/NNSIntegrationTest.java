@@ -34,12 +34,11 @@ public class NNSIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            NNSTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(NNSTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract smartContract = ct.deployContract(ConcreteNeoNameService.class.getName());
+        SmartContract sm = ct.deployContract(ConcreteNeoNameService.class.getName());
     }
 
     @Test
@@ -220,7 +219,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("e81c2d8c275eeab156d6e55256a3dc26eda04fe1")
+    @ContractHash("acc011d2dbcbab2f4b17bbf1eaa48c9c8c1ca2de")
     static class CustomNeoNameService extends NeoNameService {
     }
 

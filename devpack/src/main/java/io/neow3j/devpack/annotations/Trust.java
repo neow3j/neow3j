@@ -22,6 +22,8 @@ public @interface Trust {
      * <p>
      * If the field {@code nativeContract} is used, this field may not be used. Otherwise, it is
      * mandatory.
+     *
+     * @return the contract hash or group key.
      */
     String contract() default "";
 
@@ -30,6 +32,8 @@ public @interface Trust {
      * <p>
      * If the field {@code contract} is used, this field may not be used. Otherwise, it is
      * mandatory.
+     *
+     * @return the native contract.
      */
     NativeContract nativeContract() default NativeContract.None;
 

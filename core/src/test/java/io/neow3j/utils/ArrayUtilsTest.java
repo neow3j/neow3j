@@ -1,5 +1,10 @@
 package io.neow3j.utils;
 
+import org.hamcrest.CoreMatchers;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.getLastNBytes;
@@ -13,10 +18,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Test;
-
 public class ArrayUtilsTest {
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testToPrimitive() {
@@ -64,8 +69,11 @@ public class ArrayUtilsTest {
         assertThat(xorResult, is(new byte[]{0x03, 0x01}));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testXor_Different_Sizes() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Arrays do not have the same length to perform the XOR " +
+                "operation.");
         xor(new byte[]{0x01, 0x02}, new byte[]{0x01});
     }
 

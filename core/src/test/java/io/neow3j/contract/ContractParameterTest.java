@@ -1,5 +1,28 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.Sign;
+import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.wallet.Account;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -13,37 +36,20 @@ import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThat;
 
-import io.neow3j.crypto.Sign;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-
-import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import io.neow3j.wallet.Account;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-
+@SuppressWarnings("unchecked")
 public class ContractParameterTest {
 
     private ContractParameter contractParameter;
 
     @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -89,8 +95,8 @@ public class ContractParameterTest {
 
     @Test
     public void testByteArrayParamCreationFromInvalidHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Argument is not a valid hex number.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Argument is not a valid hex number.");
         String value = "value";
         byteArray(value);
     }
@@ -147,30 +153,30 @@ public class ContractParameterTest {
 
     @Test
     public void testArrayParamCreationFromObjects_failUnSupportedObject() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage(
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage(
                 "provided object could not be casted into a supported contract");
         array(new Object());
     }
 
     @Test
     public void testArrayParam_NullObject() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
         array((Object) null);
     }
 
     @Test
     public void testArrayParam_NullContractParameter() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Cannot add a null object to an array contract parameter");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
         array((ContractParameter) null);
     }
 
     @Test
     public void testArrayParam_Empty() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("At least one parameter is required");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("At least one parameter is required");
         array();
     }
 
@@ -217,8 +223,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromTooShortString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 63.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f2";
@@ -227,8 +233,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromTooLongString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Signature is expected to have a length of 64 bytes, but " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Signature is expected to have a length of 64 bytes, but " +
                 "had 65.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213ff";
@@ -237,8 +243,8 @@ public class ContractParameterTest {
 
     @Test
     public void testSignatureParamCreationFromNoHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("Argument is not a valid hex number.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Argument is not a valid hex number.");
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
         signature(sig);
@@ -299,8 +305,8 @@ public class ContractParameterTest {
 
     @Test
     public void testHash160_null() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The script hash argument must not be null");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The script hash argument must not be null");
         hash160((Hash160) null);
     }
 
@@ -334,24 +340,24 @@ public class ContractParameterTest {
 
     @Test
     public void testHash256ParamCreationFromTooShortString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 32 bytes but was 31 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 32 bytes but was 31 bytes.");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6";
         hash256(sig);
     }
 
     @Test
     public void testHash256ParamCreationFromTooLongString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 32 bytes but was 33 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 32 bytes but was 33 bytes.");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cfaa";
         hash256(sig);
     }
 
     @Test
     public void testHash256ParamCreationFromNoHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("is not a valid hex number");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("is not a valid hex number");
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cg";
         hash256(sig);
     }
@@ -367,8 +373,8 @@ public class ContractParameterTest {
 
     @Test
     public void testPublicKeyParamCreationFromInvalidByteArray() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 33 bytes but was 32 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 33 bytes but was 32 bytes.");
         // one byte too short
         byte[] pubKey = hexStringToByteArray(
                 "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368");
@@ -385,8 +391,8 @@ public class ContractParameterTest {
 
     @Test
     public void testPublicKeyParamCreationFromInvalidHexString() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("must be 33 bytes but was 32 bytes.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("must be 33 bytes but was 32 bytes.");
         // one byte too short.
         String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368";
         publicKey(pubKey);
@@ -414,8 +420,8 @@ public class ContractParameterTest {
 
     @Test
     public void testMap_invalidKeyType() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("The provided map contains an invalid key.");
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("The provided map contains an invalid key.");
 
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
         map.put(array(integer(1), string("test")), string("first"));
@@ -424,8 +430,8 @@ public class ContractParameterTest {
 
     @Test
     public void testMap_empty() {
-        expectedException.expect(IllegalArgumentException.class);
-        expectedException.expectMessage("At least one map entry is required to create a map " +
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("At least one map entry is required to create a map " +
                 "contract parameter.");
 
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
@@ -456,4 +462,121 @@ public class ContractParameterTest {
         assertNotEquals(0, result);
     }
 
+    @Test
+    public void deserializeWithAllTypesAndBuildScriptWithParameter() throws IOException {
+        String json = "{\n" +
+                "    \"type\":\"Array\",\n" +
+                "    \"value\": [\n" +
+                "        {\n" +
+                "            \"type\":\"Integer\",\n" +
+                "            \"value\":1000\n" + // integer without quotes
+                "        },\n" +
+                "        {\n" +
+                "            \"type\":\"Integer\",\n" +
+                "            \"value\":\"1000\"\n" + // integer with quotes
+                "        },\n" +
+                "        {\n" +
+                "            \"type\":\"Array\",\n" +
+                "            \"value\":[\n" +
+                "                {\n" +
+                "                    \"type\":\"String\",\n" +
+                "                    \"value\":\"hello, world!\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"ByteArray\",\n" +
+                "                    \"value\":\"AQID\"\n" + // 010203 Base64
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Signature\",\n" +
+                "                    \"value\":\"AQID\"\n" + // 010203 Base64
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"PublicKey\",\n" +
+                "                    \"value\":\"010203\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Boolean\",\n" +
+                "                    \"value\":true\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Boolean\",\n" +
+                "                    \"value\":\"true\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Hash160\",\n" +
+                "                    \"value\":\"69ecca587293047be4c59159bf8bc399985c160d\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Hash256\",\n" +
+                "                    " +
+                "\"value\":\"fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"type\":\"Any\",\n" +
+                "                    \"value\":\"\"\n" +
+                "                },\n" +
+                "               {\n" +
+                "                   \"type\": \"Map\",\n" +
+                "                   \"value\": [\n" +
+                "                   {\n" +
+                "                       \"key\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"Integer\",\n" +
+                "                           \"value\": \"5\"\n" +
+                "                       },\n" +
+                "                       \"value\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"String\",\n" +
+                "                           \"value\": \"value\"\n" +
+                "                       }\n" +
+                "                   },\n" +
+                "                   {\n" +
+                "                       \"key\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"ByteArray\",\n" +
+                "                           \"value\":\"AQID\"\n" + // 010203 Base64
+                "                       },\n" +
+                "                       \"value\": \n" +
+                "                       {\n" +
+                "                           \"type\": \"Integer\",\n" +
+                "                           \"value\": \"5\"\n" +
+                "                       }\n" +
+                "                   }\n" +
+                "               ]\n" +
+                "               }" +
+                "            ]\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}";
+        ObjectMapper m = ObjectMapperFactory.getObjectMapper();
+        ContractParameter p = m.readValue(json, ContractParameter.class);
+
+        ContractParameter[] arr = (ContractParameter[]) p.getValue();
+        assertThat((BigInteger) arr[0].getValue(), is(new BigInteger("1000")));
+        assertThat((BigInteger) arr[1].getValue(), is(new BigInteger("1000")));
+        ContractParameter[] arr2 = (ContractParameter[]) arr[2].getValue();
+        assertThat((String) arr2[0].getValue(), is("hello, world!"));
+        assertThat((byte[]) arr2[1].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((byte[]) arr2[2].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((byte[]) arr2[3].getValue(), is(new byte[]{0x01, 0x02, 0x03}));
+        assertThat((boolean) arr2[4].getValue(), is(true));
+        assertThat((boolean) arr2[5].getValue(), is(true));
+        assertThat((Hash160) arr2[6].getValue(), is(new Hash160(
+                "69ecca587293047be4c59159bf8bc399985c160d")));
+        assertThat((Hash256) arr2[7].getValue(), is(new Hash256(
+                "fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b")));
+        assertThat(arr2[8].getValue(), is(nullValue()));
+        Map<ContractParameter, ContractParameter> map =
+                (Map<ContractParameter, ContractParameter>) arr2[9].getValue();
+        List<Object> keys = map.keySet().stream().map(ContractParameter::getValue)
+                .collect(Collectors.toList());
+        List<Object> values = map.values().stream().map(ContractParameter::getValue)
+                .collect(Collectors.toList());
+        assertThat(keys, containsInAnyOrder(new BigInteger("5"), new byte[]{0x01, 0x02, 0x03}));
+        assertThat(values, containsInAnyOrder("value", new BigInteger("5")));
+
+        // Must not fail.
+        ScriptBuilder b = new ScriptBuilder();
+        b.pushParam(p);
+    }
 }

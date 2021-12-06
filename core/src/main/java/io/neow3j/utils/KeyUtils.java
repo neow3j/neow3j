@@ -1,8 +1,11 @@
 package io.neow3j.utils;
 
 import io.neow3j.constants.NeoConstants;
-import java.math.BigInteger;
 import org.bouncycastle.math.ec.ECPoint;
+
+import java.math.BigInteger;
+
+import static io.neow3j.constants.NeoConstants.secp256r1DomainParams;
 
 /**
  * Key utilities.
@@ -27,7 +30,7 @@ public class KeyUtils {
      * @return the public key encoded in compressed format.
      */
     public static byte[] compressPublicKey(byte[] notCompressedPubKey) {
-        ECPoint point = NeoConstants.curve().getCurve().decodePoint(notCompressedPubKey);
+        ECPoint point = secp256r1DomainParams().getCurve().decodePoint(notCompressedPubKey);
         return point.getEncoded(true);
     }
 
@@ -42,7 +45,7 @@ public class KeyUtils {
      */
     public static boolean isPublicKeyCompressed(byte[] publicKey) {
         // Check if the key can successfully be decoded.
-        NeoConstants.curve().getCurve().decodePoint(publicKey);
+        secp256r1DomainParams().getCurve().decodePoint(publicKey);
         return publicKey[0] == 0x02 || publicKey[0] == 0x03;
     }
 }

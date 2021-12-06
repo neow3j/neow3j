@@ -29,6 +29,7 @@ import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
 import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 
@@ -214,6 +215,20 @@ public class TransactionBuilder {
      */
     public TransactionBuilder script(byte[] script) {
         this.script = script;
+        return this;
+    }
+
+    /**
+     * Concatenates the existing script and the provided script, i.e. the provided script is
+     * appended to the existing script.
+     * <p>
+     * This method may be used to create an advanced transaction that contains multiple invocations.
+     *
+     * @param script the contract script.
+     * @return this transaction builder.
+     */
+    public TransactionBuilder extendScript(byte[] script) {
+        this.script = concatenate(this.script, script);
         return this;
     }
 

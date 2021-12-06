@@ -41,8 +41,8 @@ public class List<T> {
     /**
      * Gets the item at the given index.
      * <p>
-     * If the index is out of the range of this list the NeoVM will FAULT immediately without the
-     * possibility to handle the error.
+     * If the index is out of the range of this list the NeoVM will throw an exception that needs
+     * to be catched. Otherwise, the NeoVM will FAULT.
      *
      * @param index The index.
      * @return the element;
@@ -53,11 +53,11 @@ public class List<T> {
     /**
      * Sets the item at the given index.
      * <p>
-     * If the index is out of the range of this list the NeoVM will FAULT immediately without the
-     * possibility to handle the error.
+     * If the index is out of the range of this list the NeoVM will throw an exception that needs
+     * to be catched. Otherwise, the NeoVM will FAULT.
      *
      * @param index The index.
-     * @param item The item.
+     * @param item  The item.
      */
     @Instruction(opcode = OpCode.SETITEM)
     public native void set(int index, int item);

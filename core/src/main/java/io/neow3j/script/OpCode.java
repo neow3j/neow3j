@@ -741,8 +741,14 @@ public enum OpCode {
 
 //region Splice
 
+    /**
+     * Creates a new Buffer and pushes it onto the stack.
+     */
     NEWBUFFER(0x88, 1 << 8),
 
+    /**
+     * Copies a range of bytes from one Buffer to another.
+     */
     MEMCPY(0x89, 1 << 11),
 
     /**
@@ -944,14 +950,28 @@ public enum OpCode {
 //region Compound-type
 
     /**
+     * A value n is taken from top of main stack. The next n*2 items on main stack are removed,
+     * put inside n-sized map and this map is put on top of the main stack.
+     */
+    PACKMAP(0xBE, 1 << 11),
+
+    /**
+     * A value n is taken from top of main stack. The next n items on main stack are removed, put
+     * inside n-sized struct and this struct is put on top of the main stack.
+     */
+    PACKSTRUCT(0xBF, 1 << 11),
+
+    /**
      * A value n is taken from top of main stack. The next n items on main stack are removed, put
      * inside n-sized array and this array is put on top of the main stack.
      */
     PACK(0xC0, 1 << 11),
 
     /**
-     * An array is removed from top of the main stack. Its elements are put on top of the main stack
-     * (in reverse order) and the array size is also put on main stack.
+     * An array or map is removed from top of the main stack. Its elements are put on top of the
+     * main stack (in reverse order). In case of a map, the key-value pairs are flattened, i.e.,
+     * the value of the first pair is pushed, then the key of the first pair, then the value of
+     * the second item and so on.
      */
     UNPACK(0xC1, 1 << 11),
 

@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+@SuppressWarnings("unchecked")
 public class DivisibleNFTIntegrationTest {
 
     @Rule
@@ -44,7 +45,7 @@ public class DivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract smartContract = ct.deployContract(ConcreteDivisibleNFT.class.getName());
+        SmartContract sm = ct.deployContract(ConcreteDivisibleNFT.class.getName());
     }
 
     @Test
@@ -116,7 +117,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("1b29b82adb840089a4f880296847c4159ce14abb")
+    @ContractHash("321b13279345c3a41c00f353a0d76ea07652f687")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

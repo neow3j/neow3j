@@ -2,8 +2,12 @@ package io.neow3j.types;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
@@ -32,6 +36,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Contract parameters represent an input parameter for contract invocations.
  */
 @JsonSerialize(using = ContractParameterSerializer.class)
+@JsonDeserialize(using = ContractParameter.ContractParameterDeserializer.class)
 @SuppressWarnings("unchecked")
 public class ContractParameter {
 
@@ -526,6 +531,96 @@ public class ContractParameter {
             }
         }
 
+    }
+
+    protected static class ContractParameterDeserializer extends StdDeserializer<ContractParameter> {
+
+        public ContractParameterDeserializer() {
+            this(null);
+        }
+
+        public ContractParameterDeserializer(Class<?> vc) {
+            super(vc);
+        }
+
+        @Override
+        public ContractParameter deserialize(JsonParser p, DeserializationContext ctx)
+                throws IOException {
+
+            Map<String, Object> param = p.getCodec().readValue(p, Map.class);
+            return deserializeParam(param);
+        }
+
+        private ContractParameter deserializeParam(Map<String, Object> param) throws IOException {
+            String name = (String) param.get("name");
+            String typeString = (String) param.get("type");
+            ContractParameterType type = null;
+            if (typeString != null) {
+                type = ContractParameterType.fromJsonValue(typeString);
+            }
+            Object value = null;
+            if (param.containsKey("value")) {
+                value = deserializeValue(param.get("value"), type);
+            }
+            return new ContractParameter(name, type, value);
+        }
+
+        private Object deserializeValue(Object value, ContractParameterType type) throws IOException {
+            switch (type) {
+                case PUBLIC_KEY:
+                    // Here we expect a simple byte array which is converted to a hex string. The
+                    // byte order is not changed.
+                    return hexStringToByteArray((String) value);
+                case BYTE_ARRAY:
+                case SIGNATURE:
+                    return Base64.decode((String) value);
+                case BOOLEAN:
+                    // Convert to true or false without quotes
+                    if (value instanceof String) {
+                        return Boolean.valueOf((String) value);
+                    } else {
+                        return value;
+                    }
+                case INTEGER:
+                    if (value instanceof String) {
+                        return new BigInteger((String) value);
+                    } else {
+                        return BigInteger.valueOf((int) value);
+                    }
+                case HASH256:
+                    return new Hash256((String) value);
+                case HASH160:
+                    return new Hash160((String) value);
+                case INTEROP_INTERFACE:
+                    // We assume that the interop interface parameter holds a plain string.
+                case STRING:
+                    return (String) value;
+                case ARRAY:
+                    List<Map<String, Object>> array = (List<Map<String, Object>>) value;
+                    ContractParameter[] params = new ContractParameter[array.size()];
+                    for (int i = 0; i < params.length; i++) {
+                        Map<String, Object> param = array.get(i);
+                        params[i] = deserializeParam(param);
+                    }
+                    return params;
+                case MAP:
+                    List<Map<String, Object>> mapArray = (List<Map<String, Object>>) value;
+                    Map<ContractParameter, ContractParameter> map = new HashMap<>();
+                    for (Map<String, Object> keyValuePair : mapArray) {
+                        ContractParameter key = deserializeParam(
+                                (Map<String, Object>) keyValuePair.get("key"));
+                        ContractParameter val = deserializeParam(
+                                (Map<String, Object>) keyValuePair.get("value"));
+                        map.put(key, val);
+                    }
+                    return map;
+                case ANY:
+                    return null;
+                default:
+                    throw new UnsupportedOperationException("Parameter type '" + type
+                            + "' not supported.");
+            }
+        }
     }
 
 }

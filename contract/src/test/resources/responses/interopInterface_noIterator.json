@@ -4,12 +4,11 @@
   "result": {
     "script": "",
     "state": "HALT",
-    "gasconsumed": "1998970",
+    "gasconsumed": "",
     "exception": null,
     "stack": [
       {
-        "type": "Integer",
-        "value": "0"
+        "type": "InteropInterface"
       }
     ]
   }

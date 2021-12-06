@@ -1,17 +1,17 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.serialization.NeoSerializableInterface;
-import io.neow3j.serialization.exceptions.DeserializationException;
-import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
-import io.neow3j.protocol.http.HttpService;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
@@ -163,6 +163,67 @@ public class TransactionTest {
         Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
         tx.setNeow3j(neow3j);
         assertThat(tx.neow3j, is(neow3j));
+    }
+
+    @Test
+    public void deserializeWithoutWitness() throws DeserializationException {
+        byte[] data = hexStringToByteArray(""
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
+                // one called by entry signer
+                + "01" + "01" // one attribute - high priority
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+        );
+
+        Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
+        assertThat(tx.getVersion(), is((byte) 0));
+        assertThat(tx.getNonce(), is(246070626L));
+        assertThat(tx.getSender(), is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSystemFee(), is(9007810L));
+        assertThat(tx.getNetworkFee(), is(1268390L));
+        assertThat(tx.getValidUntilBlock(), is(2106265L));
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
+                is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
+    }
+
+    @Test
+    public void deserializeWithZeroWitnesses() throws DeserializationException {
+        byte[] data = hexStringToByteArray(""
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
+                // one called by entry signer
+                + "01" + "01" // one attribute - high priority
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+                + "00"
+        );
+
+        Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
+        assertThat(tx.getVersion(), is((byte) 0));
+        assertThat(tx.getNonce(), is(246070626L));
+        assertThat(tx.getSender(), is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSystemFee(), is(9007810L));
+        assertThat(tx.getNetworkFee(), is(1268390L));
+        assertThat(tx.getValidUntilBlock(), is(2106265L));
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(),
+                is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
     }
 
     @Test

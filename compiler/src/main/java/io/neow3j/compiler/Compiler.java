@@ -56,7 +56,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.13.1";
+    public static final String COMPILER_NAME = "neow3j-3.14.0";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
@@ -328,7 +328,7 @@ public class Compiler {
             throws IOException {
 
         substitutePlaceholdersInMethodBodies(classNode, replaceMap);
-        substitutePlaceholdersInClassAnnotations(classNode, replaceMap);
+        substitutePlaceholdersInAnnotations(classNode, replaceMap);
         return compile(classNode);
     }
 
@@ -347,12 +347,19 @@ public class Compiler {
         });
     }
 
-    private static void substitutePlaceholdersInClassAnnotations(ClassNode classNode,
+    private static void substitutePlaceholdersInAnnotations(ClassNode classNode,
             java.util.Map<String, String> replaceMap) {
 
-        if (classNode.invisibleAnnotations != null)
-            classNode.invisibleAnnotations
-                    .forEach((it) -> processAnnotationNode(it, replaceMap));
+        List<AnnotationNode> annotations = new ArrayList<>();
+        if (classNode.invisibleAnnotations != null) {
+            annotations.addAll(classNode.invisibleAnnotations);
+        }
+        annotations.addAll(classNode.fields.stream().filter(f -> f.invisibleAnnotations != null)
+                .flatMap(f -> f.invisibleAnnotations.stream()).collect(Collectors.toList()));
+        annotations.addAll(classNode.methods.stream().filter(m -> m.invisibleAnnotations != null)
+                .flatMap(m -> m.invisibleAnnotations.stream()).collect(Collectors.toList()));
+
+       annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
     }
 
     @SuppressWarnings("unchecked")
@@ -566,6 +573,9 @@ public class Compiler {
         if (insn.getType() == AbstractInsnNode.LABEL) {
             neoMethod.setCurrentLabel(((LabelNode) insn).getLabel());
         }
+        if (insn.getType() == AbstractInsnNode.METHOD_INSN) {
+            throwIfObjectIsOwner((MethodInsnNode) insn);
+        }
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         if (opcode == null) {
             return insn;
@@ -578,6 +588,15 @@ public class Compiler {
                             getFullyQualifiedNameForInternalName(neoMethod.getOwnerClass().name)));
         }
         return converter.convert(insn, neoMethod, compUnit);
+    }
+
+    private static void throwIfObjectIsOwner(MethodInsnNode insn) {
+        if (getFullyQualifiedNameForInternalName(insn.owner)
+                .equals(Object.class.getCanonicalName())) {
+            throw new CompilerException("Inherited methods that are not specifically implemented " +
+                    "are not supported. Implement the method '" + insn.name + "' without a " +
+                    "'super' call to the class Object to use it.");
+        }
     }
 
     /**

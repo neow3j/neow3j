@@ -267,6 +267,14 @@ public class CompilerExceptionsTest {
         new Compiler().compile(VerificationWithEvent.class.getName());
     }
 
+    @Test
+    public void multiDimensionalArraySize() throws IOException {
+        exceptionRule.expect(CompilerException.class);
+        exceptionRule.expectMessage("Only the first dimension of a multi-dimensional array " +
+                "declaration can be defined");
+        new Compiler().compile(MultiDimensionalArraySize.class.getName());
+    }
+
     static class UnsupportedInheritanceInConstructor {
 
         public static void method() {
@@ -510,5 +518,11 @@ public class CompilerExceptionsTest {
         }
     }
 
-}
+    static class MultiDimensionalArraySize {
 
+        public static String[][] method() {
+            return new String[10][4];
+        }
+    }
+
+}

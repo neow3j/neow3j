@@ -13,18 +13,18 @@ public class NeoConstants {
 
     //region Cryptography
 
-    public static ECDomainParameters curve() {
+    public static ECDomainParameters secp256r1DomainParams() {
         return new ECDomainParameters(
-                curveParams().getCurve(), curveParams().getG(),
-                curveParams().getN(), curveParams().getH());
+                secp256r1CurveParams().getCurve(), secp256r1CurveParams().getG(),
+                secp256r1CurveParams().getN(), secp256r1CurveParams().getH());
     }
 
-    public static X9ECParameters curveParams() {
+    public static X9ECParameters secp256r1CurveParams() {
         return CustomNamedCurves.getByName("secp256r1");
     }
 
-    public static BigInteger halfCurveOrder() {
-        return curveParams().getN().shiftRight(1);
+    public static BigInteger secp256r1HalfCurveOrder() {
+        return secp256r1CurveParams().getN().shiftRight(1);
     }
 
     //endregion

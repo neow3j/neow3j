@@ -30,7 +30,7 @@ To make use of all neow3j SDK features, add `io.neow3j:contract` to your depende
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.13.1'
+implementation 'io.neow3j:contract:3.14.0'
 ```
 
 __Maven__
@@ -39,7 +39,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>3.13.1</version>
+    <version>3.14.0</version>
 </dependency>
 ```
 
@@ -48,14 +48,15 @@ Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
 
 ## Devpack/Compiler
 
-For smart contract development you require the `io.neow3j:devpack`. It provides all the Neo-related
-utilities that are needed in a smart contracts. If you want to play around with the devpack add the
-following dependency to your project.
+For smart contract development, you need the `io.neow3j:devpack` dependency. It provides all Neo-related
+utilities to write your first smart contract on the Neo blockchain!
+
+Then, add the following dependency to your project.
 
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.13.1'
+implementation 'io.neow3j:devpack:3.14.0'
 ```
 
 __Maven__
@@ -64,7 +65,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>3.13.1</version>
+    <version>3.14.0</version>
 </dependency>
 ```
 
@@ -73,7 +74,7 @@ compile smart contracts that are compatible with Neo Legacy.
 
 ## Who's using neow3j? :rocket:
 
-* [Binance](https//binance.com)
+* [Binance](https://binance.com)
 * [OKEx](https://okex.com)
 * [AxLabs](https://axlabs.com)
 * [Neo Playground](https://neo-playground.dev)

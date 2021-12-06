@@ -3,7 +3,9 @@ package io.neow3j.utils;
 import io.neow3j.utils.exceptions.MessageDecodingException;
 import io.neow3j.utils.exceptions.MessageEncodingException;
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -12,10 +14,7 @@ import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-
 
 public class NumericTest {
 
@@ -31,6 +30,9 @@ public class NumericTest {
     };
 
     private static final String HEX_RANGE_STRING = "0x0123456789abcdef";
+
+    @Rule
+    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testQuantityEncodeLeadingZero() {
@@ -54,18 +56,24 @@ public class NumericTest {
                 equalTo(new BigInteger("204516877000845695339750056077105398031")));
     }
 
-    @Test(expected = MessageDecodingException.class)
+    @Test
     public void testQuantityDecodeLeadingZeroException() {
+        exceptionRule.expect(MessageDecodingException.class);
+        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
         Numeric.decodeQuantity("0x0400");
     }
 
-    @Test(expected = MessageDecodingException.class)
+    @Test
     public void testQuantityDecodeMissingPrefix() {
+        exceptionRule.expect(MessageDecodingException.class);
+        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
         Numeric.decodeQuantity("ff");
     }
 
-    @Test(expected = MessageDecodingException.class)
+    @Test
     public void testQuantityDecodeMissingValue() {
+        exceptionRule.expect(MessageDecodingException.class);
+        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
         Numeric.decodeQuantity("0x");
     }
 
@@ -81,8 +89,10 @@ public class NumericTest {
                 is("0x99dc848b94efc27edfad28def049810f"));
     }
 
-    @Test(expected = MessageEncodingException.class)
+    @Test
     public void testQuantityEncodeNegative() {
+        exceptionRule.expect(MessageEncodingException.class);
+        exceptionRule.expectMessage("Negative values are not supported");
         Numeric.encodeQuantity(BigInteger.valueOf(-1));
     }
 
@@ -124,8 +134,10 @@ public class NumericTest {
                 is(new byte[]{0x7f, (byte) 0xff, (byte) 0xff, (byte) 0xff}));
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testToBytesPaddedInvalid() {
+        exceptionRule.expect(RuntimeException.class);
+        exceptionRule.expectMessage("Input is too large to put in byte array of size 7");
         Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7);
     }
 
@@ -190,13 +202,17 @@ public class NumericTest {
                 is("0x01c52b08330e05d731e38c856c1043288f7d9744"));
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testToHexStringZeroPaddedNegative() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("Value cannot be negative");
         Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test
     public void testToHexStringZeroPaddedTooLargs() {
+        exceptionRule.expect(UnsupportedOperationException.class);
+        exceptionRule.expectMessage("Value cannot be negative");
         Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5);
     }
 

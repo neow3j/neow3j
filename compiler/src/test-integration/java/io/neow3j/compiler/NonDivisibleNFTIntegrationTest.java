@@ -30,7 +30,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract smartContract = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
+        SmartContract sm = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("b3bbc62c5a22d123c4f9bbeb018ed29ba7c71083")
+    @ContractHash("1ebbf6db28490822eb21d1b2ac74de2e9e174c86")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

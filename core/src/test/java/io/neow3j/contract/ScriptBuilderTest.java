@@ -1,5 +1,20 @@
 package io.neow3j.contract;
 
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.serialization.TestBinaryUtils;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
+import org.junit.Before;
+import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
@@ -11,22 +26,6 @@ import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
-
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
-import io.neow3j.serialization.TestBinaryUtils;
-
-import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
-import io.neow3j.script.ScriptBuilder;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
-import org.junit.Before;
-import org.junit.Test;
 
 public class ScriptBuilderTest extends TestBinaryUtils {
 
@@ -231,29 +230,23 @@ public class ScriptBuilderTest extends TestBinaryUtils {
         map.put(byteArray("7365636f6e64"), bool(true));
         String possibleExpected1 = Numeric.toHexString(
                 new ScriptBuilder()
-                        .opCode(OpCode.NEWMAP)
-                        .opCode(OpCode.DUP)
-                        .pushInteger(1)
                         .pushData("first")
-                        .opCode(OpCode.SETITEM)
-                        .opCode(OpCode.DUP)
-                        .pushData(hexStringToByteArray("7365636f6e64"))
+                        .pushInteger(1)
                         .pushBoolean(true)
-                        .opCode(OpCode.SETITEM)
+                        .pushData(hexStringToByteArray("7365636f6e64"))
+                        .pushInteger(2)
+                        .opCode(OpCode.PACKMAP)
                         .toArray()
         );
 
         String possibleExpected2 = Numeric.toHexString(
                 new ScriptBuilder()
-                        .opCode(OpCode.NEWMAP)
-                        .opCode(OpCode.DUP)
-                        .pushData(hexStringToByteArray("7365636f6e64"))
                         .pushBoolean(true)
-                        .opCode(OpCode.SETITEM)
-                        .opCode(OpCode.DUP)
-                        .pushInteger(1)
+                        .pushData(hexStringToByteArray("7365636f6e64"))
                         .pushData("first")
-                        .opCode(OpCode.SETITEM)
+                        .pushInteger(1)
+                        .pushInteger(2)
+                        .opCode(OpCode.PACKMAP)
                         .toArray()
         );
 
@@ -274,44 +267,37 @@ public class ScriptBuilderTest extends TestBinaryUtils {
 
         String possibleExpected1 = Numeric.toHexString(
                 new ScriptBuilder()
-                        .opCode(OpCode.NEWMAP)
-                        // first param start
-                        .opCode(OpCode.DUP)
-                        .pushInteger(1)
+                        // first map entry
                         .pushData("first")
-                        .opCode(OpCode.SETITEM)
-                        .opCode(OpCode.DUP)
-                        // second param start
-                        .pushData("nested")
-                        // second param value start
-                        .opCode(OpCode.NEWMAP)
-                        .opCode(OpCode.DUP)
-                        .pushInteger(10)
+                        .pushInteger(1)
+
+                        // second map entry
                         .pushData("nestedFirst")
-                        .opCode(OpCode.SETITEM)
-                        // second param value end
-                        .opCode(OpCode.SETITEM)
+                        .pushInteger(10)
+                        .pushInteger(1)
+                        .opCode(OpCode.PACKMAP)
+                        .pushData("nested")
+
+                        .pushInteger(2)
+                        .opCode(OpCode.PACKMAP)
                         .toArray()
         );
 
         String possibleExpected2 = Numeric.toHexString(
                 new ScriptBuilder()
-                        .opCode(OpCode.NEWMAP)
-                        .opCode(OpCode.DUP)
-                        // first param start
-                        .pushData("nested")
-                        // second param value start
-                        .opCode(OpCode.NEWMAP)
-                        .opCode(OpCode.DUP)
-                        .pushInteger(10)
+                        // first map entry
                         .pushData("nestedFirst")
-                        .opCode(OpCode.SETITEM)
-                        // second param value end
-                        .opCode(OpCode.SETITEM)
-                        .opCode(OpCode.DUP)
+                        .pushInteger(10)
                         .pushInteger(1)
+                        .opCode(OpCode.PACKMAP)
+                        .pushData("nested")
+
+                        // second map entry
                         .pushData("first")
-                        .opCode(OpCode.SETITEM)
+                        .pushInteger(1)
+
+                        .pushInteger(2)
+                        .opCode(OpCode.PACKMAP)
                         .toArray()
         );
 

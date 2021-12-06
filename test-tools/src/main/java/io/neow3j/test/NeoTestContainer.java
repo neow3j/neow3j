@@ -24,10 +24,10 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final String APPLOGSCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "applicationlogs.config.json";
     static final String APPLOGSCONFIG_FILE_DESTINATION =
             "/neo-cli/Plugins/ApplicationLogs/config.json";
-    static final String RPCNEP17TRACKER_FILE_SOURCE = CONFIG_BASE_DIR +
-            "rpcnep17tracker.config.json";
+    static final String TOKEN_TRACKER_FILE_SOURCE = CONFIG_BASE_DIR +
+            "tokentracker.config.json";
     static final String RPCNEP17TRACKER_FILE_DESTINATION =
-            "/neo-cli/Plugins/RpcNep17Tracker/config.json";
+            "/neo-cli/Plugins/TokensTracker/config.json";
     static final String STATE_SERVICE_FILE_SOURCE = CONFIG_BASE_DIR + "stateservice.config.json";
     static final String STATE_SERVICE_FILE_DESTINATION =
             "/neo-cli/Plugins/StateService/config.json";
@@ -56,7 +56,7 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION,
                 BindMode.READ_ONLY);
-        withClasspathResourceMapping(RPCNEP17TRACKER_FILE_SOURCE, RPCNEP17TRACKER_FILE_DESTINATION,
+        withClasspathResourceMapping(TOKEN_TRACKER_FILE_SOURCE, RPCNEP17TRACKER_FILE_DESTINATION,
                 BindMode.READ_ONLY);
         withClasspathResourceMapping(STATE_SERVICE_FILE_SOURCE, STATE_SERVICE_FILE_DESTINATION,
                 BindMode.READ_ONLY);

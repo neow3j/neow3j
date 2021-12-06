@@ -47,6 +47,38 @@ public class AssertionTest {
         assertThat(insns.get(5).getOpcode(), is(OpCode.RET));
     }
 
+    @Test
+    public void testIsThrowableGetMessage() throws IOException {
+        // Tests the method MethodsConverter.isThrowableGetMessage()
+        // The method 'Throwable.getMessage()' should be ignored by the compiler and the message
+        // on the stack should be returned.
+        CompilationUnit compUnit = new Compiler().compile(GetMessageInCatch.class.getName());
+        List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
+        assertThat(methods, hasSize(3));
+        SortedMap<Integer, NeoInstruction> insns = methods.get(0).getInstructions();
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(19).getOpcode(), is(OpCode.THROW));
+        assertThat(insns.get(20).getOpcode(), is(OpCode.STLOC0));
+        assertThat(insns.get(21).getOpcode(), is(OpCode.LDLOC0));
+        assertThat(insns.get(22).getOpcode(), is(OpCode.RET));
+
+        insns = methods.get(1).getInstructions();
+        assertThat(insns.entrySet(), hasSize(10));
+        assertThat(insns.get(28).getOpcode(), is(OpCode.THROW));
+        assertThat(insns.get(29).getOpcode(), is(OpCode.JMP_L));
+        assertThat(insns.get(29).getOperand().length, is(4));
+        assertThat(insns.get(34).getOpcode(), is(OpCode.STLOC0));
+        assertThat(insns.get(35).getOpcode(), is(OpCode.LDLOC0));
+        assertThat(insns.get(36).getOpcode(), is(OpCode.RET));
+
+        insns = methods.get(2).getInstructions();
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(31).getOpcode(), is(OpCode.THROW));
+        assertThat(insns.get(32).getOpcode(), is(OpCode.STLOC0));
+        assertThat(insns.get(33).getOpcode(), is(OpCode.LDLOC0));
+        assertThat(insns.get(34).getOpcode(), is(OpCode.RET));
+    }
+
     static class InitsslotWithoutOtherStaticVar {
         public static void testAssert1(int i) {
             assert i == 17;
@@ -59,6 +91,34 @@ public class AssertionTest {
         public static boolean testAssert2(int i) {
             assert VAR == i : "neoowww";
             return true;
+        }
+    }
+
+    static class GetMessageInCatch {
+
+        public static String exception() {
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+
+        public static String assertion() {
+            try {
+                assert false : "Assert failed.";
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+            return "";
+        }
+
+        public static String newAssertion() {
+            try {
+                throw new AssertionError("Assertion failed.");
+            } catch (Exception e) {
+                return e.getMessage();
+            }
         }
     }
 

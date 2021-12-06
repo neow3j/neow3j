@@ -28,8 +28,7 @@ public class ListIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ListTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(ListTestContract.class.getName());
 
     @Test
     public void createStringListWithOneEntry() throws IOException {

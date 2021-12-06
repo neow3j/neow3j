@@ -29,8 +29,7 @@ public class ObjectsTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ObjectsTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(ObjectsTestContract.class.getName());
 
     @Test
     public void instantiateObject() throws IOException {

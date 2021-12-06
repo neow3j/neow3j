@@ -116,8 +116,10 @@ public class Hash160Test {
         assertThat(hash.toLittleEndianArray(), is(expectedHash));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void fromInvalidAddress() {
+        exceptionRule.expect(IllegalArgumentException.class);
+        exceptionRule.expectMessage("Not a valid NEO address.");
         Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8keas");
     }
 

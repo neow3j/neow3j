@@ -28,6 +28,8 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.script.OpCode;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.BigIntegers;
+import org.bouncycastle.math.ec.ECPoint;
+
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
@@ -38,7 +40,6 @@ import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryReader implements AutoCloseable {
 
@@ -235,7 +236,7 @@ public class BinaryReader implements AutoCloseable {
             default:
                 throw new IOException();
         }
-        return NeoConstants.curve().getCurve().decodePoint(encoded);
+        return NeoConstants.secp256r1DomainParams().getCurve().decodePoint(encoded);
     }
 
     public <T extends NeoSerializable> T readSerializable(Class<T> t)
@@ -389,6 +390,10 @@ public class BinaryReader implements AutoCloseable {
             throw new DeserializationException(e);
         }
         throw new DeserializationException("Couldn't parse PUSHINT OpCode");
+    }
+
+    public int available() throws IOException {
+        return reader.available();
     }
 
 }

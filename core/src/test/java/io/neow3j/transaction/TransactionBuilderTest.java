@@ -20,6 +20,7 @@ import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import io.neow3j.utils.ArrayUtils;
 import io.neow3j.wallet.Account;
 import io.reactivex.Observable;
 import org.hamcrest.core.StringContains;
@@ -404,7 +405,7 @@ public class TransactionBuilderTest {
 
         exceptionRule.expect(TransactionConfigurationException.class);
         exceptionRule.expectMessage("Cannot create transaction signature because account "
-                 + account1.getAddress() + " does not hold a private key.");
+                + account1.getAddress() + " does not hold a private key.");
         builder.sign();
     }
 
@@ -569,6 +570,21 @@ public class TransactionBuilderTest {
         assertThat(witnesses, hasSize(1));
         assertThat(witnesses.get(0).getVerificationScript().getScript(),
                 is(expectedVerificationScript));
+    }
+
+    @Test
+    public void testExtendScript() {
+        byte[] script1 = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
+                        asList(hash160(account1), hash160(recipient), integer(11), any(null)))
+                .toArray();
+        byte[] script2 = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
+                        asList(hash160(account1), hash160(account2), integer(22), any(null)))
+                .toArray();
+        TransactionBuilder b = new TransactionBuilder(neow).script(script1);
+        assertThat(b.getScript(), is(script1));
+
+        b.extendScript(script2);
+        assertThat(b.getScript(), is(ArrayUtils.concatenate(script1, script2)));
     }
 
     // This tests if the `invokeFunction()` method produces the right request.

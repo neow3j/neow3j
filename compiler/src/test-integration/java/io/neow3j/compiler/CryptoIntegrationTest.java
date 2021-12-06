@@ -4,22 +4,18 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
-import java.io.IOException;
 import java.util.List;
 
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.publicKey;
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 
 public class CryptoIntegrationTest {
 

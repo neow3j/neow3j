@@ -18,8 +18,8 @@ public class Map<K, V> {
     /**
      * Gets the value to which the given key is mapped.
      * <p>
-     * If the map doesn't contain the given key the NeoVM will FAULT immediately without the
-     * possibility to handle the error.
+     * If the map doesn't contain the given key the NeoVM will throw an exception that needs to
+     * be catched. Otherwise, the NeoVM will FAULT.
      *
      * @param key The key.
      * @return the corresponding value.

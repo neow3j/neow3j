@@ -1,5 +1,105 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
+import io.neow3j.protocol.core.response.ContractNef;
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ContractStorageEntry;
+import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.HighPriorityAttribute;
+import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NativeContractState;
+import io.neow3j.protocol.core.response.NeoAddress;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoBlockHash;
+import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
+import io.neow3j.protocol.core.response.NeoCloseWallet;
+import io.neow3j.protocol.core.response.NeoConnectionCount;
+import io.neow3j.protocol.core.response.NeoDumpPrivKey;
+import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
+import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
+import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
+import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
+import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
+import io.neow3j.protocol.core.response.NeoExpressListContracts;
+import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
+import io.neow3j.protocol.core.response.NeoExpressShutdown;
+import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoGetContractState;
+import io.neow3j.protocol.core.response.NeoGetMemPool;
+import io.neow3j.protocol.core.response.NeoGetNativeContracts;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances;
+import io.neow3j.protocol.core.response.NeoGetNep11Balances.Nep11Balance.Nep11Token;
+import io.neow3j.protocol.core.response.NeoGetNep11Properties;
+import io.neow3j.protocol.core.response.NeoGetNep11Transfers;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
+import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
+import io.neow3j.protocol.core.response.NeoGetNewAddress;
+import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPeers;
+import io.neow3j.protocol.core.response.NeoGetProof;
+import io.neow3j.protocol.core.response.NeoGetRawBlock;
+import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawTransaction;
+import io.neow3j.protocol.core.response.NeoGetState;
+import io.neow3j.protocol.core.response.NeoGetStateHeight;
+import io.neow3j.protocol.core.response.NeoGetStateRoot;
+import io.neow3j.protocol.core.response.NeoGetStorage;
+import io.neow3j.protocol.core.response.NeoGetTransaction;
+import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
+import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoGetWalletBalance;
+import io.neow3j.protocol.core.response.NeoGetWalletUnclaimedGas;
+import io.neow3j.protocol.core.response.NeoImportPrivKey;
+import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.protocol.core.response.NeoListAddress;
+import io.neow3j.protocol.core.response.NeoListPlugins;
+import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoSendFrom;
+import io.neow3j.protocol.core.response.NeoSendMany;
+import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyProof;
+import io.neow3j.protocol.core.response.NeoWitness;
+import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.OracleRequest;
+import io.neow3j.protocol.core.response.OracleResponse;
+import io.neow3j.protocol.core.response.OracleResponseAttribute;
+import io.neow3j.protocol.core.response.OracleResponseCode;
+import io.neow3j.protocol.core.response.PopulatedBlocks;
+import io.neow3j.protocol.core.response.Transaction;
+import io.neow3j.protocol.core.response.TransactionAttribute;
+import io.neow3j.protocol.core.response.TransactionSigner;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.transaction.WitnessScope;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.types.NodePluginType;
+import io.neow3j.types.StackItemType;
+import io.neow3j.utils.Numeric;
+import org.junit.Test;
+
+import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -19,101 +119,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-
-import io.neow3j.protocol.core.response.ContractState;
-import io.neow3j.protocol.core.response.ContractStorageEntry;
-import io.neow3j.protocol.core.response.ExpressContractState;
-import io.neow3j.protocol.core.response.NativeContractState;
-import io.neow3j.protocol.core.response.NeoExpressCreateCheckpoint;
-import io.neow3j.protocol.core.response.NeoExpressCreateOracleResponseTx;
-import io.neow3j.protocol.core.response.NeoExpressGetContractStorage;
-import io.neow3j.protocol.core.response.NeoExpressGetNep17Contracts;
-import io.neow3j.protocol.core.response.NeoExpressGetPopulatedBlocks;
-import io.neow3j.protocol.core.response.NeoExpressListContracts;
-import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
-import io.neow3j.protocol.core.response.NeoExpressShutdown;
-import io.neow3j.protocol.core.response.NeoFindStates;
-import io.neow3j.protocol.core.response.NeoGetState;
-import io.neow3j.protocol.core.response.Nep17Contract;
-import io.neow3j.protocol.core.response.OracleRequest;
-import io.neow3j.protocol.core.response.OracleResponse;
-import io.neow3j.protocol.core.response.PopulatedBlocks;
-import io.neow3j.types.ContractParameter;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.NeoVMStateType;
-import io.neow3j.types.NodePluginType;
-import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
-import io.neow3j.protocol.core.response.ContractManifest;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
-import io.neow3j.protocol.core.response.ContractNef;
-import io.neow3j.protocol.core.response.HighPriorityAttribute;
-import io.neow3j.protocol.core.response.NeoAddress;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoBlockCount;
-import io.neow3j.protocol.core.response.NeoBlockHash;
-import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
-import io.neow3j.protocol.core.response.NeoCloseWallet;
-import io.neow3j.protocol.core.response.NeoConnectionCount;
-import io.neow3j.protocol.core.response.NeoDumpPrivKey;
-import io.neow3j.protocol.core.response.NeoGetApplicationLog;
-import io.neow3j.protocol.core.response.NeoGetNativeContracts;
-import io.neow3j.protocol.core.response.NeoGetProof;
-import io.neow3j.protocol.core.response.NeoGetStateHeight;
-import io.neow3j.protocol.core.response.NeoGetStateRoot;
-import io.neow3j.protocol.core.response.NeoGetUnclaimedGas;
-import io.neow3j.protocol.core.response.NeoGetWalletBalance;
-import io.neow3j.protocol.core.response.NeoGetBlock;
-import io.neow3j.protocol.core.response.NeoGetContractState;
-import io.neow3j.protocol.core.response.NeoGetMemPool;
-import io.neow3j.protocol.core.response.NeoGetNep17Balances;
-import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
-import io.neow3j.protocol.core.response.NeoGetNewAddress;
-import io.neow3j.protocol.core.response.NeoGetPeers;
-import io.neow3j.protocol.core.response.NeoGetRawBlock;
-import io.neow3j.protocol.core.response.NeoGetRawMemPool;
-import io.neow3j.protocol.core.response.NeoGetRawTransaction;
-import io.neow3j.protocol.core.response.NeoGetStorage;
-import io.neow3j.protocol.core.response.NeoGetTransaction;
-import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
-import io.neow3j.protocol.core.response.NeoGetWalletUnclaimedGas;
-import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
-import io.neow3j.protocol.core.response.NeoGetVersion;
-import io.neow3j.protocol.core.response.NeoImportPrivKey;
-import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoInvokeScript;
-import io.neow3j.protocol.core.response.NeoListAddress;
-import io.neow3j.protocol.core.response.NeoListPlugins;
-import io.neow3j.protocol.core.response.NeoOpenWallet;
-import io.neow3j.protocol.core.response.NeoSendFrom;
-import io.neow3j.protocol.core.response.NeoSendMany;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.response.NeoSendToAddress;
-import io.neow3j.protocol.core.response.NeoSubmitBlock;
-import io.neow3j.protocol.core.response.NeoValidateAddress;
-import io.neow3j.protocol.core.response.NeoVerifyProof;
-import io.neow3j.protocol.core.response.NeoWitness;
-import io.neow3j.protocol.core.response.OracleResponseAttribute;
-import io.neow3j.protocol.core.response.OracleResponseCode;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.protocol.core.response.TransactionAttribute;
-import io.neow3j.protocol.core.response.TransactionSigner;
-import io.neow3j.protocol.ResponseTester;
-import io.neow3j.transaction.TransactionAttributeType;
-import io.neow3j.transaction.WitnessScope;
-import io.neow3j.utils.Numeric;
-
-import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-
-import org.junit.Test;
 
 /**
  * Core Protocol Response tests.
@@ -1746,19 +1751,59 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testInvokeFunction_empty_Stack() {
-        buildResponse(
-                "{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": {\n" +
-                        "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
-                        "        \"state\": \"HALT\",\n" +
-                        "        \"gasconsumed\": \"2.489\",\n" +
-                        "        \"stack\": []\n" +
-                        "    }\n" +
-                        "}"
-        );
+    public void testInvokeFunction_pending_signatures() {
+        String s = "{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\"," +
+                "\n" +
+                "        \"state\": \"HALT\",\n" +
+                "        \"gasconsumed\": \"2.489\",\n" +
+                "        \"stack\": [],\n" +
+                "        \"pendingsignature\": {\n" +
+                "            \"type\": \"Transaction\",\n" +
+                "            \"data\": \"base64 string of the tx bytes\",\n" +
+                "            \"network\": 305419896, \n" +
+                "            \"items\": {\n" +
+                "                \"0x69ecca587293047be4c59159bf8bc399985c160d\": {\n" +
+                "                    \"script\": \"base64 script\",\n" +
+                "                    \"parameters\": [\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\",\n" +
+                "                            \"value\": \"\"\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"signatures\": {\n" +
+                "                        " +
+                "\"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": " +
+                "\"base64 string of signature\"\n" +
+                "                    }\n" +
+                "                },\n" +
+                "                \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
+                "                    \"script\": \"base64 script\",\n" +
+                "                    \"parameters\": [\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\"\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"type\": \"Signature\"\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"signatures\": {\n" +
+                "                        " +
+                "\"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81\": " +
+                "\"base64 string of signature\",\n" +
+                "                        " +
+                "\"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10\": " +
+                "\"base64 string of signature\"\n" +
+                "                    }\n" +
+                "                }\n" +
+                "            }\n" +
+                "        }\n" +
+                "    }\n" +
+                "}";
+        buildResponse(s);
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
@@ -1769,6 +1814,19 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+        InvocationResult.PendingSignature pendingSig =
+                invokeFunction.getInvocationResult().getPendingSignature();
+        assertThat(pendingSig.getType(), is("Transaction"));
+        assertThat(pendingSig.getData(), is("base64 string of the tx bytes"));
+        assertThat(pendingSig.getNetwork(), is(305419896L));
+        Map<String, InvocationResult.PendingSignature.Item> items = pendingSig.getItems();
+        InvocationResult.PendingSignature.Item item =
+                items.get("0x05859de95ccbbd5668e0f055b208273634d4657f");
+        assertThat(item.getScript(), is("base64 script"));
+        assertThat(item.getParameters().get(1).getParamType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getSignatures()
+                        .get("033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81"),
+                is("base64 string of signature"));
     }
 
     @Test
@@ -2453,7 +2511,7 @@ public class ResponseTest extends ResponseTester {
                 ));
     }
 
-    // RpcNep17Tracker
+    // TokenTracker: Nep17
 
     @Test
     public void testGetNep17Transfers() {
@@ -2501,7 +2559,7 @@ public class ResponseTest extends ResponseTester {
         NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
 
         List<NeoGetNep17Transfers.Nep17Transfer> sent =
-                getNep17Transfers.getNep17Transfer().getSent();
+                getNep17Transfers.getNep17Transfers().getSent();
 
         assertThat(sent, is(notNullValue()));
         assertThat(sent, hasSize(2));
@@ -2528,7 +2586,7 @@ public class ResponseTest extends ResponseTester {
                 ));
 
         List<NeoGetNep17Transfers.Nep17Transfer> received =
-                getNep17Transfers.getNep17Transfer().getReceived();
+                getNep17Transfers.getNep17Transfers().getReceived();
 
         assertThat(received, is(notNullValue()));
         assertThat(received, hasSize(1));
@@ -3147,4 +3205,223 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoExpressShutdown.getExpressShutdown().getProcessId(), is(73625));
     }
 
+    // TokenTracker: Nep11
+
+    @Test
+    public void testGetNep11Balances() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"balance\": [\n" +
+                        "            {\n" +
+                        "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
+                        "                \"tokens\": [\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"1\",\n" +
+                        "                        \"amount\": 251600,\n" +
+                        "                        \"lastupdatedblock\": 12345\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"2\",\n" +
+                        "                        \"amount\": 211122,\n" +
+                        "                        \"lastupdatedblock\": 123456\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"tokens\": [\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"1\",\n" +
+                        "                        \"amount\": 543211,\n" +
+                        "                        \"lastupdatedblock\": 12345\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"tokenid\": \"2\",\n" +
+                        "                        \"amount\": 112345,\n" +
+                        "                        \"lastupdatedblock\": 654321\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"address\": \"AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Balances getNep11Balances = deserialiseResponse(NeoGetNep11Balances.class);
+        assertThat(getNep11Balances.getBalances().getBalances(), is(notNullValue()));
+        assertThat(getNep11Balances.getBalances().getBalances(), hasSize(2));
+        assertThat(getNep11Balances.getBalances().getBalances(),
+                containsInAnyOrder(
+                        new NeoGetNep11Balances.Nep11Balance(
+                                new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"),
+                                asList(
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", BigInteger.valueOf(251600L), 12345L),
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", BigInteger.valueOf(211122L), 123456L)
+                                )
+                        ),
+                        new NeoGetNep11Balances.Nep11Balance(
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                asList(
+                                        new Nep11Token("1", BigInteger.valueOf(543211L), 12345L),
+                                        new Nep11Token("2", BigInteger.valueOf(112345L), 654321L)
+                                )
+                        )
+                ));
+
+        // First Entry
+        assertThat(getNep11Balances.getBalances().getBalances().get(0).getAssetHash(),
+                is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
+        assertThat(getNep11Balances.getBalances().getBalances().get(0).getTokens().get(0).getAmount(),
+                is(BigInteger.valueOf(251600L)));
+
+        // Second Entry
+        assertThat(getNep11Balances.getBalances().getBalances().get(1).getTokens().get(1).getLastUpdatedBlock(),
+                is(654321L));
+
+        assertThat(getNep11Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep11Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
+    }
+
+    @Test
+    public void testGetNep11Transfers() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"sent\": [\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"1\",\n" +
+                        "                \"timestamp\": 1554283931,\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"100000000000\",\n" +
+                        "                \"blockindex\": 368082,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"2\",\n" +
+                        "                \"timestamp\": 1554880287,\n" +
+                        "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"100000000000\",\n" +
+                        "                \"blockindex\": 397769,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"received\": [\n" +
+                        "            {\n" +
+                        "                \"tokenid\": \"3\",\n" +
+                        "                \"timestamp\": 1555651816,\n" +
+                        "                \"assethash\": \"600c4f5200db36177e3e8a09e9f18e2fc7d12a0f\",\n" +
+                        "                \"transferaddress\": \"AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis\",\n" +
+                        "                \"amount\": \"1000000\",\n" +
+                        "                \"blockindex\": 436036,\n" +
+                        "                \"transfernotifyindex\": 0,\n" +
+                        "                \"txhash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"address\": \"AbHgdBaWEnHkCiLtDZXjhvhaAK2cwFh5pF\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Transfers getNep11Transfers = deserialiseResponse(NeoGetNep11Transfers.class);
+
+        List<NeoGetNep11Transfers.Nep11Transfer> sent =
+                getNep11Transfers.getNep11Transfers().getSent();
+
+        assertThat(sent, is(notNullValue()));
+        assertThat(sent, hasSize(2));
+        assertThat(sent,
+                containsInAnyOrder(
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1554283931L,
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("100000000000"),
+                                368082L,
+                                0L,
+                                new Hash256("240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564"),
+                                "1"
+                        ),
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1554880287L,
+                                new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("100000000000"),
+                                397769L,
+                                0L,
+                                new Hash256("12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834"),
+                                "2"
+                        )
+                ));
+
+        List<NeoGetNep11Transfers.Nep11Transfer> received =
+                getNep11Transfers.getNep11Transfers().getReceived();
+
+        assertThat(received, is(notNullValue()));
+        assertThat(received, hasSize(1));
+        assertThat(received,
+                hasItem(
+                        new NeoGetNep11Transfers.Nep11Transfer(
+                                1555651816L,
+                                new Hash160("600c4f5200db36177e3e8a09e9f18e2fc7d12a0f"),
+                                "AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis",
+                                new BigInteger("1000000"),
+                                436036L,
+                                0L,
+                                new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58"),
+                                "3"
+                        )
+                ));
+
+        // First Sent Entry
+        assertThat(sent.get(0).getTimestamp(), is(1554283931L));
+        assertThat(sent.get(0).getAssetHash(),
+                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
+        assertThat(sent.get(0).getTransferAddress(),
+                is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
+        assertThat(sent.get(0).getTokenId(),
+                is("1"));
+
+        // Second Sent Entry
+        assertThat(sent.get(1).getAmount(), is(new BigInteger("100000000000")));
+        assertThat(sent.get(1).getBlockIndex(), is(397769L));
+        assertThat(sent.get(1).getTokenId(),
+                is("2"));
+
+        // Received Entry
+        assertThat(received.get(0).getTransferNotifyIndex(), is(0L));
+        assertThat(received.get(0).getTxHash(),
+                is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
+        assertThat(received.get(0).getTokenId(),
+                is("3"));
+    }
+
+    @Test
+    public void testGetNep11Properties() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"keyProp1\": \"valueProp1\"," +
+                        "        \"keyProp2\": \"valueProp2\"" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetNep11Properties getNep11Properties = deserialiseResponse(NeoGetNep11Properties.class);
+        assertThat(getNep11Properties.getProperties(), is(notNullValue()));
+        assertThat(getNep11Properties.getProperties().size(), is(2));
+        assertThat(getNep11Properties.getProperties().get("keyProp1"), is("valueProp1"));
+        assertThat(getNep11Properties.getProperties().get("keyProp2"), is("valueProp2"));
+    }
 }

@@ -1,17 +1,6 @@
 package io.neow3j.protocol.core.stackitem;
 
 import io.neow3j.crypto.Base64;
-import io.neow3j.protocol.core.stackitem.AnyStackItem;
-import io.neow3j.protocol.core.stackitem.ArrayStackItem;
-import io.neow3j.protocol.core.stackitem.BooleanStackItem;
-import io.neow3j.protocol.core.stackitem.BufferStackItem;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
-import io.neow3j.protocol.core.stackitem.IntegerStackItem;
-import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
-import io.neow3j.protocol.core.stackitem.MapStackItem;
-import io.neow3j.protocol.core.stackitem.PointerStackItem;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.protocol.core.stackitem.StructStackItem;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
@@ -642,4 +631,5 @@ public class StackItemTest extends ResponseTester {
         assertThat(item.valueToString(), containsString(
                 "ByteString{value='6b657931'} -> Integer{value='1'}"));
     }
+
 }
