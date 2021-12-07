@@ -81,13 +81,11 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                     m.invoke(null, config, deployCtx);
                 }
             }
-            SmartContract deployedContract = null;
             try {
-                deployedContract = compileAndDeploy(c, config, neow3j);
+                Await.waitUntilTransactionIsExecuted(compileAndDeploy(c, config, neow3j), neow3j);
             } catch (Throwable t) {
                 throw new Exception(t);
             }
-            deployCtx.addDeployedContract(c, deployedContract);
         }
 
         ExtensionContext.Store store = context.getStore(ExtensionContext.Namespace.GLOBAL);
@@ -131,7 +129,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         return method;
     }
 
-    private SmartContract compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
+    private Hash256 compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
             Neow3j neow3j) throws Throwable {
 
         CompilationUnit res;
@@ -162,7 +160,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         Hash160 contractHash = SmartContract.calcContractHash(genesisAccount.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         deployCtx.addDeployTxHash(contractClass, txHash);
-        return new SmartContract(contractHash, neow3j);
+        deployCtx.addDeployedContract(contractClass, new SmartContract(contractHash, neow3j));
+        return txHash;
     }
 
     @Override
@@ -219,9 +218,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Creates a new account and returns its Neo address.
+     * Creates a new account and returns it.
      *
-     * @return The account's address
+     * @return The account.
      * @throws Exception if creating the account failed.
      */
     public Account createAccount() throws Exception {
