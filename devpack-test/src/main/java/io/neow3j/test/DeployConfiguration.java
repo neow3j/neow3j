@@ -24,6 +24,8 @@ public class DeployConfiguration {
 
     /**
      * Sets the parameter used on deployment of the contract.
+     *
+     * @param deployParam The parameter passed tot the contracts deploy method.
      */
     public void setDeployParam(ContractParameter deployParam) {
         this.deployParam = deployParam;
@@ -43,7 +45,8 @@ public class DeployConfiguration {
      * Sets a single mapping from placeholder to substitution that will be used before the contract
      * is compiled.
      *
-     * @param substitution the substitution.
+     * @param placeholder The placeholder string.
+     * @param substitution The substitution.
      */
     public void setSubstitution(String placeholder, String substitution) {
         substitutions.put(placeholder, substitution);

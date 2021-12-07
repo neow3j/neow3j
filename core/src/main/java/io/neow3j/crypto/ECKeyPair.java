@@ -402,8 +402,8 @@ public class ECKeyPair {
         /**
          * Deserializes an EC point, which is assumed to be on the secp256r1 curve.
          *
-         * @param reader
-         * @throws DeserializationException
+         * @param reader The binary reader to read bytes from.
+         * @throws DeserializationException if an error occurs while deserialization.
          */
         @Override
         public void deserialize(BinaryReader reader) throws DeserializationException {

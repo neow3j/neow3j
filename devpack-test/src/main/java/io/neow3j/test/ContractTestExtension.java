@@ -244,6 +244,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      *
      * @param address The account's address.
      * @return The account.
+     * @throws Exception if an error occurs when tyring to fetch the account from the
+     *                   underlying blockchain/node.
      */
     public Account getAccount(String address) throws Exception {
         return new Account(ECKeyPair.create(hexStringToByteArray(
