@@ -101,7 +101,7 @@ public class ModuleTest {
                 .transfer(gen.getMultiSigAccount(), newAcc.getScriptHash(), BigInteger.ONE)
                 .getUnsignedTransaction()
                 .addMultiSigWitness(gen.getMultiSigAccount().getVerificationScript(),
-                        gen.getSignerAccounts().toArray(new Account[]{}))
+                        gen.getSignerAccounts())
                 .send();
 
         Await.waitUntilTransactionIsExecuted(resp.getSendRawTransaction().getHash(), neow3j);

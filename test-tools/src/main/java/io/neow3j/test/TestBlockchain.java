@@ -1,9 +1,5 @@
 package io.neow3j.test;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
-
 public interface TestBlockchain {
 
     /**
@@ -142,11 +138,11 @@ public interface TestBlockchain {
 
         private String verificationScript;
 
-        private List<String> privateKeys;
+        private String[] privateKeys;
 
         public GenesisAccount(String script, String... privateKeys) {
             this.verificationScript = script;
-            this.privateKeys = asList(privateKeys);
+            this.privateKeys = privateKeys;
         }
 
         /**
@@ -163,7 +159,7 @@ public interface TestBlockchain {
          *
          * @return the private keys.
          */
-        public List<String> getPrivateKeys() {
+        public String[] getPrivateKeys() {
             return privateKeys;
         }
     }

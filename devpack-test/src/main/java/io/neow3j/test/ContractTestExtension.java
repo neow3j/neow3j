@@ -262,9 +262,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
             Account multiSigAccount = Account.fromVerificationScript(
                     new VerificationScript(hexStringToByteArray(genAcc.getVerificationScript())));
-            List<Account> signerAccounts = genAcc.getPrivateKeys().stream()
+            Account[] signerAccounts = Arrays.stream(genAcc.getPrivateKeys())
                     .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
-                    .collect(Collectors.toList());
+                    .toArray(Account[]::new);
             return new GenesisAccount(multiSigAccount, signerAccounts);
         } catch (Exception e) {
             throw new IllegalStateException(e);
@@ -279,9 +279,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     public static class GenesisAccount {
 
         private Account multiSigAccount;
-        private List<Account> signerAccounts;
+        private Account[] signerAccounts;
 
-        public GenesisAccount(Account multiSigAccount, List<Account> signerAccounts) {
+        public GenesisAccount(Account multiSigAccount, Account[] signerAccounts) {
             this.multiSigAccount = multiSigAccount;
             this.signerAccounts = signerAccounts;
         }
@@ -301,7 +301,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
          *
          * @return the participating accounts.
          */
-        public List<Account> getSignerAccounts() {
+        public Account[] getSignerAccounts() {
             return signerAccounts;
         }
     }
