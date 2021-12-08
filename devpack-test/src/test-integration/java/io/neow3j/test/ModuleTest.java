@@ -2,11 +2,14 @@ package io.neow3j.test;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,19 +17,25 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.math.BigInteger;
 
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 @ContractTest(
         blockTime = 1,
-        contracts = {ExampleContract1.class, ExampleContract2.class},
+        contracts = {TestContract1.class, TestContract2.class},
         batchFile = "example.batch",
         configFile = "example.neo-express"
 )
 public class ModuleTest {
 
     private static final String OWNER_ADDRESS = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+
     private static final String PERMISSION = "*";
+    private static final String ALICE_SKEY =
+            "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5";
 
     @RegisterExtension
     private static ContractTestExtension ext =
@@ -35,25 +44,31 @@ public class ModuleTest {
     private static Neow3j neow3j;
     private static SmartContract sc1;
     private static SmartContract sc2;
+    private static Account deployer = new Account(
+            ECKeyPair.create(Numeric.hexStringToByteArray(ALICE_SKEY)));
 
-    @DeployConfig(ExampleContract1.class)
+    @DeployConfig(TestContract1.class)
     public static void config1(DeployConfiguration config) {
-        config.setDeployParam(ContractParameter.integer(5));
+        config.setDeployParam(array(
+                integer(5),
+                hash160(deployer)));
+        config.setSigner(AccountSigner.calledByEntry(deployer));
     }
 
-    @DeployConfig(ExampleContract2.class)
+    @DeployConfig(TestContract2.class)
     public static void config2(DeployConfiguration config, DeployContext ctx) {
-        SmartContract sc = ctx.getDeployedContract(ExampleContract1.class);
+        SmartContract sc = ctx.getDeployedContract(TestContract1.class);
         config.setDeployParam(ContractParameter.hash160(sc.getScriptHash()));
         config.setSubstitution("<owner_address>", OWNER_ADDRESS);
         config.setSubstitution("<contract_hash>", PERMISSION);
+        config.setSigner(AccountSigner.global(deployer));
     }
 
     @BeforeAll
     public static void setUp() {
         neow3j = ext.getNeow3j();
-        sc1 = ext.getDeployedContract(ExampleContract1.class);
-        sc2 = ext.getDeployedContract(ExampleContract2.class);
+        sc1 = ext.getDeployedContract(TestContract1.class);
+        sc2 = ext.getDeployedContract(TestContract2.class);
     }
 
     @Test
@@ -61,7 +76,11 @@ public class ModuleTest {
         InvocationResult result = sc1.callInvokeFunction("getInt").getInvocationResult();
         assertThat(result.getStack().get(0).getInteger().intValue(), is(5));
 
-        result = sc2.callInvokeFunction("getDeployer").getInvocationResult();
+        result = sc1.callInvokeFunction("getParentContract").getInvocationResult();
+        assertThat(Numeric.reverseHexString(result.getStack().get(0).getHexString()),
+                is(sc2.getScriptHash().toString()));
+
+        result = sc2.callInvokeFunction("getChildContract").getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(sc1.getScriptHash().toAddress()));
 
         result = sc2.callInvokeFunction("getOwner").getInvocationResult();

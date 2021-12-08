@@ -9,8 +9,8 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
-import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -138,18 +138,17 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         } else {
             res = new Compiler().compile(contractClass.getCanonicalName(), conf.getSubstitutions());
         }
-        TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
-        Account genesisAccount = Account.fromVerificationScript(new VerificationScript(
-                hexStringToByteArray(genAcc.getVerificationScript())));
-        Account[] signerAccounts = genAcc.getPrivateKeys().stream()
-                .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
-                .toArray(Account[]::new);
-        Transaction tx = new ContractManagement(neow3j)
+        TransactionBuilder builder = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
-                .signers(AccountSigner.calledByEntry(genesisAccount))
-                .getUnsignedTransaction()
-                .addMultiSigWitness(genesisAccount.getVerificationScript(), signerAccounts);
-
+                .signers(conf.getSigner());
+        Transaction tx;
+        Account deployer = conf.getSigner().getAccount();
+        if (deployer.isMultiSig()) {
+            tx = builder.getUnsignedTransaction().addMultiSigWitness(
+                    deployer.getVerificationScript(), conf.getSigningAccounts());
+        } else {
+            tx = builder.sign();
+        }
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
@@ -157,7 +156,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
                     "error message: " + log.getExecutions().get(0).getException());
         }
-        Hash160 contractHash = SmartContract.calcContractHash(genesisAccount.getScriptHash(),
+        Hash160 contractHash = SmartContract.calcContractHash(deployer.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         deployCtx.addDeployTxHash(contractClass, txHash);
         deployCtx.addDeployedContract(contractClass, new SmartContract(contractHash, neow3j));
