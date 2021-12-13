@@ -76,10 +76,10 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             Method m = findCorrespondingDeployConfigMethod(c, context);
             DeployConfiguration config = new DeployConfiguration();
             if (m != null) {
-                if (m.getParameterCount() == 1) {
-                    m.invoke(null, config);
-                } else if (m.getParameterCount() == 2) {
-                    m.invoke(null, config, deployCtx);
+                if (m.getParameterCount() == 0) {
+                    config = (DeployConfiguration) m.invoke(null);
+                } else if (m.getParameterCount() == 1) {
+                    config = (DeployConfiguration) m.invoke(null, deployCtx);
                 }
             }
             try {
@@ -109,23 +109,16 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                     "configuration method for contract class " + contract.getCanonicalName());
         }
         Method method = methods.get(0);
-        if (!method.getReturnType().equals(void.class)) {
-            throw new ExtensionConfigurationException("Methods annotated with " +
-                    DeployConfig.class.getSimpleName() + " must return void.");
+        if (!method.getReturnType().equals(DeployConfiguration.class)) {
+            throw new ExtensionConfigurationException("Methods annotated with '" +
+                    DeployConfig.class.getSimpleName() + "' must return 'DeployConfiguration'.");
         }
 
-        boolean hasOneDeployConfigParam = method.getParameterCount() == 1 &&
-                method.getParameterTypes()[0].equals(DeployConfiguration.class);
-        boolean hasDeployConfigAndContextParams = method.getParameterCount() == 2
-                && method.getParameterTypes()[0].equals(DeployConfiguration.class)
-                && method.getParameterTypes()[1].equals(DeployContext.class);
-        if (!hasOneDeployConfigParam && !hasDeployConfigAndContextParams) {
+        if (method.getParameterCount() != 0
+                && !method.getParameterTypes()[0].equals(DeployContext.class)) {
             throw new ExtensionConfigurationException(format("Methods annotated with '%s' must " +
-                            "have a '%s' as the first parameter, optionally followed by a '%s' " +
-                            "parameter.",
-                    DeployConfig.class.getSimpleName(),
-                    DeployConfiguration.class.getSimpleName(),
-                    DeployContext.class.getSimpleName()));
+                            "can have either no parameter of an optional '%s' parameter.",
+                    DeployConfig.class.getSimpleName(), DeployContext.class.getSimpleName()));
         }
         return method;
     }

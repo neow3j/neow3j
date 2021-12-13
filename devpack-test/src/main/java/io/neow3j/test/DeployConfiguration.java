@@ -20,6 +20,9 @@ public class DeployConfiguration {
 
     private Account[] signingAccounts;
 
+    public DeployConfiguration() {
+    }
+
     protected ContractParameter getDeployParam() {
         return deployParam;
     }

@@ -48,20 +48,24 @@ public class ModuleTest {
             ECKeyPair.create(Numeric.hexStringToByteArray(ALICE_SKEY)));
 
     @DeployConfig(TestContract1.class)
-    public static void config1(DeployConfiguration config) {
+    public static DeployConfiguration config1(Object obj) {
+        DeployConfiguration config = new DeployConfiguration();
         config.setDeployParam(array(
                 integer(5),
                 hash160(deployer)));
         config.setSigner(AccountSigner.calledByEntry(deployer));
+        return config;
     }
 
     @DeployConfig(TestContract2.class)
-    public static void config2(DeployConfiguration config, DeployContext ctx) {
+    public static DeployConfiguration config2(DeployContext ctx) {
+        DeployConfiguration config = new DeployConfiguration();
         SmartContract sc = ctx.getDeployedContract(TestContract1.class);
         config.setDeployParam(ContractParameter.hash160(sc.getScriptHash()));
         config.setSubstitution("<owner_address>", OWNER_ADDRESS);
         config.setSubstitution("<contract_hash>", PERMISSION);
         config.setSigner(AccountSigner.global(deployer));
+        return config;
     }
 
     @BeforeAll
