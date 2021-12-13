@@ -9,6 +9,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
@@ -138,25 +139,37 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         } else {
             res = new Compiler().compile(contractClass.getCanonicalName(), conf.getSubstitutions());
         }
+
+        AccountSigner signer = conf.getSigner();
+        Account[] multiSigSigners = conf.getSigningAccounts();
+        if (signer == null) {
+            // If the user hasn't set a specific deploying account use the genesis account.
+            TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
+            signer = AccountSigner.none(Account.fromVerificationScript(new VerificationScript(
+                    hexStringToByteArray(genAcc.getVerificationScript()))));
+            multiSigSigners = Arrays.stream(genAcc.getPrivateKeys())
+                    .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
+                    .toArray(Account[]::new);
+        }
         TransactionBuilder builder = new ContractManagement(neow3j)
                 .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
-                .signers(conf.getSigner());
+                .signers(signer);
         Transaction tx;
-        Account deployer = conf.getSigner().getAccount();
-        if (deployer.isMultiSig()) {
+        if (signer.getAccount().isMultiSig()) {
             tx = builder.getUnsignedTransaction().addMultiSigWitness(
-                    deployer.getVerificationScript(), conf.getSigningAccounts());
+                    signer.getAccount().getVerificationScript(), multiSigSigners);
         } else {
             tx = builder.sign();
         }
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         if (log.getExecutions().get(0).getState().equals(NeoVMStateType.FAULT)) {
             throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
                     "error message: " + log.getExecutions().get(0).getException());
         }
-        Hash160 contractHash = SmartContract.calcContractHash(deployer.getScriptHash(),
+        Hash160 contractHash = SmartContract.calcContractHash(signer.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         deployCtx.addDeployTxHash(contractClass, txHash);
         deployCtx.addDeployedContract(contractClass, new SmartContract(contractHash, neow3j));
