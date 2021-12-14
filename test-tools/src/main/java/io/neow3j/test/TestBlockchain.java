@@ -1,9 +1,5 @@
 package io.neow3j.test;
 
-import java.util.List;
-
-import static java.util.Arrays.asList;
-
 public interface TestBlockchain {
 
     /**
@@ -60,6 +56,7 @@ public interface TestBlockchain {
      * Resumes the blockchain if it was stopped before.
      *
      * @return The message emitted by the chain on startup or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to resume the blockchain.
      */
     String resume() throws Exception;
 
@@ -67,6 +64,7 @@ public interface TestBlockchain {
      * Halts the blockchain, i.e., stops block production.
      *
      * @return The message emitted by the chain on stopping or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to halt the blockchain.
      */
     String halt() throws Exception;
 
@@ -74,6 +72,7 @@ public interface TestBlockchain {
      * Creates a new account.
      *
      * @return The new account's address.
+     * @throws Exception if an error occurred when trying to create an account.
      */
     String createAccount() throws Exception;
 
@@ -81,6 +80,7 @@ public interface TestBlockchain {
      * Enables the oracle service.
      *
      * @return The hash of the oracle designate transaction.
+     * @throws Exception if an error occurred when trying to enable the oracle service.
      */
     String enableOracle() throws Exception;
 
@@ -89,6 +89,7 @@ public interface TestBlockchain {
      *
      * @param n The number of blocks to mint.
      * @return The message emitted on minting the blocks or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to fast-forward the blockchain.
      */
     String fastForward(int n) throws Exception;
 
@@ -97,6 +98,7 @@ public interface TestBlockchain {
      *
      * @param commandParts The command separated into its parts.
      * @return The message emitted on executing the command or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to execute the command on the blockchain.
      */
     String execCommand(String... commandParts) throws Exception;
 
@@ -117,6 +119,7 @@ public interface TestBlockchain {
      * account owns all NEO and GAS tokens starting from the first block.
      *
      * @return the genesis account.
+     * @throws Exception if an error occurred when trying to fetch the genesis account.
      */
     GenesisAccount getGenesisAccount() throws Exception;
 
@@ -127,6 +130,7 @@ public interface TestBlockchain {
      *
      * @param address The account's address.
      * @return the private key as a hexadecimal string.
+     * @throws Exception if an error occurred when trying to fetch the account.
      */
     String getAccount(String address) throws Exception;
 
@@ -134,11 +138,11 @@ public interface TestBlockchain {
 
         private String verificationScript;
 
-        private List<String> privateKeys;
+        private String[] privateKeys;
 
         public GenesisAccount(String script, String... privateKeys) {
             this.verificationScript = script;
-            this.privateKeys = asList(privateKeys);
+            this.privateKeys = privateKeys;
         }
 
         /**
@@ -155,7 +159,7 @@ public interface TestBlockchain {
          *
          * @return the private keys.
          */
-        public List<String> getPrivateKeys() {
+        public String[] getPrivateKeys() {
             return privateKeys;
         }
     }
