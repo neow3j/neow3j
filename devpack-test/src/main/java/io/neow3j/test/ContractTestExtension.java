@@ -11,6 +11,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -75,19 +76,17 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             Method m = findCorrespondingDeployConfigMethod(c, context);
             DeployConfiguration config = new DeployConfiguration();
             if (m != null) {
-                if (m.getParameterCount() == 1) {
-                    m.invoke(null, config);
-                } else if (m.getParameterCount() == 2) {
-                    m.invoke(null, config, deployCtx);
+                if (m.getParameterCount() == 0) {
+                    config = (DeployConfiguration) m.invoke(null);
+                } else if (m.getParameterCount() == 1) {
+                    config = (DeployConfiguration) m.invoke(null, deployCtx);
                 }
             }
-            SmartContract deployedContract = null;
             try {
-                deployedContract = compileAndDeploy(c, config, neow3j);
+                Await.waitUntilTransactionIsExecuted(compileAndDeploy(c, config, neow3j), neow3j);
             } catch (Throwable t) {
                 throw new Exception(t);
             }
-            deployCtx.addDeployedContract(c, deployedContract);
         }
 
         ExtensionContext.Store store = context.getStore(ExtensionContext.Namespace.GLOBAL);
@@ -110,28 +109,21 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
                     "configuration method for contract class " + contract.getCanonicalName());
         }
         Method method = methods.get(0);
-        if (!method.getReturnType().equals(void.class)) {
-            throw new ExtensionConfigurationException("Methods annotated with " +
-                    DeployConfig.class.getSimpleName() + " must return void.");
+        if (!method.getReturnType().equals(DeployConfiguration.class)) {
+            throw new ExtensionConfigurationException("Methods annotated with '" +
+                    DeployConfig.class.getSimpleName() + "' must return 'DeployConfiguration'.");
         }
 
-        boolean hasOneDeployConfigParam = method.getParameterCount() == 1 &&
-                method.getParameterTypes()[0].equals(DeployConfiguration.class);
-        boolean hasDeployConfigAndContextParams = method.getParameterCount() == 2
-                && method.getParameterTypes()[0].equals(DeployConfiguration.class)
-                && method.getParameterTypes()[1].equals(DeployContext.class);
-        if (!hasOneDeployConfigParam && !hasDeployConfigAndContextParams) {
+        if (method.getParameterCount() != 0
+                && !method.getParameterTypes()[0].equals(DeployContext.class)) {
             throw new ExtensionConfigurationException(format("Methods annotated with '%s' must " +
-                            "have a '%s' as the first parameter, optionally followed by a '%s' " +
-                            "parameter.",
-                    DeployConfig.class.getSimpleName(),
-                    DeployConfiguration.class.getSimpleName(),
-                    DeployContext.class.getSimpleName()));
+                            "have either no parameter of an optional '%s' parameter.",
+                    DeployConfig.class.getSimpleName(), DeployContext.class.getSimpleName()));
         }
         return method;
     }
 
-    private SmartContract compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
+    private Hash256 compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
             Neow3j neow3j) throws Throwable {
 
         CompilationUnit res;
@@ -140,29 +132,41 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         } else {
             res = new Compiler().compile(contractClass.getCanonicalName(), conf.getSubstitutions());
         }
-        TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
-        Account genesisAccount = Account.fromVerificationScript(new VerificationScript(
-                hexStringToByteArray(genAcc.getVerificationScript())));
-        Account[] signerAccounts = genAcc.getPrivateKeys().stream()
-                .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
-                .toArray(Account[]::new);
-        Transaction tx = new ContractManagement(neow3j)
-                .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
-                .signers(AccountSigner.calledByEntry(genesisAccount))
-                .getUnsignedTransaction()
-                .addMultiSigWitness(genesisAccount.getVerificationScript(), signerAccounts);
 
+        AccountSigner signer = conf.getSigner();
+        Account[] multiSigSigners = conf.getSigningAccounts();
+        if (signer == null) {
+            // If the user hasn't set a specific deploying account use the genesis account.
+            TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
+            signer = AccountSigner.none(Account.fromVerificationScript(new VerificationScript(
+                    hexStringToByteArray(genAcc.getVerificationScript()))));
+            multiSigSigners = Arrays.stream(genAcc.getPrivateKeys())
+                    .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
+                    .toArray(Account[]::new);
+        }
+        TransactionBuilder builder = new ContractManagement(neow3j)
+                .deploy(res.getNefFile(), res.getManifest(), conf.getDeployParam())
+                .signers(signer);
+        Transaction tx;
+        if (signer.getAccount().isMultiSig()) {
+            tx = builder.getUnsignedTransaction().addMultiSigWitness(
+                    signer.getAccount().getVerificationScript(), multiSigSigners);
+        } else {
+            tx = builder.sign();
+        }
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         if (log.getExecutions().get(0).getState().equals(NeoVMStateType.FAULT)) {
             throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
                     "error message: " + log.getExecutions().get(0).getException());
         }
-        Hash160 contractHash = SmartContract.calcContractHash(genesisAccount.getScriptHash(),
+        Hash160 contractHash = SmartContract.calcContractHash(signer.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
         deployCtx.addDeployTxHash(contractClass, txHash);
-        return new SmartContract(contractHash, neow3j);
+        deployCtx.addDeployedContract(contractClass, new SmartContract(contractHash, neow3j));
+        return txHash;
     }
 
     @Override
@@ -219,9 +223,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Creates a new account and returns its Neo address.
+     * Creates a new account and returns it.
      *
-     * @return The account's address
+     * @return The account.
      * @throws Exception if creating the account failed.
      */
     public Account createAccount() throws Exception {
@@ -245,6 +249,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      *
      * @param address The account's address.
      * @return The account.
+     * @throws Exception if an error occurs when tyring to fetch the account from the
+     *                   underlying blockchain/node.
      */
     public Account getAccount(String address) throws Exception {
         return new Account(ECKeyPair.create(hexStringToByteArray(
@@ -262,9 +268,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             TestBlockchain.GenesisAccount genAcc = chain.getGenesisAccount();
             Account multiSigAccount = Account.fromVerificationScript(
                     new VerificationScript(hexStringToByteArray(genAcc.getVerificationScript())));
-            List<Account> signerAccounts = genAcc.getPrivateKeys().stream()
+            Account[] signerAccounts = Arrays.stream(genAcc.getPrivateKeys())
                     .map(k -> new Account(ECKeyPair.create(hexStringToByteArray(k))))
-                    .collect(Collectors.toList());
+                    .toArray(Account[]::new);
             return new GenesisAccount(multiSigAccount, signerAccounts);
         } catch (Exception e) {
             throw new IllegalStateException(e);
@@ -279,9 +285,9 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     public static class GenesisAccount {
 
         private Account multiSigAccount;
-        private List<Account> signerAccounts;
+        private Account[] signerAccounts;
 
-        public GenesisAccount(Account multiSigAccount, List<Account> signerAccounts) {
+        public GenesisAccount(Account multiSigAccount, Account[] signerAccounts) {
             this.multiSigAccount = multiSigAccount;
             this.signerAccounts = signerAccounts;
         }
@@ -301,7 +307,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
          *
          * @return the participating accounts.
          */
-        public List<Account> getSignerAccounts() {
+        public Account[] getSignerAccounts() {
             return signerAccounts;
         }
     }
