@@ -48,7 +48,7 @@ public class ModuleTest {
             ECKeyPair.create(Numeric.hexStringToByteArray(ALICE_SKEY)));
 
     @DeployConfig(TestContract1.class)
-    public static DeployConfiguration config1(Object obj) {
+    public static DeployConfiguration config1() {
         DeployConfiguration config = new DeployConfiguration();
         config.setDeployParam(array(
                 integer(5),

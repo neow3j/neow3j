@@ -117,7 +117,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         if (method.getParameterCount() != 0
                 && !method.getParameterTypes()[0].equals(DeployContext.class)) {
             throw new ExtensionConfigurationException(format("Methods annotated with '%s' must " +
-                            "can have either no parameter of an optional '%s' parameter.",
+                            "have either no parameter of an optional '%s' parameter.",
                     DeployConfig.class.getSimpleName(), DeployContext.class.getSimpleName()));
         }
         return method;
