@@ -29,7 +29,7 @@ public class TestContract1 {
     public static boolean initialize() {
         if (!Runtime.checkWitness(new Hash160(Storage.get(ctx, OWNER_KEY)))) {
             return false;
-        };
+        }
         Storage.put(ctx, PARENT_CONTRACT_KEY, Runtime.getCallingScriptHash());
         return true;
     }
