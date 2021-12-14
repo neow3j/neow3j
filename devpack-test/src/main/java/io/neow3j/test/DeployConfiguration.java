@@ -8,7 +8,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Used for configuring the deployment of a contract under test.
+ * Used for configuring the deployment of a contract under test. Instantiate and return this
+ * class in a method annotated with {@link DeployConfig} to configure the deployment of a
+ * specific contract under test.
  */
 public class DeployConfiguration {
 
@@ -71,7 +73,8 @@ public class DeployConfiguration {
 
     /**
      * Sets the signer that will be used on the deploy transaction.
-     *
+     * <p>
+     * If no signer is set, a default account will be used by the test framework.
      * @param signer The signer.
      */
     public void setSigner(AccountSigner signer) {
@@ -80,7 +83,8 @@ public class DeployConfiguration {
 
     /**
      * Sets the accounts that are used for signing the deploy transaction, if the signer account
-     * set in {@link DeployConfiguration#setSigner(AccountSigner)} is a multi-sig account.
+     * set in {@link DeployConfiguration#setSigner(AccountSigner)} is a multi-sig account. I.e.,
+     * don't use this when the signer is a single-sig account.
      *
      * @param accounts The signing accounts.
      */

@@ -8,16 +8,15 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Use this annotation on static methods that return a {@link io.neow3j.types.ContractParameter}.
- * The parameter will be passed to the deployment of the contract mentioned in
- * {@link DeployConfig#value()}. The annotated method must be static, return a {@code
- * ContractParameter}, and either take no parameters or one parameter of type {@link DeployContext}.
+ * Use this annotation on methods in your test class to configure the deployment of a contract.
+ * Such a configuration method must be static and return a {@link DeployConfiguration}. It
+ * can either take no parameters or one parameter of type {@link DeployContext}. The contract
+ * configured with such a method is set in the {@link DeployConfig#value()} of this annotation.
  * <p>
  * The annotated methods are called before a potential {@code setUp} method (annotated with
- * {@link BeforeAll}). Thus, you should not access objects set up in the {@code setUp} method.
- * Furthermore, the {@link ContractTestExtension} object is not in a consistent state when a deploy
- * config method is called, i.e., don't access the {@link ContractTestExtension} in the deploy
- * config method.
+ * {@link BeforeAll}). Thus, you should not access objects set up in the {@code setUp} method. I
+ * you need access to things like accounts, set them up in the static constructor of your test
+ * class.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
