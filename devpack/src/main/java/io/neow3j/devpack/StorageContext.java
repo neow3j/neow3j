@@ -1,10 +1,10 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_ASREADONLY;
 import static io.neow3j.devpack.Helper.toByteArray;
+import static io.neow3j.script.InteropService.SYSTEM_STORAGE_ASREADONLY;
 
 /**
  * A {@code StorageContext} is the gateway to a contract's storage. It can be passed to other
@@ -12,6 +12,9 @@ import static io.neow3j.devpack.Helper.toByteArray;
  * of the current contract. It is required in all {@link Storage} methods.
  */
 public class StorageContext implements InteropInterface {
+
+    private StorageContext() {
+    }
 
     /**
      * Gets this {@code StorageContext} in read-only mode, meaning that after calling this method,
