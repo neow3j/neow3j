@@ -114,8 +114,24 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInteger(byte[] key) {
-        return Storage.getInteger(context, concat(prefix, key));
+    public Integer getInt(byte[] key) {
+        return Storage.getInt(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getIntOrZero(byte[] key) {
+        return Storage.getIntOrZero(context, concat(prefix, key));
     }
 
     // endregion get bytearray key
@@ -163,8 +179,24 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInteger(ByteString key) {
-        return Storage.getInteger(context, concat(prefix, key));
+    public Integer getInt(ByteString key) {
+        return Storage.getInt(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getIntOrZero(ByteString key) {
+        return Storage.getIntOrZero(context, concat(prefix, key));
     }
 
     // endregion get bytestring key
@@ -212,8 +244,24 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInteger(String key) {
-        return Storage.getInteger(context, concat(prefix, key));
+    public Integer getInt(String key) {
+        return Storage.getInt(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getIntOrZero(String key) {
+        return Storage.getIntOrZero(context, concat(prefix, key));
     }
 
     // endregion get string key
@@ -261,8 +309,24 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInteger(int key) {
-        return Storage.getInteger(context, concat(prefix, key));
+    public Integer getInt(int key) {
+        return Storage.getInt(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
+     * string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    public Integer getIntOrZero(int key) {
+        return Storage.getIntOrZero(context, concat(prefix, key));
     }
 
     // endregion get integer key

@@ -54,6 +54,9 @@ public class StorageMapIntegrationTest {
     private static final Integer KEY5 = 1234;
     private static final Integer DATA5 = 255;
 
+    private static final Integer KEY_WITHOUT_VALUE = 8;
+    private static final String KEY_HEX_WITHOUT_VALUE = "08";
+
     @BeforeClass
     public static void setUp() throws Throwable {
         String storeData = "storeData";
@@ -104,10 +107,22 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
-    public void getIntegerByByteStringKey() throws IOException {
+    public void getIntByByteStringKey() throws IOException {
         ContractParameter param = byteArrayFromString(KEY3);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+    }
+
+    @Test
+    public void getIntOrZeroByByteStringKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        param = byteArrayFromString(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
     }
 
     // endregion get bytestring key
@@ -135,10 +150,22 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
-    public void getIntegerByByteArrayKey() throws IOException {
+    public void getIntByByteArrayKey() throws IOException {
         ContractParameter param = byteArrayFromString(KEY3);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+    }
+
+    @Test
+    public void getIntOrZeroByByteArrayKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        param = byteArrayFromString(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
     }
 
     // endregion get bytearray key
@@ -167,10 +194,22 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
-    public void getIntegerByStringKey() throws IOException {
+    public void getIntByStringKey() throws IOException {
         ContractParameter param = string(KEY3);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+    }
+
+    @Test
+    public void getIntOrZeroByStringKey() throws IOException {
+        ContractParameter param = string(KEY3);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA3)));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        param = string(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
     }
 
     // endregion get string key
@@ -198,10 +237,22 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
-    public void getIntegerByIntegerKey() throws IOException {
+    public void getIntByIntegerKey() throws IOException {
         ContractParameter param = integer(KEY5);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA5)));
+    }
+
+    @Test
+    public void getIntOrZeroByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY5);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA5)));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        param = integer(KEY_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
     }
 
     // endregion get integer key
@@ -502,8 +553,12 @@ public class StorageMapIntegrationTest {
             return map.getString(s);
         }
 
-        public static int getIntegerByByteStringKey(ByteString s) {
-            return map.getInteger(s);
+        public static int getIntByByteStringKey(ByteString s) {
+            return map.getInt(s);
+        }
+
+        public static int getIntOrZeroByByteStringKey(ByteString s) {
+            return map.getIntOrZero(s);
         }
 
         // endregion get bytestring key
@@ -521,8 +576,12 @@ public class StorageMapIntegrationTest {
             return map.getString(b);
         }
 
-        public static int getIntegerByByteArrayKey(byte[] b) {
-            return map.getInteger(b);
+        public static int getIntByByteArrayKey(byte[] b) {
+            return map.getInt(b);
+        }
+
+        public static int getIntOrZeroByByteArrayKey(byte[] b) {
+            return map.getIntOrZero(b);
         }
 
         // endregion get bytearray key
@@ -540,8 +599,12 @@ public class StorageMapIntegrationTest {
             return map.getString(s);
         }
 
-        public static int getIntegerByStringKey(String s) {
-            return map.getInteger(s);
+        public static int getIntByStringKey(String s) {
+            return map.getInt(s);
+        }
+
+        public static int getIntOrZeroByStringKey(String s) {
+            return map.getIntOrZero(s);
         }
 
         // endregion get string key
@@ -559,8 +622,12 @@ public class StorageMapIntegrationTest {
             return map.getString(i);
         }
 
-        public static int getIntegerByIntegerKey(int i) {
-            return map.getInteger(i);
+        public static int getIntByIntegerKey(int i) {
+            return map.getInt(i);
+        }
+
+        public static int getIntOrZeroByIntegerKey(int i) {
+            return map.getIntOrZero(i);
         }
 
         // endregion get integer key

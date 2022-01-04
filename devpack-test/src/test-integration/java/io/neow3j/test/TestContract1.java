@@ -35,7 +35,7 @@ public class TestContract1 {
     }
 
     public static int getInt() {
-        return Storage.getInteger(ctx, INTEGER_VALUE_KEY);
+        return Storage.getInt(ctx, INTEGER_VALUE_KEY);
     }
 
     public static ByteString getParentContract() {
@@ -45,4 +45,5 @@ public class TestContract1 {
     public static ByteString getOwner() {
         return Storage.get(ctx, OWNER_KEY);
     }
+
 }
