@@ -63,6 +63,7 @@ public class StorageIntegrationTest {
     private static final Integer KEY5_INT = 42;
     private static final String DATA5 = "neoooww";
 
+    private static final int KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
     @BeforeClass
@@ -187,7 +188,7 @@ public class StorageIntegrationTest {
     // region getInteger
 
     @Test
-    public void getIntegerByByteArrayKey() throws IOException {
+    public void getIntByByteArrayKey() throws IOException {
         ContractParameter key = byteArray(KEY3_HEX);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
@@ -200,7 +201,20 @@ public class StorageIntegrationTest {
     }
 
     @Test
-    public void getIntegerByByteStringKey() throws IOException {
+    public void getIntOrZeroByByteArrayKey() throws IOException {
+        ContractParameter key = byteArray(KEY3_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        key = byteArray(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
+    }
+
+    @Test
+    public void getIntByByteStringKey() throws IOException {
         ContractParameter key = byteArray(KEY3_HEX);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
@@ -213,7 +227,20 @@ public class StorageIntegrationTest {
     }
 
     @Test
-    public void getIntegerByStringKey() throws IOException {
+    public void getIntOrZeroByByteStringKey() throws IOException {
+        ContractParameter key = byteArray(KEY3_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        key = byteArray(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
+    }
+
+    @Test
+    public void getIntByStringKey() throws IOException {
         ContractParameter key = string(KEY4_STRING);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER4));
@@ -226,10 +253,35 @@ public class StorageIntegrationTest {
     }
 
     @Test
-    public void getIntegerByIntegerKey() throws IOException {
+    public void getIntOrZeroByStringKey() throws IOException {
+        ContractParameter key = string(KEY4_STRING);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(INTEGER4));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        key = string(KEY_HEX_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
+    }
+
+    @Test
+    public void getIntByIntegerKey() throws IOException {
         ContractParameter key = integer(KEY3_INT);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+    }
+
+    @Test
+    public void getIntOrZeroByIntegerKey() throws IOException {
+        ContractParameter key = integer(KEY3_INT);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(INTEGER3));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        key = integer(KEY_WITHOUT_VALUE);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
     }
 
     // endregion getInteger
@@ -642,20 +694,36 @@ public class StorageIntegrationTest {
         // endregion getString
         // region getInteger
 
-        public static int getIntegerByByteArrayKey(byte[] key) {
-            return Storage.getInteger(ctx, key);
+        public static int getIntByByteArrayKey(byte[] key) {
+            return Storage.getInt(ctx, key);
         }
 
-        public static int getIntegerByByteStringKey(ByteString key) {
-            return Storage.getInteger(ctx, key);
+        public static int getIntOrZeroByByteArrayKey(byte[] key) {
+            return Storage.getIntOrZero(ctx, key);
         }
 
-        public static int getIntegerByStringKey(String key) {
-            return Storage.getInteger(ctx, key);
+        public static int getIntByByteStringKey(ByteString key) {
+            return Storage.getInt(ctx, key);
         }
 
-        public static int getIntegerByIntegerKey(int key) {
-            return Storage.getInteger(ctx, key);
+        public static int getIntOrZeroByByteStringKey(ByteString key) {
+            return Storage.getIntOrZero(ctx, key);
+        }
+
+        public static int getIntByStringKey(String key) {
+            return Storage.getInt(ctx, key);
+        }
+
+        public static int getIntOrZeroByStringKey(String key) {
+            return Storage.getIntOrZero(ctx, key);
+        }
+
+        public static int getIntByIntegerKey(int key) {
+            return Storage.getInt(ctx, key);
+        }
+
+        public static int getIntOrZeroByIntegerKey(int key) {
+            return Storage.getIntOrZero(ctx, key);
         }
 
         // endregion getInteger

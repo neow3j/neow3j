@@ -38,4 +38,5 @@ public class TestContract2 {
     public static Hash160 getOwner() {
         return OWNER;
     }
+
 }
