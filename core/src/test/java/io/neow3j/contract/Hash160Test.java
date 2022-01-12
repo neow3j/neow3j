@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.serialization.BinaryWriter;
@@ -13,14 +14,14 @@ import org.junit.rules.ExpectedException;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
-import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -139,8 +140,8 @@ public class Hash160Test {
 
     @Test
     public void fromPublicKeyByteArrays() {
-        Hash160 hash = Hash160.fromPublicKeys(
-                singletonList(hexStringToByteArray(defaultAccountPublicKey())), 1);
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
+        Hash160 hash = Hash160.fromPublicKeys(asList(pubKey), 1);
         assertThat(hash.toString(), is(committeeAccountScriptHash()));
     }
 
