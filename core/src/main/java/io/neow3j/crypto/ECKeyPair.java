@@ -316,7 +316,7 @@ public class ECKeyPair {
 
     }
 
-    public static class ECPublicKey extends NeoSerializable {
+    public static class ECPublicKey extends NeoSerializable implements Comparable<ECPublicKey> {
 
         private ECPoint ecPoint;
 
@@ -441,5 +441,20 @@ public class ECKeyPair {
         public int hashCode() {
             return ecPoint.hashCode();
         }
+
+        @Override
+        public int compareTo(ECPublicKey o) {
+            if (this.equals(o)) {
+                return 0;
+            }
+            int comparedXCoord = this.getECPoint().getXCoord().toBigInteger()
+                    .compareTo(o.getECPoint().getXCoord().toBigInteger());
+            if (comparedXCoord != 0) {
+                return comparedXCoord;
+            }
+            return this.getECPoint().getYCoord().toBigInteger()
+                    .compareTo(o.getECPoint().getYCoord().toBigInteger());
+        }
     }
+
 }

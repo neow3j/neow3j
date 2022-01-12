@@ -1,9 +1,6 @@
 package io.neow3j.script;
 
-import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
-
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
@@ -11,14 +8,17 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
+
+import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
 
 /**
  * A verification script is part of a witness and is simply a sequence of neo-vm instructions.
@@ -74,10 +74,7 @@ public class VerificationScript extends NeoSerializable {
             throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
                     " public keys can take part in a multi-sig account");
         }
-        List<byte[]> encodedKeys = publicKeys.stream()
-                .map(key -> key.getEncoded(true))
-                .collect(Collectors.toList());
-        this.script = ScriptBuilder.buildVerificationScript(encodedKeys, signingThreshold);
+        this.script = ScriptBuilder.buildVerificationScript(publicKeys, signingThreshold);
     }
 
     /**

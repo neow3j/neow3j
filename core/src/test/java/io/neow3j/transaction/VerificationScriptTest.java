@@ -1,20 +1,19 @@
 package io.neow3j.transaction;
 
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.script.InteropService;
 import io.neow3j.script.InvocationScript;
+import io.neow3j.script.OpCode;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.utils.Numeric;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
-
-import org.junit.Test;
 
 import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
 import static org.hamcrest.Matchers.hasSize;
@@ -46,19 +45,24 @@ public class VerificationScriptTest {
     public void testFromPublicKeys() {
         final String key1 = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
         final String key2 = "03eda286d19f7ee0b472afd1163d803d620a961e1581a8f2704b52c0285f6e022d";
+        final String key3 = "03ac81ec17f2f15fd6d193182f927c5971559c2a32b9408a06fec9e711fb7ca02e";
 
         List<ECPublicKey> publicKeys = Arrays.asList(
                 new ECPublicKey(Numeric.hexStringToByteArray(key1)),
-                new ECPublicKey(Numeric.hexStringToByteArray(key2)));
+                new ECPublicKey(Numeric.hexStringToByteArray(key2)),
+                new ECPublicKey(Numeric.hexStringToByteArray(key3)));
         VerificationScript script = new VerificationScript(publicKeys, 2);
 
+        // Keys should be ordered key1, key3, key2.
         byte[] expected = Numeric.hexStringToByteArray(""
                 + OpCode.PUSH2.toString() // n = 2, signing threshold
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key1 // public key
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key3 // public key
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key2 // public key
-                + OpCode.PUSH2.toString() // m = 2, number of keys
+                + OpCode.PUSH3.toString() // m = 3, number of keys
                 + OpCode.SYSCALL.toString()
                 + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );

@@ -92,4 +92,13 @@ public class ECKeyPairTest {
         assertThat(privKey.getBytes(), is(new byte[NeoConstants.PRIVATE_KEY_SIZE]));
     }
 
+    @Test
+    public void compareTo() {
+        String encodedKey1 = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
+        String encodedKey2 = "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296";
+        ECKeyPair.ECPublicKey key1 = new ECKeyPair.ECPublicKey(encodedKey1);
+        ECKeyPair.ECPublicKey key2 = new ECKeyPair.ECPublicKey(encodedKey2);
+        assertThat(key1.compareTo(key2), is(1)); // x coord of key1 is larger than key2
+    }
+
 }

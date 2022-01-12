@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -154,7 +155,8 @@ public class ContractParameter {
                     "map contract parameter.");
         }
 
-        Map<ContractParameter, ContractParameter> paramMap = new HashMap<>();
+        // Use a linked hash map to keep the ordering of the argument map.
+        Map<ContractParameter, ContractParameter> paramMap = new LinkedHashMap<>();
         map.forEach((k, v) -> {
             ContractParameter key = castToContractParameter(k);
             ContractParameter value = castToContractParameter(v);

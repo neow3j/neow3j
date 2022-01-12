@@ -1,5 +1,6 @@
 package io.neow3j.script;
 
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.types.CallFlags;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -389,17 +390,17 @@ public class ScriptBuilder {
     /**
      * Builds a verification script for a multi signature account from the given public keys.
      *
-     * @param encodedPublicKeys The public keys encoded in compressed format.
-     * @param signingThreshold  The desired minimum number of signatures required when using the
-     *                          multi-sig account.
+     * @param pubKeys          The public keys.
+     * @param signingThreshold The desired minimum number of signatures required when using the
+     *                         multi-sig account.
      * @return the script.
      */
-    public static byte[] buildVerificationScript(List<byte[]> encodedPublicKeys,
+    public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys,
             int signingThreshold) {
         ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
-        encodedPublicKeys.forEach(builder::pushData);
+        pubKeys.stream().sorted().forEach(k -> builder.pushData(k.getEncoded(true)));
         return builder
-                .pushInteger(encodedPublicKeys.size())
+                .pushInteger(pubKeys.size())
                 .sysCall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
                 .toArray();
     }
