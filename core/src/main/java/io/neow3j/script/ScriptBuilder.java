@@ -390,9 +390,9 @@ public class ScriptBuilder {
     /**
      * Builds a verification script for a multi signature account from the given public keys.
      *
-     * @param pubKeys The public keys.
-     * @param signingThreshold  The desired minimum number of signatures required when using the
-     *                          multi-sig account.
+     * @param pubKeys          The public keys.
+     * @param signingThreshold The desired minimum number of signatures required when using the
+     *                         multi-sig account.
      * @return the script.
      */
     public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys,

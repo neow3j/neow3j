@@ -444,12 +444,17 @@ public class ECKeyPair {
 
         @Override
         public int compareTo(ECPublicKey o) {
-            if (this.equals(o)) return 0;
+            if (this.equals(o)) {
+                return 0;
+            }
             int comparedXCoord = this.getECPoint().getXCoord().toBigInteger()
                     .compareTo(o.getECPoint().getXCoord().toBigInteger());
-            if (comparedXCoord != 0) return comparedXCoord;
+            if (comparedXCoord != 0) {
+                return comparedXCoord;
+            }
             return this.getECPoint().getYCoord().toBigInteger()
                     .compareTo(o.getECPoint().getYCoord().toBigInteger());
         }
     }
+
 }
