@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -63,6 +64,15 @@ public class StorageIntegrationTest {
     private static final Integer KEY5_INT = 42;
     private static final String DATA5 = "neoooww";
 
+    private static final String KEY6_HEX = "12";
+    private static final boolean BOOLEAN_6 = true;
+
+    private static final String KEY7_HEX = "13";
+    private static final boolean BOOLEAN_7 = false;
+
+    private static final String KEY8_HEX = "14";
+    private static final String DATA8 = "00";
+
     private static final int KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
@@ -89,6 +99,18 @@ public class StorageIntegrationTest {
 
         key = integer(KEY5_INT);
         data = byteArrayFromString(DATA5);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+
+        key = byteArray(KEY6_HEX);
+        data = bool(BOOLEAN_6);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+
+        key = byteArray(KEY7_HEX);
+        data = bool(BOOLEAN_7);
+        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+
+        key = byteArray(KEY8_HEX);
+        data = byteArray(DATA8);
         ct.invokeFunctionAndAwaitExecution(storeData, key, data);
     }
 
@@ -185,6 +207,69 @@ public class StorageIntegrationTest {
     }
 
     // endregion getString
+    // region getBoolean
+
+    @Test
+    public void getBooleanByByteArrayKey() throws IOException {
+        ContractParameter key = byteArray(KEY6_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+
+        key = byteArray(KEY7_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+
+        key = byteArray(KEY8_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+    }
+
+    @Test
+    public void getBooleanByByteStringKey() throws IOException {
+        ContractParameter key = byteArray(KEY6_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+
+        key = byteArray(KEY7_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+
+        key = byteArray(KEY8_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+    }
+
+    @Test
+    public void getBooleanByStringKey() throws IOException {
+        ContractParameter key = byteArray(KEY3_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+
+        key = byteArray(KEY7_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+
+        key = byteArray(KEY8_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+    }
+
+    @Test
+    public void getBooleanByIntegerKey() throws IOException {
+        ContractParameter key = byteArray(KEY1_HEX);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+
+        key = byteArray(KEY7_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+
+        key = byteArray(KEY8_HEX);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
+    }
+
+    // endregion getBoolean
     // region getInteger
 
     @Test
@@ -692,6 +777,25 @@ public class StorageIntegrationTest {
         }
 
         // endregion getString
+        // region getBoolean
+
+        public static boolean getBooleanByByteArrayKey(byte[] key) {
+            return Storage.getBoolean(ctx, key);
+        }
+
+        public static boolean getBooleanByByteStringKey(ByteString key) {
+            return Storage.getBoolean(ctx, key);
+        }
+
+        public static boolean getBooleanByStringKey(String key) {
+            return Storage.getBoolean(ctx, key);
+        }
+
+        public static boolean getBooleanByIntegerKey(int key) {
+            return Storage.getBoolean(ctx, key);
+        }
+
+        // endregion getBoolean
         // region getInteger
 
         public static int getIntByByteArrayKey(byte[] key) {
