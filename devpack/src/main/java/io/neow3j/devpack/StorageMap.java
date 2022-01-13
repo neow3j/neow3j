@@ -106,6 +106,17 @@ public class StorageMap {
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a boolean.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    public Boolean getBoolean(byte[] key) {
+        return Storage.getBoolean(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
      * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
      * string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
@@ -167,6 +178,17 @@ public class StorageMap {
      */
     public String getString(ByteString key) {
         return Storage.getString(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a boolean.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    public Boolean getBoolean(ByteString key) {
+        return Storage.getBoolean(context, concat(prefix, key));
     }
 
     /**
@@ -236,6 +258,17 @@ public class StorageMap {
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a boolean.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    public Boolean getBoolean(String key) {
+        return Storage.getBoolean(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
      * and converts it to an integer. The bytes are read in little-endian format. E.g., the byte
      * string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
@@ -297,6 +330,17 @@ public class StorageMap {
      */
     public String getString(int key) {
         return Storage.getString(context, concat(prefix, key));
+    }
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
+     * as a boolean.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    public Boolean getBoolean(int key) {
+        return Storage.getBoolean(context, concat(prefix, key));
     }
 
     /**

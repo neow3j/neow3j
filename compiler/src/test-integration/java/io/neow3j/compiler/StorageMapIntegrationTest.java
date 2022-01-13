@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
+import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -54,6 +55,9 @@ public class StorageMapIntegrationTest {
     private static final Integer KEY5 = 1234;
     private static final Integer DATA5 = 255;
 
+    private static final Integer KEY6 = 42;
+    private static final boolean BOOLEAN6 = false;
+
     private static final Integer KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
@@ -81,6 +85,10 @@ public class StorageMapIntegrationTest {
         key = integer(KEY5);
         data = integer(DATA5);
         ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+
+        key = integer(KEY6);
+        data = bool(BOOLEAN6);
+        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
     }
 
     // region get bytestring key
@@ -104,6 +112,13 @@ public class StorageMapIntegrationTest {
         ContractParameter param = byteArrayFromString(KEY2);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getBooleanByByteStringKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
     }
 
     @Test
@@ -147,6 +162,13 @@ public class StorageMapIntegrationTest {
         ContractParameter param = byteArrayFromString(KEY2);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA2));
+    }
+
+    @Test
+    public void getBooleanByByteArrayKey() throws IOException {
+        ContractParameter param = byteArrayFromString(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
     }
 
     @Test
@@ -194,6 +216,13 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
+    public void getBooleanByStringKey() throws IOException {
+        ContractParameter param = string(KEY2);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+    }
+
+    @Test
     public void getIntByStringKey() throws IOException {
         ContractParameter param = string(KEY3);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
@@ -234,6 +263,13 @@ public class StorageMapIntegrationTest {
         ContractParameter param = integer(KEY4);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA4));
+    }
+
+    @Test
+    public void getBooleanByIntegerKey() throws IOException {
+        ContractParameter param = integer(KEY6);
+        InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
+        assertThat(res.getStack().get(0).getBoolean(), is(false));
     }
 
     @Test
@@ -553,6 +589,10 @@ public class StorageMapIntegrationTest {
             return map.getString(s);
         }
 
+        public static boolean getBooleanByByteStringKey(ByteString s) {
+            return map.getBoolean(s);
+        }
+
         public static int getIntByByteStringKey(ByteString s) {
             return map.getInt(s);
         }
@@ -574,6 +614,10 @@ public class StorageMapIntegrationTest {
 
         public static String getStringByByteArrayKey(byte[] b) {
             return map.getString(b);
+        }
+
+        public static boolean getBooleanByByteArrayKey(byte[] b) {
+            return map.getBoolean(b);
         }
 
         public static int getIntByByteArrayKey(byte[] b) {
@@ -599,6 +643,10 @@ public class StorageMapIntegrationTest {
             return map.getString(s);
         }
 
+        public static boolean getBooleanByStringKey(String s) {
+            return map.getBoolean(s);
+        }
+
         public static int getIntByStringKey(String s) {
             return map.getInt(s);
         }
@@ -620,6 +668,10 @@ public class StorageMapIntegrationTest {
 
         public static String getStringByIntegerKey(int i) {
             return map.getString(i);
+        }
+
+        public static boolean getBooleanByIntegerKey(int i) {
+            return map.getBoolean(i);
         }
 
         public static int getIntByIntegerKey(int i) {
