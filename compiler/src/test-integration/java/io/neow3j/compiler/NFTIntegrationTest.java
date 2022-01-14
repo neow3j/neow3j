@@ -49,7 +49,7 @@ public class NFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteNonFungibleToken.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteNonFungibleToken.class.getName());
     }
 
     @Test
@@ -164,7 +164,7 @@ public class NFTIntegrationTest {
     @SuppressWarnings("unchecked")
     static class ConcreteNonFungibleToken {
         static final StorageContext ctx = Storage.getStorageContext();
-        static final byte[] tokensOfMap = Helper.toByteArray((byte) 1);
+        static final byte[] tokensOfPrefix = Helper.toByteArray((byte) 1);
 
         public static String symbol() {
             return "CNFT";
@@ -183,11 +183,11 @@ public class NFTIntegrationTest {
         }
 
         public static Iterator<ByteString> tokensOf(io.neow3j.devpack.Hash160 account) {
-            StorageMap map = ctx.createMap(tokensOfMap);
+            StorageMap map = new StorageMap(ctx, tokensOfPrefix);
             map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("token1"));
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("token2"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("token3"));
-            return (Iterator<ByteString>) Storage.find(ctx, tokensOfMap, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, tokensOfPrefix, FindOptions.ValuesOnly);
         }
 
         public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
@@ -195,12 +195,12 @@ public class NFTIntegrationTest {
         }
 
         public static Iterator<ByteString> tokens() {
-            StorageMap map = ctx.createMap(tokensOfMap);
+            StorageMap map = new StorageMap(ctx, tokensOfPrefix);
             map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("tokenOne"));
             map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("tokenTwo"));
             map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("tokenThree"));
             map.put(Helper.toByteArray((byte) 4), Helper.toByteArray("tokenFour"));
-            return (Iterator<ByteString>) Storage.find(ctx, tokensOfMap, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, tokensOfPrefix, FindOptions.ValuesOnly);
         }
 
         public static Map<String, String> properties(ByteString tokenId) {
@@ -210,7 +210,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("444260bf88610b9d528532bd9144291741dbe16c")
+    @ContractHash("d6a902afa34a1da9d1773022183f26a4fed852db")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 

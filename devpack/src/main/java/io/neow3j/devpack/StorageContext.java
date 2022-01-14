@@ -3,7 +3,6 @@ package io.neow3j.devpack;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.OpCode;
 
-import static io.neow3j.devpack.Helper.toByteArray;
 import static io.neow3j.script.InteropService.SYSTEM_STORAGE_ASREADONLY;
 
 /**
@@ -24,61 +23,6 @@ public class StorageContext implements InteropInterface {
      */
     @Instruction(interopService = SYSTEM_STORAGE_ASREADONLY)
     public native StorageContext asReadOnly();
-
-    /**
-     * Creates a new {@link StorageMap} from entries with the given prefix in this
-     * {@code StorageContext}.
-     *
-     * @param prefix The prefix.
-     * @return the {@link StorageMap}
-     */
-    public StorageMap createMap(ByteString prefix) {
-        return new StorageMap(this, prefix.toByteArray());
-    }
-
-    /**
-     * Creates a new {@link StorageMap} from entries with the given prefix in this
-     * {@code StorageContext}.
-     *
-     * @param prefix The prefix.
-     * @return the {@link StorageMap}
-     */
-    public StorageMap createMap(String prefix) {
-        return new StorageMap(this, Helper.toByteArray(prefix));
-    }
-
-    /**
-     * Creates a new {@link StorageMap} from entries with the given prefix in this
-     * {@code StorageContext}.
-     *
-     * @param prefix The prefix.
-     * @return the {@link StorageMap}
-     */
-    public StorageMap createMap(int prefix) {
-        return new StorageMap(this, Helper.toByteArray(prefix));
-    }
-
-    /**
-     * Creates a new {@link StorageMap} from entries with the given prefix in this
-     * {@code StorageContext}.
-     *
-     * @param prefix The prefix.
-     * @return the {@link StorageMap}
-     */
-    public StorageMap createMap(byte[] prefix) {
-        return new StorageMap(this, prefix);
-    }
-
-    /**
-     * Creates a new {@link StorageMap} from entries with the given prefix in this
-     * {@code StorageContext}.
-     *
-     * @param prefix The prefix.
-     * @return the {@link StorageMap}
-     */
-    public StorageMap createMap(byte prefix) {
-        return new StorageMap(this, toByteArray(prefix));
-    }
 
     /**
      * Compares this context to the given object. The comparison happens by reference only.

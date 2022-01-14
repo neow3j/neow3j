@@ -45,7 +45,7 @@ public class DivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteDivisibleNFT.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteDivisibleNFT.class.getName());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class DivisibleNFTIntegrationTest {
         }
 
         public static Iterator<ByteString> ownerOf(ByteString tokenId) {
-            StorageMap map = ctx.createMap(mapPrefix);
+            StorageMap map = new StorageMap(ctx, mapPrefix);
             map.put(Helper.toByteArray((byte) 1),
                     addressToScriptHash("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
             map.put(Helper.toByteArray((byte) 2),
@@ -117,7 +117,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("d033770e39a976f588fe6a5537bf24f1a3a622be")
+    @ContractHash("56c283aaa49fa179716e623f480d447f520bdb97")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

@@ -4,6 +4,7 @@ import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 
 import static io.neow3j.devpack.Helper.concat;
+import static io.neow3j.devpack.Helper.toByteArray;
 
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
@@ -15,8 +16,22 @@ public class StorageMap {
     private final StorageContext context;
     private final byte[] prefix;
 
+    // region constructors
+
     /**
-     * Constructs a new {@code StorageMep} from entries with the given prefix in the given {@link
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
+     * StorageContext}.
+     *
+     * @param context The storage to look for the entries.
+     * @param prefix  The prefix.
+     */
+    public StorageMap(StorageContext context, ByteString prefix) {
+        this.context = context;
+        this.prefix = prefix.toByteArray();
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
      * StorageContext}.
      *
      * @param context The storage to look for the entries.
@@ -27,6 +42,43 @@ public class StorageMap {
         this.prefix = prefix;
     }
 
+    /**
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
+     * StorageContext}.
+     *
+     * @param context The storage to look for the entries.
+     * @param prefix  The prefix.
+     */
+    public StorageMap(StorageContext context, String prefix) {
+        this.context = context;
+        this.prefix = toByteArray(prefix);
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
+     * StorageContext}.
+     *
+     * @param context The storage to look for the entries.
+     * @param prefix  The prefix.
+     */
+    public StorageMap(StorageContext context, int prefix) {
+        this.context = context;
+        this.prefix = toByteArray(prefix);
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
+     * StorageContext}.
+     *
+     * @param context The storage to look for the entries.
+     * @param prefix  The prefix.
+     */
+    public StorageMap(StorageContext context, byte prefix) {
+        this.context = context;
+        this.prefix = toByteArray(prefix);
+    }
+
+    // endregion constructors
     // region delete
 
     /**
