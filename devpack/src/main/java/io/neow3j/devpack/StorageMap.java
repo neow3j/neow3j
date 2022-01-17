@@ -5,7 +5,6 @@ import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.types.StackItemType;
 
-import static io.neow3j.devpack.Helper.concat;
 import static io.neow3j.devpack.Helper.toByteArray;
 
 /**
@@ -89,9 +88,16 @@ public class StorageMap {
      *
      * @param key The key to delete.
      */
-    public void delete(byte[] key) {
-        Storage.delete(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(byte[] key);
 
     /**
      * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
@@ -99,9 +105,16 @@ public class StorageMap {
      *
      * @param key The key to delete.
      */
-    public void delete(ByteString key) {
-        Storage.delete(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(ByteString key);
 
     /**
      * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
@@ -109,9 +122,16 @@ public class StorageMap {
      *
      * @param key The key to delete.
      */
-    public void delete(String key) {
-        Storage.delete(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(String key);
 
     /**
      * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
@@ -119,9 +139,16 @@ public class StorageMap {
      *
      * @param key The key to delete.
      */
-    public void delete(int key) {
-        Storage.delete(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(int key);
 
     // endregion delete
     // region get bytearray key

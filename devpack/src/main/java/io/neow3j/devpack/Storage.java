@@ -692,7 +692,6 @@ public class Storage {
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, String key);
 
-
     /**
      * Deletes the value corresponding to the given key from the storage.
      *
