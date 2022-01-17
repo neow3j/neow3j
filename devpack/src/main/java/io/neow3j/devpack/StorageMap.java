@@ -1,7 +1,9 @@
 package io.neow3j.devpack;
 
+import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.types.StackItemType;
 
 import static io.neow3j.devpack.Helper.concat;
 import static io.neow3j.devpack.Helper.toByteArray;
@@ -130,9 +132,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key.
      */
-    public ByteString get(byte[] key) {
-        return Storage.get(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ByteString get(byte[] key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -141,9 +150,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    public byte[] getByteArray(byte[] key) {
-        return Storage.getByteArray(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public native byte[] getByteArray(byte[] key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -152,9 +169,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a string.
      */
-    public String getString(byte[] key) {
-        return Storage.getString(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native String getString(byte[] key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -163,9 +187,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a boolean.
      */
-    public Boolean getBoolean(byte[] key) {
-        return Storage.getBoolean(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public native Boolean getBoolean(byte[] key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -177,9 +209,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInt(byte[] key) {
-        return Storage.getInt(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getInt(byte[] key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -193,9 +233,23 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getIntOrZero(byte[] key) {
-        return Storage.getIntOrZero(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getIntOrZero(byte[] key);
 
     // endregion get bytearray key
     // region get bytestring key
@@ -206,9 +260,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key.
      */
-    public ByteString get(ByteString key) {
-        return Storage.get(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ByteString get(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -217,9 +278,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    public byte[] getByteArray(ByteString key) {
-        return Storage.getByteArray(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public native byte[] getByteArray(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -228,9 +297,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a string.
      */
-    public String getString(ByteString key) {
-        return Storage.getString(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native String getString(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -239,9 +315,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a boolean.
      */
-    public Boolean getBoolean(ByteString key) {
-        return Storage.getBoolean(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public native Boolean getBoolean(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -253,9 +337,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInt(ByteString key) {
-        return Storage.getInt(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getInt(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -269,9 +361,23 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getIntOrZero(ByteString key) {
-        return Storage.getIntOrZero(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getIntOrZero(ByteString key);
 
     // endregion get bytestring key
     // region get string key
@@ -282,9 +388,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key.
      */
-    public ByteString get(String key) {
-        return Storage.get(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ByteString get(String key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -293,9 +406,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    public byte[] getByteArray(String key) {
-        return Storage.getByteArray(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public native byte[] getByteArray(String key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -304,9 +425,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a string.
      */
-    public String getString(String key) {
-        return Storage.getString(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native String getString(String key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -315,9 +443,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a boolean.
      */
-    public Boolean getBoolean(String key) {
-        return Storage.getBoolean(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public native Boolean getBoolean(String key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -329,9 +465,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInt(String key) {
-        return Storage.getInt(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getInt(String key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -345,9 +489,23 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getIntOrZero(String key) {
-        return Storage.getIntOrZero(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getIntOrZero(String key);
 
     // endregion get string key
     // region get integer key
@@ -358,9 +516,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key.
      */
-    public ByteString get(int key) {
-        return Storage.get(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ByteString get(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -369,9 +534,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to a byte array.
      */
-    public byte[] getByteArray(int key) {
-        return Storage.getByteArray(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public native byte[] getByteArray(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -380,9 +553,16 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a string.
      */
-    public String getString(int key) {
-        return Storage.getString(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native String getString(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -391,9 +571,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key as a boolean.
      */
-    public Boolean getBoolean(int key) {
-        return Storage.getBoolean(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public native Boolean getBoolean(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -405,9 +593,17 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getInt(int key) {
-        return Storage.getInt(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getInt(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -421,9 +617,23 @@ public class StorageMap {
      * @param key The key of the value to retrieve.
      * @return the value corresponding to the given key converted to an integer.
      */
-    public Integer getIntOrZero(int key) {
-        return Storage.getIntOrZero(context, concat(prefix, key));
-    }
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getIntOrZero(int key);
 
     // endregion get integer key
     // region put bytearray key
