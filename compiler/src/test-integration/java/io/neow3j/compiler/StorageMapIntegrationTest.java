@@ -662,9 +662,10 @@ public class StorageMapIntegrationTest {
             return map.get(key);
         }
 
-        public static ByteString createMapWithByteArrayPrefix(byte[] prefix, ByteString key) {
-            assert prefix instanceof byte[];
-            StorageMap map = new StorageMap(ctx, prefix);
+        public static ByteString createMapWithByteArrayPrefix(ByteString prefix, ByteString key) {
+            byte[] prefixByteArray = prefix.toByteArray();
+            assert prefixByteArray instanceof byte[];
+            StorageMap map = new StorageMap(ctx, prefixByteArray);
             return map.get(key);
         }
 

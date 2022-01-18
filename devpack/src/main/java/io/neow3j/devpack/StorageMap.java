@@ -13,7 +13,7 @@ import io.neow3j.types.StackItemType;
 public class StorageMap {
 
     private StorageContext context;
-    private byte[] prefix;
+    private Object prefix;
 
     // region constructors
 
@@ -1157,10 +1157,19 @@ public class StorageMap {
         if (this == map) {
             return true;
         }
-        return context.equals(map.context)
-                // The prefix is converted to a byte string for comparison because the neo-vm
-                // does not compare Buffers (which byte[] is on the neo-vm) by value.
-                && new ByteString(prefix).equals(new ByteString(map.prefix));
+        // In case the prefixes are Buffer stack items we need to convert them to ByteStrings to
+        // be able to compare them.
+        Object checkedPrefix = prefix;
+        Object checkdPrefixOther = map.prefix;
+        if (checkedPrefix instanceof byte[]) {
+            checkedPrefix = new ByteString((byte[]) checkedPrefix);
+        }
+        if (checkdPrefixOther instanceof byte[]) {
+            checkdPrefixOther = new ByteString((byte[]) checkdPrefixOther);
+        }
+        return context.equals(map.context) &&
+                // Behaviour depends on the actual stack item type of the prefixes
+                checkedPrefix == checkdPrefixOther;
     }
 
 }
