@@ -38,7 +38,7 @@ public class NNSIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteNeoNameService.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteNeoNameService.class.getName());
     }
 
     @Test

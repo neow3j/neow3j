@@ -117,7 +117,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("d523bba0bb5d759c643158d85cbe1b46588db124")
+    @ContractHash("e0cca5bfbc62806c9f373b27354a89c67d40a94c")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

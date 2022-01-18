@@ -30,7 +30,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
     @Test
