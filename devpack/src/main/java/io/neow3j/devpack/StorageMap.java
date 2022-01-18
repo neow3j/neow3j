@@ -5,8 +5,6 @@ import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
-import static io.neow3j.devpack.Helper.toByteArray;
-
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
  * <p>
@@ -65,10 +63,10 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
-    // TODO: Replace method body with Instruction annotations
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, int prefix) {
-        this.context = context;
-        this.prefix = toByteArray(prefix);
     }
 
     /**
@@ -78,10 +76,10 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
-    // TODO: Replace method body with Instruction annotations
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, byte prefix) {
-        this.context = context;
-        this.prefix = toByteArray(prefix);
     }
 
     // endregion constructors
