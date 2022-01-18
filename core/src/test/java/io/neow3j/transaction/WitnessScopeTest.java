@@ -1,7 +1,7 @@
 package io.neow3j.transaction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
 import io.neow3j.protocol.ObjectMapperFactory;
 import org.hamcrest.core.StringContains;
 import org.junit.Rule;
@@ -12,10 +12,10 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class WitnessScopeTest {
 
@@ -84,10 +84,10 @@ public class WitnessScopeTest {
         ObjectMapper mapper = ObjectMapperFactory.getObjectMapper();
         String json = "\"NonExistent\"";
 
-        expectedException.expect(InvalidDefinitionException.class);
+        expectedException.expect(ValueInstantiationException.class);
         expectedException.expectMessage(new StringContains(
                 String.format("%s value type not found.", WitnessScope.class.getName())));
-        WitnessScope scope = mapper.readValue(json, WitnessScope.class);
+        mapper.readValue(json, WitnessScope.class);
     }
 
 }
