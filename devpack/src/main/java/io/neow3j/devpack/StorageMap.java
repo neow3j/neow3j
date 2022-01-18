@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
-import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.types.StackItemType;
 
 import static io.neow3j.devpack.Helper.toByteArray;
@@ -14,8 +14,8 @@ import static io.neow3j.devpack.Helper.toByteArray;
  */
 public class StorageMap {
 
-    private final StorageContext context;
-    private final byte[] prefix;
+    private StorageContext context;
+    private byte[] prefix;
 
     // region constructors
 
@@ -26,9 +26,10 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, ByteString prefix) {
-        this.context = context;
-        this.prefix = prefix.toByteArray();
     }
 
     /**
@@ -38,9 +39,10 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, byte[] prefix) {
-        this.context = context;
-        this.prefix = prefix;
     }
 
     /**
@@ -50,9 +52,10 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, String prefix) {
-        this.context = context;
-        this.prefix = toByteArray(prefix);
     }
 
     /**
@@ -62,6 +65,7 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
+    // TODO: Replace method body with Instruction annotations
     public StorageMap(StorageContext context, int prefix) {
         this.context = context;
         this.prefix = toByteArray(prefix);
@@ -74,6 +78,7 @@ public class StorageMap {
      * @param context The storage to look for the entries.
      * @param prefix  The prefix.
      */
+    // TODO: Replace method body with Instruction annotations
     public StorageMap(StorageContext context, byte prefix) {
         this.context = context;
         this.prefix = toByteArray(prefix);
