@@ -1,13 +1,13 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.constants.FindOptions;
-import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -780,18 +780,22 @@ public class StorageIntegrationTest {
         // region getBoolean
 
         public static boolean getBooleanByByteArrayKey(byte[] key) {
+            assert key instanceof byte[];
             return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByByteStringKey(ByteString key) {
+            assert key instanceof ByteString;
             return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByStringKey(String key) {
+            assert key instanceof String;
             return Storage.getBoolean(ctx, key);
         }
 
-        public static boolean getBooleanByIntegerKey(int key) {
+        public static boolean getBooleanByIntegerKey(Integer key) {
+            assert key instanceof Integer;
             return Storage.getBoolean(ctx, key);
         }
 

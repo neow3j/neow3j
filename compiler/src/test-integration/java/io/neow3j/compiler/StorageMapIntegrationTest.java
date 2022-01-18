@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
@@ -25,7 +26,6 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.Matchers.is;
@@ -657,26 +657,31 @@ public class StorageMapIntegrationTest {
         // region initialize StorageMap
 
         public static ByteString createMapWithByteStringPrefix(ByteString prefix, ByteString key) {
+            assert prefix instanceof ByteString;
             StorageMap map = new StorageMap(ctx, prefix);
             return map.get(key);
         }
 
         public static ByteString createMapWithByteArrayPrefix(byte[] prefix, ByteString key) {
+            assert prefix instanceof byte[];
             StorageMap map = new StorageMap(ctx, prefix);
             return map.get(key);
         }
 
         public static ByteString createMapWithStringPrefix(String prefix, ByteString key) {
+            assert prefix instanceof String;
             StorageMap map = new StorageMap(ctx, prefix);
             return map.get(key);
         }
 
-        public static ByteString createMapWithIntegerPrefix(int prefix, ByteString key) {
+        public static ByteString createMapWithIntegerPrefix(Integer prefix, ByteString key) {
+            assert prefix instanceof Integer;
             StorageMap map = new StorageMap(ctx, prefix);
             return map.get(key);
         }
 
-        public static ByteString createMapWithBytePrefix(byte prefix, ByteString key) {
+        public static ByteString createMapWithBytePrefix(Byte prefix, ByteString key) {
+            assert prefix instanceof Byte;
             StorageMap map = new StorageMap(ctx, prefix);
             return map.get(key);
         }
