@@ -2,9 +2,9 @@ package io.neow3j.transaction;
 
 import static io.neow3j.script.OpCode.PUSHDATA1;
 import static io.neow3j.script.OpCode.PUSHDATA2;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
 
 import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;

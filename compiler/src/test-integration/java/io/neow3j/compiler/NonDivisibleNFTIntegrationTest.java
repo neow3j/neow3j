@@ -16,8 +16,8 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class NonDivisibleNFTIntegrationTest {
 

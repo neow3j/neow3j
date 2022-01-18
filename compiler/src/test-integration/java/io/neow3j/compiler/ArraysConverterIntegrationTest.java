@@ -31,10 +31,10 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 public class ArraysConverterIntegrationTest {
 

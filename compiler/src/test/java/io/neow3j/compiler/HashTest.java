@@ -1,8 +1,8 @@
 package io.neow3j.compiler;
 
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.ByteString;

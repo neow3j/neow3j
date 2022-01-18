@@ -16,12 +16,12 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class VerificationScriptTest {

@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import io.neow3j.script.OpCode;
 import io.neow3j.utils.Numeric;
