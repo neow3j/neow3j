@@ -11,9 +11,9 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;

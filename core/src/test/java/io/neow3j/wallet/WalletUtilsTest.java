@@ -3,9 +3,9 @@ package io.neow3j.wallet;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountPassword;
 import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import io.neow3j.crypto.ECKeyPair;

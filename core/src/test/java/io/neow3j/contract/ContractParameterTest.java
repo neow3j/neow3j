@@ -35,13 +35,13 @@ import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 
 @SuppressWarnings("unchecked")
 public class ContractParameterTest {
@@ -579,4 +579,5 @@ public class ContractParameterTest {
         ScriptBuilder b = new ScriptBuilder();
         b.pushParam(p);
     }
+
 }

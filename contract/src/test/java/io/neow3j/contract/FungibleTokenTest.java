@@ -34,7 +34,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class FungibleTokenTest {
 

@@ -22,9 +22,9 @@ import java.util.List;
 import static io.neow3j.test.TestProperties.ledgerContractHash;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class LedgerContractIntegrationTest {
 

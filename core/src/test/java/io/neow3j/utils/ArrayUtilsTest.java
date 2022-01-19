@@ -14,9 +14,9 @@ import static io.neow3j.utils.ArrayUtils.toPrimitive;
 import static io.neow3j.utils.ArrayUtils.trimLeadingBytes;
 import static io.neow3j.utils.ArrayUtils.trimLeadingZeroes;
 import static io.neow3j.utils.ArrayUtils.xor;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 public class ArrayUtilsTest {
 

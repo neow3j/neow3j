@@ -13,8 +13,8 @@ import org.junit.Test;
 import java.io.IOException;
 
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 public class StaticVariablesTest {
 

@@ -48,9 +48,9 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.contract.Token.toFractions;
 import static io.neow3j.protocol.core.response.OracleResponseCode.TIMEOUT;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 public class OracleContractIntegrationTest {
 

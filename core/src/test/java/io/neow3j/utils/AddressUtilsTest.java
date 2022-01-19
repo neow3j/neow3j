@@ -11,10 +11,10 @@ import static io.neow3j.utils.AddressUtils.isValidAddress;
 import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class AddressUtilsTest {

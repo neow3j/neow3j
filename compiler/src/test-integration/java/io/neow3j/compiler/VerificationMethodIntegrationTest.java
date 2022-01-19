@@ -6,7 +6,6 @@ import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.AccountSigner;
-import io.neow3j.transaction.Signer;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;

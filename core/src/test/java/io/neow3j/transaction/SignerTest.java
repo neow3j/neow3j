@@ -1,6 +1,5 @@
 package io.neow3j.transaction;
 
-import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.serialization.BinaryWriter;
@@ -23,15 +22,14 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class SignerTest {
 
@@ -332,7 +330,6 @@ public class SignerTest {
 
     @Test
     public void equals() {
-
         Signer signer1 = AccountSigner.global(accScriptHash);
         Signer signer2 = AccountSigner.global(accScriptHash);
         assertThat(signer1, equalTo(signer2));

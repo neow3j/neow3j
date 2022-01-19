@@ -3,7 +3,7 @@ package io.neow3j.contract;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
