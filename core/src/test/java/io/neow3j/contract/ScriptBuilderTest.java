@@ -6,6 +6,7 @@ import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.serialization.TestBinaryUtils;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Before;
@@ -34,6 +35,31 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     @Before
     public void setUp() {
         this.builder = new ScriptBuilder();
+    }
+
+    @Test
+    public void pushArray_with_null_value() {
+        builder.pushArray(null);
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushArray_with_empty_array() {
+        builder.pushArray(new ContractParameter[0]);
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushParam_with_empty_array() {
+        builder.pushParam(new ContractParameter(ContractParameterType.ARRAY,
+                new ContractParameter[0]));
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushParam_with_null_array() {
+        builder.pushParam(new ContractParameter(ContractParameterType.ARRAY, null));
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
     }
 
     @Test

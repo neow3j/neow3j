@@ -63,7 +63,7 @@ public class ContractParameter {
         this(name, paramType, null);
     }
 
-    protected ContractParameter(ContractParameterType paramType, Object value) {
+    public ContractParameter(ContractParameterType paramType, Object value) {
         this(null, paramType, value);
     }
 
@@ -98,17 +98,14 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter array(Object... entries) {
-        if (entries.length == 0) {
-            throw new IllegalArgumentException("At least one parameter is required to create an " +
-                    "array contract parameter.");
+        ContractParameter[] params;
+        if (entries == null || entries.length == 0) {
+            params = new ContractParameter[0];
+        } else {
+            params = Arrays.stream(entries)
+                    .map(ContractParameter::castToContractParameter)
+                    .toArray(ContractParameter[]::new);
         }
-        if (Arrays.stream(entries).anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("Cannot add a null object to an array contract " +
-                    "parameter.");
-        }
-        ContractParameter[] params = Arrays.stream(entries)
-                .map(ContractParameter::castToContractParameter)
-                .toArray(ContractParameter[]::new);
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
 
@@ -190,6 +187,8 @@ public class ContractParameter {
             return hash256((Hash256) o);
         } else if (o instanceof Account) {
             return hash160((Account) o);
+        } else if (o == null) {
+            return any(null);
         } else {
             throw new IllegalArgumentException("The provided object could not be casted into " +
                     "a supported contract parameter type.");

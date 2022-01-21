@@ -307,11 +307,15 @@ public class ScriptBuilder {
     }
 
     public ScriptBuilder pushArray(ContractParameter[] params) {
-        for (int i = params.length - 1; i >= 0; i--) {
-            pushParam(params[i]);
+        if (params == null || params.length == 0) {
+            opCode(OpCode.NEWARRAY0);
+        } else {
+            for (int i = params.length - 1; i >= 0; i--) {
+                pushParam(params[i]);
+            }
+            pushInteger(params.length);
+            pack();
         }
-        pushInteger(params.length);
-        pack();
         return this;
     }
 
