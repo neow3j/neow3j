@@ -63,7 +63,7 @@ public class ContractParameter {
         this(name, paramType, null);
     }
 
-    protected ContractParameter(ContractParameterType paramType, Object value) {
+    public ContractParameter(ContractParameterType paramType, Object value) {
         this(null, paramType, value);
     }
 
@@ -90,25 +90,24 @@ public class ContractParameter {
     /**
      * Creates an array parameter from the given values.
      * <p>
-     * This method supports parameters of types Boolean, Integer, byte[] and String. Array
-     * entries of different contract parameter types first need to be instantiated as a
-     * {@code ContractParameter} and can then be passed as a parameter as well.
+     * The method will try to map the given objects to the correct {@link ContractParameterType}s.
+     * You can pass in objects of type {@link ContractParameter} to fix the parameter type of an
+     * element.
+     * <p>
+     * Use {@code array()} without a parameter if you need an empty array.
      *
      * @param entries the array entries.
      * @return the contract parameter.
      */
     public static ContractParameter array(Object... entries) {
-        if (entries.length == 0) {
-            throw new IllegalArgumentException("At least one parameter is required to create an " +
-                    "array contract parameter.");
+        ContractParameter[] params;
+        if (entries == null || entries.length == 0) {
+            params = new ContractParameter[0];
+        } else {
+            params = Arrays.stream(entries)
+                    .map(ContractParameter::mapToContractParameter)
+                    .toArray(ContractParameter[]::new);
         }
-        if (Arrays.stream(entries).anyMatch(Objects::isNull)) {
-            throw new IllegalArgumentException("Cannot add a null object to an array contract " +
-                    "parameter.");
-        }
-        ContractParameter[] params = Arrays.stream(entries)
-                .map(ContractParameter::castToContractParameter)
-                .toArray(ContractParameter[]::new);
         return new ContractParameter(ContractParameterType.ARRAY, params);
     }
 
@@ -158,8 +157,8 @@ public class ContractParameter {
         // Use a linked hash map to keep the ordering of the argument map.
         Map<ContractParameter, ContractParameter> paramMap = new LinkedHashMap<>();
         map.forEach((k, v) -> {
-            ContractParameter key = castToContractParameter(k);
-            ContractParameter value = castToContractParameter(v);
+            ContractParameter key = mapToContractParameter(k);
+            ContractParameter value = mapToContractParameter(v);
             if (key.getParamType().equals(ARRAY) || key.getParamType().equals(MAP)) {
                 throw new IllegalArgumentException("The provided map contains an invalid key. The" +
                         " keys cannot be of type array or map.");
@@ -169,7 +168,14 @@ public class ContractParameter {
         return new ContractParameter(ContractParameterType.MAP, paramMap);
     }
 
-    private static ContractParameter castToContractParameter(Object o) {
+    /**
+     * Maps the given object to a contract parameter of the appropriate type.
+     *
+     * @param o The object to map.
+     * @return The parameter.
+     * @throws IllegalArgumentException if no suitable parameter type is known for the object.
+     */
+    public static ContractParameter mapToContractParameter(Object o) {
         if (o instanceof ContractParameter) {
             return (ContractParameter) o;
         } else if (o instanceof Boolean) {
@@ -190,6 +196,8 @@ public class ContractParameter {
             return hash256((Hash256) o);
         } else if (o instanceof Account) {
             return hash160((Account) o);
+        } else if (o == null) {
+            return any(null);
         } else {
             throw new IllegalArgumentException("The provided object could not be casted into " +
                     "a supported contract parameter type.");

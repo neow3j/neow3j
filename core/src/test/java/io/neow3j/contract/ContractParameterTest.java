@@ -42,6 +42,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("unchecked")
 public class ContractParameterTest {
@@ -160,24 +161,18 @@ public class ContractParameterTest {
     }
 
     @Test
-    public void testArrayParam_NullObject() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
-        array((Object) null);
-    }
-
-    @Test
-    public void testArrayParam_NullContractParameter() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Cannot add a null object to an array contract parameter");
-        array((ContractParameter) null);
-    }
-
-    @Test
     public void testArrayParam_Empty() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("At least one parameter is required");
-        array();
+        ContractParameter param = array();
+        ContractParameter[] value = (ContractParameter[]) param.getValue();
+        assertThat(value.length, is(0));
+    }
+
+    @Test
+    public void testArrayParam_Null() {
+        ContractParameter param = array((Object) null);
+        ContractParameter[] value = (ContractParameter[]) param.getValue();
+        assertThat(value.length, is(1));
+        assertTrue(value[0].getParamType().equals(ContractParameterType.ANY));
     }
 
     @Test
