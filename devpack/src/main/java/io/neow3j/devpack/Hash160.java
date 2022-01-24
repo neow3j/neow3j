@@ -15,7 +15,7 @@ import io.neow3j.types.StackItemType;
  */
 public class Hash160 {
 
-    private static final byte LENGTH = 0x14;
+    private static final byte LENGTH = 0x14; // 20 bytes
 
     /**
      * Creates a {@code Hash160} from the given byte array.
@@ -64,7 +64,7 @@ public class Hash160 {
      * and 20 bytes long.
      *
      * @param data The object to check.
-     * @return true if this the given object is a valid Hash160. False, otherwise.
+     * @return true if the given object is a valid Hash160. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)

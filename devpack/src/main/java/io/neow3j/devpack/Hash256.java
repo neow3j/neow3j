@@ -15,7 +15,7 @@ import io.neow3j.types.StackItemType;
  */
 public class Hash256 {
 
-    private static final byte LENGTH = 0x20;
+    private static final byte LENGTH = 0x20; // 32 bytes
 
     /**
      * Creates a {@code Hash256} from the given byte array.
@@ -64,7 +64,7 @@ public class Hash256 {
      * and 32 bytes long.
      *
      * @param data The object to check.
-     * @return true if this the given object is a valid Hash256. False, otherwise.
+     * @return true if the given object is a valid Hash256. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)
