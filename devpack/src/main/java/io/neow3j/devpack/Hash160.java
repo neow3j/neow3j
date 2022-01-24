@@ -20,7 +20,8 @@ public class Hash160 {
     /**
      * Creates a {@code Hash160} from the given byte array.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to
+     * verify the correct format.
      *
      * @param value The hash as a byte array.
      */
@@ -31,7 +32,8 @@ public class Hash160 {
     /**
      * Creates a {@code Hash160} from the given bytes.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to
+     * verify the correct format.
      *
      * @param value The hash as a byte string.
      */
