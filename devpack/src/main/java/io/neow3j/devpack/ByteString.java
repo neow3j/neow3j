@@ -39,6 +39,18 @@ public class ByteString {
     }
 
     /**
+     * Constructs a new {@code ByteString} from the given integer. This incurs the GAS cost of
+     * converting the integer to a {@code ByteString}.
+     *
+     * @param integer The integer.
+     */
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public ByteString(int integer) {
+
+    }
+
+
+    /**
      * Gets the item at the given index in this {@code ByteString}. If the index is out of bounds
      * the NeoVM will throw an exception that needs to be catched. Otherwise, the NeoVM will FAULT.
      *

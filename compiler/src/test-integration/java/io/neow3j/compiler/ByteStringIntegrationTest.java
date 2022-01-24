@@ -47,6 +47,12 @@ public class ByteStringIntegrationTest {
     }
 
     @Test
+    public void createByteStringFromInteger() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x64, 0x1b, 0x40}));
+    }
+
+    @Test
     public void getElementsOfByteString() throws IOException {
         ContractParameter byteString = byteArray("00010203");
         InvocationResult res = ct.callInvokeFunction(testName, byteString, integer(0))
@@ -194,6 +200,10 @@ public class ByteStringIntegrationTest {
 
         public static ByteString createByteStringFromByteArray() {
             return new ByteString(new byte[]{0x00, 0x01, 0x02, 0x03});
+        }
+
+        public static ByteString createByteStringFromInteger() {
+            return new ByteString(4201316);
         }
 
         public static byte getElementsOfByteString(ByteString s, int index) {
