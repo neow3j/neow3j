@@ -23,10 +23,10 @@ public class Hash160 {
      * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to
      * verify the correct format.
      *
-     * @param value The hash as a byte array.
+     * @param buffer The hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    public Hash160(byte[] value) {
+    public Hash160(byte[] buffer) {
     }
 
     /**
