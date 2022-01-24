@@ -375,7 +375,7 @@ public enum OpCode {
 
     /**
      * End finally, If no exception happen or be catched, vm will jump to the target instruction of
-     * ENDTRY/ENDTRY_L. Otherwise vm will rethrow the exception to upper layer.
+     * ENDTRY/ENDTRY_L. Otherwise, vm will rethrow the exception to upper layer.
      */
     ENDFINALLY(0x3F, 1 << 2),
 
@@ -881,17 +881,17 @@ public enum OpCode {
     SHR(0xA9, 1 << 3),
 
     /**
-     * If the input is 0 or 1, it is flipped. Otherwise the output will be 0.
+     * If the input is 0 or 1, it is flipped. Otherwise, the output will be 0.
      */
     NOT(0xAA, 1 << 2),
 
     /**
-     * If both a and b are not 0, the output is 1. Otherwise 0.
+     * If both a and b are not 0, the output is 1. Otherwise, 0.
      */
     BOOLAND(0xAB, 1 << 3),
 
     /**
-     * If a or b is not 0, the output is 1. Otherwise 0.
+     * If a or b is not 0, the output is 1. Otherwise, 0.
      */
     BOOLOR(0xAC, 1 << 3),
 
@@ -1159,4 +1159,5 @@ public enum OpCode {
             return null;
         }
     }
+
 }

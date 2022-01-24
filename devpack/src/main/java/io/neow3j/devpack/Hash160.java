@@ -25,11 +25,6 @@ public class Hash160 {
      * @param value The hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 20 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
     public Hash160(byte[] value) {
     }
 
@@ -40,11 +35,7 @@ public class Hash160 {
      *
      * @param value The hash as a byte string.
      */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 20 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
+    @Instruction
     public Hash160(ByteString value) {
     }
 
@@ -113,4 +104,5 @@ public class Hash160 {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
 }

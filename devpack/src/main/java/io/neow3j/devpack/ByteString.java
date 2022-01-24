@@ -22,9 +22,8 @@ public class ByteString {
      *
      * @param str The string.
      */
-    @Instruction()
+    @Instruction
     public ByteString(String str) {
-
     }
 
     /**
@@ -35,7 +34,6 @@ public class ByteString {
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public ByteString(byte[] buffer) {
-
     }
 
     /**
@@ -46,7 +44,6 @@ public class ByteString {
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public ByteString(int integer) {
-
     }
 
 
@@ -74,7 +71,7 @@ public class ByteString {
      * @return the string.
      */
     @Override
-    @Instruction()
+    @Instruction
     public native String toString();
 
     /**

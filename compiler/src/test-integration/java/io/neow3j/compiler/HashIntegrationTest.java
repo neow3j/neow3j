@@ -20,7 +20,6 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
@@ -77,25 +76,11 @@ public class HashIntegrationTest {
     }
 
     @Test
-    public void createHash160FromInvalidByteArray() throws IOException {
-        String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b7b"; // One byte to long.
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
-        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
-    }
-
-    @Test
     public void createHash160FromValidString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(hash));
-    }
-
-    @Test
-    public void createHash160FromInvalidString() throws IOException {
-        String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b7b"; // One byte to long.
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(hash));
-        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
@@ -136,7 +121,7 @@ public class HashIntegrationTest {
     @Test
     public void isObjectValidHash256() throws IOException {
         String validHash = "0000000000000000000000000000000000000000000000000000000000000001";
-        // One byte to short.
+        // One byte too short.
         String invalidHash = "00000000000000000000000000000000000000000000000000000000000001";
         int otherValue = 10;
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(validHash),
@@ -158,7 +143,7 @@ public class HashIntegrationTest {
 
     @Test
     public void createHash256FromInvalidByteArray() throws IOException {
-        // One byte to long.
+        // Too long hash.
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b00000000000000000000000000";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -174,7 +159,7 @@ public class HashIntegrationTest {
 
     @Test
     public void createHash256FromInvalidString() throws IOException {
-        // One byte to long.
+        // Too long hash.
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b00000000000000000000000000";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -235,19 +220,19 @@ public class HashIntegrationTest {
             return b;
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromValidByteArray(byte[] b) {
-            return new io.neow3j.devpack.Hash160(b);
+        public static io.neow3j.devpack.Hash160 createHash160FromValidByteArray(ByteString b) {
+            byte[] buffer = b.toByteArray();
+            assert buffer instanceof byte[] : "Value is not of type buffer.";
+            return new io.neow3j.devpack.Hash160(buffer);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromInvalidByteArray(byte[] b) {
-            return new io.neow3j.devpack.Hash160(b);
+        public static io.neow3j.devpack.Hash160 createHash160FromInvalidByteArray(ByteString b) {
+            byte[] buffer = b.toByteArray();
+            assert buffer instanceof byte[] : "Value is not of type buffer.";
+            return new io.neow3j.devpack.Hash160(buffer);
         }
 
         public static io.neow3j.devpack.Hash160 createHash160FromValidString(ByteString s) {
-            return new io.neow3j.devpack.Hash160(s);
-        }
-
-        public static io.neow3j.devpack.Hash160 createHash160FromInvalidString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
