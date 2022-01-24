@@ -102,11 +102,11 @@ public class ECPointIntegrationTest {
         public static boolean[] isObjectValidECPoint(Object validHash, Object invalidHash,
                 Object integer) {
             boolean[] b = new boolean[4];
-            b[0] = io.neow3j.devpack.ECPoint.isValid(validHash);
-            b[1] = io.neow3j.devpack.ECPoint.isValid(invalidHash);
-            b[2] = io.neow3j.devpack.ECPoint.isValid(integer);
+            b[0] = ECPoint.isValid(validHash);
+            b[1] = ECPoint.isValid(invalidHash);
+            b[2] = ECPoint.isValid(integer);
             byte[] buffer = ((ByteString) validHash).toByteArray();
-            b[3] = io.neow3j.devpack.ECPoint.isValid(buffer);
+            b[3] = ECPoint.isValid(buffer);
             return b;
         }
 
