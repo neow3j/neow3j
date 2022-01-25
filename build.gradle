@@ -9,7 +9,7 @@ buildscript {
 
     // test dependencies
     ext.equalsverifierVersion = '2.1.7'
-    ext.junitVersion = '4.11'
+    ext.junitVersion = '4.13'
     ext.junitBenchmarkVersion = '0.7.2'
     ext.logbackVersion = '1.2.3'
     ext.jetbrainsAnnotationsVersion = '20.1.0'
