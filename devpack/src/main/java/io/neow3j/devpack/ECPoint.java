@@ -13,8 +13,7 @@ public class ECPoint {
     private static final byte LENGTH = 0x21; // 33 bytes
 
     /**
-     * Constructs an {@code ECPoint} from the given byte array. Checks if the argument has the
-     * appropriate size of 33 bytes for an EC point.
+     * Constructs an {@code ECPoint} from the given byte array.
      * <p>
      * Does NOT check if the value has the appropriate size for an EC Point. Use {@code ECPoint
      * .isValid()} in order to verify the correct format.

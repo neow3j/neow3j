@@ -99,13 +99,13 @@ public class ECPointIntegrationTest {
             return new ECPoint(s);
         }
 
-        public static boolean[] isObjectValidECPoint(Object validHash, Object invalidHash,
+        public static boolean[] isObjectValidECPoint(Object validECPoint, Object invalidECPoint,
                 Object integer) {
             boolean[] b = new boolean[4];
-            b[0] = ECPoint.isValid(validHash);
-            b[1] = ECPoint.isValid(invalidHash);
+            b[0] = ECPoint.isValid(validECPoint);
+            b[1] = ECPoint.isValid(invalidECPoint);
             b[2] = ECPoint.isValid(integer);
-            byte[] buffer = ((ByteString) validHash).toByteArray();
+            byte[] buffer = ((ByteString) validECPoint).toByteArray();
             b[3] = ECPoint.isValid(buffer);
             return b;
         }
