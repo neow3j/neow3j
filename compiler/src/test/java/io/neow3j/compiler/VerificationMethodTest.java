@@ -18,7 +18,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hamcrest.text.StringContainsInOrder;
 import org.junit.Test;
 
 public class VerificationMethodTest {
