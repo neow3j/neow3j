@@ -262,7 +262,7 @@ public class CompilerExceptionsTest {
 
     @Test
     public void throwOnStaticVariableInNonContractClass() {
-        CompilerException thrown = assertThrows(
+        assertThrows(
                 "Static variables are not allowed outside the main contract class",
                 CompilerException.class,
                 () -> new Compiler().compile(ContractClassWithReferenceToStaticVariable.class.getName())
