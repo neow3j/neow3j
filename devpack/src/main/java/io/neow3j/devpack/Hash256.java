@@ -15,36 +15,29 @@ import io.neow3j.types.StackItemType;
  */
 public class Hash256 {
 
-    private static final byte LENGTH = 0x20;
+    private static final byte LENGTH = 0x20; // 32 bytes
 
     /**
      * Creates a {@code Hash256} from the given byte array.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to
+     * verify the correct format.
      *
-     * @param value The hash as a byte array.
+     * @param buffer The hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
-    public Hash256(byte[] value) {
+    public Hash256(byte[] buffer) {
     }
 
     /**
      * Creates a {@code Hash256} from the given bytes.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to
+     * verify the correct format.
      *
      * @param value The hash as a byte string.
      */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 32 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
+    @Instruction
     public Hash256(ByteString value) {
     }
 
@@ -71,7 +64,7 @@ public class Hash256 {
      * and 32 bytes long.
      *
      * @param data The object to check.
-     * @return true if this the given object is a valid Hash256. False, otherwise.
+     * @return true if the given object is a valid Hash256. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)

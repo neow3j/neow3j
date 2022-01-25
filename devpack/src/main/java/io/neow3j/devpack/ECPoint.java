@@ -10,36 +10,52 @@ import io.neow3j.types.StackItemType;
  */
 public class ECPoint {
 
+    private static final byte LENGTH = 0x21; // 33 bytes
+
     /**
-     * Constructs an {@code ECPoint} from the given byte array. Checks if the argument has the
-     * appropriate size of 33 bytes for an EC point.
+     * Constructs an {@code ECPoint} from the given byte array.
+     * <p>
+     * Does NOT check if the value has the appropriate size for an EC Point. Use {@code ECPoint
+     * .isValid()} in order to verify the correct format.
      *
-     * @param value The EC point as a byte array.
+     * @param buffer The EC point as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = 0x21) // 33 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
-    public ECPoint(byte[] value) {
+    public ECPoint(byte[] buffer) {
 
     }
 
     /**
-     * Constructs an {@code ECPoint} from the given byte string. Checks if the argument has the
-     * appropriate size of 33 bytes for an EC point.
+     * Constructs an {@code ECPoint} from the given byte string.
+     * <p>
+     * Does NOT check if the value is a valid EC point. Use {@code ECPoint.isValid()} in order to
+     * verify the correct format.
      *
      * @param value The EC point as a hex string.
      */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = 0x21) // 33 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
+    @Instruction
     public ECPoint(ByteString value) {
-
     }
+
+    /**
+     * Checks if the given object is a valid EC point, i.e., if it is either a ByteString or Buffer
+     * and 33 bytes long.
+     *
+     * @param data The object to check.
+     * @return true if the given object is a valid EC point. False, otherwise.
+     */
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.BOOLOR)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.SIZE)
+    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 33 bytes expected array size
+    @Instruction(opcode = OpCode.NUMEQUAL)
+    @Instruction(opcode = OpCode.BOOLAND)
+    public static native boolean isValid(Object data);
 
     /**
      * Returns this {@code ECPoint} as a byte array.
@@ -68,5 +84,5 @@ public class ECPoint {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
-}
 
+}

@@ -22,9 +22,8 @@ public class ByteString {
      *
      * @param str The string.
      */
-    @Instruction()
+    @Instruction
     public ByteString(String str) {
-
     }
 
     /**
@@ -35,8 +34,18 @@ public class ByteString {
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public ByteString(byte[] buffer) {
-
     }
+
+    /**
+     * Constructs a new {@code ByteString} from the given integer. This incurs the GAS cost of
+     * converting the integer to a {@code ByteString}.
+     *
+     * @param integer The integer.
+     */
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    public ByteString(int integer) {
+    }
+
 
     /**
      * Gets the item at the given index in this {@code ByteString}. If the index is out of bounds
@@ -62,7 +71,7 @@ public class ByteString {
      * @return the string.
      */
     @Override
-    @Instruction()
+    @Instruction
     public native String toString();
 
     /**
