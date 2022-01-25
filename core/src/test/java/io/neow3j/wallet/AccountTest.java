@@ -18,10 +18,8 @@ import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
-import org.hamcrest.core.StringContains;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -56,12 +54,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class AccountTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Rule
     public WireMockRule wireMockRule =
@@ -70,6 +66,7 @@ public class AccountTest {
     @Test
     public void testCreateGenericAccount() {
         Account a = Account.create();
+
         assertThat(a, notNullValue());
         assertThat(a.getAddress(), notNullValue());
         assertThat(a.getVerificationScript(), notNullValue());
@@ -85,6 +82,7 @@ public class AccountTest {
     public void testBuildAccountFromExistingKeyPair() {
         ECKeyPair pair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
         Account a = new Account(pair);
+
         assertThat(a.isMultiSig(), is(false));
         assertThat(a.getECKeyPair(), is(pair));
         assertThat(a.getAddress(), is(defaultAccountAddress()));
@@ -120,6 +118,7 @@ public class AccountTest {
     public void testCreateMultiSigAccountFromPublicKeys() {
         ECPublicKey pubKey = new ECPublicKey(defaultAccountPublicKey());
         Account a = Account.createMultiSigAccount(singletonList(pubKey), 1);
+
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
         assertThat(a.getLabel(), is(committeeAccountAddress()));
@@ -130,6 +129,7 @@ public class AccountTest {
     @Test
     public void testCreateMultiSigAccountWithAddress() {
         Account a = Account.createMultiSigAccount(committeeAccountAddress(), 4, 7);
+
         assertThat(a.getSigningThreshold(), is(4));
         assertThat(a.getNrOfParticipants(), is(7));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
@@ -142,6 +142,7 @@ public class AccountTest {
     public void testCreateMultiSigAccountFromVerificationScript() {
         Account a = Account.fromVerificationScript(new VerificationScript(
                 hexStringToByteArray(committeeAccountVerificationScript())));
+
         assertThat(a.isMultiSig(), is(true));
         assertThat(a.getAddress(), is(committeeAccountAddress()));
         assertThat(a.getLabel(), is(committeeAccountAddress()));
@@ -155,14 +156,15 @@ public class AccountTest {
                 hexStringToByteArray(defaultAccountPrivateKey()));
         Account a = new Account(keyPair);
         a.encryptPrivateKey(defaultAccountPassword());
+
         assertThat(a.getEncryptedPrivateKey(), is(defaultAccountEncryptedPrivateKey()));
     }
 
     @Test
-    public void failEncryptAccountWithoutPrivateKey() throws CipherException {
+    public void failEncryptAccountWithoutPrivateKey() {
         Account a = Account.fromAddress(defaultAccountAddress());
-        exceptionRule.expect(AccountStateException.class);
-        a.encryptPrivateKey("pwd");
+
+        assertThrows(AccountStateException.class, () -> a.encryptPrivateKey("pwd"));
     }
 
     @Test
@@ -181,12 +183,11 @@ public class AccountTest {
     }
 
     @Test
-    public void failDecryptingAccountWithoutDecryptedPrivateKey()
-            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
-
+    public void failDecryptingAccountWithoutDecryptedPrivateKey() {
         Account a = Account.fromAddress(defaultAccountAddress());
-        exceptionRule.expect(AccountStateException.class);
-        a.decryptPrivateKey(defaultAccountPassword());
+
+        assertThrows(AccountStateException.class,
+                () -> a.decryptPrivateKey(defaultAccountPassword()));
     }
 
     @Test
@@ -196,6 +197,7 @@ public class AccountTest {
         FileInputStream stream = new FileInputStream(new File(nep6AccountFileUrl.toURI()));
         NEP6Account nep6Acc = new ObjectMapper().readValue(stream, NEP6Account.class);
         Account a = Account.fromNEP6Account(nep6Acc);
+
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
         assertThat(a.getAddress(), is(defaultAccountAddress()));
@@ -205,11 +207,12 @@ public class AccountTest {
     }
 
     @Test
-    public void loadMultiSigAccountFromNEP6() throws URISyntaxException, IOException {
+    public void loadMultiSigAccountFromNEP6() throws IOException {
         InputStream s = this.getClass().getClassLoader()
                 .getResourceAsStream("wallet/multiSigAccount.json");
         NEP6Account nep6Acc = new ObjectMapper().readValue(s, NEP6Account.class);
         Account a = Account.fromNEP6Account(nep6Acc);
+
         assertFalse(a.isDefault());
         assertFalse(a.isLocked());
         assertThat(a.getAddress(), is(committeeAccountAddress()));
@@ -235,9 +238,8 @@ public class AccountTest {
     @Test
     public void toNep6AccountWithUnencryptedPrivateKey() {
         Account a = Account.fromWIF(defaultAccountWIF());
-        exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage(new StringContains("private key"));
-        a.toNEP6Account();
+
+        assertThrows("private key", AccountStateException.class, a::toNEP6Account);
     }
 
     @Test
@@ -278,6 +280,7 @@ public class AccountTest {
         Account a = Account.fromWIF(defaultAccountWIF());
         byte[] expectedPrivKey = hexStringToByteArray(defaultAccountPrivateKey());
         ECKeyPair expectedKeyPair = ECKeyPair.create(expectedPrivKey);
+
         assertThat(a.getECKeyPair(), is(expectedKeyPair));
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getLabel(), is(defaultAccountAddress()));
@@ -292,6 +295,7 @@ public class AccountTest {
     @Test
     public void createAccountFromAddress() {
         Account a = Account.fromAddress(defaultAccountAddress());
+
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getLabel(), is(defaultAccountAddress()));
         assertThat(a.getScriptHash().toString(), is(defaultAccountScriptHash()));
@@ -310,6 +314,7 @@ public class AccountTest {
                 "getnep17balances_ofDefaultAccount.json",
                 defaultAccountAddress());
         Map<Hash160, BigInteger> balances = a.getNep17Balances(neow);
+
         assertThat(balances.keySet(), containsInAnyOrder(
                 new Hash160(gasTokenHash()), new Hash160(neoTokenHash())));
         assertThat(balances.values(), containsInAnyOrder(
@@ -374,19 +379,16 @@ public class AccountTest {
     public void callingGetSigningThresholdWithSingleSigShouldFail() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot get signing threshold from " +
-                "account " + defaultAccountAddress()));
-        a.getSigningThreshold();
+        assertThrows("Cannot get signing threshold from account " + defaultAccountAddress(),
+                AccountStateException.class, a::getSigningThreshold);
     }
 
     @Test
     public void callingGetNrOfParticipantsWithSingleSigShouldFail() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot get number of participants from " +
-                "account " + defaultAccountAddress()));
-        a.getNrOfParticipants();
+        assertThrows("Cannot get number of participants from account " + defaultAccountAddress(),
+                AccountStateException.class, a::getNrOfParticipants);
     }
+
 }

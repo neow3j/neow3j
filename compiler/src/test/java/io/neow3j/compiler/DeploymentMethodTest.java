@@ -4,25 +4,23 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
+
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class DeploymentMethodTest {
 
     private static final String DEPLOY_METHOD_NAME = "_deploy";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void whenUsingTheOnDeploymentAnnotationTheDeployMethodShouldBeInTheContractManifest()
@@ -38,40 +36,43 @@ public class DeploymentMethodTest {
     }
 
     @Test
-    public void throwExceptionWhenDeployMethodHasIllegalSignature() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+    public void throwExceptionWhenDeployMethodHasIllegalSignature() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(DeploymentMethodIllegalReturnTypeTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("doDeploy", "Object", "boolean", "void")));
-        new Compiler().compile(DeploymentMethodIllegalReturnTypeTestContract.class.getName());
 
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+        thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
+                DeploymentMethodIllegalParameterTypeTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("doDeploy", "Object", "boolean", "void")));
-        new Compiler().compile(
-                DeploymentMethodIllegalParameterTypeTestContract.class.getName());
 
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
-                "doDeploy", "Object", "Boolean", "void")));
-        new Compiler().compile(
-                DeploymentMethodMissingParameterTestContract.class.getName());
+        thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(
+                        DeploymentMethodMissingParameterTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
+                "doDeploy", "Object", "boolean", "void")));
     }
 
     @Test
-    public void throwExceptionWhenMultipleDeployMethodsAreUsed() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+    public void throwExceptionWhenMultipleDeployMethodsAreUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(MultipleDeploymentMethodsTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("multiple methods", DEPLOY_METHOD_NAME)));
-        new Compiler().compile(MultipleDeploymentMethodsTestContract.class.getName());
     }
 
     @Test
-    public void throwExceptionWhenTwoMethodSignatureAnnotationsAreUsedOnTheSameMethod()
-            throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+    public void throwExceptionWhenTwoMethodSignatureAnnotationsAreUsedOnTheSameMethod() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(MultipleMethodSignatureAnnotationsTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("annotatedMethod", "multiple annotations", "specific method signature")));
-        new Compiler().compile(MultipleMethodSignatureAnnotationsTestContract.class.getName());
     }
 
     static class DeploymentMethodTestContract {
@@ -87,7 +88,6 @@ public class DeploymentMethodTest {
         public static int doDeploy(Object data, boolean update) {
             return 41;
         }
-
     }
 
     static class DeploymentMethodIllegalParameterTypeTestContract {
@@ -95,7 +95,6 @@ public class DeploymentMethodTest {
         @OnDeployment
         public static void doDeploy(Object data, int wrongParam) {
         }
-
     }
 
     static class DeploymentMethodMissingParameterTestContract {
@@ -103,7 +102,6 @@ public class DeploymentMethodTest {
         @OnDeployment
         public static void doDeploy(boolean update) {
         }
-
     }
 
     static class MultipleDeploymentMethodsTestContract {
@@ -115,7 +113,6 @@ public class DeploymentMethodTest {
         @OnDeployment
         public static void doDeploy2(Object data, boolean update) {
         }
-
     }
 
     static class MultipleMethodSignatureAnnotationsTestContract {
@@ -123,7 +120,6 @@ public class DeploymentMethodTest {
         @OnDeployment
         @OnVerification
         public static void annotatedMethod(Object data, boolean update) {
-
         }
     }
 

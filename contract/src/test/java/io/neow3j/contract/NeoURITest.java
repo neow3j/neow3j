@@ -13,7 +13,6 @@ import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -30,6 +29,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isOneOf;
+import static org.junit.Assert.assertThrows;
 
 public class NeoURITest {
 
@@ -53,9 +53,6 @@ public class NeoURITest {
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Before
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
@@ -73,62 +70,65 @@ public class NeoURITest {
 
     @Test
     public void fromURI_null() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided String is null.");
-        NeoURI.fromURI(null);
+        assertThrows("The provided String is null.", IllegalArgumentException.class,
+                () -> NeoURI.fromURI(null)
+        );
     }
 
     @Test
     public void fromURI_emptyString() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("does not conform to the NEP-9 standard");
-        NeoURI.fromURI("");
+        assertThrows("does not conform to the NEP-9 standard", IllegalArgumentException.class,
+                () -> NeoURI.fromURI("")
+        );
     }
 
     @Test
     public void fromURI_invalidScheme() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("does not conform to the NEP-9 standard");
-        NeoURI.fromURI("nao:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        assertThrows("does not conform to the NEP-9 standard", IllegalArgumentException.class,
+                () -> NeoURI.fromURI("nao:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj")
+        );
     }
 
     @Test
     public void fromURI_invalidQuery() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("uri contains invalid queries.");
-        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset==neo");
+        assertThrows("uri contains invalid queries.", IllegalArgumentException.class,
+                () -> NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset==neo")
+        );
     }
 
     @Test
     public void fromURI_invalidSeparator() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("does not conform to the NEP-9 standard");
-        NeoURI.fromURI("neo-NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
+        assertThrows("does not conform to the NEP-9 standard", IllegalArgumentException.class,
+                () -> NeoURI.fromURI("neo-NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj")
+        );
     }
 
     @Test
     public void fromURI_invalidURI_short() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("does not conform to the NEP-9 standard.");
-        NeoURI.fromURI("neo:AK2nJJpJr6o664");
+        assertThrows("does not conform to the NEP-9 standard.", IllegalArgumentException.class,
+                () -> NeoURI.fromURI("neo:AK2nJJpJr6o664")
+        );
     }
 
     @Test
-    public void fromURI_invalidScale_neo() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The Neo token does not support any decimal places.");
-        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1.1")
-                .neow3j(neow3j)
-                .buildTransferFrom(SENDER_ACCOUNT);
+    public void fromURI_invalidScale_neo() {
+        assertThrows("The Neo token does not support any decimal places.",
+                IllegalArgumentException.class,
+                () -> NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo&amount=1.1")
+                        .neow3j(neow3j)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
-    public void fromURI_invalidScale_gas() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The Gas token does not support more than 8 decimal places.");
-        NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas&amount=0.000000001")
-                .neow3j(neow3j)
-                .buildTransferFrom(SENDER_ACCOUNT);
+    public void fromURI_invalidScale_gas() {
+        assertThrows("The Gas token does not support more than 8 decimal places.",
+                IllegalArgumentException.class,
+                () -> NeoURI.fromURI("neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=gas&amount=0" +
+                                ".000000001")
+                        .neow3j(neow3j)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
@@ -136,6 +136,7 @@ public class NeoURITest {
         URI uri = NeoURI.fromURI(BEGIN_TX_ASSET_AMOUNT_MULTIPLE_ASSETS_AND_AMOUNTS)
                 .buildURI()
                 .getURI();
+
         assertThat(uri, is(URI.create(BEGIN_TX_ASSET_AMOUNT)));
     }
 
@@ -148,6 +149,7 @@ public class NeoURITest {
                 .to(recipient)
                 .amount(BigDecimal.valueOf(13))
                 .buildURI();
+
         assertThat(neoURI.getURIAsString(), is("neo:NV4fSVvFNHAHtmyCVpQnQ85qXdttUaZkbS?" +
                 "asset=c0338c7be47126b92eae8a67a2ebaedbbdce6ceb&amount=13"));
     }
@@ -155,6 +157,7 @@ public class NeoURITest {
     @Test
     public void fromURI_nonNativeToken() {
         NeoURI neoURI = NeoURI.fromURI(BEGIN_TX_ASSET_NON_NATIVE);
+
         assertThat(neoURI.getToken(), is(new Hash160("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")));
     }
 
@@ -201,15 +204,16 @@ public class NeoURITest {
         NeoURI neoURI = new NeoURI()
                 .to(RECIPIENT)
                 .buildURI();
+
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX));
     }
 
     @Test
     public void buildURI_noAddress() {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Could not create a NEP-9 URI without a recipient address.");
-        new NeoURI().buildURI();
+        assertThrows("Could not create a NEP-9 URI without a recipient address.",
+                IllegalStateException.class, () -> new NeoURI().buildURI()
+        );
     }
 
     @Test
@@ -220,6 +224,7 @@ public class NeoURITest {
                 .buildURI();
 
         String BEGIN_TX_ASSET = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?asset=neo";
+
         assertThat("getURI()", neoURI.getURI(), is(URI.create(BEGIN_TX_ASSET)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(BEGIN_TX_ASSET));
     }
@@ -232,6 +237,7 @@ public class NeoURITest {
                 .buildURI();
 
         String beginTxAmount = "neo:NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj?amount=1";
+
         assertThat("getURI()", neoURI.getURI(), is(URI.create(beginTxAmount)));
         assertThat("getURIAsString()", neoURI.getURIAsString(), is(beginTxAmount));
     }
@@ -312,32 +318,32 @@ public class NeoURITest {
     }
 
     @Test
-    public void buildTransfer_noNeow3j() throws IOException {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Neow3j instance is not set.");
-        new NeoURI()
-                .to(RECIPIENT)
-                .buildTransferFrom(SENDER_ACCOUNT);
+    public void buildTransfer_noNeow3j() {
+        assertThrows("Neow3j instance is not set.", IllegalStateException.class,
+                () -> new NeoURI()
+                        .to(RECIPIENT)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
-    public void buildTransfer_noAddress() throws IOException {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Recipient is not set.");
-        new NeoURI(neow3j)
-                .token(NeoToken.SCRIPT_HASH)
-                .amount(AMOUNT)
-                .buildTransferFrom(SENDER_ACCOUNT);
+    public void buildTransfer_noAddress() {
+        assertThrows("Recipient is not set.", IllegalStateException.class,
+                () -> new NeoURI(neow3j)
+                        .token(NeoToken.SCRIPT_HASH)
+                        .amount(AMOUNT)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
-    public void buildTransfer_noAmount() throws IOException {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Amount is not set.");
-        new NeoURI(neow3j)
-                .token(NeoToken.SCRIPT_HASH)
-                .to(RECIPIENT)
-                .buildTransferFrom(SENDER_ACCOUNT);
+    public void buildTransfer_noAmount() {
+        assertThrows("Amount is not set.", IllegalStateException.class,
+                () -> new NeoURI(neow3j)
+                        .token(NeoToken.SCRIPT_HASH)
+                        .to(RECIPIENT)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
@@ -345,37 +351,42 @@ public class NeoURITest {
         setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json", "decimals");
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_1000000.json",
                 "balanceOf");
+
         TransactionBuilder b = new NeoURI(neow3j)
                 .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
                 .to(RECIPIENT)
                 .amount(AMOUNT)
                 .buildTransferFrom(SENDER_ACCOUNT);
+
         assertThat(b, instanceOf(TransactionBuilder.class));
     }
 
     @Test
     public void buildTransfer_nonNativeAsset_invalidAmountDecimals() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The token 'b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c' does " +
-                "not support more than 2 decimal places.");
-        new NeoURI(neow3j)
-                .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .to(RECIPIENT)
-                .amount(new BigDecimal("0.001"))
-                .buildTransferFrom(SENDER_ACCOUNT);
+
+        assertThrows("The token 'b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c' does not support more " +
+                        "than 2 decimal places.", IllegalArgumentException.class,
+                () -> new NeoURI(neow3j)
+                        .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .to(RECIPIENT)
+                        .amount(new BigDecimal("0.001"))
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test
     public void buildTransfer_nonNativeAsset_badDecimalReturn() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_decimals_nep17_badFormat.json");
-        exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("Got stack item of type Boolean but expected Integer.");
-        new NeoURI(neow3j)
-                .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
-                .to(RECIPIENT)
-                .amount(AMOUNT)
-                .buildTransferFrom(SENDER_ACCOUNT);
+
+        assertThrows("Got stack item of type Boolean but expected Integer.",
+                UnexpectedReturnTypeException.class,
+                () -> new NeoURI(neow3j)
+                        .token("b1e8f1ce80c81dc125e7d0e75e5ce3f7f4d4d36c")
+                        .to(RECIPIENT)
+                        .amount(AMOUNT)
+                        .buildTransferFrom(SENDER_ACCOUNT)
+        );
     }
 
     @Test

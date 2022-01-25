@@ -1,91 +1,97 @@
 package io.neow3j.compiler;
 
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
+import static org.junit.Assert.assertThrows;
 
 public class ObjectInheritanceTest {
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void testHashCode() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'hashCode'");
-        new Compiler().compile(ObjectHashCode.class.getName());
+    public void testHashCode() {
+        assertThrows("are not supported. Implement the method 'hashCode'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectHashCode.class.getName())
+        );
     }
 
     @Test
-    public void testEquals() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'equals'");
-        new Compiler().compile(ObjectEquals.class.getName());
+    public void testEquals() {
+        assertThrows("are not supported. Implement the method 'equals'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectEquals.class.getName())
+        );
     }
 
     @Test
-    public void testToString() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'toString'");
-        new Compiler().compile(ObjectToString.class.getName());
+    public void testToString() {
+        assertThrows("are not supported. Implement the method 'toString'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectToString.class.getName())
+        );
     }
 
     @Test
-    public void testNotify() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'notify'");
-        new Compiler().compile(ObjectNotify.class.getName());
+    public void testNotify() {
+        assertThrows("are not supported. Implement the method 'notify'",
+                CompilerException.class,
+                () ->new Compiler().compile(ObjectNotify.class.getName())
+        );
     }
 
     @Test
-    public void testNotifyAll() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'notifyAll'");
-        new Compiler().compile(ObjectNotifyAll.class.getName());
+    public void testNotifyAll() {
+        assertThrows("are not supported. Implement the method 'notifyAll'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectNotifyAll.class.getName())
+        );
     }
 
     @Test
-    public void testWaitLong() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'wait'");
-        new Compiler().compile(ObjectWaitLong.class.getName());
+    public void testWaitLong() {
+        assertThrows("are not supported. Implement the method 'wait'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectWaitLong.class.getName())
+        );
     }
 
     @Test
-    public void testWaitLongInt() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'wait'");
-        new Compiler().compile(ObjectWaitLongInt.class.getName());
+    public void testWaitLongInt() {
+        assertThrows("are not supported. Implement the method 'wait'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectWaitLongInt.class.getName())
+        );
     }
 
     @Test
-    public void testWaitNoParams() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'wait'");
-        new Compiler().compile(ObjectWaitNoParams.class.getName());
+    public void testWaitNoParams() {
+        assertThrows("are not supported. Implement the method 'wait'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectWaitNoParams.class.getName())
+        );
     }
 
     @Test
-    public void testGetClass() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'getClass'");
-        new Compiler().compile(ObjectGetClass.class.getName());
+    public void testGetClass() {
+        assertThrows("are not supported. Implement the method 'getClass'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectGetClass.class.getName())
+        );
     }
 
     @Test
-    public void testClone() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'clone'");
-        new Compiler().compile(ObjectClone.class.getName());
+    public void testClone() {
+        assertThrows("are not supported. Implement the method 'clone'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectClone.class.getName())
+        );
     }
 
     @Test
-    public void testFinalize() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("are not supported. Implement the method 'finalize'");
-        new Compiler().compile(ObjectFinalize.class.getName());
+    public void testFinalize() {
+        assertThrows("are not supported. Implement the method 'finalize'",
+                CompilerException.class,
+                () -> new Compiler().compile(ObjectFinalize.class.getName())
+        );
     }
 
     public static class TestClass {

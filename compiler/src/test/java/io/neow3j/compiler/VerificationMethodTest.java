@@ -4,6 +4,8 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Runtime;
@@ -11,20 +13,16 @@ import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
+
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class VerificationMethodTest {
 
     private static final String VERIFY_METHOD_NAME = "verify";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void whenUsingTheOnVerificationAnnotationTheVerifyMethodShouldBeInTheContractManifest()
@@ -40,19 +38,21 @@ public class VerificationMethodTest {
     }
 
     @Test
-    public void throwExceptionWhenVerifyMethodHasIllegalSignature() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+    public void throwExceptionWhenVerifyMethodHasIllegalSignature() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(VerificationMethodIllegalSignatureTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 "doVerify", "required to have return type", "boolean")));
-        new Compiler().compile(VerificationMethodIllegalSignatureTestContract.class.getName());
     }
 
     @Test
-    public void throwExceptionWhenMultipleVerifyMethodsAreUsed() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+    public void throwExceptionWhenMultipleVerifyMethodsAreUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(MultipleVerificationMethodsTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("multiple methods", VERIFY_METHOD_NAME)));
-        new Compiler().compile(MultipleVerificationMethodsTestContract.class.getName());
     }
 
     static class VerificationMethodTestContract {

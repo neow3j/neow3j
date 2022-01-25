@@ -4,6 +4,8 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.types.ContractParameter;
@@ -16,17 +18,11 @@ import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class OnNEP11PaymentMethodTest {
 
     private final static String ONNEP11PAYMENT_METHOD_NAME = "onNEP11Payment";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void whenUsingTheOnNEP11PaymentAnnotationTheCorrectMethodNameShouldAppearInTheManifest()
@@ -47,33 +43,37 @@ public class OnNEP11PaymentMethodTest {
     }
 
     @Test
-    public void OnNep11PaymentMethodIllegalReturnType() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+    public void OnNep11PaymentMethodIllegalReturnType() {
+        CompilerException thrown = assertThrows(CompilerException.class, () ->
+                new Compiler().compile(
+                        OnNep11PaymentMethodIllegalReturnTypeTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(),
                 int.class.getName(), ByteString.class.getName(), Object.class.getName(),
                 void.class.getName())));
-        new Compiler().compile(
-                OnNep11PaymentMethodIllegalReturnTypeTestContract.class.getName());
     }
 
     @Test
-    public void OnNep11PaymentMethodIllegalParameters() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+    public void OnNep11PaymentMethodIllegalParameters() {
+        CompilerException thrown = assertThrows(CompilerException.class, () ->
+                new Compiler().compile(
+                        OnNep11PaymentMethodIllegalParametersTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 "onPayment", "required to have", Hash160.class.getName(),
                 int.class.getName(), ByteString.class.getName(), Object.class.getName(),
                 void.class.getName())));
-        new Compiler().compile(
-                OnNep11PaymentMethodIllegalParametersTestContract.class.getName());
     }
 
     @Test
-    public void throwExceptionWhenMultipleMethodsAreUsed() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList("multiple methods", ONNEP11PAYMENT_METHOD_NAME)));
-        new Compiler().compile(MultipleOnNep11PaymentMethodsTestContract.class.getName());
+    public void throwExceptionWhenMultipleMethodsAreUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(MultipleOnNep11PaymentMethodsTestContract.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList("multiple methods", ONNEP11PAYMENT_METHOD_NAME))
+        );
     }
 
     static class OnNep11PaymentMethodTestContract {

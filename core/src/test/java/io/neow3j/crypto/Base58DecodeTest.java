@@ -18,9 +18,7 @@
 package io.neow3j.crypto;
 
 import io.neow3j.crypto.exceptions.AddressFormatException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
@@ -29,12 +27,10 @@ import java.util.Collection;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 @RunWith(Parameterized.class)
 public class Base58DecodeTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private final String input;
     private final byte[] expected;
@@ -66,9 +62,9 @@ public class Base58DecodeTest {
 
     @Test
     public void testDecode_invalidBase58() {
-        exceptionRule.expect(AddressFormatException.class);
-        exceptionRule.expectMessage("Invalid character ' ' at position 4");
-        Base58.decode("This isn't valid base58");
+        assertThrows("Invalid character ' ' at position 4", AddressFormatException.class,
+                () -> Base58.decode("This isn't valid base58")
+        );
     }
 
 }

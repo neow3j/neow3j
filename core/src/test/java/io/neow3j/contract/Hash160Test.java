@@ -7,9 +7,7 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -27,11 +25,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 
 public class Hash160Test {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void createFromValidHash() {
@@ -44,30 +40,30 @@ public class Hash160Test {
 
     @Test
     public void createFromHashWithOddLength() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("String argument is not hexadecimal.");
-        new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee");
+        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
+                () -> new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee")
+        );
     }
 
     @Test
     public void createFromMalformedHash() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("String argument is not hexadecimal.");
-        new Hash160("g3ba2703c53263e8d6e522dc32203339dcd8eee9");
+        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
+                () -> new Hash160("g3ba2703c53263e8d6e522dc32203339dcd8eee9")
+        );
     }
 
     @Test
     public void createFromTooShortHash() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Hash must be 20 bytes long but was 19 bytes.");
-        new Hash160("23ba2703c53263e8d6e522dc32203339dcd8ee");
+        assertThrows("Hash must be 20 bytes long but was 19 bytes.", IllegalArgumentException.class,
+                () -> new Hash160("23ba2703c53263e8d6e522dc32203339dcd8ee")
+        );
     }
 
     @Test
     public void createFromTooLongHash() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Hash must be 20 bytes long but was 32 bytes.");
-        new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b");
+        assertThrows("Hash must be 20 bytes long but was 32 bytes.", IllegalArgumentException.class,
+                () -> new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
+        );
     }
 
     @Test
@@ -75,6 +71,7 @@ public class Hash160Test {
         Hash160 hash = new Hash160("23ba2703c53263e8d6e522dc32203339dcd8eee9");
         byte[] expected = reverseArray(hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
+
         assertArrayEquals(expected, hash.toLittleEndianArray());
     }
 
@@ -86,6 +83,7 @@ public class Hash160Test {
         byte[] actual = outStream.toByteArray();
         byte[] expected = reverseArray(hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
+
         assertArrayEquals(expected, actual);
     }
 
@@ -94,6 +92,7 @@ public class Hash160Test {
         byte[] data = reverseArray(hexStringToByteArray(
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         Hash160 hash = NeoSerializableInterface.from(data, Hash160.class);
+
         assertThat(hash.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
     }
 
@@ -105,6 +104,7 @@ public class Hash160Test {
         byte[] m2 = hexStringToByteArray("d802a401");
         Hash160 hash1 = Hash160.fromScript(m1);
         Hash160 hash2 = Hash160.fromScript(m2);
+
         assertNotEquals(hash1, hash2);
         assertNotEquals(hash2, hash1);
         assertEquals(hash1, hash1);
@@ -114,14 +114,15 @@ public class Hash160Test {
     public void fromValidAddress() {
         Hash160 hash = Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         byte[] expectedHash = hexStringToByteArray("09a55874c2da4b86e5d49ff530a1b153eb12c7d6");
+
         assertThat(hash.toLittleEndianArray(), is(expectedHash));
     }
 
     @Test
     public void fromInvalidAddress() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Not a valid NEO address.");
-        Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8keas");
+        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
+                () -> Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8keas")
+        );
     }
 
     @Test
@@ -133,8 +134,8 @@ public class Hash160Test {
                 + OpCode.SYSCALL.toString()
                 + InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash()
         );
-
         Hash160 hash = Hash160.fromPublicKey(hexStringToByteArray(key));
+
         assertThat(hash.toLittleEndianArray(), is(sha256AndThenRipemd160(script)));
     }
 
@@ -142,6 +143,7 @@ public class Hash160Test {
     public void fromPublicKeyByteArrays() {
         ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
         Hash160 hash = Hash160.fromPublicKeys(asList(pubKey), 1);
+
         assertThat(hash.toString(), is(committeeAccountScriptHash()));
     }
 
@@ -161,6 +163,7 @@ public class Hash160Test {
         final String key = "031ccaaa46df7c494f442698c8c17c09311e3615c2dc042cbd3afeaba60fa40740";
         // Address generated from the above key, with address version 0x35.
         Hash160 sh = Hash160.fromPublicKey(hexStringToByteArray(defaultAccountPublicKey()));
+
         assertThat(sh.toAddress(), is(defaultAccountAddress()));
     }
 
@@ -188,6 +191,7 @@ public class Hash160Test {
     @Test
     public void getSize() {
         Hash160 hash = new Hash160("23ba2703c53263e8d6e522dc32203339dcd8eee9");
+
         assertThat(hash.getSize(), is(20));
     }
 

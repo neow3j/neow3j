@@ -30,7 +30,6 @@ import java.util.Map;
 
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
@@ -47,12 +46,14 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class WalletTest {
 
     @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
+    public WireMockRule wireMockRule =
+            new WireMockRule(WireMockConfiguration.options().dynamicPort());
 
     @Test
     public void testCreateDefaultWallet() {
@@ -74,9 +75,8 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletWithAccounts_noAccounts() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("No accounts provided to initialize a wallet");
-        Wallet.withAccounts();
+        assertThrows("No accounts provided to initialize a wallet", IllegalArgumentException.class,
+                Wallet::withAccounts);
     }
 
     @Test
@@ -136,10 +136,10 @@ public class WalletTest {
     }
 
     @Test
-    public void testCreateWalletFromNEP6File_noDefaultAccount() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("wallet does not contain any default account.");
-        Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json");
+    public void testCreateWalletFromNEP6File_noDefaultAccount() {
+        assertThrows("wallet does not contain any default account.", IllegalArgumentException.class,
+                () -> Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json")
+        );
     }
 
     @Test
@@ -173,9 +173,10 @@ public class WalletTest {
         Account acc = Account.create();
         w1.addAccounts(acc);
         Wallet w2 = Wallet.create();
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("is already contained in a wallet.");
-        w2.addAccounts(acc);
+
+        assertThrows("is already contained in a wallet.", IllegalArgumentException.class,
+                () -> w2.addAccounts(acc)
+        );
     }
 
     @Test
@@ -229,9 +230,10 @@ public class WalletTest {
         assertEquals(w, lastRemainingAccount.getWallet());
         assertEquals(lastRemainingAccount, w.getDefaultAccount());
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("is the only account in the wallet. It cannot be removed.");
-        w.removeAccount(lastRemainingAccount.getScriptHash());
+        assertThrows("is the only account in the wallet. It cannot be removed.",
+                IllegalStateException.class,
+                () -> w.removeAccount(lastRemainingAccount.getScriptHash())
+        );
     }
 
     @Test
@@ -254,16 +256,15 @@ public class WalletTest {
 
     @Test
     public void testToNEP6WalletWithUnencryptedPrivateKey()
-            throws InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
+            throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException {
 
         Account a = new Account(ECKeyPair.createEcKeyPair());
         Wallet w = Wallet.withAccounts(a);
         w.addAccounts(a);
 
-        exceptionRule.expect(AccountStateException.class);
-        exceptionRule.expectMessage("Account private key is available but not encrypted.");
-        w.toNEP6Wallet();
+        assertThrows("Account private key is available but not encrypted.",
+                AccountStateException.class, w::toNEP6Wallet);
     }
 
     @Test
@@ -279,7 +280,7 @@ public class WalletTest {
     }
 
     @Test
-    public void fromNEP6WalletFileToNEP6Wallet() throws IOException, URISyntaxException {
+    public void fromNEP6WalletFileToNEP6Wallet() throws IOException {
         File nep6WalletFile = new File(WalletTest.class.getClassLoader()
                 .getResource("wallet/wallet.json").getFile());
         assertNotNull(nep6WalletFile);
@@ -325,11 +326,12 @@ public class WalletTest {
     }
 
     @Test
-    public void failSaveToFileWithoutDestination() throws IOException {
+    public void failSaveToFileWithoutDestination() {
         Wallet w = Wallet.create();
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Destination file cannot be null.");
-        w.saveNEP6Wallet(null);
+
+        assertThrows("Destination file cannot be null.", IllegalArgumentException.class,
+                () -> w.saveNEP6Wallet(null)
+        );
     }
 
     @Test
@@ -453,17 +455,19 @@ public class WalletTest {
     public void failSettingDefaultAccountNotContainedInWallet() {
         Wallet w = Wallet.create();
         Account a = Account.create();
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Wallet does not contain the account");
-        w.defaultAccount(a.getScriptHash());
+
+        assertThrows("Wallet does not contain the account", IllegalArgumentException.class,
+                () -> w.defaultAccount(a.getScriptHash())
+        );
     }
 
     @Test
     public void provideNoAccountToSetDefault() {
         Wallet w = Wallet.create();
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("No account provided");
-        w.defaultAccount(null);
+
+        assertThrows("No account provided", IllegalArgumentException.class,
+                () -> w.defaultAccount(null)
+        );
     }
 
     @Test
@@ -477,13 +481,9 @@ public class WalletTest {
         assertThat(w.getAccounts().get(0).getECKeyPair(), nullValue());
     }
 
-    @Rule
-    public WireMockRule wireMockRule =
-            new WireMockRule(WireMockConfiguration.options().dynamicPort());
-
     @Test
     public void getNep17Balances() throws IOException {
-        int port = this.wireMockRule.port();
+        int port = wireMockRule.port();
         WireMock.configureFor(port);
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
@@ -495,6 +495,7 @@ public class WalletTest {
                 "getnep17balances_ofDefaultAccount.json", defaultAccountAddress());
         Wallet w = Wallet.withAccounts(a1, a2);
         Map<Hash160, BigInteger> balances = w.getNep17TokenBalances(neow);
+
         assertThat(balances.keySet(), containsInAnyOrder(
                 new Hash160(gasTokenHash()),
                 new Hash160(neoTokenHash())));

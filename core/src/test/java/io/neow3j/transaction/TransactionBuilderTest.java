@@ -23,11 +23,9 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.wallet.Account;
 import io.reactivex.Observable;
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -67,6 +65,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -88,9 +87,6 @@ public class TransactionBuilderTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Neow3j neow;
 
@@ -165,22 +161,23 @@ public class TransactionBuilderTest {
 
     @Test
     public void failBuildingTransactionWithNegativeValidUntilBlockNumber() {
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("cannot be less than zero");
-        new TransactionBuilder(neow)
-                .validUntilBlock(-1L)
-                .script(new byte[]{1, 2, 3})
-                .signers(calledByEntry(account1));
+        assertThrows("cannot be less than zero", TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .validUntilBlock(-1L)
+                        .script(new byte[]{1, 2, 3})
+                        .signers(calledByEntry(account1))
+        );
     }
 
     @Test
     public void failBuildingTransactionWithTooHighValidUntilBlockNumber() {
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("cannot be less than zero or more than 2^32");
-        new TransactionBuilder(neow)
-                .validUntilBlock((long) Math.pow(2, 32))
-                .script(new byte[]{1, 2, 3})
-                .signers(calledByEntry(account1));
+        assertThrows("cannot be less than zero or more than 2^32",
+                TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .validUntilBlock((long) Math.pow(2, 32))
+                        .script(new byte[]{1, 2, 3})
+                        .signers(calledByEntry(account1))
+        );
     }
 
     @Test
@@ -199,22 +196,21 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failBuildingTxWithoutAnySigner() throws Throwable {
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Cannot create a transaction without signers.");
-        new TransactionBuilder(neow)
-                .validUntilBlock(100L)
-                .script(new byte[]{1, 2, 3})
-                .getUnsignedTransaction();
+    public void failBuildingTxWithoutAnySigner() {
+        assertThrows("Cannot create a transaction without signers.", IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .validUntilBlock(100L)
+                        .script(new byte[]{1, 2, 3})
+                        .getUnsignedTransaction()
+        );
     }
 
     @Test
     public void failAddingMultipleSignersConcerningTheSameAccount() {
         TransactionBuilder b = new TransactionBuilder(neow);
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("concerning the same account");
-        b.signers(global(account1),
-                calledByEntry(account1));
+        assertThrows("concerning the same account", TransactionConfigurationException.class,
+                () -> b.signers(global(account1), calledByEntry(account1))
+        );
     }
 
     @Test
@@ -280,15 +276,14 @@ public class TransactionBuilderTest {
 
         HighPriorityAttribute attr = new HighPriorityAttribute();
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Only committee members can send transactions with high " +
-                "priority.");
-
-        new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .attributes(attr)
-                .signers(none(account2))
-                .getUnsignedTransaction();
+        assertThrows("Only committee members can send transactions with high priority.",
+                IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .attributes(attr)
+                        .signers(none(account2))
+                        .getUnsignedTransaction()
+        );
     }
 
     @Test
@@ -319,11 +314,11 @@ public class TransactionBuilderTest {
         }
         TransactionAttribute[] attrArray = attrs.toArray(new TransactionAttribute[0]);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("A transaction cannot have more than " +
-                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
-
-        new TransactionBuilder(neow).attributes(attrArray);
+        assertThrows("A transaction cannot have more than " +
+                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes",
+                TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow).attributes(attrArray)
+        );
     }
 
     @Test
@@ -338,11 +333,11 @@ public class TransactionBuilderTest {
         }
         TransactionAttribute[] attrArray = attrs.toArray(new TransactionAttribute[0]);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("A transaction cannot have more than " +
-                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
-
-        b.attributes(attrArray);
+        assertThrows("A transaction cannot have more than " +
+                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes",
+                TransactionConfigurationException.class,
+                () -> b.attributes(attrArray)
+        );
     }
 
     @Test
@@ -356,12 +351,11 @@ public class TransactionBuilderTest {
         }
         Signer[] signerArr = signers.toArray(new Signer[0]);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("A transaction cannot have more than " +
-                NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes");
-
         assertThat(signerArr.length + 1, greaterThan(NeoConstants.MAX_TRANSACTION_ATTRIBUTES));
-        b.signers(signerArr);
+        assertThrows("A transaction cannot have more than " +
+                        NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes",
+                TransactionConfigurationException.class, () -> b.signers(signerArr)
+        );
     }
 
     @Test
@@ -403,10 +397,10 @@ public class TransactionBuilderTest {
                 .signers(none(Account.fromAddress(account1.getAddress())))
                 .validUntilBlock(1000);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("Cannot create transaction signature because account "
-                + account1.getAddress() + " does not hold a private key.");
-        builder.sign();
+        assertThrows("Cannot create transaction signature because account "
+                        + account1.getAddress() + " does not hold a private key.",
+                TransactionConfigurationException.class, builder::sign
+        );
     }
 
     @Test
@@ -415,14 +409,14 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Transactions with multi-sig signers cannot be " +
-                "signed automatically.");
-        new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(none(
-                        createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
-                .sign();
+        assertThrows("Transactions with multi-sig signers cannot be signed automatically.",
+                IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(
+                                createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
+                        .sign()
+        );
     }
 
     @Test
@@ -430,12 +424,13 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("transaction requires at least one signing account");
-        new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(ContractSigner.calledByEntry(Account.create().getScriptHash()))
-                .sign();
+        assertThrows("transaction requires at least one signing account",
+                TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(ContractSigner.calledByEntry(Account.create().getScriptHash()))
+                        .sign()
+        );
     }
 
     @Test
@@ -447,12 +442,12 @@ public class TransactionBuilderTest {
         Account accountWithoutKeyPair =
                 Account.fromVerificationScript(account1.getVerificationScript());
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("does not hold a private key");
-        new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(none(accountWithoutKeyPair))
-                .sign();
+        assertThrows("does not hold a private key", TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(accountWithoutKeyPair))
+                        .sign()
+        );
     }
 
     @Test
@@ -489,10 +484,9 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1000) // Setting explicitly so that no RPC call is necessary.
                 .getUnsignedTransaction();
         // Don't add any witnesses, so it has one signer but no witness.
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("The transaction does not have the same " +
-                "number of signers and witnesses."));
-        tx.send();
+
+        assertThrows("The transaction does not have the same number of signers and witnesses.",
+                TransactionConfigurationException.class, tx::send);
     }
 
     @Test
@@ -509,6 +503,7 @@ public class TransactionBuilderTest {
         Transaction tx = b.sign();
 
         byte[] invocScript = new ScriptBuilder().pushData("iamgroot").pushInteger(2).toArray();
+
         assertThat(tx.getWitnesses(), hasItem(new Witness(invocScript, new byte[]{})));
     }
 
@@ -645,9 +640,11 @@ public class TransactionBuilderTest {
     public void doIfSenderCannotCoverFees_alreadySpecifiedASupplier() {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .throwIfSenderCannotCoverFees(IllegalStateException::new);
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Cannot handle a consumer for this case, since an exception");
-        b.doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
+
+        assertThrows("Cannot handle a consumer for this case, since an exception",
+                IllegalStateException.class,
+                () -> b.doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee))
+        );
     }
 
     @Test
@@ -673,18 +670,19 @@ public class TransactionBuilderTest {
                 .throwIfSenderCannotCoverFees(
                         () -> new IllegalStateException("test throwIfSenderCannotCoverFees"));
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("test throwIfSenderCannotCoverFees");
-        b.getUnsignedTransaction();
+        assertThrows("test throwIfSenderCannotCoverFees", IllegalStateException.class,
+                b::getUnsignedTransaction);
     }
 
     @Test
     public void throwIfSenderCannotCoverFees_alreadySpecifiedAConsumer() {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .doIfSenderCannotCoverFees((fee, balance) -> System.out.println(fee));
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Cannot handle a supplier for this case, since a consumer");
-        b.throwIfSenderCannotCoverFees(IllegalStateException::new);
+
+        assertThrows("Cannot handle a supplier for this case, since a consumer",
+                IllegalStateException.class,
+                () -> b.throwIfSenderCannotCoverFees(IllegalStateException::new)
+        );
     }
 
     @Test
@@ -710,18 +708,17 @@ public class TransactionBuilderTest {
         ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
         Account sender = new Account(senderPair);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("Cannot make an 'invokescript' call");
-        new TransactionBuilder(neow).callInvokeScript();
+        assertThrows("Cannot make an 'invokescript' call", TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow).callInvokeScript()
+        );
     }
 
     @Test
-    public void buildWithoutSettingScript() throws Throwable {
+    public void buildWithoutSettingScript() {
         TransactionBuilder b = new TransactionBuilder(neow);
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("script");
-        b.getUnsignedTransaction();
+        assertThrows("script", TransactionConfigurationException.class,
+                b::getUnsignedTransaction);
     }
 
     @Test
@@ -732,9 +729,9 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray("0c00120c1493ad1572"))
                 .signers(calledByEntry(account1));
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("Instruction out of bounds.");
-        b.getUnsignedTransaction();
+
+        assertThrows("Instruction out of bounds.", TransactionConfigurationException.class,
+                b::getUnsignedTransaction);
     }
 
     @Test
@@ -746,10 +743,10 @@ public class TransactionBuilderTest {
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
                 .signers(calledByEntry(account1));
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("The vm exited due to the following exception: Value was " +
-                "either too large or too small for an Int32.");
-        b.getUnsignedTransaction();
+
+        assertThrows("The vm exited due to the following exception: Value was either too large or" +
+                        " too small for an Int32.", TransactionConfigurationException.class,
+                b::getUnsignedTransaction);
     }
 
     @Test
@@ -847,9 +844,9 @@ public class TransactionBuilderTest {
         assertThat(b.getSigners().get(0), is(s1));
         assertThat(b.getSigners().get(1), is(s2));
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("contains a signer with fee-only witness scope");
-        b.firstSigner(s2.getScriptHash());
+        assertThrows("contains a signer with fee-only witness scope", IllegalStateException.class,
+                () -> b.firstSigner(s2.getScriptHash())
+        );
     }
 
     @Test
@@ -860,9 +857,9 @@ public class TransactionBuilderTest {
                 .signers(s1);
         assertThat(b.getSigners().get(0), is(s1));
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("Could not find a signer with script hash");
-        b.firstSigner(account2.getScriptHash());
+        assertThrows("Could not find a signer with script hash", IllegalStateException.class,
+                () -> b.firstSigner(account2.getScriptHash())
+        );
     }
 
     @Test
@@ -922,9 +919,8 @@ public class TransactionBuilderTest {
                 .signers(none(account1))
                 .sign();
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("subscribe before transaction has been sent");
-        tx.track();
+        assertThrows("subscribe before transaction has been sent", IllegalStateException.class,
+                tx::track);
     }
 
     private NeoGetBlock createBlock(int number) {
@@ -997,9 +993,9 @@ public class TransactionBuilderTest {
                 .signers(calledByEntry(account1))
                 .sign();
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("application log before transaction has been sent");
-        tx.getApplicationLog();
+        assertThrows("application log before transaction has been sent",
+                IllegalStateException.class,
+                tx::getApplicationLog);
     }
 
     @Test
