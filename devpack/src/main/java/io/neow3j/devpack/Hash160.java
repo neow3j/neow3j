@@ -15,36 +15,29 @@ import io.neow3j.types.StackItemType;
  */
 public class Hash160 {
 
-    private static final byte LENGTH = 0x14;
+    private static final byte LENGTH = 0x14; // 20 bytes
 
     /**
      * Creates a {@code Hash160} from the given byte array.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to
+     * verify the correct format.
      *
-     * @param value The hash as a byte array.
+     * @param buffer The hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 20 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
-    public Hash160(byte[] value) {
+    public Hash160(byte[] buffer) {
     }
 
     /**
      * Creates a {@code Hash160} from the given bytes.
      * <p>
-     * Checks if the value is a valid hash. Fails if it is not.
+     * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to
+     * verify the correct format.
      *
      * @param value The hash as a byte string.
      */
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.SIZE)
-    @Instruction(opcode = OpCode.PUSHINT8, operand = LENGTH) // 20 bytes expected array size
-    @Instruction(opcode = OpCode.NUMEQUAL)
-    @Instruction(opcode = OpCode.ASSERT)
+    @Instruction
     public Hash160(ByteString value) {
     }
 
@@ -71,7 +64,7 @@ public class Hash160 {
      * and 20 bytes long.
      *
      * @param data The object to check.
-     * @return true if this the given object is a valid Hash160. False, otherwise.
+     * @return true if the given object is a valid Hash160. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)
@@ -113,4 +106,5 @@ public class Hash160 {
     @Override
     @Instruction(opcode = OpCode.EQUAL)
     public native boolean equals(Object other);
+
 }
