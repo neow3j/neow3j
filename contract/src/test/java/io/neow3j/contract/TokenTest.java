@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -18,15 +19,11 @@ import io.neow3j.types.Hash160;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class TokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Token someToken;
     private static final Hash160 SOME_TOKEN_SCRIPT_HASH =
@@ -71,9 +68,10 @@ public class TokenTest {
     @Test
     public void testToFractions_tooHighScale() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided amount has too many decimal points.");
-        someToken.toFractions(new BigDecimal("1.023"));
+        assertThrows("The provided amount has too many decimal points.",
+                IllegalArgumentException.class,
+                () -> someToken.toFractions(new BigDecimal("1.023"))
+        );
     }
 
     @Test

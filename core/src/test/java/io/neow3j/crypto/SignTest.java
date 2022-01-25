@@ -4,9 +4,7 @@ import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.Numeric;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.security.SignatureException;
 
@@ -20,12 +18,10 @@ import static io.neow3j.utils.Numeric.toHexString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class SignTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private static final String TEST_MESSAGE = "A test message";
     private static final byte[] TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes();
@@ -106,11 +102,12 @@ public class SignTest {
     }
 
     @Test
-    public void testInvalidSignature() throws SignatureException {
-        exceptionRule.expect(RuntimeException.class);
-        exceptionRule.expectMessage("r must be 32 bytes.");
-        signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27, new byte[]{1},
-                new byte[]{0}));
+    public void testInvalidSignature() {
+        assertThrows("r must be 32 bytes.", RuntimeException.class,
+                () -> signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27,
+                        new byte[]{1},
+                        new byte[]{0}))
+        );
     }
 
     @Test

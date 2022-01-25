@@ -5,17 +5,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
+
 import java.io.IOException;
 import java.util.List;
 
 import io.neow3j.devpack.constants.NativeContract;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class TrustManifestTest {
 
@@ -23,9 +23,6 @@ public class TrustManifestTest {
     private static final String GROUP_PUBKEY_1 =
             "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
     private static final String CONTRACT_HASH_2 = "0xd6c712eb53b1a130f59fd4e5864bdac27458a509";
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void withTrustsAnnotation() throws IOException {
@@ -63,13 +60,15 @@ public class TrustManifestTest {
     }
 
     @Test
-    public void withTrustsAnnotationButNotValidContracHashNorGroupPubKey() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(asList(
+    public void withTrustsAnnotationButNotValidContracHashNorGroupPubKey() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler()
+                        .compile(TrustManifestTestContractWithNotValidContractHashNorGroupKey.class
+                                .getName())
+
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 "Invalid contract hash or public key:", "invalidContractHashOrPubKey")));
-        new Compiler()
-                .compile(TrustManifestTestContractWithNotValidContractHashNorGroupKey.class
-                        .getName());
     }
 
     @Test
@@ -82,29 +81,28 @@ public class TrustManifestTest {
     }
 
     @Test
-    public void withBothContractAndNativeContract() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("must either have the attribute 'contract' or " +
-                "'nativeContract' set but not both");
-        new Compiler().compile(
-                TrustManifestTest.TrustManifestTestContractWithContractAndNativeContract.class.getName());
+    public void withBothContractAndNativeContract() {
+        assertThrows("must either have the attribute 'contract' or 'nativeContract' set but not " +
+                        "both",
+                CompilerException.class, () -> new Compiler().compile(
+                        TrustManifestTest.TrustManifestTestContractWithContractAndNativeContract.class.getName())
+        );
     }
 
     @Test
-    public void withoutBothContractAndNativeContract() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("requires either the attribute 'contract' or " +
-                "'nativeContract' to be set.");
-        new Compiler().compile(
-                TrustManifestTest.TrustManifestTestContractWithoutContract.class.getName());
+    public void withoutBothContractAndNativeContract() {
+        assertThrows("requires either the attribute 'contract' or 'nativeContract' to be set.",
+                CompilerException.class, () -> new Compiler().compile(
+                        TrustManifestTest.TrustManifestTestContractWithoutContract.class.getName())
+        );
     }
 
     @Test
-    public void withNoneNativeContractValue() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage("The provided native contract does not exist.");
-        new Compiler().compile(
-                TrustManifestTest.TrustManifestTestContractWithNoneNativeContractValue.class.getName());
+    public void withNoneNativeContractValue() {
+        assertThrows("The provided native contract does not exist.", CompilerException.class,
+                () -> new Compiler().compile(
+                        TrustManifestTest.TrustManifestTestContractWithNoneNativeContractValue.class.getName())
+        );
     }
 
     @Trust(contract = CONTRACT_HASH_1)

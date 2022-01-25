@@ -15,7 +15,6 @@ import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,14 +32,12 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThrows;
 
 public class NonFungibleTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private Account account2;
@@ -78,7 +75,7 @@ public class NonFungibleTokenTest {
 
         TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
-        assertThat(((AccountSigner)b.getSigners().get(0)).getAccount(), is(account1));
+        assertThat(((AccountSigner) b.getSigners().get(0)).getAccount(), is(account1));
 
         b = nfTestToken.transfer(account2.getScriptHash(), TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
@@ -89,9 +86,9 @@ public class NonFungibleTokenTest {
     public void failOnDivisibleTransferWithNonDivisibleNFT() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("only intended for non-divisible NFTs.");
-        nfTestToken.transfer(account2, account1.getScriptHash(), TOKEN_ID);
+        assertThrows("only intended for non-divisible NFTs.", IllegalStateException.class,
+                () -> nfTestToken.transfer(account2, account1.getScriptHash(), TOKEN_ID)
+        );
     }
 
     @Test
@@ -107,32 +104,36 @@ public class NonFungibleTokenTest {
     public void testOwnerOfNonDivisible_Divisible() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("only intended for non-divisible NFTs.");
-        nfTestToken.ownerOf(TOKEN_ID);
+        assertThrows("only intended for non-divisible NFTs.", IllegalStateException.class,
+                () -> nfTestToken.ownerOf(TOKEN_ID)
+        );
     }
 
     @Test
     public void testOwnerOfNonDivisible_returnNotScriptHash() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "response_stack_integer.json");
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("but expected ByteString");
-        nfTestToken.ownerOf(new byte[]{1});
+
+        assertThrows("but expected ByteString", UnexpectedReturnTypeException.class,
+                () -> nfTestToken.ownerOf(new byte[]{1})
+        );
     }
 
     @Test
     public void testOwnerOfNonDivisible_returnInvalidAddress() throws IOException {
         setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("Return type did not contain script hash in expected format.");
-        nfTestToken.ownerOf(new byte[]{1});
+
+        assertThrows("Return type did not contain script hash in expected format.",
+                UnexpectedReturnTypeException.class,
+                () -> nfTestToken.ownerOf(new byte[]{1})
+        );
     }
 
     @Test
     public void testGetDecimals() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
+
         assertThat(nfTestToken.getDecimals(), is(5));
     }
 
@@ -148,6 +149,7 @@ public class NonFungibleTokenTest {
     public void testTokensOf() throws IOException {
         setUpWireMockForInvokeFunction("tokensOf", "nft_tokensof.json");
         List<byte[]> tokens = nfTestToken.tokensOf(account1.getScriptHash());
+
         assertThat(tokens, hasSize(2));
         assertThat(tokens.get(0), is("tokenof1".getBytes(StandardCharsets.UTF_8)));
         assertThat(tokens.get(1), is("tokenof2".getBytes(StandardCharsets.UTF_8)));
@@ -164,15 +166,17 @@ public class NonFungibleTokenTest {
     @Test
     public void testGetProperties_unexpectedReturnType() throws IOException {
         setUpWireMockForInvokeFunction("properties", "response_stack_integer.json");
-        exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("but expected Map");
-        nfTestToken.properties(new byte[]{1});
+
+        assertThrows("but expected Map", UnexpectedReturnTypeException.class,
+                () -> nfTestToken.properties(new byte[]{1})
+        );
     }
 
     @Test
     public void testTokens() throws IOException {
         setUpWireMockForInvokeFunction("tokens", "nft_tokens.json");
         List<byte[]> tokens = nfTestToken.tokens();
+
         assertThat(tokens, hasSize(2));
         assertThat(tokens.get(0), is("token1".getBytes(StandardCharsets.UTF_8)));
         assertThat(tokens.get(1), is("token2".getBytes(StandardCharsets.UTF_8)));
@@ -193,11 +197,13 @@ public class NonFungibleTokenTest {
 
         TransactionBuilder b = nfTestToken.transfer(account1, account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
+
         assertThat(b.getScript(), is(expectedScript));
-        assertThat(((AccountSigner)b.getSigners().get(0)).getAccount(), is(account1));
+        assertThat(((AccountSigner) b.getSigners().get(0)).getAccount(), is(account1));
 
         b = nfTestToken.transfer(account1.getScriptHash(), account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
+
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().size(), is(0));
     }
@@ -206,9 +212,10 @@ public class NonFungibleTokenTest {
     public void failOnNonDivisibleTransferWithDivisibleNFT() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
 
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("only intended for divisible NFTs.");
-        nfTestToken.transfer(account1, account2.getScriptHash(), new BigInteger("25000"), TOKEN_ID);
+        assertThrows("only intended for divisible NFTs.", IllegalStateException.class,
+                () -> nfTestToken.transfer(account1, account2.getScriptHash(), new BigInteger(
+                        "25000"), TOKEN_ID)
+        );
     }
 
     @Test
@@ -216,6 +223,7 @@ public class NonFungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownersof.json");
         List<Hash160> owners = nfTestToken.ownersOf(TOKEN_ID);
+
         assertThat(owners, hasSize(2));
         assertThat(owners, contains(
                 new Hash160("c6ae4518b51146820bef3df20bb89da05cfee3df"),
@@ -226,9 +234,10 @@ public class NonFungibleTokenTest {
     @Test
     public void testOwnersOf_nonDivisible() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("only intended for divisible NFTs.");
-        nfTestToken.ownersOf(TOKEN_ID);
+
+        assertThrows("only intended for divisible NFTs.", IllegalStateException.class,
+                () -> nfTestToken.ownersOf(TOKEN_ID)
+        );
     }
 
     @Test
@@ -236,15 +245,17 @@ public class NonFungibleTokenTest {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("balanceOf", "nft_balanceof.json");
         BigInteger balance = nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
+
         assertThat(balance, is(new BigInteger("244")));
     }
 
     @Test
     public void testBalanceOfDivisible_NonDivisible() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
-        exceptionRule.expect(IllegalStateException.class);
-        exceptionRule.expectMessage("only intended for divisible NFTs.");
-        nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID);
+
+        assertThrows("only intended for divisible NFTs.", IllegalStateException.class,
+                () -> nfTestToken.balanceOf(account1.getScriptHash(), TOKEN_ID)
+        );
     }
 
 }

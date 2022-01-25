@@ -4,50 +4,49 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.Runtime;
-
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.hamcrest.core.StringContains;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 public class StringLiteralHelperTest {
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void invalidAddressStringLiteralThrowsCompilerExceptions() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                Arrays.asList("Invalid address", "A0unErzotcQTNWP2qktA7LgkXZVdHea97H")));
-        new Compiler().compile(InvalidAddressVariable.class.getName());
+    public void invalidAddressStringLiteralThrowsCompilerExceptions() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(InvalidAddressVariable.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList("Invalid address", "A0unErzotcQTNWP2qktA7LgkXZVdHea97H")));
     }
 
     @Test
-    public void invalidHexStringLiteralThrowsCompilerExceptions() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                Arrays.asList("Invalid hex string", "0x0h02")));
-        new Compiler().compile(InvalidHexStringVariable.class.getName());
+    public void invalidHexStringLiteralThrowsCompilerExceptions() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(InvalidHexStringVariable.class.getName())
+        );
+        assertThat(thrown.getMessage(),
+                stringContainsInOrder(asList("Invalid hex string", "0x0h02")));
     }
 
     @Test
-    public void invalidIntegerStringLiteralThrowsCompilerExceptions() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                Arrays.asList("Invalid number string", "100e0000000000000000000000000000")));
-        new Compiler().compile(InvalidIntStringVariable.class.getName());
+    public void invalidIntegerStringLiteralThrowsCompilerExceptions() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(InvalidIntStringVariable.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList("Invalid number string", "100e0000000000000000000000000000")));
     }
 
     @Test
-    public void illegalInputToConverterMethodLeadsToCompilerException() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContains("constant string literals"));
-        new Compiler().compile(IllegalInputConverterMethod.class.getName());
+    public void illegalInputToConverterMethodLeadsToCompilerException() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(IllegalInputConverterMethod.class.getName())
+        );
+        assertThat(thrown.getMessage(), containsString("constant string literals"));
     }
 
     static class InvalidAddressVariable {
@@ -58,6 +57,7 @@ public class StringLiteralHelperTest {
         public static Hash160 main() {
             return scriptHash;
         }
+
     }
 
     static class InvalidHexStringVariable {
@@ -67,6 +67,7 @@ public class StringLiteralHelperTest {
         public static ByteString main() {
             return bytes;
         }
+
     }
 
     static class InvalidIntStringVariable {
@@ -77,6 +78,7 @@ public class StringLiteralHelperTest {
         public static int main() {
             return integer;
         }
+
     }
 
     static class IllegalInputConverterMethod {
@@ -91,4 +93,3 @@ public class StringLiteralHelperTest {
     }
 
 }
-

@@ -16,7 +16,6 @@ import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -50,9 +49,6 @@ public class NeoTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private static final String NEOTOKEN_SCRIPTHASH = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
@@ -193,6 +189,7 @@ public class NeoTokenTest {
         List<ECPublicKey> result = new NeoToken(neow).getCommittee();
         String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
         ECPublicKey expKey = new ECPublicKey(hexStringToByteArray(expKeyHex));
+
         assertThat(result, contains(expKey));
     }
 
@@ -213,6 +210,7 @@ public class NeoTokenTest {
         List<ECPublicKey> result = new NeoToken(neow).getNextBlockValidators();
         String expKeyHex = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
         ECPublicKey expKey = new ECPublicKey(hexStringToByteArray(expKeyHex));
+
         assertThat(result, contains(expKey));
     }
 
@@ -281,6 +279,7 @@ public class NeoTokenTest {
                                 publicKey(pubKey.getEncoded(true))))
                 .toArray();
         byte[] script = new NeoToken(neow).buildVoteScript(account1.getScriptHash(), pubKey);
+
         assertThat(script, is(expectedScript));
     }
 
@@ -291,6 +290,7 @@ public class NeoTokenTest {
                         asList(hash160(account1.getScriptHash()), any(null)))
                 .toArray();
         byte[] script = new NeoToken(neow).buildVoteScript(account1.getScriptHash(), null);
+
         assertThat(script, is(expectedScript));
     }
 
@@ -300,13 +300,12 @@ public class NeoTokenTest {
 
         setUpWireMockForInvokeFunction(GET_GAS_PER_BLOCK, "invokefunction_getGasPerBlock.json");
         int res = new NeoToken(neow).getGasPerBlock().intValue();
+
         assertThat(res, is(500_000));
     }
 
     @Test
-    public void setGasPerBlockProducesCorrectScript()
-            throws IOException {
-
+    public void setGasPerBlockProducesCorrectScript() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_vote.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -328,6 +327,7 @@ public class NeoTokenTest {
 
         setUpWireMockForInvokeFunction(GET_REGISTER_PRICE, "invokefunction_getRegisterPrice.json");
         BigInteger res = new NeoToken(neow).getRegisterPrice();
+
         assertThat(res, is(new BigInteger("100000000000")));
     }
 
@@ -360,11 +360,14 @@ public class NeoTokenTest {
         setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState.json");
         NeoAccountState neoAccountState =
                 new NeoToken(neow).getAccountState(account1.getScriptHash());
+
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(20000)));
         assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(259)));
+
         ECPublicKey publicKey =
                 new ECPublicKey(
                         "037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+
         assertThat(neoAccountState.getPublicKey(), is(publicKey));
     }
 
@@ -373,6 +376,7 @@ public class NeoTokenTest {
         setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_noVote.json");
         NeoAccountState neoAccountState =
                 new NeoToken(neow).getAccountState(account1.getScriptHash());
+
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(12000)));
         assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
         assertNull(neoAccountState.getPublicKey());
@@ -384,6 +388,7 @@ public class NeoTokenTest {
                 "neoToken_getAccountState_noBalance.json");
         NeoAccountState neoAccountState =
                 new NeoToken(neow).getAccountState(account1.getScriptHash());
+
         assertThat(neoAccountState.getBalance(), is(BigInteger.ZERO));
         assertNull(neoAccountState.getBalanceHeight());
         assertNull(neoAccountState.getPublicKey());
@@ -396,6 +401,8 @@ public class NeoTokenTest {
 
         ECPublicKey pubKey = new ECPublicKey(
                 "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
+
         assertTrue(new NeoToken(neow).isCandidate(pubKey));
     }
+
 }

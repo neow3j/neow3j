@@ -1,9 +1,7 @@
 package io.neow3j.utils;
 
 import io.neow3j.protocol.Neow3jConfig;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
@@ -15,12 +13,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class AddressUtilsTest {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void testCreatesScriptHashThenToAddress() {
@@ -59,16 +55,16 @@ public class AddressUtilsTest {
 
     @Test
     public void testAddressToScriptHash_InvalidAddress() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Not a valid NEO address.");
-        addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88");
+        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
+                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88")
+        );
     }
 
     @Test
     public void testToScriptHashLargerThan25Chars() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Not a valid NEO address.");
-        addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88ue");
+        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
+                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88ue")
+        );
     }
 
     @Test
@@ -83,6 +79,7 @@ public class AddressUtilsTest {
         Neow3jConfig.setAddressVersion((byte) 0x37);
         byte[] scriptHash = hexStringToByteArray("c67d4f062a94e9ed6a110264e50881500d4cf1bb");
         String address = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
+
         assertThat(scriptHashToAddress(scriptHash), is(address));
         Neow3jConfig.setAddressVersion((byte) 0x35);
     }
@@ -98,9 +95,8 @@ public class AddressUtilsTest {
         assertFalse(isValidAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmyU"));
 
         // If the address string is null, we don't want to say it is an invalid address because
-        // there isn't even an address to be deemed invalid. Therefore expect NullPointerException.
-        exceptionRule.expect(NullPointerException.class);
-        isValidAddress(null);
+        // there isn't even an address to be deemed invalid. Therefore, expect NullPointerException.
+        assertThrows(NullPointerException.class, () -> isValidAddress(null));
     }
 
 }
