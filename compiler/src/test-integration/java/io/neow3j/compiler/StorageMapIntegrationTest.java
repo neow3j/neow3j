@@ -1,13 +1,17 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.ByteString;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.StackItemType;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -17,6 +21,8 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.bool;
@@ -29,6 +35,7 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -631,6 +638,26 @@ public class StorageMapIntegrationTest {
     }
 
     // endregion delete
+    // region find
+
+    @Test
+    public void findWithRemovePrefixOption() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        List<StackItem> iterator = res.getStack().get(0).getIterator();
+
+        assertThat(iterator, hasSize(6)); // key-value pairs 4 to 9
+
+        StackItem found1 = iterator.get(0);
+        assertThat(found1.getType(), is(StackItemType.STRUCT));
+        assertThat(found1.getList().get(0).getHexString(), is(KEY4));
+        assertThat(found1.getList().get(1).getByteArray(), is(DATA4_BYTEARRAY));
+
+        StackItem found5 = iterator.get(4);
+        assertThat(found5.getList().get(0).getInteger().intValue(), is(KEY8));
+        assertThat(found5.getList().get(1).getInteger().intValue(), is(DATA8));
+    }
+
+    // endregion find
 
     static class StorageMapIntegrationTestContract {
 
@@ -646,11 +673,11 @@ public class StorageMapIntegrationTest {
         }
 
         public static void storeData(ByteString key, ByteString data) {
-            Storage.put(ctx, prefix.concat(key), data);
+            map.put(key, data);
         }
 
         public static void storeInteger(ByteString key, int data) {
-            Storage.put(ctx, prefix.concat(key), data);
+            map.put(key, data);
         }
 
         // endregion store data
@@ -959,6 +986,13 @@ public class StorageMapIntegrationTest {
         }
 
         // endregion delete
+        // region find
+
+        public static Iterator findWithRemovePrefixOption() {
+            return (Iterator<Map.Entry<ByteString, ByteString>>) map.find(FindOptions.RemovePrefix);
+        }
+
+        // endregion find
 
     }
 
