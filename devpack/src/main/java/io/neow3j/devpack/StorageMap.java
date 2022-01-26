@@ -1144,30 +1144,30 @@ public class StorageMap {
      * <ul>
      *     <li>
      *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
-     *         will be returned, where each {@code Struct} is a key-value pair found under the
-     *         given prefix. The prefix is part of the key.
+     *         will be returned, where each {@code Struct} is a key-value pair found under this
+     *         map's prefix. The prefix is part of the key.
      *     </li>
      *     <li>
      *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
-     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
+     *         where each {@code ByteString} is a key found under this map's prefix. The prefix is
      *         part of the key.
      *     </li>
      *     <li>
      *          With {@link FindOptions#RemovePrefix} the results will be an
      *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
-     *          is a key-value pair found under the given prefix but the prefix is removed from
+     *          is a key-value pair found under this map's prefix but the prefix is removed from
      *          the key.
      *     </li>
      *     <li>
      *          With {@link FindOptions#ValuesOnly} the results will be an
      *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
-     *          under the given prefix.
+     *          under this map's prefix.
      *     </li>
      * </ul>
      *
      * @param findOptions Controls the kind of iterator to return. Use the values of
      *                    {@link FindOptions}.
-     * @return an iterator over key, values or key-value pairs found under the given prefix.
+     * @return an iterator over key, values or key-value pairs found under this map's prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.DUP)
