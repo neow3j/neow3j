@@ -1,6 +1,7 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
@@ -83,77 +84,6 @@ public class StorageMap {
     }
 
     // endregion constructors
-    // region delete
-
-    /**
-     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
-     * context.
-     *
-     * @param key The key to delete.
-     */
-    @Instruction(opcode = OpCode.OVER)
-    @Instruction(opcode = OpCode.PUSH1)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
-    public native void delete(byte[] key);
-
-    /**
-     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
-     * context.
-     *
-     * @param key The key to delete.
-     */
-    @Instruction(opcode = OpCode.OVER)
-    @Instruction(opcode = OpCode.PUSH1)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
-    public native void delete(ByteString key);
-
-    /**
-     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
-     * context.
-     *
-     * @param key The key to delete.
-     */
-    @Instruction(opcode = OpCode.OVER)
-    @Instruction(opcode = OpCode.PUSH1)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
-    public native void delete(String key);
-
-    /**
-     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
-     * context.
-     *
-     * @param key The key to delete.
-     */
-    @Instruction(opcode = OpCode.OVER)
-    @Instruction(opcode = OpCode.PUSH1)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.PICKITEM)
-    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
-    public native void delete(int key);
-
-    // endregion delete
     // region get bytearray key
 
     /**
@@ -1134,6 +1064,122 @@ public class StorageMap {
     public native void put(int key, Hash256 value);
 
     // endregion put integer key
+    // region delete
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
+     * context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(byte[] key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
+     * context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(ByteString key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
+     * context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(String key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage
+     * context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(int key);
+
+    // endregion delete
+    // region find
+
+    /**
+     * Returns an iterator over the values in this {@code StorageMap}.
+     * <p>
+     * The types that the {@code Iterator} contains are dependent on the find options used.
+     * <ul>
+     *     <li>
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
+     *         will be returned, where each {@code Struct} is a key-value pair found under this
+     *         map's prefix. The prefix is part of the key.
+     *     </li>
+     *     <li>
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
+     *         where each {@code ByteString} is a key found under this map's prefix. The prefix is
+     *         part of the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#RemovePrefix} the results will be an
+     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
+     *          is a key-value pair found under this map's prefix but the prefix is removed from
+     *          the key.
+     *     </li>
+     *     <li>
+     *          With {@link FindOptions#ValuesOnly} the results will be an
+     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
+     *          under this map's prefix.
+     *     </li>
+     * </ul>
+     *
+     * @param findOptions Controls the kind of iterator to return. Use the values of
+     *                    {@link FindOptions}.
+     * @return an iterator over key, values or key-value pairs found under this map's prefix.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_FIND)
+    public native Iterator find(byte findOptions);
+
+    // endregion find
 
     /**
      * Compares this {@code StorageMap} to the given object. The comparison happens by reference
