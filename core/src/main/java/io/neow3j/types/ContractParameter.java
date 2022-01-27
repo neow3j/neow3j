@@ -197,6 +197,10 @@ public class ContractParameter {
             return hash256((Hash256) o);
         } else if (o instanceof Account) {
             return hash160((Account) o);
+        } else if (o instanceof ECKeyPair.ECPublicKey) {
+            return publicKey((ECKeyPair.ECPublicKey) o);
+        } else if (o instanceof Sign.SignatureData) {
+            return signature((Sign.SignatureData) o);
         } else if (o instanceof List) {
             return array((List<?>) o);
         } else if (o instanceof Map) {

@@ -30,6 +30,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.map;
+import static io.neow3j.types.ContractParameter.mapToContractParameter;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.types.ContractParameter.string;
@@ -40,8 +41,11 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("unchecked")
 public class ContractParameterTest {
@@ -500,6 +504,124 @@ public class ContractParameterTest {
                 IllegalArgumentException.class,
                 () -> map(map)
         );
+    }
+
+    @Test
+    public void testMapToContractParameter() {
+        ContractParameter p = mapToContractParameter(integer(12));
+        assertThat(((BigInteger) p.getValue()).intValue(), is(12));
+        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+
+        p = mapToContractParameter(true);
+        assertTrue((Boolean) p.getValue());
+        assertThat(p.getParamType(), is(ContractParameterType.BOOLEAN));
+
+        p = mapToContractParameter(33);
+        assertThat(((BigInteger) p.getValue()).intValue(), is(33));
+        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+
+        p = mapToContractParameter(2000L);
+        assertThat(((BigInteger) p.getValue()).longValue(), is(2000L));
+        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+
+        p = mapToContractParameter(new BigInteger("12345"));
+        assertThat(((BigInteger) p.getValue()), is(new BigInteger("12345")));
+        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+
+        p = mapToContractParameter(new byte[]{0x12, 0x0a, 0x0f});
+        assertThat(p.getValue(), is(new byte[]{0x12, 0x0a, 0x0f}));
+        assertThat(p.getParamType(), is(ContractParameterType.BYTE_ARRAY));
+
+        String s = "hello world!";
+        p = mapToContractParameter(s);
+        assertThat(((String) p.getValue()), is(s));
+        assertThat(p.getParamType(), is(ContractParameterType.STRING));
+
+        Hash160 hash160 = new Hash160("0f2dc86970b191fd8a55aeab983a04889682e433");
+        p = mapToContractParameter(hash160);
+        assertThat(((Hash160) p.getValue()), is(hash160));
+        assertThat(p.getParamType(), is(ContractParameterType.HASH160));
+
+        Hash256 hash256 =
+                new Hash256("03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63");
+        p = mapToContractParameter(hash256);
+        assertThat(((Hash256) p.getValue()), is(hash256));
+        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
+
+        Account a = Account.create();
+        p = mapToContractParameter(a);
+        assertThat(((Hash160) p.getValue()), is(a.getScriptHash()));
+        assertThat(p.getParamType(), is(ContractParameterType.HASH160));
+
+        p = mapToContractParameter(a.getECKeyPair().getPublicKey());
+        assertThat(p.getValue(), is(a.getECKeyPair().getPublicKey().getEncoded(true)));
+        assertThat(p.getParamType(), is(ContractParameterType.PUBLIC_KEY));
+
+        Sign.SignatureData signatureData = Sign.signMessage("Test message.", a.getECKeyPair());
+        p = mapToContractParameter(signatureData);
+        assertThat(p.getValue(), is(signatureData.getConcatenated()));
+        assertThat(p.getParamType(), is(ContractParameterType.SIGNATURE));
+
+        p = mapToContractParameter(null);
+        assertNull(p.getValue());
+        assertThat(p.getParamType(), is(ContractParameterType.ANY));
+    }
+
+    @Test
+    public void testMapToContractParameter_list() {
+        ArrayList<Object> list = new ArrayList<>();
+        list.add("neow3j");
+        list.add(1024);
+        ArrayList<Object> subList = new ArrayList<>();
+        subList.add(12);
+        subList.add(false);
+        list.add(subList);
+        Sign.SignatureData signatureData =
+                Sign.signMessage("Test message.", Account.create().getECKeyPair());
+        list.add(signatureData);
+        ContractParameter p = mapToContractParameter(list);
+
+        ContractParameter[] pList = (ContractParameter[]) p.getValue();
+        assertThat(pList.length, is(4));
+        assertThat(p.getParamType(), is(ContractParameterType.ARRAY));
+
+        assertThat(((String) pList[0].getValue()), is("neow3j"));
+        assertThat(pList[0].getParamType(), is(ContractParameterType.STRING));
+        assertThat(((BigInteger) pList[1].getValue()).intValue(), is(1024));
+        assertThat(pList[1].getParamType(), is(ContractParameterType.INTEGER));
+        ContractParameter[] pSubList = (ContractParameter[]) pList[2].getValue();
+        assertThat(pList[2].getParamType(), is(ContractParameterType.ARRAY));
+        assertThat(pSubList.length, is(2));
+        assertThat(((BigInteger) pSubList[0].getValue()).intValue(), is(12));
+        assertThat(pSubList[0].getParamType(), is(ContractParameterType.INTEGER));
+        assertFalse((Boolean) pSubList[1].getValue());
+        assertThat(pSubList[1].getParamType(), is(ContractParameterType.BOOLEAN));
+
+        assertThat(pList[3].getValue(), is(signatureData.getConcatenated()));
+        assertThat(pList[3].getParamType(), is(ContractParameterType.SIGNATURE));
+    }
+
+    @Test
+    public void testMapToContractParameter_map() {
+        Map<Object, Object> map = new HashMap<>();
+        int map1Key = 16;
+        HashMap<Object, Object> map1 = new HashMap<>();
+        String map1_1 = "halo";
+        int map1_2 = 1234;
+        map1.put(map1_1, map1_2);
+        map.put(map1Key, map1);
+        map.put("twelve", 12);
+        map.put(true, 10);
+
+        ContractParameter p = mapToContractParameter(map);
+        Map<?, ?> value = (Map<?, ?>) p.getValue();
+
+        assertThat(value.keySet(), containsInAnyOrder(string("twelve"), bool(true),
+                integer(map1Key)));
+        assertThat(value.values(), containsInAnyOrder(integer(12), integer(10), map(map1)));
+        assertThat(value.get(integer(map1Key)), is(map(map1)));
+        assertThat(value.get(bool(true)), is(integer(10)));
+        assertThat(value.get(string("twelve")), is(integer(12)));
     }
 
     @Test
