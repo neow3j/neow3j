@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.script.ScriptBuilder;
@@ -385,6 +386,16 @@ public class ContractParameterTest {
     }
 
     @Test
+    public void testPublicKeyParamCreationFromECPublicKey() {
+        ECKeyPair.ECPublicKey publicKey = new ECKeyPair.ECPublicKey(
+                "03b4af8efe55d98b44eedfcfaa39642fd5d53ad543d18d3cc2db5880970a4654f6");
+        ContractParameter p = publicKey(publicKey);
+
+        assertThat((byte[]) p.getValue(), is(publicKey.getEncoded(true)));
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+    }
+
+    @Test
     public void testPublicKeyParamCreationFromByteArray() {
         byte[] pubKey = hexStringToByteArray(
                 "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
@@ -463,7 +474,8 @@ public class ContractParameterTest {
         ContractParameter param = map(map);
         Map<?, ?> value = (Map<?, ?>) param.getValue();
 
-        assertThat(value.keySet(), containsInAnyOrder(string("one"), string("two"), integer(map1Key)));
+        assertThat(value.keySet(), containsInAnyOrder(string("one"), string("two"),
+                integer(map1Key)));
         assertThat(value.values(), containsInAnyOrder(string("first"), integer(2), map(map1)));
         assertThat(value.get(string("one")), is(string("first")));
         assertThat(value.get(string("two")), is(integer(2)));

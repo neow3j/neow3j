@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.types.ContractParameter.ContractParameterSerializer;
 import io.neow3j.wallet.Account;
@@ -369,6 +370,16 @@ public class ContractParameter {
                     hash.length + " bytes.");
         }
         return hash256(new Hash256(hash));
+    }
+
+    /**
+     * Creates a public key parameter from the given public key.
+     *
+     * @param publicKey the public key.
+     * @return the contract parameter.
+     */
+    public static ContractParameter publicKey(ECKeyPair.ECPublicKey publicKey) {
+        return publicKey(publicKey.getEncoded(true));
     }
 
     /**
