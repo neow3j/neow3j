@@ -447,6 +447,30 @@ public class ContractParameterTest {
     }
 
     @Test
+    public void testMap_withNestedObjects() {
+        Map<Object, Object> map = new HashMap<>();
+        map.put("one", "first");
+        map.put("two", 2);
+
+        int map1Key = 5;
+        HashMap<Object, Object> map1 = new HashMap<>();
+        String map1_1 = "hello";
+        int map1_2 = 1234;
+        map1.put(map1_1, map1_2);
+
+        map.put(map1Key, map1);
+
+        ContractParameter param = map(map);
+        Map<?, ?> value = (Map<?, ?>) param.getValue();
+
+        assertThat(value.keySet(), containsInAnyOrder(string("one"), string("two"), integer(map1Key)));
+        assertThat(value.values(), containsInAnyOrder(string("first"), integer(2), map(map1)));
+        assertThat(value.get(string("one")), is(string("first")));
+        assertThat(value.get(string("two")), is(integer(2)));
+        assertThat(value.get(integer(map1Key)), is(map(map1)));
+    }
+
+    @Test
     public void testMap_invalidKeyType() {
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
         map.put(array(integer(1), string("test")), string("first"));

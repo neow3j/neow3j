@@ -196,10 +196,12 @@ public class ContractParameter {
             return hash256((Hash256) o);
         } else if (o instanceof Account) {
             return hash160((Account) o);
-        } else if (o == null) {
-            return any(null);
         } else if (o instanceof List) {
             return array((List<?>) o);
+        } else if (o instanceof Map) {
+            return map((Map<?, ?>) o);
+        } else if (o == null) {
+            return any(null);
         } else {
             throw new IllegalArgumentException("The provided object could not be casted into " +
                     "a supported contract parameter type.");
