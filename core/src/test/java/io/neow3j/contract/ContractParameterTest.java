@@ -41,7 +41,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("unchecked")
 public class ContractParameterTest {
@@ -166,7 +165,39 @@ public class ContractParameterTest {
         ContractParameter param = array((Object) null);
         ContractParameter[] value = (ContractParameter[]) param.getValue();
         assertThat(value.length, is(1));
-        assertTrue(value[0].getParamType().equals(ContractParameterType.ANY));
+        assertEquals(value[0].getParamType(), ContractParameterType.ANY);
+    }
+
+    @Test
+    public void testNestedArrayParamCreationFromObject() {
+        List<Object> params = new ArrayList<>();
+        String p1 = "value";
+        String p2 = "0x0101";
+        BigInteger p3 = BigInteger.valueOf(420);
+
+        List<Object> p4 = new ArrayList<>();
+        int p4_1 = 1024;
+        String p4_2 = "neow3j";
+        p4.add(p4_1);
+        p4.add(p4_2);
+
+        List<Object> p4_3 = new ArrayList<>();
+        BigInteger p4_3_1 = BigInteger.TEN;
+        p4_3.add(p4_3_1);
+        p4.add(p4_3);
+
+        params.add(p1);
+        params.add(p2);
+        params.add(p3);
+        params.add(p4);
+        ContractParameter p = array(params);
+
+        assertEquals(ContractParameterType.ARRAY, p.getParamType());
+        assertEquals(ContractParameter[].class, p.getValue().getClass());
+        assertEquals(string(p1), ((ContractParameter[]) p.getValue())[0]);
+        assertEquals(string(p2), ((ContractParameter[]) p.getValue())[1]);
+        assertEquals(integer(p3), ((ContractParameter[]) p.getValue())[2]);
+        assertEquals(array(p4_1, p4_2, array(p4_3)), ((ContractParameter[]) p.getValue())[3]);
     }
 
     @Test
