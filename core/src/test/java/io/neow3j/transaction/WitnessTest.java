@@ -1,11 +1,11 @@
 package io.neow3j.transaction;
 
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.crypto.Sign.SignatureData;
+import io.neow3j.script.InteropService;
 import io.neow3j.script.InvocationScript;
+import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
@@ -20,12 +20,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static io.neow3j.script.OpCode.PUSH2;
-import static io.neow3j.script.OpCode.PUSHDATA1;
-import static io.neow3j.script.OpCode.SYSCALL;
 import static io.neow3j.crypto.ECKeyPair.createEcKeyPair;
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.crypto.Sign.signMessage;
+import static io.neow3j.script.OpCode.PUSH2;
+import static io.neow3j.script.OpCode.PUSHDATA1;
+import static io.neow3j.script.OpCode.SYSCALL;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
@@ -33,10 +33,10 @@ import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 public class WitnessTest {
 
@@ -107,7 +107,8 @@ public class WitnessTest {
             signatures.add(signMessage(message, keyPair));
             publicKeys.add(keyPair.getPublicKey());
         }
-
+        Witness script = createMultiSigWitness(signingThreshold, signatures, publicKeys);
+        publicKeys.sort(null);
         String expected = ""
                 + "84" // 132 bytes follow as invocation script
                 + PUSHDATA1.toString() + "40" // PUSHDATA 64 bytes
@@ -126,12 +127,6 @@ public class WitnessTest {
                 + OpCode.SYSCALL.toString()
                 + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash();
 
-        // Test create from BigIntegers
-        Witness script = createMultiSigWitness(signingThreshold, signatures, publicKeys);
-        assertArrayEquals(hexStringToByteArray(expected), script.toArray());
-
-        // Test create from byte arrays.
-        script = createMultiSigWitness(signingThreshold, signatures, publicKeys);
         assertArrayEquals(hexStringToByteArray(expected), script.toArray());
     }
 

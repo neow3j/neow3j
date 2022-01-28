@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
@@ -17,7 +16,6 @@ import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,10 +35,11 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class ContractManagementTest {
 
@@ -57,9 +56,6 @@ public class ContractManagementTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -169,30 +165,28 @@ public class ContractManagementTest {
     }
 
     @Test
-    public void deploy_NefNull() throws JsonProcessingException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The NEF file cannot be null.");
-        new ContractManagement(neow3j)
-                .deploy(null, null, null);
+    public void deploy_NefNull() {
+        assertThrows("The NEF file cannot be null.", IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(null, null, null)
+        );
     }
 
     @Test
     public void deploy_manifestNull() throws IOException, DeserializationException,
             URISyntaxException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The manifest cannot be null.");
+
         File nefFile = new File(this.getClass().getClassLoader()
                 .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
-        new ContractManagement(neow3j)
-                .deploy(nef, null, null);
+
+        assertThrows("The manifest cannot be null.", IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(nef, null, null)
+        );
     }
 
     @Test
     public void deploy_manifestTooLong() throws IOException, URISyntaxException,
             DeserializationException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The given contract manifest is too long.");
 
         File nefFile = new File(this.getClass().getClassLoader()
                 .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
@@ -200,7 +194,10 @@ public class ContractManagementTest {
 
         ContractManifest tooBigManifest = getTooBigManifest();
 
-        new ContractManagement(neow3j).deploy(nef, tooBigManifest);
+        assertThrows("The given contract manifest is too long.",
+                IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(nef, tooBigManifest)
+        );
     }
 
     // Creates a ContractManifest that is one byte to long for deployment

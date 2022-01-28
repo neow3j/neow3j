@@ -14,9 +14,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -28,12 +26,13 @@ import java.util.List;
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class TransactionTest {
 
@@ -42,9 +41,6 @@ public class TransactionTest {
     private Hash160 account3;
 
     private final Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -264,8 +260,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void failDeserializingWithTooManyTransactionAttributes()
-            throws DeserializationException {
+    public void failDeserializingWithTooManyTransactionAttributes() {
         StringBuilder txString = new StringBuilder(""
                 + "00" // version 0
                 + "62bdaa0e"  // nonce
@@ -281,10 +276,9 @@ public class TransactionTest {
         // additional bytes are not needed for this test
         byte[] txBytes = hexStringToByteArray(txString.toString());
 
-        exceptionRule.expect(DeserializationException.class);
-        exceptionRule.expectMessage("A transaction can hold at most ");
-
-        NeoSerializableInterface.from(txBytes, Transaction.class);
+        assertThrows("A transaction can hold at most ", DeserializationException.class,
+                () -> NeoSerializableInterface.from(txBytes, Transaction.class)
+        );
     }
 
     @Test
@@ -360,7 +354,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void testTooBigTransaction() throws IOException {
+    public void testTooBigTransaction() {
         // The following transaction is 29 bytes without the script
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4 + 1];
@@ -377,9 +371,9 @@ public class TransactionTest {
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE + 1));
 
-        exceptionRule.expect(TransactionConfigurationException.class);
-        exceptionRule.expectMessage("The transaction exceeds the maximum transaction size.");
-        tx.send();
+        assertThrows("The transaction exceeds the maximum transaction size.",
+                TransactionConfigurationException.class, tx::send
+        );
     }
 
     @Test

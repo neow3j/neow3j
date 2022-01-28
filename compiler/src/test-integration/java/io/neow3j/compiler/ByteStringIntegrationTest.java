@@ -21,9 +21,9 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class ByteStringIntegrationTest {
 
@@ -44,6 +44,12 @@ public class ByteStringIntegrationTest {
     public void createByteStringFromByteArray() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00, 0x01, 0x02, 0x03}));
+    }
+
+    @Test
+    public void createByteStringFromInteger() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x64, 0x1b, 0x40}));
     }
 
     @Test
@@ -194,6 +200,10 @@ public class ByteStringIntegrationTest {
 
         public static ByteString createByteStringFromByteArray() {
             return new ByteString(new byte[]{0x00, 0x01, 0x02, 0x03});
+        }
+
+        public static ByteString createByteStringFromInteger() {
+            return new ByteString(4201316);
         }
 
         public static byte getElementsOfByteString(ByteString s, int index) {

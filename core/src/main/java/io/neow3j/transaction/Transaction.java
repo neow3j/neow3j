@@ -199,6 +199,8 @@ public class Transaction extends NeoSerializable {
 
     /**
      * Adds a witness to this transaction.
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
      *
      * @param witness The transaction witness.
      * @return this.
@@ -215,6 +217,8 @@ public class Transaction extends NeoSerializable {
      * The witness is constructed from the multi-sig account's {@code verificationScript} and the
      * {@code signatures}. Obviously, the signatures should be derived from this transaction's hash
      * data (see {@link Transaction#getHashData()}).
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
      *
      * @param verificationScript The verification script of the multi-sig account.
      * @param signatures         The signatures created with the participating private keys.
@@ -234,6 +238,8 @@ public class Transaction extends NeoSerializable {
      * <p>
      * The witness is constructed from the multi-sig account's {@code verificationScript} and by
      * signing this transaction with the given accounts.
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
      *
      * @param verificationScript The verification script of the multi-sig account.
      * @param accounts           The accounts to use for signing. They need to hold decrypted

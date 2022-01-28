@@ -11,9 +11,10 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
@@ -36,15 +37,11 @@ import java.math.BigInteger;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class NeoNameServiceTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private Account account1;
     private Account account2;
@@ -94,18 +91,21 @@ public class NeoNameServiceTest {
     @Test
     public void getTotalSupply() throws IOException {
         setUpWireMockForInvokeFunction(TOTAL_SUPPLY, "nns_invokefunction_totalSupply.json");
+
         assertThat(nameServiceContract.getTotalSupply(), is(new BigInteger("25001")));
     }
 
     @Test
     public void getSymbol() throws IOException {
         setUpWireMockForInvokeFunction(SYMBOL, "nns_invokefunction_symbol.json");
+
         assertThat(nameServiceContract.getSymbol(), is("NNS"));
     }
 
     @Test
     public void getDecimals() throws IOException {
         setUpWireMockForInvokeFunction(DECIMALS, "nns_invokefunction_decimals.json");
+
         assertThat(nameServiceContract.getDecimals(), is(0));
     }
 
@@ -114,6 +114,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(DECIMALS, "nns_invokefunction_decimals.json");
         setUpWireMockForInvokeFunction(OWNER_OF, "nns_ownerof.json");
+
         assertThat(nameServiceContract.ownerOf("client1.neo"),
                 is(new Hash160(TestProperties.defaultAccountScriptHash())));
     }
@@ -123,6 +124,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(PROPERTIES, "nns_invokefunction_properties.json");
         NameState nameState = nameServiceContract.properties("client1.neo");
+
         assertThat(nameState.getName(), is("client1.neo"));
         assertThat(nameState.getExpiration(), is(1646214292L));
     }
@@ -131,15 +133,17 @@ public class NeoNameServiceTest {
     public void properties_unexpectedReturnType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(PROPERTIES, "invokefunction_returnInt.json");
-        exceptionRule.expect(UnexpectedReturnTypeException.class);
-        exceptionRule.expectMessage("Integer but expected Map");
-        nameServiceContract.properties("client1.neo");
+
+        assertThrows("Integer but expected Map", UnexpectedReturnTypeException.class,
+                () -> nameServiceContract.properties("client1.neo")
+        );
     }
 
     @Test
     public void balanceOf() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(BALANCE_OF, "nft_balanceof.json");
+
         assertThat(nameServiceContract.balanceOf(account1.getScriptHash()),
                 is(new BigInteger("244")));
     }
@@ -163,9 +167,10 @@ public class NeoNameServiceTest {
 
     @Test
     public void addRoot_checkRegexMatch() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided input does not match the required regex.");
-        nameServiceContract.addRoot("invalid.root");
+        assertThrows("The provided input does not match the required regex.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.addRoot("invalid.root")
+        );
     }
 
     @Test
@@ -188,66 +193,71 @@ public class NeoNameServiceTest {
 
     @Test
     public void setPrice_negative() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The price needs to be");
-        new NeoNameService(nameServiceHash, neow).setPrice(new BigInteger("-1"));
+        assertThrows("The price needs to be", IllegalArgumentException.class,
+                () -> new NeoNameService(nameServiceHash, neow).setPrice(new BigInteger("-1"))
+        );
     }
 
     @Test
     public void setPrice_zero() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The price needs to be");
-        nameServiceContract.setPrice(new BigInteger("0"));
+        assertThrows("The price needs to be", IllegalArgumentException.class,
+                () -> nameServiceContract.setPrice(new BigInteger("0"))
+        );
     }
 
     @Test
     public void setPrice_tooHigh() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The price needs to be");
-        nameServiceContract.setPrice(new BigInteger("1000000000001"));
+        assertThrows("The price needs to be", IllegalArgumentException.class,
+                () -> nameServiceContract.setPrice(new BigInteger("1000000000001"))
+        );
     }
 
     @Test
     public void getPrice() throws IOException {
         setUpWireMockForInvokeFunction(GET_PRICE, "nns_invokefunction_getPrice.json");
+
         assertThat(nameServiceContract.getPrice(), is(new BigInteger("1000000000")));
     }
 
     @Test
     public void isAvailable() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
+
         assertFalse(nameServiceContract.isAvailable("second.neo"));
     }
 
     @Test
     public void isAvailable_rootNotExisting() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "nns_invalidOperation_dueToState.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The root domain 'neow' does not exist");
-        nameServiceContract.isAvailable("client1.neow");
+
+        assertThrows("The root domain 'neow' does not exist", IllegalArgumentException.class,
+                () -> nameServiceContract.isAvailable("client1.neow")
+        );
     }
 
     @Test
-    public void isAvailable_invalidDomainName() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided input does not match the required regex.");
-        nameServiceContract.isAvailable("Test.Neo");
+    public void isAvailable_invalidDomainName() {
+        assertThrows("The provided input does not match the required regex.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.isAvailable("Test.Neo")
+        );
     }
 
     @Test
-    public void isAvailable_invalidDomainName_nameTooLong() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The provided input does not match the required regex.");
-        nameServiceContract.isAvailable(
-                "thistextis63byteslonganditisnotvalidforadomainnametobeusedinneo.neo");
+    public void isAvailable_invalidDomainName_nameTooLong() {
+        assertThrows("The provided input does not match the required regex.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.isAvailable(
+                        "thistextis63byteslonganditisnotvalidforadomainnametobeusedinneo.neo")
+        );
     }
 
     @Test
-    public void isAvailable_invalidDomainName_moreThanTwoLevels() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Only second-level domain names are allowed to be " +
-                "registered");
-        nameServiceContract.isAvailable("third.second.first");
+    public void isAvailable_invalidDomainName_moreThanTwoLevels() {
+        assertThrows("Only second-level domain names are allowed to be registered",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.isAvailable("third.second.first")
+        );
     }
 
     @Test
@@ -263,15 +273,18 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .register("client1.neo", account1.getScriptHash());
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
     public void register_domainNotAvailable() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The domain name 'client1.neo' is already taken.");
-        nameServiceContract.register("client1.neo", account2.getScriptHash());
+
+        assertThrows("The domain name 'client1.neo' is already taken.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.register("client1.neo", account2.getScriptHash())
+        );
     }
 
     @Test
@@ -285,6 +298,7 @@ public class NeoNameServiceTest {
                 .toArray();
 
         TransactionBuilder b = nameServiceContract.renew("client1.neo");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -301,6 +315,7 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .setAdmin("client1.neo", account2.getScriptHash());
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -317,15 +332,17 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .setRecord("client1.neo", RecordType.A, "127.0.0.1");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
     public void setRecord_typeA_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("input does not match the required regex.");
-        nameServiceContract.setRecord("client1.neo", RecordType.A, "notipv4");
+
+        assertThrows("input does not match the required regex.", IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.A, "notipv4")
+        );
     }
 
     @Test
@@ -375,15 +392,18 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .setRecord("client1.neo", RecordType.CNAME, "firstlevel.client1.neo");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
     public void setRecord_typeCNAME_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("input does not match the required regex.");
-        nameServiceContract.setRecord("client1.neo", RecordType.CNAME, "notcname");
+
+        assertThrows("input does not match the required regex.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.CNAME, "notcname")
+        );
     }
 
     @Test
@@ -399,16 +419,19 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .setRecord("client1.neo", RecordType.TXT, "textRecord");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test
     public void setRecord_typeTXT_tooLong() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("data is not valid for the record type TXT.");
-        nameServiceContract.setRecord("client1.neo", RecordType.TXT,
-                "thistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesx");
+
+        assertThrows("data is not valid for the record type TXT.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.TXT,
+                        "thistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesthistextisintotal5onebyteslongtoberepeatedfivetimesx")
+        );
     }
 
     @Test
@@ -424,6 +447,7 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .setRecord("client1.neo", RecordType.AAAA, "1234::1234");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -465,9 +489,10 @@ public class NeoNameServiceTest {
     @Test
     public void setRecord_typeAAAA_invalidType() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("input does not match the required regex.");
-        nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "12345::2");
+
+        assertThrows("input does not match the required regex.", IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "12345::2")
+        );
     }
 
     @Test
@@ -475,6 +500,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_getRecord_typeA.json");
         String record = nameServiceContract.getRecord("client1.neo", RecordType.A);
+
         assertThat(record, is("127.0.0.1"));
     }
 
@@ -483,6 +509,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_getRecord_typeCNAME.json");
         String record = nameServiceContract.getRecord("client1.neo", RecordType.CNAME);
+
         assertThat(record, is("second.client1.neo"));
     }
 
@@ -491,6 +518,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_getRecord_typeTXT.json");
         String record = nameServiceContract.getRecord("client1.neo", RecordType.TXT);
+
         assertThat(record, is("textRecord"));
     }
 
@@ -499,6 +527,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_getRecord_typeAAAA.json");
         String record = nameServiceContract.getRecord("client1.neo", RecordType.AAAA);
+
         assertThat(record, is("2001:0db8:0000:0000:0000:ff00:0042:8329"));
     }
 
@@ -506,18 +535,21 @@ public class NeoNameServiceTest {
     public void getRecord_noRecord() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(GET_RECORD, "nns_returnAny.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("No record of type AAAA found for the domain name " +
-                "'client1.neo'.");
-        nameServiceContract.getRecord("client1.neo", RecordType.AAAA);
+
+        assertThrows("No record of type AAAA found for the domain name 'client1.neo'.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.getRecord("client1.neo", RecordType.AAAA)
+        );
     }
 
     @Test
     public void getRecord_noDomainRegistered() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnTrue.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("The domain name 'client1.neow' is not registered.");
-        nameServiceContract.getRecord("client1.neow", RecordType.AAAA);
+
+        assertThrows("The domain name 'client1.neow' is not registered.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.getRecord("client1.neow", RecordType.AAAA)
+        );
     }
 
     @Test
@@ -532,6 +564,7 @@ public class NeoNameServiceTest {
                 .toArray();
 
         TransactionBuilder b = nameServiceContract.deleteRecord("client1.neo", RecordType.TXT);
+
         assertThat(b.getScript(), is(expectedScript));
     }
 
@@ -541,6 +574,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeA.json");
         String record = nameServiceContract.resolve("client1.neo", RecordType.A);
+
         assertThat(record, is("127.0.0.1"));
     }
 
@@ -549,6 +583,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeCNAME.json");
         String record = nameServiceContract.resolve("client1.neo", RecordType.CNAME);
+
         assertThat(record, is("second.client1.neo"));
     }
 
@@ -557,6 +592,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeTXT.json");
         String record = nameServiceContract.resolve("client1.neo", RecordType.TXT);
+
         assertThat(record, is("textRecord"));
     }
 
@@ -565,6 +601,7 @@ public class NeoNameServiceTest {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeAAAA.json");
         String record = nameServiceContract.resolve("client1.neo", RecordType.AAAA);
+
         assertThat(record, is("2001:0db8:0000:0000:0000:ff00:0042:8329"));
     }
 
@@ -572,10 +609,11 @@ public class NeoNameServiceTest {
     public void resolve_noRecord() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
         setUpWireMockForInvokeFunction(RESOLVE, "nns_returnAny.json");
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("No record of type AAAA found for the domain name " +
-                "'client1.neo'.");
-        nameServiceContract.resolve("client1.neo", RecordType.AAAA);
+
+        assertThrows("No record of type AAAA found for the domain name 'client1.neo'.",
+                IllegalArgumentException.class,
+                () -> nameServiceContract.resolve("client1.neo", RecordType.AAAA)
+        );
     }
 
     @Test
@@ -595,6 +633,7 @@ public class NeoNameServiceTest {
 
         TransactionBuilder b = nameServiceContract
                 .transfer(account1, account2.getScriptHash(), "client1.neo");
+
         assertThat(b.getScript(), is(expectedScript));
     }
 

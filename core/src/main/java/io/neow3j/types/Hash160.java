@@ -1,16 +1,8 @@
 package io.neow3j.types;
 
-import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
-import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
-import static io.neow3j.utils.AddressUtils.addressToScriptHash;
-import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
-import static io.neow3j.utils.ArrayUtils.reverseArray;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.isValidHexString;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
@@ -20,6 +12,15 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.List;
+
+import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
+import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.utils.AddressUtils.addressToScriptHash;
+import static io.neow3j.utils.AddressUtils.scriptHashToAddress;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 /**
  * A Hash160 is a 20 bytes long hash created from some data by first applying SHA-256 and then
@@ -152,8 +153,9 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
         return fromScript(buildVerificationScript(encodedPublicKey));
     }
 
-    public static Hash160 fromPublicKeys(List<byte[]> encodedPublicKeys, int signingThreshold) {
-        return fromScript(buildVerificationScript(encodedPublicKeys, signingThreshold));
+    public static Hash160 fromPublicKeys(List<ECKeyPair.ECPublicKey> pubKeys,
+            int signingThreshold) {
+        return fromScript(buildVerificationScript(pubKeys, signingThreshold));
     }
 
     /**

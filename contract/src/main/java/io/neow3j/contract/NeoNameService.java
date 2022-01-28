@@ -63,8 +63,8 @@ public class NeoNameService extends NonFungibleToken {
             "(?:^)(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:))(?=$)");
 
     /**
-     * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for
-     * invocations.
+     * Constructs a new {@code NeoNameService} contract that uses the given {@link Neow3j} instance
+     * for invocations.
      *
      * @param scriptHash The script hash of the name service contract.
      * @param neow       The {@link Neow3j} instance to use for invocations.
@@ -74,7 +74,7 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Returns the name of the NeoToken contract. Doesn't require a call to the Neo node.
+     * Returns the name of the NeoNameService contract. Doesn't require a call to the Neo node.
      *
      * @return the name.
      */

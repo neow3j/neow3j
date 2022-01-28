@@ -1,10 +1,12 @@
 package io.neow3j.contract;
 
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.serialization.TestBinaryUtils;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 import org.junit.Before;
@@ -13,7 +15,6 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 
 import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -22,10 +23,10 @@ import static io.neow3j.types.ContractParameter.map;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.copyOfRange;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThat;
 
 public class ScriptBuilderTest extends TestBinaryUtils {
 
@@ -34,6 +35,31 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     @Before
     public void setUp() {
         this.builder = new ScriptBuilder();
+    }
+
+    @Test
+    public void pushArray_with_null_value() {
+        builder.pushArray(null);
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushArray_with_empty_array() {
+        builder.pushArray(new ContractParameter[0]);
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushParam_with_empty_array() {
+        builder.pushParam(new ContractParameter(ContractParameterType.ARRAY,
+                new ContractParameter[0]));
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
+    }
+
+    @Test
+    public void pushParam_with_null_array() {
+        builder.pushParam(new ContractParameter(ContractParameterType.ARRAY, null));
+        assertThat(builder.toArray(), is(new byte[]{(byte) OpCode.NEWARRAY0.getCode()}));
     }
 
     @Test
@@ -193,16 +219,19 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     public void buildVerificationScriptFromMultiplePublicKeys() {
         final String key1 = "035fdb1d1f06759547020891ae97c729327853aeb1256b6fe0473bc2e9fa42ff50";
         final String key2 = "03eda286d19f7ee0b472afd1163d803d620a961e1581a8f2704b52c0285f6e022d";
-        List<byte[]> keys = Arrays.asList(hexStringToByteArray(key1), hexStringToByteArray(key2));
-        byte[] script = ScriptBuilder.buildVerificationScript(keys, 2);
+        final String key3 = "03ac81ec17f2f15fd6d193182f927c5971559c2a32b9408a06fec9e711fb7ca02e";
+        byte[] script = ScriptBuilder.buildVerificationScript(Arrays.asList(
+                new ECPublicKey(key1), new ECPublicKey(key2), new ECPublicKey(key3)), 2);
 
         byte[] expected = hexStringToByteArray(""
                 + OpCode.PUSH2.toString() // n = 2, signing threshold
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key1 // public key
                 + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
+                + key3 // public key
+                + OpCode.PUSHDATA1.toString() + "21"  // PUSHDATA 33 bytes
                 + key2 // public key
-                + OpCode.PUSH2.toString() // m = 2, number of keys
+                + OpCode.PUSH3.toString() // m = 3, number of keys
                 + OpCode.SYSCALL.toString()
                 + InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash()
         );

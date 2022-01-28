@@ -16,8 +16,8 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 public class NonDivisibleNFTIntegrationTest {
 
@@ -30,7 +30,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
     }
 
     @Test
@@ -58,7 +58,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("c882773c557ea90c729ccef4d203a38c1ebedbb0")
+    @ContractHash("64b67b3a8c80f6ee7c47c41e50a08845b91dc1b2")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

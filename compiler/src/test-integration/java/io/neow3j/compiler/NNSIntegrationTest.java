@@ -19,10 +19,10 @@ import java.math.BigInteger;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class NNSIntegrationTest {
@@ -38,7 +38,7 @@ public class NNSIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteNeoNameService.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteNeoNameService.class.getName());
     }
 
     @Test
@@ -219,7 +219,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("e00184046568f80c49f8165faa6d88e59b28cb63")
+    @ContractHash("fae89c0a88fc21521ba61ab482d1378c771b1d23")
     static class CustomNeoNameService extends NeoNameService {
     }
 

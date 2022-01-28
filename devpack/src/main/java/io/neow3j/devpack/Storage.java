@@ -78,6 +78,20 @@ public class Storage {
     public static native String getString(StorageContext context, byte[] key);
 
     /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public static native Boolean getBoolean(StorageContext context, byte[] key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to an integer. The bytes
      * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
      * representation) is converted to 513.
@@ -91,7 +105,31 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInteger(StorageContext context, byte[] key);
+    public static native Integer getInt(StorageContext context, byte[] key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes
+     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, byte[] key);
 
     // endregion get bytearray key
     // region get string key
@@ -133,6 +171,20 @@ public class Storage {
     public static native String getString(StorageContext context, String key);
 
     /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public static native Boolean getBoolean(StorageContext context, String key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to an integer. The bytes
      * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
      * representation) is converted to 513.
@@ -146,7 +198,31 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInteger(StorageContext context, String key);
+    public static native Integer getInt(StorageContext context, String key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes
+     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, String key);
 
     // endregion get string key
     // region get bytestring key
@@ -188,6 +264,20 @@ public class Storage {
     public static native String getString(StorageContext context, ByteString key);
 
     /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public static native Boolean getBoolean(StorageContext context, ByteString key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to an integer. The bytes
      * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
      * representation) is converted to 513.
@@ -201,7 +291,31 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInteger(StorageContext context, ByteString key);
+    public static native Integer getInt(StorageContext context, ByteString key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes
+     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, ByteString key);
 
     // endregion get bytestring key
     // region get integer key
@@ -243,6 +357,20 @@ public class Storage {
     public static native String getString(StorageContext context, int key);
 
     /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    public static native Boolean getBoolean(StorageContext context, int key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to an integer. The bytes
      * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
      * representation) is converted to 513.
@@ -256,7 +384,31 @@ public class Storage {
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInteger(StorageContext context, int key);
+    public static native Integer getInt(StorageContext context, int key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes
+     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context The storage context to search in.
+     * @param key     The key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, int key);
 
     // endregion get integer key
     // region put bytearray key
@@ -539,7 +691,6 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, String key);
-
 
     /**
      * Deletes the value corresponding to the given key from the storage.

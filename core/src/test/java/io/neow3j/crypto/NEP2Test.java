@@ -3,8 +3,8 @@ package io.neow3j.crypto;
 import static io.neow3j.test.TestProperties.defaultAccountEncryptedPrivateKey;
 import static io.neow3j.test.TestProperties.defaultAccountPassword;
 import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;

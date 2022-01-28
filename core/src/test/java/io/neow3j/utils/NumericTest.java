@@ -2,10 +2,7 @@ package io.neow3j.utils;
 
 import io.neow3j.utils.exceptions.MessageDecodingException;
 import io.neow3j.utils.exceptions.MessageEncodingException;
-import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -14,6 +11,7 @@ import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class NumericTest {
@@ -31,9 +29,6 @@ public class NumericTest {
 
     private static final String HEX_RANGE_STRING = "0x0123456789abcdef";
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
     public void testQuantityEncodeLeadingZero() {
         assertThat(Numeric.toHexStringWithPrefixSafe(BigInteger.valueOf(0L)), equalTo("0x00"));
@@ -41,7 +36,7 @@ public class NumericTest {
         assertThat(Numeric.toHexStringWithPrefixSafe(BigInteger.valueOf(Long.MAX_VALUE)),
                 equalTo("0x7fffffffffffffff"));
         assertThat(Numeric.toHexStringWithPrefixSafe(
-                new BigInteger("204516877000845695339750056077105398031")),
+                        new BigInteger("204516877000845695339750056077105398031")),
                 equalTo("0x99dc848b94efc27edfad28def049810f"));
     }
 
@@ -58,23 +53,26 @@ public class NumericTest {
 
     @Test
     public void testQuantityDecodeLeadingZeroException() {
-        exceptionRule.expect(MessageDecodingException.class);
-        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
-        Numeric.decodeQuantity("0x0400");
+        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
+                MessageDecodingException.class,
+                () -> Numeric.decodeQuantity("0x0400")
+        );
     }
 
     @Test
     public void testQuantityDecodeMissingPrefix() {
-        exceptionRule.expect(MessageDecodingException.class);
-        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
-        Numeric.decodeQuantity("ff");
+        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
+                MessageDecodingException.class,
+                () -> Numeric.decodeQuantity("ff")
+        );
     }
 
     @Test
     public void testQuantityDecodeMissingValue() {
-        exceptionRule.expect(MessageDecodingException.class);
-        exceptionRule.expectMessage("Value must be in format 0x[1-9]+[0-9]* or 0x0");
-        Numeric.decodeQuantity("0x");
+        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
+                MessageDecodingException.class,
+                () -> Numeric.decodeQuantity("0x")
+        );
     }
 
     @Test
@@ -85,15 +83,15 @@ public class NumericTest {
         assertThat(Numeric.encodeQuantity(
                 BigInteger.valueOf(Long.MAX_VALUE)), is("0x7fffffffffffffff"));
         assertThat(Numeric.encodeQuantity(
-                new BigInteger("204516877000845695339750056077105398031")),
+                        new BigInteger("204516877000845695339750056077105398031")),
                 is("0x99dc848b94efc27edfad28def049810f"));
     }
 
     @Test
     public void testQuantityEncodeNegative() {
-        exceptionRule.expect(MessageEncodingException.class);
-        exceptionRule.expectMessage("Negative values are not supported");
-        Numeric.encodeQuantity(BigInteger.valueOf(-1));
+        assertThrows("Negative values are not supported", MessageEncodingException.class,
+                () -> Numeric.encodeQuantity(BigInteger.valueOf(-1))
+        );
     }
 
     @Test
@@ -136,9 +134,9 @@ public class NumericTest {
 
     @Test
     public void testToBytesPaddedInvalid() {
-        exceptionRule.expect(RuntimeException.class);
-        exceptionRule.expectMessage("Input is too large to put in byte array of size 7");
-        Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7);
+        assertThrows("Input is too large to put in byte array of size 7", RuntimeException.class,
+                () -> Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7)
+        );
     }
 
     @Test
@@ -204,16 +202,16 @@ public class NumericTest {
 
     @Test
     public void testToHexStringZeroPaddedNegative() {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Value cannot be negative");
-        Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20);
+        assertThrows("Value cannot be negative", UnsupportedOperationException.class,
+                () -> Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20)
+        );
     }
 
     @Test
     public void testToHexStringZeroPaddedTooLargs() {
-        exceptionRule.expect(UnsupportedOperationException.class);
-        exceptionRule.expectMessage("Value cannot be negative");
-        Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5);
+        assertThrows("Value cannot be negative", UnsupportedOperationException.class,
+                () -> Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5)
+        );
     }
 
     @Test
@@ -254,7 +252,7 @@ public class NumericTest {
         String hex = "bc99b2a477e28581b2fd04249ba27599ebd736d3";
         String reversed = "d336d7eb9975a29b2404fdb28185e277a4b299bc";
 
-        Assert.assertThat(Numeric.reverseHexString(hex), is(reversed));
+        assertThat(Numeric.reverseHexString(hex), is(reversed));
     }
 
     @Test
@@ -262,7 +260,7 @@ public class NumericTest {
         String hex = "72656164";
         String original = "read";
 
-        Assert.assertThat(Numeric.hexToString(hex), is(original));
+        assertThat(Numeric.hexToString(hex), is(original));
     }
 
     @Test
@@ -270,7 +268,7 @@ public class NumericTest {
         String hex = "b100";
         BigInteger original = BigInteger.valueOf(177);
 
-        Assert.assertThat(Numeric.hexToInteger(hex), is(original));
+        assertThat(Numeric.hexToInteger(hex), is(original));
     }
 
     @Test

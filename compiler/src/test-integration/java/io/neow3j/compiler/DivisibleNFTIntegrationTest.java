@@ -29,8 +29,8 @@ import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @SuppressWarnings("unchecked")
@@ -45,7 +45,7 @@ public class DivisibleNFTIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        SmartContract sm = ct.deployContract(ConcreteDivisibleNFT.class.getName());
+        SmartContract sc = ct.deployContract(ConcreteDivisibleNFT.class.getName());
     }
 
     @Test
@@ -102,7 +102,7 @@ public class DivisibleNFTIntegrationTest {
         }
 
         public static Iterator<ByteString> ownerOf(ByteString tokenId) {
-            StorageMap map = ctx.createMap(mapPrefix);
+            StorageMap map = new StorageMap(ctx, mapPrefix);
             map.put(Helper.toByteArray((byte) 1),
                     addressToScriptHash("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
             map.put(Helper.toByteArray((byte) 2),
@@ -117,7 +117,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("1957d2ec8b7064d98778c69a644698e3a331546c")
+    @ContractHash("589ccb366bbdd0b620494565276dc04fce3be7c7")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

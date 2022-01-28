@@ -6,7 +6,7 @@ public enum StackItemType {
 
     ANY(StackItemType.ANY_VALUE, 0x00),
     POINTER(StackItemType.POINTER_VALUE, 0x10),
-    BOOLEAN(StackItemType.BOOLEAN_VALUE, 0x20),
+    BOOLEAN(StackItemType.BOOLEAN_VALUE, StackItemType.BOOLEAN_CODE),
     INTEGER(StackItemType.INTEGER_VALUE, StackItemType.INTEGER_CODE),
     BYTE_STRING(StackItemType.BYTE_STRING_VALUE, StackItemType.BYTE_STRING_CODE ),
     BUFFER(StackItemType.BUFFER_VALUE, StackItemType.BUFFER_CODE),
@@ -28,6 +28,7 @@ public enum StackItemType {
 
     // These constants are required for usage in annotation in `io.neow3j.devpack.framework.Helper`
     // because the enum values are not directly usable in annotations.
+    public static final byte BOOLEAN_CODE = 0x20;
     public static final byte INTEGER_CODE = 0x21;
     public static final byte BYTE_STRING_CODE = 0x28;
     public static final byte BUFFER_CODE = 0x30;

@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import io.neow3j.script.ScriptReader;
 import org.junit.Test;
@@ -24,4 +24,5 @@ public class ScriptReaderTest {
 
         assertThat(out, is(expected));
     }
+
 }

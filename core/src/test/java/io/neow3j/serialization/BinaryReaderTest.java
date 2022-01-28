@@ -1,17 +1,16 @@
 package io.neow3j.serialization;
 
 import io.neow3j.serialization.exceptions.DeserializationException;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class BinaryReaderTest extends TestBinaryUtils {
 
@@ -21,22 +20,18 @@ public class BinaryReaderTest extends TestBinaryUtils {
     private BigInteger readResultInt;
     private String readResultString;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     // region Read push data byte array
 
     @Test
-    public void failReadPushDataByteArray() throws DeserializationException {
+    public void failReadPushDataByteArray() {
         // Uses a prefix different from any of the PUSHDATA OpCodes and should therefore fail.
         this.arrayBuilder = new ByteArrayBuilder()
                 .setPrefix("4b")
                 .setAnyDataWithSize(1)
                 .setSuffix("0000");
-        exceptionRule.expect(DeserializationException.class);
-        exceptionRule.expectMessage("Stream did not contain a PUSHDATA OpCode at the current " +
-                "position.");
-        readPushDataByteArray();
+
+        assertThrows("Stream did not contain a PUSHDATA OpCode at the current position.",
+                DeserializationException.class, this::readPushDataByteArray);
     }
 
     @Test
@@ -146,11 +141,10 @@ public class BinaryReaderTest extends TestBinaryUtils {
     }
 
     @Test
-    public void failReadPushIntegerUnsupported() throws DeserializationException {
+    public void failReadPushIntegerUnsupported() {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0e"); // Not a PUSH OpCode
-        exceptionRule.expect(DeserializationException.class);
-        exceptionRule.expectMessage("Couldn't parse PUSHINT OpCode");
-        readPushInteger();
+        assertThrows("Couldn't parse PUSHINT OpCode", DeserializationException.class,
+                this::readPushInteger);
     }
 
     @Test

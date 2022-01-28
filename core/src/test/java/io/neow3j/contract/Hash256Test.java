@@ -7,6 +7,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializableInterface;
@@ -16,14 +17,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import io.neow3j.types.Hash256;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class Hash256Test {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Test
     public void createFromValidHash() {
@@ -39,30 +35,34 @@ public class Hash256Test {
 
     @Test
     public void createFromInvalidHexhWithOddLength() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("String argument is not hexadecimal.");
-        new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21ae");
+        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
+                () -> new Hash256(
+                        "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21ae")
+        );
     }
 
     @Test
     public void createFromMalformedHash() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("String argument is not hexadecimal.");
-        new Hash256("g804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
+        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
+                () -> new Hash256(
+                        "g804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a")
+        );
     }
 
     @Test
     public void createFromHashLessThan256Bits() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Hash must be 32 bytes long but was 31 bytes.");
-        new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a2");
+        assertThrows("Hash must be 32 bytes long but was 31 bytes.", IllegalArgumentException.class,
+                () -> new Hash256(
+                        "0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a2")
+        );
     }
 
     @Test
     public void createFromHashMoreThan256Bits() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("Hash must be 32 bytes long but was 33 bytes.");
-        new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a12");
+        assertThrows("Hash must be 32 bytes long but was 33 bytes.", IllegalArgumentException.class,
+                () -> new Hash256(
+                        "0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a12")
+        );
     }
 
     @Test
@@ -70,6 +70,7 @@ public class Hash256Test {
         byte[] b = hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
         Hash256 hash = new Hash256(b);
+
         assertThat(hash.toString(),
                 is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
     }
@@ -80,6 +81,7 @@ public class Hash256Test {
                 new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
         byte[] expected = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+
         assertArrayEquals(expected, hash.toLittleEndianArray());
     }
 
@@ -92,6 +94,7 @@ public class Hash256Test {
         byte[] actual = outStream.toByteArray();
         byte[] expected = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+
         assertArrayEquals(expected, actual);
     }
 
@@ -100,6 +103,7 @@ public class Hash256Test {
         byte[] data = reverseArray(hexStringToByteArray(
                 "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
         Hash256 hash = NeoSerializableInterface.from(data, Hash256.class);
+
         assertThat(hash.toString(),
                 is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
     }
@@ -118,6 +122,7 @@ public class Hash256Test {
         Hash256 hash2 = new Hash256(bytes2);
         Hash256 hash3 =
                 new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
+
         assertNotEquals(hash1, hash2);
         assertNotEquals(hash2, hash1);
         assertEquals(hash1, hash1);
@@ -149,6 +154,7 @@ public class Hash256Test {
     public void getSize() {
         Hash256 hash =
                 new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
+
         assertThat(hash.getSize(), is(32));
     }
 

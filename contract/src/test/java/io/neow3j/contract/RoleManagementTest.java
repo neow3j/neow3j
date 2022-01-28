@@ -8,9 +8,10 @@ import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
@@ -29,11 +30,9 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hamcrest.core.StringContains;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 public class RoleManagementTest {
 
@@ -45,9 +44,6 @@ public class RoleManagementTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     @Before
     public void setUp() {
@@ -78,6 +74,7 @@ public class RoleManagementTest {
 
         List<ECPublicKey> list =
                 roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, BigInteger.TEN);
+
         assertThat(list, contains(account1.getECKeyPair().getPublicKey()));
     }
 
@@ -89,24 +86,24 @@ public class RoleManagementTest {
 
         List<ECPublicKey> list =
                 roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("12"));
+
         assertThat(list, hasSize(0));
     }
 
     @Test
-    public void testGetDesignatedByRole_negativeIndex() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(new StringContains("The block index has to be positive."));
-        roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1"));
+    public void testGetDesignatedByRole_negativeIndex() {
+        assertThrows("The block index has to be positive.", IllegalArgumentException.class,
+                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1"))
+        );
     }
 
     @Test
     public void testGetDesignatedByRole_indexTooHigh() throws IOException {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                new StringContains("The provided block index (1001) is too high."));
-        roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001"));
+        assertThrows("The provided block index (1001) is too high.", IllegalArgumentException.class,
+                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001"))
+        );
     }
 
     @Test
@@ -135,27 +132,25 @@ public class RoleManagementTest {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
         pubKeys.add(account1.getECKeyPair().getPublicKey());
 
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(new StringContains("role cannot be null"));
-        roleManagement.designateAsRole(null, pubKeys);
+        assertThrows("role cannot be null", IllegalArgumentException.class,
+                () -> roleManagement.designateAsRole(null, pubKeys)
+        );
     }
 
     @Test
     public void testDesignate_pubKeysNull() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                new StringContains("one public key is required for designation"));
-        roleManagement.designateAsRole(Role.ORACLE, null);
+        assertThrows("one public key is required for designation", IllegalArgumentException.class,
+                () -> roleManagement.designateAsRole(Role.ORACLE, null)
+        );
     }
 
     @Test
     public void testDesignate_pubKeysEmpty() {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
 
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage(
-                new StringContains("one public key is required for designation"));
-        roleManagement.designateAsRole(Role.ORACLE, pubKeys);
+        assertThrows("one public key is required for designation", IllegalArgumentException.class,
+                () -> roleManagement.designateAsRole(Role.ORACLE, pubKeys)
+        );
     }
 
     @Test

@@ -1,34 +1,31 @@
 package io.neow3j.compiler;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.stringContainsInOrder;
+import static org.junit.Assert.assertThrows;
 
 public class InstanceVariablesTest {
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     @Test
-    public void usageOfInstanceInitializerThrowsCompilerException() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
+    public void usageOfInstanceInitializerThrowsCompilerException() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(IllegalUseOfInstanceInitializer.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 IllegalUseOfInstanceInitializer.class.getSimpleName(),
                 "has an explicit instance constructor")));
-        new Compiler().compile(IllegalUseOfInstanceInitializer.class.getName());
     }
 
     @Test
-    public void usageOfInstanceVariablesThrowsCompilerException() throws IOException {
-        exceptionRule.expect(CompilerException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(Arrays.asList(
-                IllegalUseOfInstanceVariables.class.getSimpleName(),
-                "has non-static fields")));
-        new Compiler().compile(IllegalUseOfInstanceVariables.class.getName());
+    public void usageOfInstanceVariablesThrowsCompilerException() {
+        CompilerException thrown = assertThrows(CompilerException.class, () ->
+                new Compiler().compile(IllegalUseOfInstanceVariables.class.getName())
+        );
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
+                IllegalUseOfInstanceVariables.class.getSimpleName(), "has non-static fields")));
     }
 
     static class IllegalUseOfInstanceInitializer {

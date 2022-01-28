@@ -5,11 +5,7 @@ import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.utils.Numeric;
-import org.hamcrest.core.StringContains;
-import org.hamcrest.text.StringContainsInOrder;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -24,20 +20,19 @@ import java.util.Set;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class StackItemTest extends ResponseTester {
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private final static String BYTESTRING_JSON =
             "{\"type\":\"ByteString\",\"value\":\"V29vbG9uZw==\"}";
@@ -46,90 +41,103 @@ public class StackItemTest extends ResponseTester {
     public void throwOnCastingToMapFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getMap);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getMap();
     }
 
     @Test
     public void throwOnCastingToListFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getList);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getList();
     }
 
     @Test
     public void throwOnCastingToPointerFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getPointer);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getPointer();
     }
 
     @Test
     public void throwOnCastingToInteropInterfaceFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getIterator);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getIterator();
     }
 
     @Test
     public void throwOnCastingToAddressFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getAddress);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getAddress();
     }
 
     @Test
     public void throwOnCastingToBooleanFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
-        rawItem.getBoolean();
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getBoolean);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(StackItemType.INTEGER.getValue(), "1124"))
+        );
     }
 
     @Test
     public void throwOnCastingToHexStringFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.BOOLEAN.getValue(), "true")));
-        rawItem.getHexString();
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getHexString);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(StackItemType.BOOLEAN.getValue(), "true"))
+        );
     }
 
     @Test
     public void throwOnCastingToStringFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Pointer\",\"value\":\"1124\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.POINTER.getValue(), "1124")));
-        rawItem.getString();
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getString);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(StackItemType.POINTER.getValue(), "1124"))
+        );
     }
 
     @Test
     public void throwOnCastingToByteArrayFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Boolean\",\"value\":\"true\"}",
                 StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.BOOLEAN.getValue(), "true")));
-        rawItem.getByteArray();
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                rawItem::getByteArray);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(StackItemType.BOOLEAN.getValue(), "true"))
+        );
     }
 
     @Test
@@ -143,30 +151,33 @@ public class StackItemTest extends ResponseTester {
                 "        }\n" +
                 "    ]\n" +
                 "}", StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContainsInOrder(
-                asList(StackItemType.ARRAY.getValue(), "false")));
-        item.getInteger();
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class,
+                item::getInteger);
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(StackItemType.ARRAY.getValue(), "false"))
+        );
     }
 
     @Test
     public void throwOnGettingValuefromNullIntegerStackItem() throws IOException {
         StackItem item = getObjectMapper().readValue("{\"type\":\"Integer\"," +
                 "\"value\":\"\"}", StackItem.class);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
-                "is null"));
-        item.getInteger();
+
+        assertThrows("Cannot cast stack item because its value is null",
+                StackItemCastException.class, item::getInteger);
     }
 
     @Test
     public void testDeserializeAnyStackItem() throws IOException {
         String json = "{\"type\":\"Any\", \"value\":null}";
         StackItem item = getObjectMapper().readValue(json, StackItem.class);
+
         assertThat(item.getType(), is(StackItemType.ANY));
         assertThat(item.getValue(), is(nullValue()));
 
         AnyStackItem other = new AnyStackItem(null);
+
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }
@@ -175,10 +186,12 @@ public class StackItemTest extends ResponseTester {
     public void testDeserializePointerStackItem() throws IOException {
         String json = "{\"type\":\"Pointer\", \"value\":\"123456\"}";
         StackItem item = getObjectMapper().readValue(json, StackItem.class);
+
         assertThat(item.getType(), is(StackItemType.POINTER));
         assertThat(item.getPointer(), is(new BigInteger("123456")));
 
         PointerStackItem other = new PointerStackItem(new BigInteger("123456"));
+
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }
@@ -186,6 +199,7 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeByteStringStackItem() throws IOException {
         StackItem item = getObjectMapper().readValue(BYTESTRING_JSON, StackItem.class);
+
         assertEquals(StackItemType.BYTE_STRING, item.getType());
         assertThat(item.getHexString(), is("576f6f6c6f6e67"));
         assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("576f6f6c6f6e67")));
@@ -194,12 +208,14 @@ public class StackItemTest extends ResponseTester {
         String json = "{\"type\":\"ByteString\", \"value\":\"aWQ=\"}";
 
         item = getObjectMapper().readValue(json, StackItem.class);
+
         assertThat(item.getByteArray(), is(Numeric.hexStringToByteArray("6964")));
         assertThat(item.getInteger(), is(new BigInteger("25705")));
 
         // The script hash hex string in little-endian format
         json = "{\"type\":\"ByteString\", \"value\":\"1Cz3qTHOPEZVD9kN5IJYP8XqcBo=\"}";
         item = getObjectMapper().readValue(json, StackItem.class);
+
         assertThat(item.getAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
         assertThat(item.getHexString(), is("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertThat(item.getByteArray(),
@@ -207,6 +223,7 @@ public class StackItemTest extends ResponseTester {
 
         ByteStringStackItem other = new ByteStringStackItem(
                 Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
+
         assertEquals(other, item);
         assertEquals(other.hashCode(), item.hashCode());
     }
@@ -372,7 +389,8 @@ public class StackItemTest extends ResponseTester {
                 "    ],\n" +
                 "    \"truncated\": true\n" +
                 "}";
-        InteropInterfaceStackItem item = getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
+        InteropInterfaceStackItem item =
+                getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
         List<StackItem> list = new ArrayList<>();
         list.add(new ByteStringStackItem("0e"));
@@ -407,11 +425,11 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void testDeserializeInteropInterfaceStackItem_noIterator() throws IOException {
         String json = "{\"type\": \"InteropInterface\"}";
-        InteropInterfaceStackItem item = getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
+        InteropInterfaceStackItem item =
+                getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
+
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage("to an iterator.");
-        item.getIterator();
+        assertThrows("to an iterator.", StackItemCastException.class, item::getIterator);
     }
 
     @Test
@@ -468,21 +486,22 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void testStackItemType_InvalidByteValue() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("no stack item with the provided byte value");
-        StackItemType.valueOf((byte) 31);
+        assertThrows("no stack item with the provided byte value", IllegalArgumentException.class,
+                () -> StackItemType.valueOf((byte) 31)
+        );
     }
 
     @Test
     public void testStackItemType_InvalidJsonValue() {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("no stack item with the provided json value");
-        StackItemType.fromJsonValue("Enum");
+        assertThrows("no stack item with the provided json value", IllegalArgumentException.class,
+                () -> StackItemType.fromJsonValue("Enum")
+        );
     }
 
     @Test
     public void anyStackItemValueToString() {
         AnyStackItem item = new AnyStackItem(null);
+
         assertThat(item.toString(), is("Any{value='null'}"));
     }
 
@@ -513,10 +532,9 @@ public class StackItemTest extends ResponseTester {
         assertFalse(item.getBoolean());
 
         item = new BufferStackItem();
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
-                "is null"));
-        item.getBoolean();
+
+        assertThrows("Cannot cast stack item because its value is null",
+                StackItemCastException.class, item::getBoolean);
     }
 
     @Test
@@ -524,6 +542,7 @@ public class StackItemTest extends ResponseTester {
         BufferStackItem item1 = new BufferStackItem(Numeric.hexStringToByteArray("010203"));
         BufferStackItem item2 = new BufferStackItem(Numeric.hexStringToByteArray("010203"));
         ByteStringStackItem item3 = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
+
         assertEquals(item1, item1);
         assertEquals(item1, item2);
         assertNotEquals(item1, item3);
@@ -534,6 +553,7 @@ public class StackItemTest extends ResponseTester {
         ByteStringStackItem item1 = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
         ByteStringStackItem item2 = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
         BufferStackItem item3 = new BufferStackItem(Numeric.hexStringToByteArray("010203"));
+
         assertEquals(item1, item1);
         assertEquals(item1, item2);
         assertNotEquals(item1, item3);
@@ -543,6 +563,7 @@ public class StackItemTest extends ResponseTester {
     public void getBooleanFromIntegerStackItem() {
         IntegerStackItem item1 = new IntegerStackItem(BigInteger.ONE);
         assertTrue(item1.getBoolean());
+
         item1 = new IntegerStackItem(BigInteger.ZERO);
         assertFalse(item1.getBoolean());
     }
@@ -550,19 +571,15 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwExceptionOnGetAddressFromByteArrayWithIllegalAddress() {
         ByteStringStackItem item = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains(
-                IllegalArgumentException.class.getSimpleName()));
-        item.getAddress();
+        assertThrows(IllegalArgumentException.class.getSimpleName(), StackItemCastException.class,
+                item::getAddress);
     }
 
     @Test
     public void throwExceptionOnGetIntegerFromEmptyByteArray() {
         ByteStringStackItem item = new ByteStringStackItem(new byte[]{});
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains(
-                NumberFormatException.class.getSimpleName()));
-        item.getInteger();
+        assertThrows(NumberFormatException.class.getSimpleName(), StackItemCastException.class,
+                item::getInteger);
     }
 
     @Test
@@ -574,10 +591,9 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwOnGetStringFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
-                "is null"));
-        item.getString();
+
+        assertThrows("Cannot cast stack item because its value is null",
+                StackItemCastException.class, item::getString);
     }
 
     @Test
@@ -589,10 +605,8 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwOnGetHexStringFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
-                "is null"));
-        item.getHexString();
+        assertThrows("Cannot cast stack item because its value is null",
+                StackItemCastException.class, item::getHexString);
     }
 
     @Test
@@ -604,10 +618,8 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwOnGetByteArrayFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
-        exceptionRule.expect(StackItemCastException.class);
-        exceptionRule.expectMessage(new StringContains("Cannot cast stack item because its value " +
-                "is null"));
-        item.getByteArray();
+        assertThrows("Cannot cast stack item because its value is null",
+                StackItemCastException.class, item::getByteArray);
     }
 
     @Test
@@ -626,6 +638,7 @@ public class StackItemTest extends ResponseTester {
         map.put(new ByteStringStackItem("key2".getBytes(UTF_8)),
                 new IntegerStackItem(BigInteger.ZERO));
         MapStackItem item = new MapStackItem(map);
+
         assertThat(item.valueToString(), containsString(
                 "ByteString{value='6b657932'} -> Integer{value='0'}"));
         assertThat(item.valueToString(), containsString(

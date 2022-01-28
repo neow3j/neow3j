@@ -15,9 +15,7 @@ import io.neow3j.wallet.Wallet;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -34,15 +32,13 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class FungibleTokenTest {
 
     @Rule
     public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private FungibleToken neoToken;
     private FungibleToken gasToken;
@@ -107,6 +103,7 @@ public class FungibleTokenTest {
     public void testGetBalanceOfAccount() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_300000000.json");
+
         assertThat(gasToken.getBalanceOf(account1.getScriptHash()),
                 is(new BigInteger("300000000")));
     }
@@ -115,6 +112,7 @@ public class FungibleTokenTest {
     public void testGetBalanceOfAccount_address() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_300000000.json");
+
         assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
     }
 
@@ -122,6 +120,7 @@ public class FungibleTokenTest {
     public void testGetBalanceOfAccount_account() throws Exception {
         setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
                 "invokefunction_balanceOf_300000000.json");
+
         assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
     }
 
@@ -131,15 +130,16 @@ public class FungibleTokenTest {
                 "balanceOf", account1.getScriptHash().toString());
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_300000000.json",
                 "balanceOf", account2.getScriptHash().toString());
+
         assertThat(gasToken.getBalanceOf(Wallet.withAccounts(account1, account2)),
                 is(new BigInteger("600000000")));
     }
 
     @Test
-    public void testTransfer_illegalAmountProvided() throws IOException {
-        exceptionRule.expect(IllegalArgumentException.class);
-        exceptionRule.expectMessage("amount must be greater than or equal to 0");
-        neoToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("-2"));
+    public void testTransfer_illegalAmountProvided() {
+        assertThrows("amount must be greater than or equal to 0", IllegalArgumentException.class,
+                () -> neoToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("-2"))
+        );
     }
 
 }
