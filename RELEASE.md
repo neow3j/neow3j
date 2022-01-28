@@ -9,21 +9,22 @@ to date.
 - Bump the version on the develop branch (e.g., `develop-3.x`). Do a global search with the current 
   version number and replace it with the new version number. There should be four affected 
   locations in the `README.md`, one in the `build.gradle`, and one in `Compiler.java`.
+  - The tests NNSIntegrationTest, NFTIntegrationTest, DivisibleNFTIntegrationTest, 
+    and NonDivisibleNFTIntegrationTest will fail because of the version change in the compiler.
+   
 - Create a Pull Request from develop to master (e.g., from `develop-3.x` to `master-3.x`) -- this
 is called a "Release Pull Request"
-  - Set the name as, e.g., "Release 3.2.1"
-  - Set the correct milestone
-  - Set the label (e.g., neo3 or related ones)
-  - Assign a reviewer (yourself if no one of the team is available)
-- Review the Release Pull Request, mainly checking for critical changes **or**
+  - Set the name as "Release x.x.x"
+  - Set the correct milestone, project and a reviewer
+   
+- Review and merge the Release Pull Request, mainly checking for critical changes **or**
 changes that shouldn't be in the release
-- Get approval for the Release Pull Request (i.e., click on approve)
-- Merge the Release Pull Request
-- Tag the Pull Request with the version to be release (e.g., `3.2.1`)
+ 
+- Tag the main branch at the commit to be release (e.g., `3.2.1`)
+ 
 - Right after merging, bump the version in the `build.gradle` file (`develop-3.x` branch)
 
 ## Credentials
-
 Make sure you have a `gradle.properties` file with the following:
 
 ```
@@ -37,31 +38,29 @@ gradle.publish.secret=XXXXXXXXX
 
 Where:
 
-- `signing.keyId`: is the key ID for the GPG file
-- `signing.password`: is the password for the GPG file
-- `signing.secretKeyRingFile`: is the path where the GPG file is located
+- `signing.keyId`: is the ID of the neow3j public key
+- `signing.password`: is the password for the encrypted neow3j private key file
+- `signing.secretKeyRingFile`: is the path where the GPG private key file is located
 - `gradle.publish.key`: is the API key for the [Gradle Plugin](https://plugins.gradle.org) repository
 - `gradle.publish.secret`: is the API secret for the [Gradle Plugin](https://plugins.gradle.org) repository
 
 ## Publishing the Release Artifacts
 
 1. Check if you're in the `master` branch (i.e., `master-2.x` or `master-3.x`)
-2. Correct version in `build.gradle` file?
-3. Is the current commit tagged with the release version? (i.e., the one to be released)
-4. Run `./gradlew clean` to make sure no old artifacts are present in the file structure
-5. Run `./gradlew build` to build the whole project
-6. Run `./gradlew bundleJar` to sign the artifacts. For each module, this will produce a bundle 
+2. Is the current commit tagged with the release version? (i.e., the one to be released)
+3. Run `./gradlew clean build` making sure no old artifacts are present and the project is build.
+4. Run `./gradlew bundleJar` to sign the artifacts. For each module, this will produce a bundle 
    Jar (e.g., ./core/build/libs/core-3.8.0-all.jar) of all the artifacts that need to be released 
    for that module.
-7. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/), log in and go to the *Staging 
+5. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/), log in and go to the *Staging 
    Upload* section.
-8. Choose *Artifact Bundle* as the *Upload Mode* and upload the bundle jars for each module. A 
+6. Choose *Artifact Bundle* as the *Upload Mode* and upload the bundle jars for each module. A 
    confirmation for a successful upload should be displayed in the GUI. 
-9. All uploaded bunldes should show up in the *Staging Repositories* section as separate 
+7. All uploaded bundles should show up in the *Staging Repositories* section as separate 
    repositories. Once they reach the Status *closed* the *Release* button becomes available. Press 
    it for all the repositories.
-9. Search for `io.neow3j` in the *Artifact Search* section to make sure that the process worked.
-10. Finally, run `./gradlew :gradle-plugin:publishPlugin` to publish the compiler Gradle plugin 
+8. Search for `io.neow3j` in the *Artifact Search* section to make sure that the process worked.
+9. Finally, run `./gradlew :gradle-plugin:publishPlugin` to publish the compiler Gradle plugin 
     to the Gradle Plugins Repository.
 
 ## neow3j-examples and Smoke Tests
