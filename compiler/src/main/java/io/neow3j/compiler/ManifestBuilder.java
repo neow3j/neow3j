@@ -9,10 +9,12 @@ import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Permission.Permissions;
 import io.neow3j.devpack.annotations.Safe;
-import io.neow3j.devpack.annotations.SupportedStandards;
+import io.neow3j.devpack.annotations.SupportedStandard;
+import io.neow3j.devpack.annotations.SupportedStandard.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.constants.NeoStandard;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
@@ -38,7 +40,6 @@ import java.util.stream.Collectors;
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Arrays.asList;
-import static java.util.Optional.ofNullable;
 
 /**
  * Contains all functionality required to build a contract manifest from a compilation unit.
@@ -107,9 +108,11 @@ public class ManifestBuilder {
     }
 
     private static List<String> buildSupportedStandards(ClassNode asmClass) {
-        return getAnnotationNode(asmClass, SupportedStandards.class)
-                .flatMap(ManifestBuilder::transformAnnotationNodeStringValue)
-                .orElse(new ArrayList<>());
+        return checkForSingleOrMultipleAnnotations(asmClass, SupportedStandards.class,
+                SupportedStandard.class)
+                .stream()
+                .map(ManifestBuilder::getSupportedStandard)
+                .collect(Collectors.toList());
     }
 
     public static List<ContractPermission> buildPermissions(ClassNode asmClass) {
@@ -134,17 +137,20 @@ public class ManifestBuilder {
                 .collect(Collectors.toList());
     }
 
-    private static Optional<List<String>> transformAnnotationNodeStringValue(
-            AnnotationNode annotationNode) {
-
-        return ofNullable(annotationNode)
-                .map(ann -> {
-                    List<String> values = new ArrayList<>();
-                    for (Object value : (List<?>) ann.values.get(1)) {
-                        values.add((String) value);
-                    }
-                    return values;
-                });
+    private static String getSupportedStandard(AnnotationNode ann) {
+        int neoStandardIndex = ann.values.indexOf("neoStandard");
+        int customStandardIndex = ann.values.indexOf("customStandard");
+        boolean bothPresent = neoStandardIndex != -1 && customStandardIndex != -1;
+        if (bothPresent) {
+            throw new CompilerException("A @SupportedStandard annotation must only have one of " +
+                    "the attributes 'neoStandard' or 'customStandard' set.");
+        }
+        if (neoStandardIndex != -1) {
+            NeoStandard neoStandard = NeoStandard.valueOf(
+                    asList((String[]) ann.values.get(neoStandardIndex + 1)).get(1));
+            return neoStandard.getStandard();
+        }
+        return (String) ann.values.get(customStandardIndex + 1);
     }
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
