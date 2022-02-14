@@ -4,6 +4,9 @@ import io.neow3j.types.Hash160;
 
 import static java.lang.String.format;
 
+/**
+ * The native smart contracts with their corresponding contract hash.
+ */
 public enum NativeContract {
 
     ContractManagement(new Hash160("fffdc93764dbaddd97c48f252a53ea4643faa3fd")),
@@ -15,7 +18,7 @@ public enum NativeContract {
     PolicyContract(new Hash160("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b")),
     RoleManagement(new Hash160("49cf4e5378ffcd4dec034fd98a174c5491e395e2")),
     OracleContract(new Hash160("fe924b7cfe89ddd271abaf7210a80a7e11178758")),
-    // This value is required as default dummy value in the permission annotation interface.
+    // This value is required as default dummy value in the Permission annotation interface.
     None(Hash160.ZERO);
 
     private final Hash160 contractHash;
