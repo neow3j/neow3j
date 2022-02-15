@@ -7,10 +7,6 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
-import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.InteropInterface;
-import io.neow3j.devpack.Iterator;
-import io.neow3j.devpack.Map;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
@@ -94,17 +90,12 @@ public class ObjectsConverter implements Converter {
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
         Type type;
-        if (typeInsn.desc.contains("/")) {
+        if (typeInsn.desc.contains("/") && !typeInsn.desc.startsWith("[")) {
             // In this specific descriptor ASM doesn't add the "L" in front, when it's an object.
             // Without it the "L", Type.getType() fails.
             type = Type.getType("L" + typeInsn.desc + ";");
         } else {
             type = Type.getType(typeInsn.desc);
-        }
-        if (!isSupportedInstanceOfType(type)) {
-            throw new CompilerException(neoMethod, format("The type '%s' is not supported for " +
-                    "the instanceof operation.", getFullyQualifiedNameForInternalName(
-                    type.getInternalName())));
         }
         StackItemType stackItemType = Compiler.mapTypeToStackItemType(type);
         if (stackItemType.equals(StackItemType.BOOLEAN)) {
@@ -112,35 +103,13 @@ public class ObjectsConverter implements Converter {
             // represented as 0 and 1 valued integer stack items.
             stackItemType = StackItemType.INTEGER;
         }
+        if (stackItemType.equals(StackItemType.ANY)) {
+            throw new CompilerException(neoMethod, format("The type '%s' is not supported for " +
+                    "the instanceof operation.", getFullyQualifiedNameForInternalName(
+                    type.getInternalName())));
+        }
         neoMethod.addInstruction(
                 new NeoInstruction(OpCode.ISTYPE, new byte[]{stackItemType.byteValue()}));
-    }
-
-    // Checks if the given type is supported for doing `instanceof` checks. Not any type can be
-    // used with `instanceof` because, e.g., all POJOs are simply an ArrayStackItem on the neo-vm
-    // and not distinguishable by type.
-    private boolean isSupportedInstanceOfType(Type type) {
-        String typeName = type.getClassName();
-        return typeName.equals(String.class.getTypeName())
-                || typeName.equals(ByteString.class.getTypeName())
-                || typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())
-                || typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())
-                || typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())
-                || typeName.equals(Map.class.getTypeName())
-                || typeName.equals(io.neow3j.devpack.List.class.getTypeName())
-                || typeName.equals(InteropInterface.class.getTypeName())
-                || typeName.equals(Iterator.Struct.class.getTypeName());
     }
 
     public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
