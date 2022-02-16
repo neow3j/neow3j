@@ -19,7 +19,6 @@ import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
@@ -54,16 +53,13 @@ public class ManifestBuilder {
         if (annotationNode.isPresent()) {
             name = (String) annotationNode.get().values.get(1);
         }
-        Map<String, String> extras = buildManifestExtra(compUnit.getContractClass());
         List<String> supportedStandards = buildSupportedStandards(compUnit.getContractClass());
         ContractABI abi = buildABI(compUnit.getNeoModule());
-
-        List<ContractGroup> groups = new ArrayList<>();
         List<ContractPermission> permissions = buildPermissions(compUnit.getContractClass());
         List<String> trusts = buildTrusts(compUnit.getContractClass());
+        Map<String, String> extras = buildManifestExtra(compUnit.getContractClass());
 
-        return new ContractManifest(name, groups, null, supportedStandards, abi, permissions,
-                trusts, extras);
+        return new ContractManifest(name, null, null, supportedStandards, abi, permissions, trusts, extras);
     }
 
     private static ContractABI buildABI(NeoModule neoModule) {
@@ -115,7 +111,7 @@ public class ManifestBuilder {
                 .collect(Collectors.toList());
     }
 
-    public static List<ContractPermission> buildPermissions(ClassNode asmClass) {
+    private static List<ContractPermission> buildPermissions(ClassNode asmClass) {
         List<ContractPermission> permissions = checkForSingleOrMultipleAnnotations(asmClass,
                 Permissions.class, Permission.class)
                 .stream()
@@ -124,9 +120,8 @@ public class ManifestBuilder {
 
         if (permissions.isEmpty()) {
             return new ArrayList<>();
-        } else {
-            return permissions;
         }
+        return permissions;
     }
 
     private static List<String> buildTrusts(ClassNode asmClass) {
@@ -204,6 +199,12 @@ public class ManifestBuilder {
         return hashOrPubKey;
     }
 
+    /**
+     * Adds missing prefixes for {@link Hash160} hashes and removes existing prefixes for public key values.
+     *
+     * @param hashOrPubKey the hash or public key.
+     * @return hash with prefix or public key without prefix.
+     */
     private static String addOrClearHexPrefix(String hashOrPubKey) {
         // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
         if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
@@ -212,18 +213,6 @@ public class ManifestBuilder {
             hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
         }
         return hashOrPubKey;
-    }
-
-    private static ContractGroup getContractGroup(AnnotationNode ann) {
-        int i = ann.values.indexOf("pubKey");
-        String pubKey = (String) ann.values.get(i + 1);
-        i = ann.values.indexOf("signature");
-        String signature = (String) ann.values.get(i + 1);
-
-        throwIfNotValidPubKey(pubKey);
-        throwIfNotValidSignature(signature);
-
-        return new ContractGroup(pubKey, signature);
     }
 
     private static void throwIfNotValidNativeContract(NativeContract nativeContract) {
