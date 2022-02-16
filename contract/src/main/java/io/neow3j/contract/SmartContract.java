@@ -8,7 +8,6 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.exceptions.StackItemCastException;
-import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.TransactionBuilder;
@@ -302,21 +301,15 @@ public class SmartContract {
      * <p>
      * A contract's hash doesn't change after deployment. Even if the contract's script is
      * updated the hash stays the same. It depends on the initial NEF checksum, contract name,
-     * and the account that sent the deployment transaction.
+     * and the sender of the deployment transaction.
      *
-     * @param sender       the account that deployed the contract.
+     * @param sender       the sender of the contract deployment transaction.
      * @param nefCheckSum  the checksum of the contract's NEF file.
      * @param contractName the contract's name.
      * @return the hash of the contract.
      */
     public static Hash160 calcContractHash(Hash160 sender, long nefCheckSum, String contractName) {
-        return Hash160.fromScript(
-                new ScriptBuilder()
-                        .opCode(OpCode.ABORT)
-                        .pushData(sender.toLittleEndianArray())
-                        .pushInteger(nefCheckSum)
-                        .pushData(contractName)
-                        .toArray());
+        return Hash160.fromScript(ScriptBuilder.buildContractHashScript(sender, nefCheckSum, contractName));
     }
 
 }
