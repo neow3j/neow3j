@@ -10,14 +10,23 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Sign;
+import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash160;
+import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractManifest {
@@ -61,16 +70,16 @@ public class ContractManifest {
     public ContractManifest() {
     }
 
-    public ContractManifest(String name, List<ContractGroup> groups,
-            HashMap<Object, Object> features, List<String> supportedStandards, ContractABI abi,
-            List<ContractPermission> permissions, List<String> trusts, Object extra) {
+    public ContractManifest(String name, List<ContractGroup> groups, HashMap<Object, Object> features,
+            List<String> supportedStandards, ContractABI abi, List<ContractPermission> permissions,
+            List<String> trusts, Object extra) {
         this.name = name;
-        this.groups = groups;
+        this.groups = groups == null ? new ArrayList<>() : groups;
         this.features = features == null ? new HashMap<>() : features;
-        this.supportedStandards = supportedStandards;
+        this.supportedStandards = supportedStandards == null ? new ArrayList<>() : supportedStandards;
         this.abi = abi;
-        this.permissions = permissions;
-        this.trusts = trusts;
+        this.permissions = permissions == null ? new ArrayList<>() : permissions;
+        this.trusts = trusts == null ? new ArrayList<>() : trusts;
         this.extra = extra;
     }
 
@@ -80,6 +89,32 @@ public class ContractManifest {
 
     public List<ContractGroup> getGroups() {
         return groups;
+    }
+
+    /**
+     * Sets the trusted groups in this manifest.
+     *
+     * @param groups the trusted groups.
+     */
+    public void setGroups(List<ContractGroup> groups) {
+        this.groups = groups;
+    }
+
+    /**
+     * Builds a trusted group instance.
+     * <p>
+     * The sender of the deployment transaction and the nef check sum are required, since the contract hash is
+     * calculated based on these values together with the contract's name specified in this manifest.
+     *
+     * @param groupECKeyPair   The EC key pair of the trusted group.
+     * @param deploymentSender The sender of the deployment transaction.
+     * @param nefCheckSum      The check sum of the contract's nef.
+     */
+    public ContractGroup createGroup(ECKeyPair groupECKeyPair, Hash160 deploymentSender, long nefCheckSum) {
+        byte[] contractHashBytes = ScriptBuilder.buildContractHashScript(deploymentSender, nefCheckSum, name);
+        Sign.SignatureData signatureData = Sign.signMessage(contractHashBytes, groupECKeyPair);
+        String signatureBase64 = Base64.encode(signatureData.getConcatenated());
+        return new ContractGroup(groupECKeyPair.getPublicKey().getEncodedCompressedHex(), signatureBase64);
     }
 
     public HashMap<Object, Object> getFeatures() {
@@ -151,7 +186,14 @@ public class ContractManifest {
                 '}';
     }
 
-    // Mutually trusted contract
+    /**
+     * Defines a group of trusted contracts. Contracts in a group trust each other and can be
+     * invoked by each other, without prompting the user any warnings. For example, a series of
+     * contracts that call each other for a DeFi project.
+     * <p>
+     * A group is identified by a public key and must have a signature for the contract hash to
+     * prove that the contract is included in the group.
+     */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractGroup {
 
@@ -166,8 +208,10 @@ public class ContractManifest {
         }
 
         public ContractGroup(String pubKey, String signature) {
-            this.pubKey = pubKey;
+            this.pubKey = Numeric.cleanHexPrefix(pubKey);
             this.signature = signature;
+            checkPubKey(this.pubKey);
+            checkSignature(this.signature);
         }
 
         public String getPubKey() {
@@ -176,6 +220,22 @@ public class ContractManifest {
 
         public String getSignature() {
             return signature;
+        }
+
+        private void checkPubKey(String pubKey) {
+            if (Numeric.hexStringToByteArray(pubKey).length != NeoConstants.PUBLIC_KEY_SIZE) {
+                throw new IllegalArgumentException(format("The provided value is not a valid " +
+                        "public key: %s", pubKey));
+            }
+        }
+
+        private void checkSignature(String signature) {
+            try {
+                Base64.decode(signature);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(format("Invalid signature: %s. Please provide " +
+                        "a valid signature in base64 format.", signature));
+            }
         }
 
         @Override
