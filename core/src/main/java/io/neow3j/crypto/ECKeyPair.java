@@ -6,6 +6,7 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
+import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
@@ -388,6 +389,16 @@ public class ECKeyPair {
          */
         public byte[] getEncoded(boolean compressed) {
             return ecPoint.getEncoded(compressed);
+        }
+
+        /**
+         * Gets this public key's elliptic curve point encoded as defined in section 2.3.3 of
+         * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a> in compressed format as hexadecimal.
+         *
+         * @return the encoded public key in compressed format as hexadecimal with a prefix.
+         */
+        public String getEncodedCompressedHex() {
+            return Numeric.toHexString(getEncoded(true));
         }
 
         /**
