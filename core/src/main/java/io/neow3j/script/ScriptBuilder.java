@@ -67,8 +67,7 @@ public class ScriptBuilder {
      * @param params  The parameters that will be used in the call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder contractCall(Hash160 hash160, String method,
-            List<ContractParameter> params) {
+    public ScriptBuilder contractCall(Hash160 hash160, String method, List<ContractParameter> params) {
 
         return contractCall(hash160, method, params, CallFlags.ALL);
     }
@@ -82,8 +81,8 @@ public class ScriptBuilder {
      * @param callFlags The call flags to use for the contract call.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder contractCall(Hash160 hash160, String method,
-            List<ContractParameter> params, CallFlags callFlags) {
+    public ScriptBuilder contractCall(Hash160 hash160, String method, List<ContractParameter> params,
+            CallFlags callFlags) {
 
         if (params != null && params.size() > 0) {
             pushParams(params);
@@ -173,8 +172,7 @@ public class ScriptBuilder {
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-                            "' not supported.");
+                    throw new IllegalArgumentException("Parameter type '" + param.getParamType() + "' not supported.");
             }
         }
         return this;
@@ -399,13 +397,33 @@ public class ScriptBuilder {
      *                         multi-sig account.
      * @return the script.
      */
-    public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys,
-            int signingThreshold) {
+    public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys, int signingThreshold) {
         ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
         pubKeys.stream().sorted().forEach(k -> builder.pushData(k.getEncoded(true)));
         return builder
                 .pushInteger(pubKeys.size())
                 .sysCall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
+                .toArray();
+    }
+
+    /**
+     * Calculates the script of the contract hash deployed by {@code sender}.
+     * <p>
+     * A contract's hash doesn't change after deployment. Even if the contract's script is
+     * updated the hash stays the same. It depends on the initial NEF checksum, contract name,
+     * and the sender of the deployment transaction.
+     *
+     * @param sender       the account that deployed the contract.
+     * @param nefCheckSum  the checksum of the contract's NEF file.
+     * @param contractName the contract's name.
+     * @return the bytes of the contract hash.
+     */
+    public static byte[] buildContractHashScript(Hash160 sender, long nefCheckSum, String contractName) {
+        return new ScriptBuilder()
+                .opCode(OpCode.ABORT)
+                .pushData(sender.toLittleEndianArray())
+                .pushInteger(nefCheckSum)
+                .pushData(contractName)
                 .toArray();
     }
 

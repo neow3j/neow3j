@@ -1,24 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
-import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
-import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
-import static io.neow3j.contract.ContractUtils.writeNefFile;
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.empty;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
-
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
@@ -40,6 +21,25 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.junit.Test;
 
+import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
+import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeContractManifestFile;
+import static io.neow3j.contract.ContractUtils.writeNefFile;
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.hasItems;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertTrue;
+
 public class ContractUtilsTest {
 
     private final static String TESTCONTRACT_WITH_TOKENS_FILE =
@@ -56,7 +56,7 @@ public class ContractUtilsTest {
         writeContractManifestFile(cm, tempDir.toPath());
 
         File expectedOutputFile = Paths.get(tempDir.getAbsolutePath(),
-                "neowww" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX)
+                        "neowww" + "." + ContractUtils.MANIFEST_FILENAME_SUFFIX)
                 .toFile();
 
         assertTrue(expectedOutputFile.exists());
@@ -102,14 +102,14 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                                 + "  \"name\":\"\",\n"
-                                 + "  \"groups\": [],\n"
-                                 + "  \"supportedstandards\": [],\n"
-                                 + "  \"abi\": {},\n"
-                                 + "  \"permissions\": [],\n"
-                                 + "  \"trusts\": [], \n"
-                                 + "  \"extra\": {}\n"
-                                 + "}";
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [],\n"
+                + "  \"trusts\": [], \n"
+                + "  \"extra\": {}\n"
+                + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -129,24 +129,24 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                                 + "  \"name\":\"\",\n"
-                                 + "  \"groups\": [\n"
-                                 + "       {\n"
-                                 + "          \"pubKey\": \"pubKey1\",\n"
-                                 + "          \"signature\": \"signature1\"\n"
-                                 + "       }\n"
-                                 + "   ],\n"
-                                 + "  \"supportedstandards\": [],\n"
-                                 + "  \"abi\": {},\n"
-                                 + "  \"permissions\": [\n"
-                                 + "       {\n"
-                                 + "          \"contract\": \"contract1\",\n"
-                                 + "          \"methods\": \"*\"\n"
-                                 + "       }\n"
-                                 + "   ],\n"
-                                 + "  \"trusts\": \"*\",\n"
-                                 + "  \"extra\": {}\n"
-                                 + "}";
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [\n"
+                + "       {\n"
+                + "          \"pubKey\": \"03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9\",\n"
+                + "          \"signature\": \"lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ==\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [\n"
+                + "       {\n"
+                + "          \"contract\": \"contract1\",\n"
+                + "          \"methods\": \"*\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"trusts\": \"*\",\n"
+                + "  \"extra\": {}\n"
+                + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -155,8 +155,10 @@ public class ContractUtilsTest {
         assertThat(manifestObj.getGroups(), is(not(empty())));
         assertThat(manifestObj.getGroups(), hasSize(1));
         assertThat(
+
                 manifestObj.getGroups(),
-                hasItem(new ContractGroup("pubKey1", "signature1"))
+                hasItem(new ContractGroup("03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9",
+                        "lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ=="))
         );
         assertThat(manifestObj.getSupportedStandards(), is(empty()));
         assertThat(manifestObj.getAbi(), is(notNullValue()));
@@ -183,25 +185,25 @@ public class ContractUtilsTest {
                 "-test-read-manifest");
 
         String manifestContent = "{\n"
-                                 + "  \"name\":\"\",\n"
-                                 + "  \"groups\": [\n"
-                                 + "       {\n"
-                                 + "          \"pubkey\": \"pubKey1\",\n"
-                                 + "          \"signature\": \"signature1\"\n"
-                                 + "       }\n"
-                                 + "   ],\n"
-                                 + "  \"supportedstandards\": [],\n"
-                                 + "  \"abi\": {},\n"
-                                 + "  \"permissions\": [\n"
-                                 + "       {\n"
-                                 + "          \"contract\": \"contract1\",\n"
-                                 + "          \"methods\": [ \"*\", \"main\", \"test\" ]\n"
-                                 + "       }\n"
-                                 + "   ],\n"
-                                 +
-                                 "  \"trusts\": [ \"contract1\", \"contract2\", \"contract3\" ],\n"
-                                 + "  \"extra\": {}\n"
-                                 + "}";
+                + "  \"name\":\"\",\n"
+                + "  \"groups\": [\n"
+                + "       {\n"
+                + "          \"pubkey\": \"03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9\",\n"
+                + "          \"signature\": \"lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ==\"\n"
+                + "       }\n"
+                + "   ],\n"
+                + "  \"supportedstandards\": [],\n"
+                + "  \"abi\": {},\n"
+                + "  \"permissions\": [\n"
+                + "       {\n"
+                + "          \"contract\": \"contract1\",\n"
+                + "          \"methods\": [ \"*\", \"main\", \"test\" ]\n"
+                + "       }\n"
+                + "   ],\n"
+                +
+                "  \"trusts\": [ \"contract1\", \"contract2\", \"contract3\" ],\n"
+                + "  \"extra\": {}\n"
+                + "}";
 
         FileUtils.writeStringToFile(manifestFilePath.toFile(), manifestContent, "UTF-8");
 
@@ -211,7 +213,8 @@ public class ContractUtilsTest {
         assertThat(manifestObj.getGroups(), hasSize(1));
         assertThat(
                 manifestObj.getGroups(),
-                hasItem(new ContractGroup("pubKey1", "signature1"))
+                hasItem(new ContractGroup("03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9",
+                        "lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ=="))
         );
         assertThat(manifestObj.getSupportedStandards(), is(empty()));
         assertThat(manifestObj.getAbi(), is(notNullValue()));
@@ -239,7 +242,7 @@ public class ContractUtilsTest {
     public void testWriteNefFile() throws DeserializationException, IOException {
         String contractName = "DotnetContract";
         Path outDir = Files.createTempDirectory(ContractUtils.class.getSimpleName()
-                                                + "-test-write-nef");
+                + "-test-write-nef");
         outDir.toFile().deleteOnExit();
         NefFile nefFile = NefFile.readFromFile(new File(ContractUtilsTest.class.getResource(
                 TESTCONTRACT_WITH_TOKENS_FILE).getFile()));
@@ -256,8 +259,8 @@ public class ContractUtilsTest {
     }
 
     private ContractManifest buildContractManifest() {
-        ContractGroup cg1 = new ContractGroup("pubKey1", "sign1");
-        ContractGroup cg2 = new ContractGroup("pubKey2", "sign2");
+        ContractGroup cg1 = new ContractGroup("03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9", "lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ==");
+        ContractGroup cg2 = new ContractGroup("0x025f3953adaf5155d9ee63ce40643837219286636fe28d6024c4b1d28f675a12e2", "tBscf3to/EMw/lLSM07Ko9WPeegYJds76LIcZusDXpwPbvCJUdtiLf+Cf5rF41WuDyUoC5mfOkUOrKHS1y+tWQ==");
         String name = "neowww";
         List<ContractGroup> cgs = asList(cg1, cg2);
         HashMap<Object, Object> features = new HashMap<>();
