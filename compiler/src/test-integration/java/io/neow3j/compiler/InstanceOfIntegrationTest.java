@@ -1,8 +1,7 @@
 package io.neow3j.compiler;
 
-import io.neow3j.types.ContractParameter;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;
@@ -10,13 +9,20 @@ import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.HashMap;
 
 import static io.neow3j.types.ContractParameter.bool;
@@ -49,6 +55,28 @@ public class InstanceOfIntegrationTest {
     }
 
     @Test
+    public void instanceOfHash160() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                ContractParameter.hash160(Hash160.ZERO));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void instanceOfHash256() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                ContractParameter.hash256(Hash256.ZERO));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void instanceOfECPoint() throws IOException, InvalidAlgorithmParameterException,
+            NoSuchAlgorithmException, NoSuchProviderException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                ContractParameter.publicKey(ECKeyPair.createEcKeyPair().getPublicKey()));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
     public void instanceOfInteger() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.integer(10));
@@ -73,6 +101,13 @@ public class InstanceOfIntegrationTest {
 
     @Test
     public void instanceOfList() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                ContractParameter.array("element1", "element2"));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void instanceOfArray() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 ContractParameter.array("element1", "element2"));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -121,6 +156,18 @@ public class InstanceOfIntegrationTest {
             return obj instanceof ByteString;
         }
 
+        public static boolean instanceOfHash160(Object obj) {
+            return obj instanceof io.neow3j.devpack.Hash160;
+        }
+
+        public static boolean instanceOfHash256(Object obj) {
+            return obj instanceof io.neow3j.devpack.Hash256;
+        }
+
+        public static boolean instanceOfECPoint(Object obj) {
+            return obj instanceof io.neow3j.devpack.ECPoint;
+        }
+
         public static boolean instanceOfInteger(Object obj) {
             return obj instanceof Integer;
         }
@@ -135,6 +182,10 @@ public class InstanceOfIntegrationTest {
 
         public static boolean instanceOfList(Object obj) {
             return obj instanceof List;
+        }
+
+        public static boolean instanceOfArray(Object obj) {
+            return obj instanceof String[];
         }
 
         public static boolean instanceOfInteropInterface() {
