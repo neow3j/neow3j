@@ -5,7 +5,6 @@ import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.BeforeClass;
 import org.junit.Test;
