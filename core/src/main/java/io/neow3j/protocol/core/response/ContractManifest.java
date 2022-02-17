@@ -101,14 +101,16 @@ public class ContractManifest {
     }
 
     /**
-     * Builds a trusted group instance.
+     * Builds a contract group instance.
      * <p>
-     * The sender of the deployment transaction and the nef check sum are required, since the contract hash is
-     * calculated based on these values together with the contract's name specified in this manifest.
+     * The contract hash is derived from the sender of the deployment transaction, the contract nef's check sum, and
+     * the name specified in this manifest. It is then signed by the provided group EC key pair. The returned trusted
+     * contract group instance consists of the group's public key and the signature in base64 format.
      *
      * @param groupECKeyPair   The EC key pair of the trusted group.
      * @param deploymentSender The sender of the deployment transaction.
      * @param nefCheckSum      The check sum of the contract's nef.
+     * @return the contract group.
      */
     public ContractGroup createGroup(ECKeyPair groupECKeyPair, Hash160 deploymentSender, long nefCheckSum) {
         byte[] contractHashBytes = ScriptBuilder.buildContractHashScript(deploymentSender, nefCheckSum, name);
