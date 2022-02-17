@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ContractHash;
@@ -184,7 +184,7 @@ public class CompilerExceptionsTest {
                 () -> new Compiler().compile(InstanceOfContract.class.getName())
         );
         assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                Hash160.class.getName(), "is not supported for the instanceof operation.")));
+                Notification.class.getName(), "is not supported for the instanceof operation.")));
     }
 
     @Test
@@ -435,7 +435,7 @@ public class CompilerExceptionsTest {
     static class InstanceOfContract {
 
         public static boolean method(Object obj) {
-            return obj instanceof Hash160;
+            return obj instanceof Notification;
         }
     }
 

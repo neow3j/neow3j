@@ -200,11 +200,9 @@ public class Compiler {
             return StackItemType.ARRAY;
         }
         if (typeName.equals(InteropInterface.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.INTEROP_INTERFACE;
         }
         if (typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.STRUCT;
         }
         try {
