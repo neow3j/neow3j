@@ -100,10 +100,6 @@ public class Neow3jWriteIntegrationTest {
         assertTrue(getSubmitBlock);
     }
 
-    // SmartContract Methods
-
-    // Wallet Methods
-
     @Test
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()

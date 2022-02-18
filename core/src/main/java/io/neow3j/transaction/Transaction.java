@@ -49,16 +49,15 @@ public class Transaction extends NeoSerializable {
 
     private byte version;
     /**
-     * Is a random number added to the transaction to prevent replay attacks. It is an unsigned
-     * 32-bit integer in the neo C# implementation. It is represented as a integer here, but when
-     * serializing it
+     * Is a random number added to the transaction to prevent replay attacks. It is an unsigned 32-bit integer in the
+     * neo C# implementation. It is represented as a integer here, but when serializing it
      */
     private long nonce;
     /**
-     * Defines up to which block this transaction remains valid. If this transaction is not added
-     * into a block up to this number it will become invalid and be dropped. It is an unsigned
-     * 32-bit integer in the neo C# implementation. Here it is represented as a signed 32-bit
-     * integer which offers a smaller but still large enough range.
+     * Defines up to which block this transaction remains valid. If this transaction is not added into a block up to
+     * this number it will become invalid and be dropped. It is an unsigned 32-bit integer in the neo C#
+     * implementation. Here it is represented as a signed 32-bit integer which offers a smaller but still large
+     * enough range.
      */
     private long validUntilBlock;
     private List<Signer> signers;
@@ -75,9 +74,10 @@ public class Transaction extends NeoSerializable {
         witnesses = new ArrayList<>();
     }
 
-    public Transaction(Neow3j neow3j, byte version, long nonce, long validUntilBlock,
-            List<Signer> signers, long systemFee, long networkFee,
-            List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
+    public Transaction(Neow3j neow3j, byte version, long nonce, long validUntilBlock, List<Signer> signers,
+            long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
+            List<Witness> witnesses) {
+
         this.neow3j = neow3j;
         this.version = version;
         this.nonce = nonce;
@@ -136,15 +136,14 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets the sender of this transaction. The sender is the account that pays for the
-     * transaction's fees.
+     * Gets the sender of this transaction. The sender is the account that pays for the transaction's fees.
      *
      * @return the sender account's script hash.
      */
     public Hash160 getSender() {
-        // First we look for a signer that has the fee-only scope. The signer with that scope is
-        // the sender of the transaction. If there is no such signer then the order of the
-        // signers defines the sender, i.e., the first signer is the sender of the transaction.
+        // First we look for a signer that has the fee-only scope. The signer with that scope is the sender of the
+        // transaction. If there is no such signer then the order of the signers defines the sender, i.e., the first
+        // signer is the sender of the transaction.
         return signers.stream()
                 .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
                 .findFirst()
@@ -211,12 +210,12 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
-     * signer that is part of this transaction.
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
+     * this transaction.
      * <p>
-     * The witness is constructed from the multi-sig account's {@code verificationScript} and the
-     * {@code signatures}. Obviously, the signatures should be derived from this transaction's hash
-     * data (see {@link Transaction#getHashData()}).
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and the {@code signatures}.
+     * Obviously, the signatures should be derived from this transaction's hash data (see
+     * {@link Transaction#getHashData()}).
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
@@ -233,22 +232,21 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
-     * signer that is part of this transaction.
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
+     * this transaction.
      * <p>
-     * The witness is constructed from the multi-sig account's {@code verificationScript} and by
-     * signing this transaction with the given accounts.
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and by signing this
+     * transaction with the given accounts.
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
      * @param verificationScript The verification script of the multi-sig account.
-     * @param accounts           The accounts to use for signing. They need to hold decrypted
-     *                           private keys.
+     * @param accounts           The accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Transaction addMultiSigWitness(VerificationScript verificationScript,
-            Account... accounts) throws IOException {
+    public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
+            throws IOException {
 
         ArrayList<Sign.SignatureData> signatures = new ArrayList<>();
         for (Account a : accounts) {
@@ -260,7 +258,7 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transactions uniquely identifying ID/hash.
+     * Gets this transaction's uniquely identifying ID/hash.
      *
      * @return the transaction ID.
      */
@@ -272,22 +270,19 @@ public class Transaction extends NeoSerializable {
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
      * @return the Neo node's response.
-     * @throws IOException                       if a problem in communicating with the Neo node
-     *                                           occurs.
-     * @throws TransactionConfigurationException if the number of signers and witnesses on the
-     *                                           transaction are not equal.
+     * @throws IOException                       if a problem in communicating with the Neo node occurs.
+     * @throws TransactionConfigurationException if the number of signers and witnesses on the transaction are not
+     *                                           equal.
      */
     public NeoSendRawTransaction send() throws IOException {
         if (getSigners().size() != getWitnesses().size()) {
-            throw new TransactionConfigurationException("The transaction does not have the same " +
-                    "number of signers and witnesses. For every signer there has to be one " +
-                    "witness, even if that witness is empty.");
+            throw new TransactionConfigurationException("The transaction does not have the same number of signers and" +
+                    " witnesses. For every signer there has to be one witness, even if that witness is empty.");
         }
         int size = getSize();
         if (size > MAX_TRANSACTION_SIZE) {
-            throw new TransactionConfigurationException(format("The transaction exceeds the " +
-                    "maximum transaction size. The maximum size is {} bytes. This transaction " +
-                    "has size {}", MAX_TRANSACTION_SIZE, size));
+            throw new TransactionConfigurationException(format("The transaction exceeds the maximum transaction size." +
+                    " The maximum size is {} bytes. This transaction has size {}", MAX_TRANSACTION_SIZE, size));
         }
         String hex = Numeric.toHexStringNoPrefix(toArray());
         blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();
@@ -295,12 +290,10 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Creates an {@code Observable} that emits the block number containing this transaction as soon
-     * as it has been integrated in one. The observable completes right after emitting the block
-     * number.
+     * Creates an {@code Observable} that emits the block number containing this transaction as soon as it has been
+     * integrated in one. The observable completes right after emitting the block number.
      * <p>
-     * The observable starts tracking the blocks from the point at which the transaction has been
-     * sent.
+     * The observable starts tracking the blocks from the point at which the transaction has been sent.
      *
      * @return The observable.
      * @throws IllegalStateException if this transaction has not yet been sent.
@@ -324,8 +317,7 @@ public class Transaction extends NeoSerializable {
     /**
      * Gets the application log of this transaction.
      * <p>
-     * The application log is not cached locally. Every time this method is called, requests are
-     * send to the Neo node.
+     * The application log is not cached locally. Every time this method is called, requests are sent to the Neo node.
      * <p>
      * If the application log could not be fetched, {@code null} is returned.
      *
@@ -333,8 +325,7 @@ public class Transaction extends NeoSerializable {
      */
     public NeoApplicationLog getApplicationLog() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Cannot get the application log before transaction " +
-                    "has been sent.");
+            throw new IllegalStateException("Cannot get the application log before transaction has been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {
@@ -376,9 +367,9 @@ public class Transaction extends NeoSerializable {
             throws IOException, DeserializationException {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes + this.signers.size() > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new DeserializationException("A transaction can hold at most " +
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers). " +
-                    "Input data had " + nrOfAttributes + " attributes.");
+            throw new DeserializationException(
+                    "A transaction can hold at most " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
+                            " attributes (including signers). Input data had " + nrOfAttributes + " attributes.");
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
@@ -422,11 +413,11 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for
-     * producing the transaction ID or a transaction signature.
+     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for producing the
+     * transaction ID or a transaction signature.
      * <p>
-     * The returned value depends on the magic number of the used Neo network, which is retrieved
-     * from the Neo node via the {@code getversion} RPC method if not already available locally.
+     * The returned value depends on the magic number of the used Neo network, which is retrieved from the Neo node
+     * via the {@code getversion} RPC method if not already available locally.
      *
      * @return the transaction data ready for hashing.
      * @throws IOException if an error occurs when fetching the network's magic number
@@ -446,8 +437,7 @@ public class Transaction extends NeoSerializable {
     }
 
     public String toJson() throws JsonProcessingException {
-        io.neow3j.protocol.core.response.Transaction dtoTx =
-                new io.neow3j.protocol.core.response.Transaction(this);
+        io.neow3j.protocol.core.response.Transaction dtoTx = new io.neow3j.protocol.core.response.Transaction(this);
         return ObjectMapperFactory.getObjectMapper().writeValueAsString(dtoTx);
     }
 
