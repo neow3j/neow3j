@@ -8,7 +8,6 @@ import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -16,6 +15,7 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -41,7 +41,7 @@ public class TransactionBuilderIntegrationTest {
     @Test
     public void testAutomaticSettingOfNetworkFeeWithDifferentAccounts() throws Throwable {
         TransactionBuilder b = new TransactionBuilder(neow3jExpress)
-                .script(Numeric.hexStringToByteArray(TEST_SCRIPT));
+                .script(hexStringToByteArray(TEST_SCRIPT));
 
         // single-sig account from address, no verification script
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
@@ -57,6 +57,36 @@ public class TransactionBuilderIntegrationTest {
         a = Account.createMultiSigAccount(TestProperties.committeeAccountAddress(), 5, 7);
         tx = b.signers(AccountSigner.calledByEntry(a)).getUnsignedTransaction();
         assertThat(tx.getNetworkFee(), is(7557220L));
+    }
+
+    @Test
+    public void testAdditionalNetworkFee() throws Throwable {
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+                .script(hexStringToByteArray(TEST_SCRIPT))
+                .signers(AccountSigner.calledByEntry(a));
+
+        Transaction tx = b.getUnsignedTransaction();
+        long baseNetworkFee = tx.getNetworkFee();
+
+        b.additionalNetworkFee(5555L);
+        tx = b.getUnsignedTransaction();
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee + 5555L));
+    }
+
+    @Test
+    public void testAdditionalSystemFee() throws Throwable {
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+                .script(hexStringToByteArray(TEST_SCRIPT))
+                .signers(AccountSigner.calledByEntry(a));
+
+        Transaction tx = b.getUnsignedTransaction();
+        long baseSystemFee = tx.getSystemFee();
+
+        b.additionalSystemFee(42000L);
+        tx = b.getUnsignedTransaction();
+        assertThat(tx.getSystemFee(), is(baseSystemFee + 42000L));
     }
 
 }

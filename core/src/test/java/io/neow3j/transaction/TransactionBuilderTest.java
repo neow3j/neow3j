@@ -805,6 +805,30 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void testAdditionalSystemFee() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Account account = Account.create();
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(Account.create()))
+                .getUnsignedTransaction();
+
+        long baseSystemFee = 984060L;
+        assertThat(tx.getSystemFee(), is(baseSystemFee));
+
+        tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account))
+                .additionalSystemFee(3000L)
+                .getUnsignedTransaction();
+
+        assertThat(tx.getSystemFee(), is(baseSystemFee + 3000L));
+    }
+
+    @Test
     public void testSetFirstSigner() {
         Signer s1 = global(account1);
         Signer s2 = calledByEntry(account2);
