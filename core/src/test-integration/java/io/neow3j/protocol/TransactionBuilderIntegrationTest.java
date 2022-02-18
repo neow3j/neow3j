@@ -67,11 +67,11 @@ public class TransactionBuilderIntegrationTest {
                 .signers(AccountSigner.calledByEntry(a));
 
         Transaction tx = b.getUnsignedTransaction();
-        assertThat(tx.getNetworkFee(), is(1178520L));
+        long baseNetworkFee = tx.getNetworkFee();
 
         b.additionalNetworkFee(5555L);
         tx = b.getUnsignedTransaction();
-        assertThat(tx.getNetworkFee(), is(1178520L + 5555L));
+        assertThat(tx.getNetworkFee(), is(baseNetworkFee + 5555L));
     }
 
     @Test
@@ -82,11 +82,11 @@ public class TransactionBuilderIntegrationTest {
                 .signers(AccountSigner.calledByEntry(a));
 
         Transaction tx = b.getUnsignedTransaction();
-        assertThat(tx.getSystemFee(), is(984060L));
+        long baseSystemFee = tx.getSystemFee();
 
         b.additionalSystemFee(42000L);
         tx = b.getUnsignedTransaction();
-        assertThat(tx.getSystemFee(), is(984060L + 42000L));
+        assertThat(tx.getSystemFee(), is(baseSystemFee + 42000L));
     }
 
 }
