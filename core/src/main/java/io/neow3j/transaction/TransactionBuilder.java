@@ -204,6 +204,9 @@ public class TransactionBuilder {
      * Configures the transaction with an additional system fee.
      * <p>
      * The basic system fee required to send this transaction is added automatically.
+     * <p>
+     * Use this, if you expect the transaction to consume more GAS because of chain state changes happening between
+     * creating the transaction and actually sending it.
      *
      * @param fee the additional system fee in fractions of GAS.
      * @return this transaction builder.
