@@ -210,6 +210,19 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
+     * Adds a witness to this transaction by signing it with the given account.
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
+     *
+     * @param account The account to sign with.
+     * @return this.
+     */
+    public Transaction addWitness(Account account) throws IOException {
+        this.witnesses.add(Witness.create(getHashData(), account.getECKeyPair()));
+        return this;
+    }
+
+    /**
      * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
      * this transaction.
      * <p>
