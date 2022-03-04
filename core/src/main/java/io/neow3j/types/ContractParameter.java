@@ -68,6 +68,10 @@ public class ContractParameter {
         this(null, paramType, value);
     }
 
+    public ContractParameter(ContractParameterType paramType) {
+        this(null, paramType, null);
+    }
+
     /**
      * Creates a contract parameter from the given value.
      *

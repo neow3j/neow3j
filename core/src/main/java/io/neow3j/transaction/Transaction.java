@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -15,9 +16,10 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
@@ -26,7 +28,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
@@ -34,6 +43,8 @@ import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -262,6 +273,7 @@ public class Transaction extends NeoSerializable {
             throws IOException {
 
         ArrayList<Sign.SignatureData> signatures = new ArrayList<>();
+        Arrays.stream(accounts).sorted(Comparator.comparing(a -> a.getECKeyPair().getPublicKey()));
         for (Account a : accounts) {
             signatures.add(signMessage(getHashData(), a.getECKeyPair()));
         }
@@ -297,7 +309,7 @@ public class Transaction extends NeoSerializable {
             throw new TransactionConfigurationException(format("The transaction exceeds the maximum transaction size." +
                     " The maximum size is {} bytes. This transaction has size {}", MAX_TRANSACTION_SIZE, size));
         }
-        String hex = Numeric.toHexStringNoPrefix(toArray());
+        String hex = toHexStringNoPrefix(toArray());
         blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();
         return neow3j.sendRawTransaction(hex).send();
     }
@@ -452,6 +464,50 @@ public class Transaction extends NeoSerializable {
     public String toJson() throws JsonProcessingException {
         io.neow3j.protocol.core.response.Transaction dtoTx = new io.neow3j.protocol.core.response.Transaction(this);
         return ObjectMapperFactory.getObjectMapper().writeValueAsString(dtoTx);
+    }
+
+    /**
+     * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
+     * @return neo-cli compatible json of this transaction.
+     * @throws IOException if an error occurs when trying to fetch the network number.
+     */
+    public String toContractParametersContextJson() throws IOException {
+        String hash = getTxId().toString();
+        String data = Base64.encode(toArrayWithoutWitnesses());
+        long network = neow3j.getNetworkMagicNumber();
+
+        Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
+            if (signer instanceof ContractSigner) {
+                throw new UnsupportedOperationException("Cannot handle contract signers");
+            }
+            AccountSigner accountSigner = (AccountSigner) signer;
+            VerificationScript verificationScript = accountSigner.getAccount().getVerificationScript();
+
+            // Check if there's a witness for this signer and add all corresponding signatures as parameters.
+            List<ContractParameter> params = new ArrayList<>();
+            witnesses.stream().filter(w -> w.getVerificationScript().equals(verificationScript))
+                    .map(Witness::getInvocationScript).findFirst()
+                    .ifPresent(invocationScript -> invocationScript.getSignatures().stream()
+                            .map(Sign.SignatureData::getConcatenated)
+                            .forEach(s -> params.add(new ContractParameter(ContractParameterType.SIGNATURE, s))));
+            if (params.isEmpty()) {
+                // If no witness was found we need to set the parameter without a value.
+                IntStream.range(0, verificationScript.getSigningThreshold())
+                        .forEach(i -> params.add(new ContractParameter(ContractParameterType.SIGNATURE)));
+            }
+
+            Map<String, String> pubKeyToSignature = new HashMap<>();
+            if (verificationScript.isSingleSigScript()) {
+                String pubKey = cleanHexPrefix(verificationScript.getPublicKeys().get(0).getEncodedCompressedHex());
+                String sig = Base64.encode((byte[]) params.get(0).getValue());
+                pubKeyToSignature.put(pubKey, sig);
+            }
+            String script = Base64.encode(verificationScript.getScript());
+            return new ContractParametersContext.ContextItem(script, params, pubKeyToSignature);
+        }).collect(Collectors.toMap(i -> "0x" + Hash160.fromScript(Base64.decode(i.getScript())), Function.identity()));
+
+        ContractParametersContext param = new ContractParametersContext(hash, data, items, network);
+        return ObjectMapperFactory.getObjectMapper().writeValueAsString(param);
     }
 
 }
