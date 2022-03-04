@@ -4,6 +4,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.exceptions.InvocationFaultStateException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
@@ -38,12 +39,12 @@ import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -149,7 +150,7 @@ public class NameServiceIntegrationTest {
     @Test
     public void testGetPrice() throws IOException {
         BigInteger price = nameService.getPrice(10);
-        assertThat(price, is(new BigInteger("100000000")));
+        assertThat(price, is(BigInteger.valueOf(1_00000000)));
     }
 
     @Test
@@ -205,7 +206,7 @@ public class NameServiceIntegrationTest {
 
         boolean rootExists = false;
         try {
-            // Every second-level domain name should still be available for the added root domain.
+            // Any second-level domain name should still be available for the added root domain.
             rootExists = nameService.isAvailable("neow3j.root");
         } catch (IllegalArgumentException e) {
             fail();
@@ -291,12 +292,10 @@ public class NameServiceIntegrationTest {
     public void testSetAdmin() throws Throwable {
         String domain = "admin.neo";
         register(domain, CLIENT_1);
-        try {
-            setRecord(domain, RecordType.A, A_RECORD, CLIENT_2);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-            // setRecord should throw an exception, since client2 should not be able to create a record.
-        }
+
+        // setRecord should throw an exception, since client2 should not be able to create a record.
+        assertThrows(TransactionConfigurationException.class,
+                () -> setRecord(domain, RecordType.A, A_RECORD, CLIENT_2));
 
         Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
                 .signers(calledByEntry(CLIENT_1), calledByEntry(CLIENT_2))
@@ -305,6 +304,9 @@ public class NameServiceIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
+
+        NameState nameState = nameService.getNameState(domain);
+        assertThat(nameState.getAdmin(), is(CLIENT_2.getScriptHash()));
 
         // Now as admin, client2 should be able to set a record.
         setRecord(domain, RecordType.A, A_RECORD, CLIENT_2);
@@ -356,13 +358,9 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
         System.out.println("");
-        try {
-            nameService.getRecord(domain, RecordType.TXT);
-            fail();
-        } catch (IllegalArgumentException exception) {
-            // If getRecord throws an exception here, the record is deleted successfully.
-            assertThat(exception.getMessage(), containsString("No record of type " + RecordType.TXT.jsonValue()));
-        }
+        assertThrows("Could not get any record of type 'TXT' for the domain 'delete.neo'." + RecordType.TXT.jsonValue(),
+                InvocationFaultStateException.class,
+                () -> nameService.getRecord(domain, RecordType.TXT));
     }
 
     @Test

@@ -147,12 +147,7 @@ public class NeoNameService extends NonFungibleToken {
      */
     public boolean isAvailable(String name) throws IOException {
         checkDomainNameValidity(name);
-        try {
-            return callFuncReturningBool(IS_AVAILABLE, string(name));
-        } catch (InvocationFaultStateException e) {
-            throw new InvocationFaultStateException(format("The domain name '%s' does not seem to exist.", name),
-                    e.getMessage());
-        }
+        return callFuncReturningBool(IS_AVAILABLE, string(name));
     }
 
     /**
@@ -170,12 +165,12 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     // checks if a domain name is available
-    private void checkDomainNameAvailability(String name, boolean isForRegistration) throws IOException {
+    void checkDomainNameAvailability(String name, boolean shouldBeAvailable) throws IOException {
         boolean isAvailable = isAvailable(name);
-        if (isForRegistration && !isAvailable) {
+        if (shouldBeAvailable && !isAvailable) {
             throw new IllegalArgumentException("The domain name '" + name + "' is already taken.");
         }
-        if (!isForRegistration && isAvailable) {
+        if (!shouldBeAvailable && isAvailable) {
             throw new IllegalArgumentException("The domain name '" + name + "' is not registered.");
         }
     }
@@ -271,9 +266,9 @@ public class NeoNameService extends NonFungibleToken {
         checkDomainNameAvailability(name, false);
         try {
             return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
-        } catch (UnexpectedReturnTypeException e) {
-            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found for the domain name " +
-                    "'" + name + "'.");
+        } catch (InvocationFaultStateException e) {
+            throw new InvocationFaultStateException(format("Could not get any record of type '%s' for the domain name" +
+                    " '%s'.", type.jsonValue(), name), e.getMessage());
         }
     }
 

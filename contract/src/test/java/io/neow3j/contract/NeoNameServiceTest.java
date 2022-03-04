@@ -552,20 +552,35 @@ public class NeoNameServiceTest {
     @Test
     public void getRecord_noRecord() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(GET_RECORD, "nns_returnAny.json");
+        setUpWireMockForInvokeFunction(GET_RECORD, "nns_noRecordOfDomain.json");
 
         assertThrows("No record of type AAAA found for the domain name 'client1.neo'.",
-                IllegalArgumentException.class,
+                InvocationFaultStateException.class,
                 () -> nameServiceContract.getRecord("client1.neo", RecordType.AAAA)
         );
+    }
+
+    @Test
+    public void testDomainIsNotAvailableButShouldBe() throws IOException {
+        setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
+
+        assertThrows("The domain name 'client1.neo' is already taken.", IllegalArgumentException.class,
+                () -> nameServiceContract.checkDomainNameAvailability("client1.neo", true));
+    }
+
+    @Test
+    public void testDomainIsAvailableButShouldNot() throws IOException {
+        setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnTrue.json");
+
+        assertThrows("The domain name 'yak.neo' is not registered.", IllegalArgumentException.class,
+                () -> nameServiceContract.checkDomainNameAvailability("yak.neo", false));
     }
 
     @Test
     public void getRecord_noDomainRegistered() throws IOException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnTrue.json");
 
-        assertThrows("The domain name 'client1.neow' is not registered.",
-                IllegalArgumentException.class,
+        assertThrows("The domain name 'client1.neow' is not registered.", IllegalArgumentException.class,
                 () -> nameServiceContract.getRecord("client1.neow", RecordType.AAAA)
         );
     }
