@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.List;
 import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NeoNameService;
@@ -59,9 +60,9 @@ public class NNSIntegrationTest {
 
     @Test
     public void testGetPrice() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(4));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
-                is(BigInteger.valueOf(115)));
+                is(BigInteger.valueOf(8)));
     }
 
     @Test
@@ -106,8 +107,7 @@ public class NNSIntegrationTest {
     public void testGetRecord() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.domain"),
                 integer(RecordType.CNAME.byteValue()));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(), is(
-                "getRecordReturn"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("getRecordReturn"));
     }
 
     @Test
@@ -134,12 +134,12 @@ public class NNSIntegrationTest {
             CustomNeoNameService.addRoot(root);
         }
 
-        public static void testSetPrice(int price) {
-            CustomNeoNameService.setPrice(price);
+        public static void testSetPrice(List<Integer> priceList) {
+            CustomNeoNameService.setPrice(priceList);
         }
 
-        public static int testGetPrice() {
-            return CustomNeoNameService.getPrice();
+        public static int testGetPrice(int length) {
+            return CustomNeoNameService.getPrice(length);
         }
 
         public static boolean testIsAvailable(String name) {
@@ -184,8 +184,8 @@ public class NNSIntegrationTest {
         public static void setPrice(int price) {
         }
 
-        public static int getPrice() {
-            return 115;
+        public static int getPrice(int length) {
+            return length * 2;
         }
 
         public static boolean isAvailable(String name) {
@@ -219,7 +219,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("2c2ba17ef9361b9b34a9484fb5432af1e0447d7c")
+    @ContractHash("b7e42ba36daf6d3d10b075674a70fde66678f0be")
     static class CustomNeoNameService extends NeoNameService {
     }
 

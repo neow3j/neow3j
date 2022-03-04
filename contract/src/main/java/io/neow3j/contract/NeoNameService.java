@@ -7,6 +7,7 @@ import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.exceptions.InvocationFaultStateException;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -14,9 +15,12 @@ import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
+import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -24,8 +28,9 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.types.StackItemType.MAP;
 import static io.neow3j.utils.Numeric.hexToString;
 import static io.neow3j.utils.Numeric.toHexString;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
-import static java.util.Collections.singletonList;
+import static java.util.Arrays.asList;
 
 /**
  * Represents the NameService contract and provides methods to invoke its functions.
@@ -46,25 +51,27 @@ public class NeoNameService extends NonFungibleToken {
     private static final String DELETE_RECORD = "deleteRecord";
     private static final String RESOLVE = "resolve";
 
-    private static final ByteStringStackItem NAME_PROPERTY =
-            new ByteStringStackItem("name".getBytes(UTF_8));
-    private static final ByteStringStackItem EXPI_PROPERTY =
+    private static final ByteStringStackItem NAME_PROPERTY = new ByteStringStackItem("name".getBytes(UTF_8));
+    private static final ByteStringStackItem EXPIRATION_PROPERTY =
             new ByteStringStackItem("expiration".getBytes(UTF_8));
+    private static final ByteStringStackItem ADMIN_PROPERTY = new ByteStringStackItem("admin".getBytes(UTF_8));
 
     private static final String PROPERTIES = "properties";
 
-    private static final BigInteger MAXIMAL_PRICE = new BigInteger("1000000000000");
+    private static final BigInteger MAXIMAL_PRICE = BigInteger.valueOf(10000_00000000L);
     private static final Pattern ROOT_REGEX_PATTERN = Pattern.compile("^[a-z][a-z0-9]{0,15}$");
     private static final Pattern NAME_REGEX_PATTERN = Pattern.compile(
             "^(?=.{3,255}$)([a-z0-9]{1,62}\\.)+[a-z][a-z0-9]{0,15}$");
     private static final Pattern IPV4_REGEX_PATTERN = Pattern.compile(
             "^(?=\\d+\\.\\d+\\.\\d+\\.\\d+$)(?:(?:25[0-5]|2[0-4][0-9]|1[0-9]{2}|[1-9][0-9]|[0-9])\\.?){4}$");
     private static final Pattern IPV6_REGEX_PATTERN = Pattern.compile(
-            "(?:^)(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:))(?=$)");
+            "(?:^)(([0-9a-f]{1,4}:){7,7}[0-9a-f]{1,4}|([0-9a-f]{1,4}:){1,7}:|([0-9a-f]{1,4}:){1,6}:[0-9a-f]{1,4}|" +
+                    "([0-9a-f]{1,4}:){1,5}(:[0-9a-f]{1,4}){1,2}|([0-9a-f]{1,4}:){1,4}(:[0-9a-f]{1,4}){1,3}|" +
+                    "([0-9a-f]{1,4}:){1,3}(:[0-9a-f]{1,4}){1,4}|([0-9a-f]{1,4}:){1,2}(:[0-9a-f]{1,4}){1,5}|" +
+                    "[0-9a-f]{1,4}:((:[0-9a-f]{1,4}){1,6})|:((:[0-9a-f]{1,4}){1,7}|:))(?=$)");
 
     /**
-     * Constructs a new {@code NeoNameService} contract that uses the given {@link Neow3j} instance
-     * for invocations.
+     * Constructs a new {@code NeoNameService} contract that uses the given {@link Neow3j} instance for invocations.
      *
      * @param scriptHash The script hash of the name service contract.
      * @param neow       The {@link Neow3j} instance to use for invocations.
@@ -84,8 +91,8 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Creates a transaction script to add a root domain and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to add a root domain and initializes a {@link TransactionBuilder} based on this
+     * script.
      * <p>
      * Only committee members are allowed to add a new root domain.
      *
@@ -103,31 +110,32 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Only committee members are allowed to set the price.
      *
-     * @param price The price for registering a domain.
+     * @param priceList The price for registering a domain. The index refers to the length of the domain. The value
+     *                  at index 0 is used for domain names longer than the price list's highest index.
      * @return a transaction builder.
      */
-    public TransactionBuilder setPrice(BigInteger price) {
-        if (!isValidPrice(price)) {
-            throw new IllegalArgumentException("The price needs to be greater than 0 and smaller " +
-                    "than 1_000_000_000_000.");
+    public TransactionBuilder setPrice(List<BigInteger> priceList) {
+        Optional<BigInteger> bigIntegerStream = priceList.stream().filter(p -> !isValidPrice(p)).findFirst();
+        if (bigIntegerStream.isPresent()) {
+            throw new IllegalArgumentException("The price need to be greater than 0 and smaller than 10000_00000000.");
         }
-        return invokeFunction(SET_PRICE, integer(price));
+        ContractParameter priceListParameter = array(priceList);
+        return invokeFunction(SET_PRICE, priceListParameter);
     }
 
     // true if the price is in the allowed range, false otherwise.
     private boolean isValidPrice(BigInteger price) {
-        return price.compareTo(BigInteger.ZERO) > 0 &&
-                price.compareTo(MAXIMAL_PRICE) <= 0;
+        return price.compareTo(BigInteger.ZERO) > 0 && price.compareTo(MAXIMAL_PRICE) <= 0;
     }
 
     /**
-     * Gets the price to register a domain.
+     * Gets the price to register a domain of a certain length.
      *
-     * @return the price to register a domain.
+     * @return The price to register a domain.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public BigInteger getPrice() throws IOException {
-        return callFuncReturningInt(GET_PRICE);
+    public BigInteger getPrice(int domainNameLength) throws IOException {
+        return callFuncReturningInt(GET_PRICE, integer(domainNameLength));
     }
 
     /**
@@ -141,15 +149,15 @@ public class NeoNameService extends NonFungibleToken {
         checkDomainNameValidity(name);
         try {
             return callFuncReturningBool(IS_AVAILABLE, string(name));
-        } catch (IndexOutOfBoundsException e) {
-            String root = name.split("\\.")[1];
-            throw new IllegalArgumentException("The root domain '" + root + "' does not exist.");
+        } catch (InvocationFaultStateException e) {
+            throw new InvocationFaultStateException(format("The domain name '%s' does not seem to exist.", name),
+                    e.getMessage());
         }
     }
 
     /**
-     * Creates a transaction script to register a new domain and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to register a new domain and initializes a {@link TransactionBuilder} based on
+     * this script.
      *
      * @param name  The domain name.
      * @param owner The address of the domain owner.
@@ -162,8 +170,7 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     // checks if a domain name is available
-    private void checkDomainNameAvailability(String name, boolean isForRegistration)
-            throws IOException {
+    private void checkDomainNameAvailability(String name, boolean isForRegistration) throws IOException {
         boolean isAvailable = isAvailable(name);
         if (isForRegistration && !isAvailable) {
             throw new IllegalArgumentException("The domain name '" + name + "' is already taken.");
@@ -177,22 +184,20 @@ public class NeoNameService extends NonFungibleToken {
     private void checkDomainNameValidity(String name) {
         checkRegexMatch(NAME_REGEX_PATTERN, name);
         if (name.split("\\.").length != 2) {
-            throw new IllegalArgumentException("Only second-level domain names are allowed to be " +
-                    "registered.");
+            throw new IllegalArgumentException("Only second-level domain names are allowed to be registered.");
         }
     }
 
     // checks if an input matches the provided regex pattern.
     private void checkRegexMatch(Pattern pattern, String input) {
         if (!pattern.matcher(input).matches()) {
-            throw new IllegalArgumentException("The provided input does not match the required " +
-                    "regex.");
+            throw new IllegalArgumentException("The provided input does not match the required regex.");
         }
     }
 
     /**
-     * Creates a transaction script to update the TTL of the domain name and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to update the TTL of the domain name and initializes a {@link TransactionBuilder}
+     * based on this script.
      * <p>
      * Each call will extend the validity period of the domain name by one year.
      * <p>
@@ -208,8 +213,8 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Creates a transaction script to set the admin for the specified domain name and
-     * initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the admin for the specified domain name and initializes a
+     * {@link TransactionBuilder} based on this script.
      * <p>
      * Requires to be signed by the current owner and the new admin of the domain.
      *
@@ -224,8 +229,8 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Creates a transaction script to set the type of the specified domain name and the
-     * corresponding type data and initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the type of the specified domain name and the corresponding type data and
+     * initializes a {@link TransactionBuilder} based on this script.
      *
      * @param name The domain name.
      * @param type The record type.
@@ -233,8 +238,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder setRecord(String name, RecordType type, String data)
-            throws IOException {
+    public TransactionBuilder setRecord(String name, RecordType type, String data) throws IOException {
         checkDomainNameAvailability(name, false);
         checkDataMatchingRecordType(type, data);
         return invokeFunction(SET_RECORD, string(name), integer(type.byteValue()), string(data));
@@ -248,8 +252,7 @@ public class NeoNameService extends NonFungibleToken {
         } else if (type.equals(RecordType.TXT)) {
             byte[] bytes = data.getBytes(UTF_8);
             if (bytes.length > 255) {
-                throw new IllegalArgumentException("The provided data is not valid for the record" +
-                        " type TXT.");
+                throw new IllegalArgumentException("The provided data is not valid for the record type TXT.");
             }
         } else {
             checkRegexMatch(IPV6_REGEX_PATTERN, data);
@@ -269,14 +272,14 @@ public class NeoNameService extends NonFungibleToken {
         try {
             return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException e) {
-            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found " +
-                    "for the domain name '" + name + "'.");
+            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found for the domain name " +
+                    "'" + name + "'.");
         }
     }
 
     /**
-     * Creates a transaction script to delete the record data initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to delete the record data initializes a {@link TransactionBuilder} based on this
+     * script.
      *
      * @param name The domain name.
      * @param type The record type.
@@ -299,8 +302,8 @@ public class NeoNameService extends NonFungibleToken {
         try {
             return callFuncReturningString(RESOLVE, string(name), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException e) {
-            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found " +
-                    "for the domain name '" + name + "'.");
+            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found for the domain name " +
+                    "'" + name + "'.");
         }
     }
 
@@ -323,46 +326,50 @@ public class NeoNameService extends NonFungibleToken {
      * @return the properties of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NameState properties(String name) throws IOException {
-        return properties(name.getBytes(UTF_8));
+    public NameState getNameState(String name) throws IOException {
+        return getNameState(name.getBytes(UTF_8));
     }
 
     /**
-     * Gets the properties of the domain name.
+     * Gets the state of the domain name.
      *
      * @param name The domain name.
-     * @return the properties of the domain name as {@link NameState}.
+     * @return the state of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    @Override
-    public NameState properties(byte[] name) throws IOException {
+    public NameState getNameState(byte[] name) throws IOException {
         String domainAsString = hexToString(toHexString(name));
         checkDomainNameAvailability(domainAsString, false);
-        InvocationResult invocationResult =
-                callInvokeFunction(PROPERTIES, singletonList(byteArray(name)))
-                        .getInvocationResult();
-        return deserializeProperties(invocationResult);
+        InvocationResult invocationResult = callInvokeFunction(PROPERTIES, asList(byteArray(name)))
+                .getInvocationResult();
+        return deserializeNameState(invocationResult);
     }
 
-    private NameState deserializeProperties(InvocationResult invocationResult) {
-        StackItem stackItem = invocationResult.getStack().get(0);
+    private NameState deserializeNameState(InvocationResult invocationResult) {
+        throwIfFaultState(invocationResult);
 
+        StackItem stackItem = invocationResult.getStack().get(0);
         if (!stackItem.getType().equals(MAP)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), MAP);
         }
 
         Map<StackItem, StackItem> map = stackItem.getMap();
         String name = map.get(NAME_PROPERTY).getString();
-        BigInteger expiration = map.get(EXPI_PROPERTY).getInteger();
-        return new NameState(name, expiration.longValue());
+        BigInteger expiration = map.get(EXPIRATION_PROPERTY).getInteger();
+        StackItem adminStackItem = map.get(ADMIN_PROPERTY);
+        if (adminStackItem == null || adminStackItem.getValue() == null) {
+            return new NameState(name, expiration.longValue(), null);
+        }
+        Hash160 admin = Hash160.fromAddress(adminStackItem.getAddress());
+        return new NameState(name, expiration.longValue(), admin);
     }
 
     /**
-     * Creates a transaction script to transfer a domain name and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to transfer a domain name and initializes a {@link TransactionBuilder} based on
+     * this script.
      * <p>
-     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from}
-     * account is set as a signer on the transaction.
+     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from} account is set as a
+     * signer on the transaction.
      *
      * @param from The owner of the domain name.
      * @param to   The receiver of the domain name.
@@ -370,28 +377,27 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Account from, Hash160 to, String name)
-            throws IOException {
+    public TransactionBuilder transfer(Account from, Hash160 to, String name) throws IOException {
         return transfer(from, to, name, null);
     }
 
     /**
-     * Creates a transaction script to transfer a domain name and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to transfer a domain name and initializes a {@link TransactionBuilder} based on
+     * this script.
      * <p>
-     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from}
-     * account is set as a signer on the transaction.
+     * The returned {@link TransactionBuilder} is ready to be signed and sent. The {@code from} account is set as a
+     * signer on the transaction.
      *
      * @param from The owner of the domain name.
      * @param to   The receiver of the domain name.
      * @param name The domain name.
-     * @param data The data that is passed to the {@code onNEP11Payment} method of the receiving
-     *             smart contract.
+     * @param data The data that is passed to the {@code onNEP11Payment} method of the receiving smart contract.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Account from, Hash160 to, String name,
-            ContractParameter data) throws IOException {
+    public TransactionBuilder transfer(Account from, Hash160 to, String name, ContractParameter data)
+            throws IOException {
+
         checkDomainNameAvailability(name, false);
         return transfer(from, to, name.getBytes(UTF_8), data);
     }

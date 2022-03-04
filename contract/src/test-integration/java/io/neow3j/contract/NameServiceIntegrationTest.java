@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Date;
 
 import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
@@ -56,7 +57,7 @@ public class NameServiceIntegrationTest {
     private static final String A_RECORD = "157.0.0.1";
     private static final String CNAME_RECORD = "cnamerecord.neow3j.neo";
     private static final String TXT_RECORD = "textrecord";
-    private static final String AAAA_RECORD = "2001:2:3:4:5:6:7:8";
+    private static final String AAAA_RECORD = "3001:2:3:4:5:6:7:8";
     private static final long ONE_YEAR_IN_MILLISECONDS = 365L * 24 * 3600 * 1000;
     private static final long BUFFER_MILLISECONDS = 3600 * 1000;
 
@@ -72,7 +73,7 @@ public class NameServiceIntegrationTest {
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
         Hash160 nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
-        // make a transaction that can be used for the tests
+        // Make a transaction that can be used for the tests
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromDefault(DOMAIN);
@@ -95,8 +96,7 @@ public class NameServiceIntegrationTest {
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
         return SmartContract.calcContractHash(COMMITTEE_ACCOUNT.getScriptHash(),
-                NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)),
-                "NameService");
+                NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes)), "NameService");
     }
 
     private static Neow3j getNeow3j() {
@@ -128,15 +128,11 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(hash, getNeow3j());
     }
 
-    private static void setRecordFromDefault(String domain, RecordType type, String data)
-            throws Throwable {
-
+    private static void setRecordFromDefault(String domain, RecordType type, String data) throws Throwable {
         setRecord(domain, type, data, DEFAULT_ACCOUNT);
     }
 
-    private static void setRecord(String domain, RecordType type, String data, Account signer)
-            throws Throwable {
-
+    private static void setRecord(String domain, RecordType type, String data, Account signer) throws Throwable {
         Hash256 txHash = nameService.setRecord(domain, type, data)
                 .signers(calledByEntry(signer))
                 .sign()
@@ -152,8 +148,8 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testGetPrice() throws IOException {
-        BigInteger price = nameService.getPrice();
-        assertThat(price, is(new BigInteger("1000000000")));
+        BigInteger price = nameService.getPrice(10);
+        assertThat(price, is(new BigInteger("100000000")));
     }
 
     @Test
@@ -176,13 +172,12 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testProperties() throws IOException {
-        NameState properties = nameService.properties(DOMAIN);
-        assertThat(properties.getName(), is(DOMAIN));
+        NameState nameState = nameService.getNameState(DOMAIN);
+        assertThat(nameState.getName(), is(DOMAIN));
         long inOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS;
-        long lessThanInOneYear = getNowInMilliSeconds()
-                + ONE_YEAR_IN_MILLISECONDS - BUFFER_MILLISECONDS;
-        assertThat(properties.getExpiration(), lessThanOrEqualTo(inOneYear));
-        assertThat(properties.getExpiration(), greaterThan(lessThanInOneYear));
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS - BUFFER_MILLISECONDS;
+        assertThat(nameState.getExpiration(), lessThanOrEqualTo(inOneYear));
+        assertThat(nameState.getExpiration(), greaterThan(lessThanInOneYear));
     }
 
     @Test
@@ -220,8 +215,13 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testSetPrice() throws Throwable {
-        BigInteger newPrice = new BigInteger("12345");
-        Transaction tx = nameService.setPrice(newPrice)
+        ArrayList<BigInteger> priceList = new ArrayList<>();
+        priceList.add(BigInteger.valueOf(5_00000000));
+        priceList.add(BigInteger.valueOf(1_00000000));
+        priceList.add(BigInteger.valueOf(2_00000000));
+        priceList.add(BigInteger.valueOf(3_00000000));
+        priceList.add(BigInteger.valueOf(4_00000000));
+        Transaction tx = nameService.setPrice(priceList)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
@@ -230,8 +230,18 @@ public class NameServiceIntegrationTest {
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        BigInteger actualPrice = nameService.getPrice();
-        assertThat(actualPrice, is(newPrice));
+        BigInteger actualPrice = nameService.getPrice(1);
+        assertThat(actualPrice, is(BigInteger.valueOf(1_00000000)));
+        actualPrice = nameService.getPrice(2);
+        assertThat(actualPrice, is(BigInteger.valueOf(2_00000000)));
+        actualPrice = nameService.getPrice(3);
+        assertThat(actualPrice, is(BigInteger.valueOf(3_00000000)));
+        actualPrice = nameService.getPrice(4);
+        assertThat(actualPrice, is(BigInteger.valueOf(4_00000000)));
+        actualPrice = nameService.getPrice(5);
+        assertThat(actualPrice, is(BigInteger.valueOf(5_00000000)));
+        actualPrice = nameService.getPrice(50);
+        assertThat(actualPrice, is(BigInteger.valueOf(5_00000000)));
     }
 
     @Test
@@ -257,11 +267,10 @@ public class NameServiceIntegrationTest {
         String domain = "renew.neo";
         registerDomainFromDefault(domain);
         long inOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS;
-        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS -
-                BUFFER_MILLISECONDS;
-        NameState propertiesBefore = nameService.properties(domain);
-        assertThat(propertiesBefore.getExpiration(), lessThanOrEqualTo(inOneYear));
-        assertThat(propertiesBefore.getExpiration(), greaterThan(lessThanInOneYear));
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR_IN_MILLISECONDS - BUFFER_MILLISECONDS;
+        NameState nameStateBefore = nameService.getNameState(domain);
+        assertThat(nameStateBefore.getExpiration(), lessThanOrEqualTo(inOneYear));
+        assertThat(nameStateBefore.getExpiration(), greaterThan(lessThanInOneYear));
 
         Hash256 txHash = nameService.renew(domain)
                 .signers(calledByEntry(DEFAULT_ACCOUNT))
@@ -271,12 +280,11 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        NameState propertiesAfter = nameService.properties(domain);
+        NameState nameStateAfter = nameService.getNameState(domain);
         long inTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR_IN_MILLISECONDS;
-        long lessThanInTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR_IN_MILLISECONDS -
-                BUFFER_MILLISECONDS;
-        assertThat(propertiesAfter.getExpiration(), lessThanOrEqualTo(inTwoYears));
-        assertThat(propertiesAfter.getExpiration(), greaterThan(lessThanInTwoYears));
+        long lessThanInTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR_IN_MILLISECONDS - BUFFER_MILLISECONDS;
+        assertThat(nameStateAfter.getExpiration(), lessThanOrEqualTo(inTwoYears));
+        assertThat(nameStateAfter.getExpiration(), greaterThan(lessThanInTwoYears));
     }
 
     @Test
@@ -287,8 +295,7 @@ public class NameServiceIntegrationTest {
             setRecord(domain, RecordType.A, A_RECORD, CLIENT_2);
             fail();
         } catch (TransactionConfigurationException ignored) {
-            // setRecord should throw an exception, since client2 should not be able to create a
-            // record.
+            // setRecord should throw an exception, since client2 should not be able to create a record.
         }
 
         Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
@@ -348,14 +355,13 @@ public class NameServiceIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
-
+        System.out.println("");
         try {
             nameService.getRecord(domain, RecordType.TXT);
             fail();
         } catch (IllegalArgumentException exception) {
-            // if getRecord throws an exception here, the record is deleted successfully.
-            assertThat(exception.getMessage(),
-                    containsString("No record of type " + RecordType.TXT.jsonValue()));
+            // If getRecord throws an exception here, the record is deleted successfully.
+            assertThat(exception.getMessage(), containsString("No record of type " + RecordType.TXT.jsonValue()));
         }
     }
 
