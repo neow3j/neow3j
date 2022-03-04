@@ -376,26 +376,14 @@ public class NeoNameServiceTest {
         nameServiceContract.setRecord("client1.neo", RecordType.A, "255.255.255.255");
 
         // invalid IPv6 records
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.A, "256.0.34.2");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.A, "127:0:0:1");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.A, "127.0.0.1.1");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.A, "0.0");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.A, "256.0.34.2"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.A, "127:0:0:1"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.A, "127.0.0.1.1"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.A, "0.0"));
     }
 
     @Test
@@ -481,27 +469,14 @@ public class NeoNameServiceTest {
         nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:0:34::");
 
         // invalid IPv6 records
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2:");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1" +
-                    ":1234");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
-        try {
-            nameServiceContract.setRecord("client1.neo", RecordType.AAAA, ":1234:0:0:0:0:0:1234");
-            fail();
-        } catch (IllegalArgumentException ignore) {
-        }
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:000::34::2:"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.AAAA, "1234:0:0:0:0:0:0:1:1234"));
+        assertThrows(IllegalArgumentException.class,
+                () -> nameServiceContract.setRecord("client1.neo", RecordType.AAAA, ":1234:0:0:0:0:0:1234"));
     }
 
     @Test

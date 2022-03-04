@@ -53,9 +53,7 @@ public class AsmHelperTest {
         r.accept(owner, 0);
 
         Optional<MethodNode> method = getMethodNode(insn, owner);
-        if (!method.isPresent()) {
-            fail();
-        }
+        assertTrue(method.isPresent());
         assertThat(method.get().name, is(name));
         assertThat(method.get().desc, is(desc));
         assertThat(method.get().invisibleAnnotations, hasSize(1)); // The @Syscall annotation.
@@ -73,8 +71,7 @@ public class AsmHelperTest {
 
     @Test
     public void gettingClassForFqnShouldReturnTheCorrectClassNode() throws IOException {
-        ClassNode c = getAsmClass(Storage.class.getCanonicalName(),
-                this.getClass().getClassLoader());
+        ClassNode c = getAsmClass(Storage.class.getCanonicalName(), this.getClass().getClassLoader());
         assertThat(c.name, is(Storage.class.getCanonicalName().replace(".", "/")));
         assertThat(c.sourceFile, is("Storage.java"));
         assertThat(c.methods, not(hasSize(0)));
