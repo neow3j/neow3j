@@ -1,24 +1,28 @@
 package io.neow3j.transaction;
 
-import static io.neow3j.script.OpCode.PUSHDATA1;
-import static io.neow3j.script.OpCode.PUSHDATA2;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-
-import io.neow3j.script.OpCode;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.script.InvocationScript;
+import io.neow3j.script.OpCode;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import org.junit.Test;
+
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.util.Arrays;
-import org.junit.Test;
+import java.util.List;
+
+import static io.neow3j.script.OpCode.PUSHDATA1;
+import static io.neow3j.script.OpCode.PUSHDATA2;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertTrue;
 
 public class InvocationScriptTest {
 
@@ -116,6 +120,18 @@ public class InvocationScriptTest {
                 + "523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf");
         InvocationScript s = new InvocationScript(script);
         assertThat(s.getSize(), is(1 + 64)); // byte for script length and actual length.
+    }
+
+    @Test
+    public void getSignatures() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException {
+        byte[] message = new byte[10];
+        ECKeyPair keyPair = ECKeyPair.createEcKeyPair();
+        Sign.SignatureData signature = Sign.signMessage(message, keyPair);
+        InvocationScript inv = InvocationScript.fromSignatures(asList(signature, signature, signature));
+        List<Sign.SignatureData> sigs = inv.getSignatures();
+        assertTrue(sigs.stream().map(Sign.SignatureData::getConcatenated)
+                .allMatch(s -> Arrays.equals(s, signature.getConcatenated())));
     }
 
 }
