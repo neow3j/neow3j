@@ -1,0 +1,96 @@
+{
+  "jsonrpc": "2.0",
+  "id": 0,
+  "result": {
+    "script": "DAh0b2tlbklkMRHAHwwKcHJvcGVydGllcwwUezbhVOqXkdWZa7a6FpXiVjAvBa1BYn1bUg==",
+    "state": "HALT",
+    "gasconsumed": "8216130",
+    "exception": null,
+    "stack": [
+      {
+        "type": "Map",
+        "value": [
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "bmFtZQ=="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "eWFr"
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "YXJyYXkx"
+            },
+            "value": {
+              "type": "Array",
+              "value": [
+                {
+                  "type": "ByteString",
+                  "value": "aGVsbG8x"
+                },
+                {
+                  "type": "ByteString",
+                  "value": "aGVsbG8y"
+                }
+              ]
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "YXJyYXky"
+            },
+            "value": {
+              "type": "Array",
+              "value": [
+                {
+                  "type": "ByteString",
+                  "value": "YjA="
+                },
+                {
+                  "type": "Integer",
+                  "value": "12"
+                }
+              ]
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "bWFwMQ=="
+            },
+            "value": {
+              "type": "Map",
+              "value": [
+                {
+                  "key": {
+                    "type": "ByteString",
+                    "value": "a2V5MQ=="
+                  },
+                  "value": {
+                    "type": "ByteString",
+                    "value": "dmFsdWUx"
+                  }
+                },
+                {
+                  "key": {
+                    "type": "ByteString",
+                    "value": "a2V5Mg=="
+                  },
+                  "value": {
+                    "type": "Integer",
+                    "value": "42"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}
