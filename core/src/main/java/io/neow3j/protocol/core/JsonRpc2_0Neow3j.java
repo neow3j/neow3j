@@ -75,7 +75,6 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 /**
  * JSON-RPC 2.0 factory implementation.
@@ -117,7 +116,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoBlockHash> getBlockHash(BigInteger blockIndex) {
         return new Request<>(
                 "getblockhash",
-                singletonList(blockIndex),
+                asList(blockIndex),
                 neow3jService,
                 NeoBlockHash.class);
     }
@@ -309,7 +308,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetContractState> getContractState(Hash160 contractHash) {
         return new Request<>(
                 "getcontractstate",
-                singletonList(contractHash),
+                asList(contractHash),
                 neow3jService,
                 NeoGetContractState.class);
     }
@@ -326,7 +325,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetContractState> getNativeContractState(String nativeContractName) {
         return new Request<>(
                 "getcontractstate",
-                singletonList(nativeContractName),
+                asList(nativeContractName),
                 neow3jService,
                 NeoGetContractState.class);
     }
@@ -340,7 +339,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetMemPool> getMemPool() {
         return new Request<>(
                 "getrawmempool",
-                singletonList(1),
+                asList(1),
                 neow3jService,
                 NeoGetMemPool.class);
     }
@@ -415,7 +414,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txHash) {
         return new Request<>(
                 "gettransactionheight",
-                singletonList(txHash),
+                asList(txHash),
                 neow3jService,
                 NeoGetTransactionHeight.class);
     }
@@ -503,7 +502,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex) {
         return new Request<>(
                 "sendrawtransaction",
-                singletonList(Base64.encode(rawTransactionHex)),
+                asList(Base64.encode(rawTransactionHex)),
                 neow3jService,
                 NeoSendRawTransaction.class);
     }
@@ -518,7 +517,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex) {
         return new Request<>(
                 "submitblock",
-                singletonList(serializedBlockAsHex),
+                asList(serializedBlockAsHex),
                 neow3jService,
                 NeoSubmitBlock.class);
     }
@@ -555,7 +554,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         if (contractParams == null) {
             contractParams = new ArrayList<>();
         }
-        List<TransactionSigner> txSigners = stream(signers).map(TransactionSigner::new).collect(Collectors.toList());
+        List<TransactionSigner> txSigners = stream(signers)
+                .map(TransactionSigner::new)
+                .collect(Collectors.toList());
         List<?> params;
         if (txSigners.size() > 0) {
             params = asList(contractHash, functionName, contractParams, txSigners);
@@ -584,7 +585,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
             params = asList(scriptBase64,
                     stream(signers).map(TransactionSigner::new).collect(Collectors.toList()));
         } else {
-            params = singletonList(scriptBase64);
+            params = asList(scriptBase64);
         }
         return new Request<>(
                 "invokescript",
@@ -611,7 +612,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
             methodParams = new ArrayList<>();
         }
         List<TransactionSigner> txSigners = stream(signers)
-                .map(TransactionSigner::new).collect(Collectors.toList());
+                .map(TransactionSigner::new)
+                .collect(Collectors.toList());
         List<?> params = asList(contractHash, methodParams, txSigners);
         return new Request<>(
                 "invokecontractverify",
@@ -630,7 +632,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetUnclaimedGas> getUnclaimedGas(Hash160 scriptHash) {
         return new Request<>(
                 "getunclaimedgas",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetUnclaimedGas.class);
     }
@@ -662,7 +664,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoValidateAddress> validateAddress(String address) {
         return new Request<>(
                 "validateaddress",
-                singletonList(address),
+                asList(address),
                 neow3jService,
                 NeoValidateAddress.class);
     }
@@ -694,7 +696,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoDumpPrivKey> dumpPrivKey(Hash160 scriptHash) {
         return new Request<>(
                 "dumpprivkey",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoDumpPrivKey.class);
     }
@@ -709,7 +711,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetWalletBalance> getWalletBalance(Hash160 tokenHash) {
         return new Request<>(
                 "getwalletbalance",
-                singletonList(tokenHash),
+                asList(tokenHash),
                 neow3jService,
                 NeoGetWalletBalance.class);
     }
@@ -752,7 +754,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoImportPrivKey> importPrivKey(String privateKeyInWIF) {
         return new Request<>(
                 "importprivkey",
-                singletonList(privateKeyInWIF),
+                asList(privateKeyInWIF),
                 neow3jService,
                 NeoImportPrivKey.class);
     }
@@ -767,7 +769,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String txHex) {
         return new Request<>(
                 "calculatenetworkfee",
-                singletonList(Base64.encode(txHex)),
+                asList(Base64.encode(txHex)),
                 neow3jService,
                 NeoCalculateNetworkFee.class);
     }
@@ -812,8 +814,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @return the request object.
      */
     @Override
-    public Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to,
-            BigInteger amount) {
+    public Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to, BigInteger amount) {
         return new Request<>(
                 "sendfrom",
                 asList(tokenHash, from.toAddress(), to.toAddress(), amount),
@@ -846,7 +847,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendMany> sendMany(List<TransactionSendToken> txSendTokens) {
         return new Request<>(
                 "sendmany",
-                singletonList(txSendTokens.stream()
+                asList(txSendTokens.stream()
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList())),
                 neow3jService,
@@ -918,13 +919,13 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txHash) {
         return new Request<>(
                 "getapplicationlog",
-                singletonList(txHash),
+                asList(txHash),
                 neow3jService,
                 NeoGetApplicationLog.class);
     }
 
     // endregion ApplicationLogs
-    // region NEP-17 TokenTracker
+    // region TokenTracker NEP-17
 
     /**
      * Gets the balance of all NEP-17 token assets in the specified script hash.
@@ -936,7 +937,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetNep17Balances> getNep17Balances(Hash160 scriptHash) {
         return new Request<>(
                 "getnep17balances",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep17Balances.class);
     }
@@ -951,7 +952,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetNep17Transfers> getNep17Transfers(Hash160 scriptHash) {
         return new Request<>(
                 "getnep17transfers",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep17Transfers.class);
     }
@@ -989,8 +990,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 NeoGetNep17Transfers.class);
     }
 
-    // endregion NEP-17 TokenTracker
-    // region NEP-11 TokenTracker
+    // endregion TokenTracker NEP-17
+    // region TokenTracker NEP-11
 
     /**
      * Gets all NEP-11 balances of the specified account.
@@ -1002,7 +1003,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetNep11Balances> getNep11Balances(Hash160 scriptHash) {
         return new Request<>(
                 "getnep11balances",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep11Balances.class);
     }
@@ -1010,14 +1011,14 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets all NEP-11 transaction of the given account.
      *
-     * @param scriptHash The account's script hash.
+     * @param scriptHash the account's script hash.
      * @return the request object.
      */
     @Override
     public Request<?, NeoGetNep11Transfers> getNep11Transfers(Hash160 scriptHash) {
         return new Request<>(
                 "getnep11transfers",
-                singletonList(scriptHash.toAddress()),
+                asList(scriptHash.toAddress()),
                 neow3jService,
                 NeoGetNep11Transfers.class);
     }
@@ -1025,8 +1026,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets all NEP-11 transaction of the given account since the given time.
      *
-     * @param scriptHash The account's script hash.
-     * @param from       From when to report transactions.
+     * @param scriptHash the account's script hash.
+     * @param from       the date from when to report transactions.
      * @return the request object.
      */
     @Override
@@ -1064,8 +1065,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * To receive custom property values that consist of nested types (e.g., Maps or Arrays) use {@link #invokeFunction}
      * to directly invoke the method {@code properties} of the NEP-11 smart contract.
      *
-     * @param scriptHash The script hash of the token contract.
-     * @param tokenId    The ID of the token as a hexadecimal string.
+     * @param scriptHash the script hash of the token contract.
+     * @param tokenId    the ID of the token as a hexadecimal string.
      * @return the request object.
      */
     @Override
@@ -1090,7 +1091,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoGetStateRoot> getStateRoot(Long blockIndex) {
         return new Request<>(
                 "getstateroot",
-                singletonList(blockIndex),
+                asList(blockIndex),
                 neow3jService,
                 NeoGetStateRoot.class);
     }
@@ -1145,9 +1146,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Gets the state.
      *
-     * @param rootHash     The root hash.
-     * @param contractHash The contract hash.
-     * @param keyHex       The storage key.
+     * @param rootHash     the root hash.
+     * @param contractHash the contract hash.
+     * @param keyHex       the storage key.
      * @return the request object.
      */
     @Override
@@ -1164,11 +1165,11 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * Includes proofs of the first and last entry.
      *
-     * @param rootHash             The root hash.
-     * @param contractHash         The contract hash.
-     * @param keyPrefixHex         The key prefix.
-     * @param startKeyHex          The start key.
-     * @param countFindResultItems The number of results. An upper limit is defined in the Neo core.
+     * @param rootHash             the root hash.
+     * @param contractHash         the contract hash.
+     * @param keyPrefixHex         the key prefix.
+     * @param startKeyHex          the start key.
+     * @param countFindResultItems the number of results. An upper limit is defined in the Neo core.
      * @return the request object.
      */
     @Override
@@ -1198,16 +1199,15 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * Includes proofs of the first and last entry.
      *
-     * @param rootHash     The root hash.
-     * @param contractHash The contract hash.
-     * @param keyPrefixHex The key prefix.
-     * @param startKeyHex  The start key.
+     * @param rootHash     the root hash.
+     * @param contractHash the contract hash.
+     * @param keyPrefixHex the key prefix.
+     * @param startKeyHex  the start key.
      * @return the request object.
      */
     @Override
     public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex,
             String startKeyHex) {
-
         return findStates(rootHash, contractHash, keyPrefixHex, startKeyHex, null);
     }
 
@@ -1216,17 +1216,15 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * Includes proofs of the first and last entry.
      *
-     * @param rootHash             The root hash.
-     * @param contractHash         The contract hash.
-     * @param keyPrefixHex         The key prefix.
-     * @param countFindResultItems The number of results. An upper limit is defined in the Neo
-     *                             core.
+     * @param rootHash             the root hash.
+     * @param contractHash         the contract hash.
+     * @param keyPrefixHex         the key prefix.
+     * @param countFindResultItems the number of results. An upper limit is defined in the Neo core.
      * @return the request object.
      */
     @Override
     public Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex,
             Integer countFindResultItems) {
-
         return findStates(rootHash, contractHash, keyPrefixHex, null, countFindResultItems);
     }
 
@@ -1235,9 +1233,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * Includes proofs of the first and last entry.
      *
-     * @param rootHash     The root hash.
-     * @param contractHash The contract hash.
-     * @param keyPrefixHex The key prefix.
+     * @param rootHash     the root hash.
+     * @param contractHash the contract hash.
+     * @param keyPrefixHex the key prefix.
      * @return the request object.
      */
     @Override
@@ -1245,7 +1243,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         return findStates(rootHash, contractHash, keyPrefixHex, null, null);
     }
 
-    // endregion StateService
+    // endregion TokenTracker NEP-11
     // region Neow3j Rx Convenience Methods
 
     @Override
@@ -1268,8 +1266,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     @Override
-    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock,
-            boolean fullTransactionObjects, Observable<NeoGetBlock> onCompleteObservable) {
+    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects,
+            Observable<NeoGetBlock> onCompleteObservable) {
 
         return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, onCompleteObservable);
     }
