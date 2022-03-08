@@ -26,8 +26,6 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.types.StackItemType.MAP;
-import static io.neow3j.utils.Numeric.hexToString;
-import static io.neow3j.utils.Numeric.toHexString;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
@@ -105,19 +103,19 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
-     * Creates a transaction script to set the price for registering a domain and initializes a
+     * Creates a transaction script to set the prices for registering a domain and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
      * Only committee members are allowed to set the price.
      *
-     * @param priceList The price for registering a domain. The index refers to the length of the domain. The value
+     * @param priceList The prices for registering a domain. The index refers to the length of the domain. The value
      *                  at index 0 is used for domain names longer than the price list's highest index.
      * @return a transaction builder.
      */
     public TransactionBuilder setPrice(List<BigInteger> priceList) {
         Optional<BigInteger> bigIntegerStream = priceList.stream().filter(p -> !isValidPrice(p)).findFirst();
         if (bigIntegerStream.isPresent()) {
-            throw new IllegalArgumentException("The price need to be greater than 0 and smaller than 10000_00000000.");
+            throw new IllegalArgumentException("The prices need to be greater than 0 and smaller than 10000_00000000.");
         }
         ContractParameter priceListParameter = array(priceList);
         return invokeFunction(SET_PRICE, priceListParameter);
@@ -297,8 +295,8 @@ public class NeoNameService extends NonFungibleToken {
         try {
             return callFuncReturningString(RESOLVE, string(name), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException e) {
-            throw new IllegalArgumentException("No record of type " + type.jsonValue() + " found for the domain name " +
-                    "'" + name + "'.");
+            throw new IllegalArgumentException(
+                    "No record of type " + type.jsonValue() + " found for the domain name " + "'" + name + "'.");
         }
     }
 
@@ -333,10 +331,10 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public NameState getNameState(byte[] name) throws IOException {
-        String domainAsString = hexToString(toHexString(name));
+        String domainAsString = new String(name, UTF_8);
         checkDomainNameAvailability(domainAsString, false);
-        InvocationResult invocationResult = callInvokeFunction(PROPERTIES, asList(byteArray(name)))
-                .getInvocationResult();
+        InvocationResult invocationResult =
+                callInvokeFunction(PROPERTIES, asList(byteArray(name))).getInvocationResult();
         return deserializeNameState(invocationResult);
     }
 
