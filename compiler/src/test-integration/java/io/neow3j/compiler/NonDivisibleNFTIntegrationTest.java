@@ -25,8 +25,7 @@ public class NonDivisibleNFTIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            NonDivisibleNFTTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(NonDivisibleNFTTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -36,8 +35,8 @@ public class NonDivisibleNFTIntegrationTest {
     @Test
     public void testOwnerOf() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArrayFromString("test"));
-        io.neow3j.types.Hash160 owner = io.neow3j.types.Hash160.fromAddress(response
-                .getInvocationResult().getStack().get(0).getAddress());
+        io.neow3j.types.Hash160 owner = io.neow3j.types.Hash160.fromAddress(
+                response.getInvocationResult().getStack().get(0).getAddress());
         assertThat(owner, is(io.neow3j.types.Hash160.ZERO));
     }
 
@@ -58,7 +57,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("16dbb0dd11b827adadec40c3eb26a5c4f3be7468")
+    @ContractHash("a49602a4ddfc73d74e48e034ccee4ebb361b8807")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

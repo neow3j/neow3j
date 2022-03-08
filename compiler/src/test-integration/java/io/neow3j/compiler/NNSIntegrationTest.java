@@ -61,8 +61,7 @@ public class NNSIntegrationTest {
     @Test
     public void testGetPrice() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(4));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
-                is(BigInteger.valueOf(8)));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(BigInteger.valueOf(8)));
     }
 
     @Test
@@ -73,22 +72,19 @@ public class NNSIntegrationTest {
 
     @Test
     public void testRegister() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.anyDomain"),
-                hash160(dummyScriptHash));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.anyDomain"), hash160(dummyScriptHash));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void testRenew() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.domain"));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
-                is(BigInteger.valueOf(1625504018L)));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(BigInteger.valueOf(1625504018L)));
     }
 
     @Test
     public void testSetAdmin() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("domain"),
-                hash160(dummyScriptHash));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("domain"), hash160(dummyScriptHash));
         String exception = response.getInvocationResult().getException();
         assertNull(exception);
         assertNull(response.getInvocationResult().getStack().get(0).getValue());
@@ -96,8 +92,8 @@ public class NNSIntegrationTest {
 
     @Test
     public void testSetRecord() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.dummy"),
-                integer(RecordType.CNAME.byteValue()), string("neo.dummy2"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("neo.dummy"), integer(RecordType.CNAME.byteValue()), string("neo.dummy2"));
         String exception = response.getInvocationResult().getException();
         assertNull(exception);
         assertNull(response.getInvocationResult().getStack().get(0).getValue());
@@ -105,15 +101,15 @@ public class NNSIntegrationTest {
 
     @Test
     public void testGetRecord() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.domain"),
-                integer(RecordType.CNAME.byteValue()));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("neo.domain"), integer(RecordType.CNAME.byteValue()));
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("getRecordReturn"));
     }
 
     @Test
     public void testDeleteRecord() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.domain"),
-                integer(RecordType.TXT.byteValue()));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("neo.domain"), integer(RecordType.TXT.byteValue()));
         String exception = response.getInvocationResult().getException();
         assertNull(exception);
         assertNull(response.getInvocationResult().getStack().get(0).getValue());
@@ -121,10 +117,9 @@ public class NNSIntegrationTest {
 
     @Test
     public void testResolve() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("neo.domain"),
-                integer(RecordType.TXT.byteValue()));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("resolveReturn"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("neo.domain"), integer(RecordType.TXT.byteValue()));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("resolveReturn"));
     }
 
     @Permission(contract = "*")
@@ -219,7 +214,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("b7e42ba36daf6d3d10b075674a70fde66678f0be")
+    @ContractHash("de3b82c9d5e1b895aa437a3c35d0f1ce7ba2cdf7")
     static class CustomNeoNameService extends NeoNameService {
     }
 
