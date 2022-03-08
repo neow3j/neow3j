@@ -23,13 +23,13 @@ import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.is;
@@ -44,8 +44,7 @@ public class NFTIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            NonFungibleTokenTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(NonFungibleTokenTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -67,15 +66,13 @@ public class NFTIntegrationTest {
     @Test
     public void testTotalSupply() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(101));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(101));
     }
 
     @Test
     public void testBalanceOf() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(42));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(42));
     }
 
     @Test
@@ -83,18 +80,15 @@ public class NFTIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash));
         List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
         assertThat(iter, hasItems(
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "token1".getBytes(StandardCharsets.UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "token2".getBytes(StandardCharsets.UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "token3".getBytes(StandardCharsets.UTF_8)))));
+                new ByteStringStackItem(toHexStringNoPrefix("token1".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("token2".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("token3".getBytes(UTF_8)))));
     }
 
     @Test
     public void testTransfer() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash),
-                byteArrayFromString("anyId"), any(null));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                hash160(dummyScriptHash), byteArrayFromString("anyId"), any(null));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -103,25 +97,18 @@ public class NFTIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
         assertThat(iter, hasItems(
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "tokenOne".getBytes(StandardCharsets.UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "tokenTwo".getBytes(StandardCharsets.UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "tokenThree".getBytes(StandardCharsets.UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix(
-                        "tokenFour".getBytes(StandardCharsets.UTF_8)))));
+                new ByteStringStackItem(toHexStringNoPrefix("tokenOne".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("tokenTwo".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("tokenThree".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("tokenFour".getBytes(UTF_8)))));
     }
 
     @Test
     public void testProperties() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArrayFromString("anyId"));
-        java.util.Map<StackItem, StackItem> map =
-                response.getInvocationResult().getStack().get(0).getMap();
-        ByteStringStackItem nameKey = new ByteStringStackItem(
-                toHexStringNoPrefix("name".getBytes(StandardCharsets.UTF_8)));
-        ByteStringStackItem nameValue = new ByteStringStackItem(
-                toHexStringNoPrefix("neow3jToken1".getBytes(StandardCharsets.UTF_8)));
+        java.util.Map<StackItem, StackItem> map = response.getInvocationResult().getStack().get(0).getMap();
+        ByteStringStackItem nameKey = new ByteStringStackItem(toHexStringNoPrefix("name".getBytes(UTF_8)));
+        ByteStringStackItem nameValue = new ByteStringStackItem(toHexStringNoPrefix("neow3jToken1".getBytes(UTF_8)));
         assertThat(map.get(nameKey), is(nameValue));
     }
 
@@ -210,7 +197,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("f0a67575eeb9fbaf6f254da20cf8e03bcbafec4f")
+    @ContractHash("d4c29384de05a09a0d9d3a1fe7f0290ac24bb0bd")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 

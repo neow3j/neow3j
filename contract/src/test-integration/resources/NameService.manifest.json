@@ -54,7 +54,7 @@
       },
       {
         "name": "balanceOf",
-        "offset": 278,
+        "offset": 293,
         "safe": true,
         "returntype": "Integer",
         "parameters": [
@@ -66,14 +66,14 @@
       },
       {
         "name": "tokens",
-        "offset": 393,
+        "offset": 408,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": []
       },
       {
         "name": "tokensOf",
-        "offset": 442,
+        "offset": 457,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": [
@@ -85,7 +85,7 @@
       },
       {
         "name": "transfer",
-        "offset": 554,
+        "offset": 569,
         "safe": false,
         "returntype": "Boolean",
         "parameters": [
@@ -105,7 +105,7 @@
       },
       {
         "name": "update",
-        "offset": 1085,
+        "offset": 1100,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -121,7 +121,7 @@
       },
       {
         "name": "addRoot",
-        "offset": 1163,
+        "offset": 1178,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -133,33 +133,38 @@
       },
       {
         "name": "roots",
-        "offset": 1489,
+        "offset": 1504,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": []
       },
       {
         "name": "setPrice",
-        "offset": 1525,
+        "offset": 1540,
         "safe": false,
         "returntype": "Void",
         "parameters": [
           {
-            "name": "price",
-            "type": "Integer"
+            "name": "priceList",
+            "type": "Array"
           }
         ]
       },
       {
         "name": "getPrice",
-        "offset": 1608,
+        "offset": 1735,
         "safe": true,
         "returntype": "Integer",
-        "parameters": []
+        "parameters": [
+          {
+            "name": "length",
+            "type": "Integer"
+          }
+        ]
       },
       {
         "name": "isAvailable",
-        "offset": 1665,
+        "offset": 1800,
         "safe": true,
         "returntype": "Boolean",
         "parameters": [
@@ -171,7 +176,7 @@
       },
       {
         "name": "register",
-        "offset": 1964,
+        "offset": 2133,
         "safe": false,
         "returntype": "Boolean",
         "parameters": [
@@ -187,7 +192,7 @@
       },
       {
         "name": "renew",
-        "offset": 2538,
+        "offset": 2752,
         "safe": false,
         "returntype": "Integer",
         "parameters": [
@@ -199,7 +204,7 @@
       },
       {
         "name": "setAdmin",
-        "offset": 2695,
+        "offset": 2987,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -215,7 +220,7 @@
       },
       {
         "name": "setRecord",
-        "offset": 2898,
+        "offset": 3190,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -235,7 +240,7 @@
       },
       {
         "name": "getRecord",
-        "offset": 3815,
+        "offset": 4554,
         "safe": true,
         "returntype": "String",
         "parameters": [
@@ -250,8 +255,20 @@
         ]
       },
       {
+        "name": "getAllRecords",
+        "offset": 4782,
+        "safe": true,
+        "returntype": "InteropInterface",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          }
+        ]
+      },
+      {
         "name": "deleteRecord",
-        "offset": 4012,
+        "offset": 4868,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -267,7 +284,7 @@
       },
       {
         "name": "resolve",
-        "offset": 4213,
+        "offset": 5069,
         "safe": true,
         "returntype": "String",
         "parameters": [
@@ -283,7 +300,7 @@
       },
       {
         "name": "_deploy",
-        "offset": 4516,
+        "offset": 5389,
         "safe": false,
         "returntype": "Void",
         "parameters": [

@@ -1,6 +1,7 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.List;
 
 /**
  * Represents a NameService interface.
@@ -20,20 +21,21 @@ public abstract class NeoNameService extends NonDivisibleNonFungibleToken {
     public static native void addRoot(String root);
 
     /**
-     * Sets the fee required to register or renew a domain name.
+     * Sets the fees required to register or renew a domain name based on its length.
      * <p>
      * This method is restricted to the Neo committee.
      *
-     * @param price The fee.
+     * @param priceList The price list.
      */
-    public static native void setPrice(int price);
+    public static native void setPrice(List<Integer> priceList);
 
     /**
-     * Gets the fee required to register or renew a domain name.
+     * Gets the fee required to register or renew a domain name based on its length.
      *
+     * @param length The length of the domain name.
      * @return the fee to register or renew a domain name.
      */
-    public static native int getPrice();
+    public static native int getPrice(int length);
 
     /**
      * Checks if a domain name is available.

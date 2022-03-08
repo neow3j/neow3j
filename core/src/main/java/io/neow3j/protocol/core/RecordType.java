@@ -10,17 +10,17 @@ public enum RecordType {
     /**
      * An address record.
      */
-    A("A", 0x01),
+    A("A", 1),
 
     /**
      * A canonical name record.
      */
-    CNAME("CNAME", 0x05),
+    CNAME("CNAME", 5),
 
     /**
      * A text record.
      */
-    TXT("TXT", 0x10),
+    TXT("TXT", 16),
 
     /* endregion */
 
@@ -29,7 +29,7 @@ public enum RecordType {
     /**
      * An IPv6 address record.
      */
-    AAAA("AAAA", 0x1C);
+    AAAA("AAAA", 28);
 
     /* endregion */
 
