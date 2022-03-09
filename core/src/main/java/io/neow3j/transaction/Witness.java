@@ -74,6 +74,10 @@ public class Witness extends NeoSerializable {
     /**
      * Creates a witness in which the invocation script contains the given signatures and the verification script
      * checks the signatures according to the given public keys and signing threshold.
+     * <p>
+     * The signatures must appear in the same order as their associated public keys. Example: Given the public
+     * keys {p1, p2, p3} and signatures {s1, s2}. Where s1 belongs to p1 and s2 to p2. Assume that the natural
+     * ordering of the keys is p3 < p2 < p1. Then you need to pass the signatures in the ordering {s2, s1}.
      *
      * @param signingThreshold the minimum number of signatures required for successful multi-sig verification.
      * @param signatures       the signatures to add to the invocation script.
@@ -90,6 +94,10 @@ public class Witness extends NeoSerializable {
     /**
      * Constructs a witness with the given verification script and an invocation script containing the given
      * signatures. The number of signatures must reach the signing threshold given in the verification script.
+     * <p>
+     * Note, the signatures must be in the order of their associated public keys in the verifications script. E.g.,
+     * if we have public keys {p1, p2, p3} appear in the verification script as {p3, p2, p1} (due to their natural
+     * ordering), then the signatures {s1, s3} would have to be ordered {s3, s1} when passed as an argument.
      *
      * @param signatures         the signatures to add to the invocation script.
      * @param verificationScript the verification script to use in the witness.
