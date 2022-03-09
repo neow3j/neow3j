@@ -10,8 +10,6 @@ import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
-import io.neow3j.script.ScriptBuilder;
-import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -426,13 +424,6 @@ public class TransactionTest {
     public void testAddMultiSigWitnessWithPubKeySigMap() throws IOException {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
 
-        byte[] verifScriptBytes = ScriptBuilder.buildVerificationScript(asList(
-                a4.getECKeyPair().getPublicKey(),
-                a5.getECKeyPair().getPublicKey(),
-                a6.getECKeyPair().getPublicKey()
-        ), 3);
-        VerificationScript verifScript = new VerificationScript(verifScriptBytes);
-
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
                         a5.getECKeyPair().getPublicKey(),
@@ -456,12 +447,13 @@ public class TransactionTest {
         Sign.SignatureData sig6 = Sign.signMessage(dummyBytes, a6.getECKeyPair());
 
         HashMap<ECKeyPair.ECPublicKey, Sign.SignatureData> pubKeySigMap = new HashMap<>();
-        pubKeySigMap.put(a4.getECKeyPair().getPublicKey(), sig4);
-        pubKeySigMap.put(a5.getECKeyPair().getPublicKey(), sig5);
         pubKeySigMap.put(a6.getECKeyPair().getPublicKey(), sig6);
-        dummyTx.addMultiSigWitness(verifScript, pubKeySigMap);
+        pubKeySigMap.put(a5.getECKeyPair().getPublicKey(), sig5);
+        pubKeySigMap.put(a4.getECKeyPair().getPublicKey(), sig4);
+        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), pubKeySigMap);
 
-        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6), verifScript);
+        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6),
+                multiSigAccount.getVerificationScript());
         assertThat(dummyTx.getWitnesses(), hasSize(1));
         assertThat(dummyTx.getWitnesses().get(0), is(expectedMultiSigWitness));
     }
@@ -469,13 +461,6 @@ public class TransactionTest {
     @Test
     public void testAddMultiSigWitnessWithAccounts() throws IOException {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
-
-        byte[] verifScriptBytes = ScriptBuilder.buildVerificationScript(asList(
-                a4.getECKeyPair().getPublicKey(),
-                a5.getECKeyPair().getPublicKey(),
-                a6.getECKeyPair().getPublicKey()
-        ), 3);
-        VerificationScript verifScript = new VerificationScript(verifScriptBytes);
 
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
@@ -499,10 +484,11 @@ public class TransactionTest {
         Sign.SignatureData sig5 = Sign.signMessage(dummyBytes, a5.getECKeyPair());
         Sign.SignatureData sig6 = Sign.signMessage(dummyBytes, a6.getECKeyPair());
 
-        dummyTx.addMultiSigWitness(verifScript, a5, a6, a4);
-        dummyTx.addMultiSigWitness(verifScript, a6, a4, a5);
+        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), a5, a6, a4);
+        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), a6, a4, a5);
 
-        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6), verifScript);
+        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6),
+                multiSigAccount.getVerificationScript());
         assertThat(dummyTx.getWitnesses(), hasSize(2));
         assertThat(dummyTx.getWitnesses().get(0), is(expectedMultiSigWitness));
         assertThat(dummyTx.getWitnesses().get(1), is(expectedMultiSigWitness));
@@ -540,7 +526,7 @@ public class TransactionTest {
         assertThat(ctx.getNetwork(), is(769L));
         assertThat(ctx.getData(), is(Base64.encode(tx.toArrayWithoutWitnesses())));
         assertThat(ctx.getHash(), is(tx.getTxId().toString()));
-        assertThat(ctx.getItems().size(), is (3));
+        assertThat(ctx.getItems().size(), is(3));
 
         // item 1
         ContractParametersContext.ContextItem item =
