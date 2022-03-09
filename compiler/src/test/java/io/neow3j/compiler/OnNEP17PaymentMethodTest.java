@@ -1,23 +1,22 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.OnNEP17Payment;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThrows;
-
-import io.neow3j.types.ContractParameter;
-import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.OnNEP17Payment;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Test;
 
 public class OnNEP17PaymentMethodTest {
 
@@ -34,7 +33,7 @@ public class OnNEP17PaymentMethodTest {
                 .collect(Collectors.toList());
         assertThat(methods, hasSize(1));
         ContractParameterType[] paramTypes = methods.get(0).getParameters().stream().map(
-                ContractParameter::getParamType).toArray(ContractParameterType[]::new);
+                ContractParameter::getType).toArray(ContractParameterType[]::new);
         assertThat(paramTypes, is(new Object[]{ContractParameterType.HASH160,
                 ContractParameterType.INTEGER, ContractParameterType.ANY}));
         assertThat(methods.get(0).getReturnType(), is(ContractParameterType.VOID));

@@ -1,22 +1,22 @@
 package io.neow3j.compiler;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.is;
-
 import io.neow3j.compiler.DebugInfo.Method;
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.events.Event2Args;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.StackItemType;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import org.junit.Test;
+
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 
 public class ListTest {
 
@@ -31,14 +31,14 @@ public class ListTest {
 
         method = methods.stream().filter(m -> m.getName().equals("listAsParameter"))
                 .findFirst().get();
-        assertThat(method.getParameters().get(0).getParamType(), is(ContractParameterType.ARRAY));
-        assertThat(method.getParameters().get(1).getParamType(), is(ContractParameterType.ARRAY));
+        assertThat(method.getParameters().get(0).getType(), is(ContractParameterType.ARRAY));
+        assertThat(method.getParameters().get(1).getType(), is(ContractParameterType.ARRAY));
 
         java.util.List<ContractEvent> events = unit.getManifest().getAbi().getEvents();
         assertThat(events.get(0).getName(), is("event"));
-        assertThat(events.get(0).getParameters().get(0).getParamType(),
+        assertThat(events.get(0).getParameters().get(0).getType(),
                 is(ContractParameterType.ARRAY));
-        assertThat(events.get(0).getParameters().get(1).getParamType(),
+        assertThat(events.get(0).getParameters().get(1).getType(),
                 is(ContractParameterType.ARRAY));
     }
 

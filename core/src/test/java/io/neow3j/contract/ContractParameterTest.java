@@ -62,7 +62,7 @@ public class ContractParameterTest {
         String value = "value";
         ContractParameter p = string(value);
         assertEquals(value, p.getValue());
-        assertEquals(ContractParameterType.STRING, p.getParamType());
+        assertEquals(ContractParameterType.STRING, p.getType());
     }
 
     @Test
@@ -70,14 +70,14 @@ public class ContractParameterTest {
         byte[] bytes = new byte[]{0x01, 0x01};
         ContractParameter p = byteArray(bytes);
         assertThat((byte[]) p.getValue(), is(bytes));
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.BYTE_ARRAY, p.getType());
     }
 
     @Test
     public void testByteArrayParamCreationFromHexString() {
         ContractParameter p = byteArray("0xa602");
         assertThat((byte[]) p.getValue(), is(new byte[]{(byte) 0xa6, 0x02}));
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.BYTE_ARRAY, p.getType());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class ContractParameterTest {
     public void testByteArrayParamCreationFromString() {
         ContractParameter p = byteArrayFromString("Neo");
         assertThat(((byte[]) p.getValue()), is(new byte[]{(byte) 0x4e, (byte) 0x65, (byte) 0x6f}));
-        assertEquals(ContractParameterType.BYTE_ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.BYTE_ARRAY, p.getType());
     }
 
     @Test
@@ -111,7 +111,7 @@ public class ContractParameterTest {
         params.add(p2);
         ContractParameter p = array(params);
 
-        assertEquals(ContractParameterType.ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.ARRAY, p.getType());
         assertEquals(ContractParameter[].class, p.getValue().getClass());
         assertEquals(p1, ((ContractParameter[]) p.getValue())[0]);
         assertEquals(p2, ((ContractParameter[]) p.getValue())[1]);
@@ -123,7 +123,7 @@ public class ContractParameterTest {
         ContractParameter p2 = byteArray("0x0101");
         ContractParameter p = array(p1, p2);
 
-        assertEquals(ContractParameterType.ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.ARRAY, p.getType());
         assertEquals(ContractParameter[].class, p.getValue().getClass());
         assertEquals(p1, ((ContractParameter[]) p.getValue())[0]);
         assertEquals(p2, ((ContractParameter[]) p.getValue())[1]);
@@ -170,7 +170,7 @@ public class ContractParameterTest {
         ContractParameter param = array((Object) null);
         ContractParameter[] value = (ContractParameter[]) param.getValue();
         assertThat(value.length, is(1));
-        assertEquals(value[0].getParamType(), ContractParameterType.ANY);
+        assertEquals(value[0].getType(), ContractParameterType.ANY);
     }
 
     @Test
@@ -197,7 +197,7 @@ public class ContractParameterTest {
         params.add(p4);
         ContractParameter p = array(params);
 
-        assertEquals(ContractParameterType.ARRAY, p.getParamType());
+        assertEquals(ContractParameterType.ARRAY, p.getType());
         assertEquals(ContractParameter[].class, p.getValue().getClass());
         assertEquals(string(p1), ((ContractParameter[]) p.getValue())[0]);
         assertEquals(string(p2), ((ContractParameter[]) p.getValue())[1]);
@@ -212,7 +212,7 @@ public class ContractParameterTest {
         ContractParameter p = signature(sig);
 
         assertArrayEquals(hexStringToByteArray(sig), (byte[]) p.getValue());
-        assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
+        assertEquals(ContractParameterType.SIGNATURE, p.getType());
     }
 
     @Test
@@ -222,7 +222,7 @@ public class ContractParameterTest {
         ContractParameter p = signature("0x" + sig);
 
         assertArrayEquals(hexStringToByteArray(sig), (byte[]) p.getValue());
-        assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
+        assertEquals(ContractParameterType.SIGNATURE, p.getType());
     }
 
     @Test
@@ -233,7 +233,7 @@ public class ContractParameterTest {
         ContractParameter p = signature(sig);
 
         assertArrayEquals(sig, (byte[]) p.getValue());
-        assertEquals(ContractParameterType.SIGNATURE, p.getParamType());
+        assertEquals(ContractParameterType.SIGNATURE, p.getType());
     }
 
     @Test
@@ -278,12 +278,12 @@ public class ContractParameterTest {
     public void testBooleanParameterCreation() {
         ContractParameter p = bool(false);
 
-        assertEquals(ContractParameterType.BOOLEAN, p.getParamType());
+        assertEquals(ContractParameterType.BOOLEAN, p.getType());
         assertEquals(false, p.getValue());
 
         p = bool(true);
 
-        assertEquals(ContractParameterType.BOOLEAN, p.getParamType());
+        assertEquals(ContractParameterType.BOOLEAN, p.getType());
         assertEquals(true, p.getValue());
     }
 
@@ -291,12 +291,12 @@ public class ContractParameterTest {
     public void testIntegerParameterCreation() {
         ContractParameter p = integer(10);
 
-        assertEquals(ContractParameterType.INTEGER, p.getParamType());
+        assertEquals(ContractParameterType.INTEGER, p.getType());
         assertEquals(BigInteger.TEN, p.getValue());
 
         p = integer(BigInteger.ONE.negate());
 
-        assertEquals(ContractParameterType.INTEGER, p.getParamType());
+        assertEquals(ContractParameterType.INTEGER, p.getType());
         assertEquals(BigInteger.ONE.negate(), p.getValue());
     }
 
@@ -306,7 +306,7 @@ public class ContractParameterTest {
         Hash160 hash = new Hash160(hashString);
         ContractParameter p = hash160(hash);
 
-        assertEquals(ContractParameterType.HASH160, p.getParamType());
+        assertEquals(ContractParameterType.HASH160, p.getType());
         assertEquals(hashString, p.getValue().toString());
     }
 
@@ -315,7 +315,7 @@ public class ContractParameterTest {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6f";
         ContractParameter p = hash160(new Hash160(hashValue));
 
-        assertEquals(ContractParameterType.HASH160, p.getParamType());
+        assertEquals(ContractParameterType.HASH160, p.getType());
         assertEquals(hashValue, p.getValue().toString());
     }
 
@@ -340,7 +340,7 @@ public class ContractParameterTest {
                 new Hash256("576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf");
         ContractParameter p = hash256(hash);
 
-        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
+        assertThat(p.getType(), is(ContractParameterType.HASH256));
         assertThat(p.getValue(), is(hash));
     }
 
@@ -349,7 +349,7 @@ public class ContractParameterTest {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
         ContractParameter p = hash256(hashValue);
 
-        assertEquals(ContractParameterType.HASH256, p.getParamType());
+        assertEquals(ContractParameterType.HASH256, p.getType());
         assertEquals(hashValue, p.getValue().toString());
     }
 
@@ -358,7 +358,7 @@ public class ContractParameterTest {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
         ContractParameter p = hash256(hexStringToByteArray(hashValue));
 
-        assertEquals(ContractParameterType.HASH256, p.getParamType());
+        assertEquals(ContractParameterType.HASH256, p.getType());
         assertEquals(hashValue, p.getValue().toString());
     }
 
@@ -396,7 +396,7 @@ public class ContractParameterTest {
         ContractParameter p = publicKey(publicKey);
 
         assertThat((byte[]) p.getValue(), is(publicKey.getEncoded(true)));
-        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getType());
     }
 
     @Test
@@ -406,7 +406,7 @@ public class ContractParameterTest {
         ContractParameter p = publicKey(pubKey);
 
         assertThat((byte[]) p.getValue(), is(pubKey));
-        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getType());
     }
 
     @Test
@@ -426,7 +426,7 @@ public class ContractParameterTest {
         ContractParameter p = publicKey(pubKey);
 
         assertThat((byte[]) p.getValue(), is(hexStringToByteArray(pubKey)));
-        assertEquals(ContractParameterType.PUBLIC_KEY, p.getParamType());
+        assertEquals(ContractParameterType.PUBLIC_KEY, p.getType());
     }
 
     @Test
@@ -510,61 +510,61 @@ public class ContractParameterTest {
     public void testMapToContractParameter() {
         ContractParameter p = mapToContractParameter(integer(12));
         assertThat(((BigInteger) p.getValue()).intValue(), is(12));
-        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(p.getType(), is(ContractParameterType.INTEGER));
 
         p = mapToContractParameter(true);
         assertTrue((Boolean) p.getValue());
-        assertThat(p.getParamType(), is(ContractParameterType.BOOLEAN));
+        assertThat(p.getType(), is(ContractParameterType.BOOLEAN));
 
         p = mapToContractParameter(33);
         assertThat(((BigInteger) p.getValue()).intValue(), is(33));
-        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(p.getType(), is(ContractParameterType.INTEGER));
 
         p = mapToContractParameter(2000L);
         assertThat(((BigInteger) p.getValue()).longValue(), is(2000L));
-        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(p.getType(), is(ContractParameterType.INTEGER));
 
         p = mapToContractParameter(new BigInteger("12345"));
         assertThat(((BigInteger) p.getValue()), is(new BigInteger("12345")));
-        assertThat(p.getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(p.getType(), is(ContractParameterType.INTEGER));
 
         p = mapToContractParameter(new byte[]{0x12, 0x0a, 0x0f});
         assertThat(p.getValue(), is(new byte[]{0x12, 0x0a, 0x0f}));
-        assertThat(p.getParamType(), is(ContractParameterType.BYTE_ARRAY));
+        assertThat(p.getType(), is(ContractParameterType.BYTE_ARRAY));
 
         String s = "hello world!";
         p = mapToContractParameter(s);
         assertThat(((String) p.getValue()), is(s));
-        assertThat(p.getParamType(), is(ContractParameterType.STRING));
+        assertThat(p.getType(), is(ContractParameterType.STRING));
 
         Hash160 hash160 = new Hash160("0f2dc86970b191fd8a55aeab983a04889682e433");
         p = mapToContractParameter(hash160);
         assertThat(((Hash160) p.getValue()), is(hash160));
-        assertThat(p.getParamType(), is(ContractParameterType.HASH160));
+        assertThat(p.getType(), is(ContractParameterType.HASH160));
 
         Hash256 hash256 =
                 new Hash256("03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63");
         p = mapToContractParameter(hash256);
         assertThat(((Hash256) p.getValue()), is(hash256));
-        assertThat(p.getParamType(), is(ContractParameterType.HASH256));
+        assertThat(p.getType(), is(ContractParameterType.HASH256));
 
         Account a = Account.create();
         p = mapToContractParameter(a);
         assertThat(((Hash160) p.getValue()), is(a.getScriptHash()));
-        assertThat(p.getParamType(), is(ContractParameterType.HASH160));
+        assertThat(p.getType(), is(ContractParameterType.HASH160));
 
         p = mapToContractParameter(a.getECKeyPair().getPublicKey());
         assertThat(p.getValue(), is(a.getECKeyPair().getPublicKey().getEncoded(true)));
-        assertThat(p.getParamType(), is(ContractParameterType.PUBLIC_KEY));
+        assertThat(p.getType(), is(ContractParameterType.PUBLIC_KEY));
 
         Sign.SignatureData signatureData = Sign.signMessage("Test message.", a.getECKeyPair());
         p = mapToContractParameter(signatureData);
         assertThat(p.getValue(), is(signatureData.getConcatenated()));
-        assertThat(p.getParamType(), is(ContractParameterType.SIGNATURE));
+        assertThat(p.getType(), is(ContractParameterType.SIGNATURE));
 
         p = mapToContractParameter(null);
         assertNull(p.getValue());
-        assertThat(p.getParamType(), is(ContractParameterType.ANY));
+        assertThat(p.getType(), is(ContractParameterType.ANY));
     }
 
     @Test
@@ -583,22 +583,22 @@ public class ContractParameterTest {
 
         ContractParameter[] pList = (ContractParameter[]) p.getValue();
         assertThat(pList.length, is(4));
-        assertThat(p.getParamType(), is(ContractParameterType.ARRAY));
+        assertThat(p.getType(), is(ContractParameterType.ARRAY));
 
         assertThat(((String) pList[0].getValue()), is("neow3j"));
-        assertThat(pList[0].getParamType(), is(ContractParameterType.STRING));
+        assertThat(pList[0].getType(), is(ContractParameterType.STRING));
         assertThat(((BigInteger) pList[1].getValue()).intValue(), is(1024));
-        assertThat(pList[1].getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(pList[1].getType(), is(ContractParameterType.INTEGER));
         ContractParameter[] pSubList = (ContractParameter[]) pList[2].getValue();
-        assertThat(pList[2].getParamType(), is(ContractParameterType.ARRAY));
+        assertThat(pList[2].getType(), is(ContractParameterType.ARRAY));
         assertThat(pSubList.length, is(2));
         assertThat(((BigInteger) pSubList[0].getValue()).intValue(), is(12));
-        assertThat(pSubList[0].getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(pSubList[0].getType(), is(ContractParameterType.INTEGER));
         assertFalse((Boolean) pSubList[1].getValue());
-        assertThat(pSubList[1].getParamType(), is(ContractParameterType.BOOLEAN));
+        assertThat(pSubList[1].getType(), is(ContractParameterType.BOOLEAN));
 
         assertThat(pList[3].getValue(), is(signatureData.getConcatenated()));
-        assertThat(pList[3].getParamType(), is(ContractParameterType.SIGNATURE));
+        assertThat(pList[3].getType(), is(ContractParameterType.SIGNATURE));
     }
 
     @Test
@@ -626,7 +626,7 @@ public class ContractParameterTest {
 
     @Test
     public void testGetParamType() {
-        assertThat(contractParameter.getParamType(), is(ContractParameterType.STRING));
+        assertThat(contractParameter.getType(), is(ContractParameterType.STRING));
     }
 
     @Test

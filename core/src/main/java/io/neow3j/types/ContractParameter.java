@@ -43,10 +43,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class ContractParameter {
 
     @JsonProperty("name")
-    private String paramName;
+    private String name;
 
     @JsonProperty("type")
-    private ContractParameterType paramType;
+    private ContractParameterType type;
 
     @JsonProperty("value")
     protected Object value;
@@ -54,22 +54,22 @@ public class ContractParameter {
     private ContractParameter() {
     }
 
-    protected ContractParameter(String name, ContractParameterType paramType, Object value) {
-        this.paramName = name;
-        this.paramType = paramType;
+    protected ContractParameter(String name, ContractParameterType type, Object value) {
+        this.name = name;
+        this.type = type;
         this.value = value;
     }
 
-    public ContractParameter(String name, ContractParameterType paramType) {
-        this(name, paramType, null);
+    public ContractParameter(String name, ContractParameterType type) {
+        this(name, type, null);
     }
 
-    public ContractParameter(ContractParameterType paramType, Object value) {
-        this(null, paramType, value);
+    public ContractParameter(ContractParameterType type, Object value) {
+        this(null, type, value);
     }
 
-    public ContractParameter(ContractParameterType paramType) {
-        this(null, paramType, null);
+    public ContractParameter(ContractParameterType type) {
+        this(null, type, null);
     }
 
     /**
@@ -164,7 +164,7 @@ public class ContractParameter {
         map.forEach((k, v) -> {
             ContractParameter key = mapToContractParameter(k);
             ContractParameter value = mapToContractParameter(v);
-            if (key.getParamType().equals(ARRAY) || key.getParamType().equals(MAP)) {
+            if (key.getType().equals(ARRAY) || key.getType().equals(MAP)) {
                 throw new IllegalArgumentException("The provided map contains an invalid key. The" +
                         " keys cannot be of type array or map.");
             }
@@ -421,12 +421,12 @@ public class ContractParameter {
         return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
     }
 
-    public String getParamName() {
-        return paramName;
+    public String getName() {
+        return name;
     }
 
-    public ContractParameterType getParamType() {
-        return paramType;
+    public ContractParameterType getType() {
+        return type;
     }
 
     public Object getValue() {
@@ -443,17 +443,17 @@ public class ContractParameter {
         }
         ContractParameter that = (ContractParameter) o;
 
-        if (paramType == that.paramType &&
-                Objects.equals(paramName, that.paramName)) {
+        if (type == that.type &&
+                Objects.equals(name, that.name)) {
 
-            if (paramType.equals(ContractParameterType.BYTE_ARRAY) ||
-                    paramType.equals(ContractParameterType.SIGNATURE) ||
-                    paramType.equals(ContractParameterType.PUBLIC_KEY) ||
-                    paramType.equals(ContractParameterType.HASH160) ||
-                    paramType.equals(ContractParameterType.HASH256)) {
+            if (type.equals(ContractParameterType.BYTE_ARRAY) ||
+                    type.equals(ContractParameterType.SIGNATURE) ||
+                    type.equals(ContractParameterType.PUBLIC_KEY) ||
+                    type.equals(ContractParameterType.HASH160) ||
+                    type.equals(ContractParameterType.HASH256)) {
 
                 return Arrays.equals((byte[]) value, (byte[]) that.value);
-            } else if (paramType.equals(ContractParameterType.ARRAY)) {
+            } else if (type.equals(ContractParameterType.ARRAY)) {
                 ContractParameter[] thatValue = (ContractParameter[]) that.getValue();
                 ContractParameter[] oValue =
                         (ContractParameter[]) ((ContractParameter) o).getValue();
@@ -468,7 +468,7 @@ public class ContractParameter {
 
     @Override
     public int hashCode() {
-        return Objects.hash(paramName, paramType, value);
+        return Objects.hash(name, type, value);
     }
 
     protected static class ContractParameterSerializer extends StdSerializer<ContractParameter> {
@@ -491,11 +491,11 @@ public class ContractParameter {
         }
 
         private void serializeParameter(ContractParameter p, JsonGenerator gen) throws IOException {
-            if (p.getParamName() != null) {
-                gen.writeStringField("name", p.getParamName());
+            if (p.getName() != null) {
+                gen.writeStringField("name", p.getName());
             }
-            if (p.getParamType() != null) {
-                gen.writeStringField("type", p.getParamType().jsonValue());
+            if (p.getType() != null) {
+                gen.writeStringField("type", p.getType().jsonValue());
             }
             if (p.getValue() != null) {
                 serializeValue(p, gen);
@@ -503,7 +503,7 @@ public class ContractParameter {
         }
 
         private void serializeValue(ContractParameter p, JsonGenerator gen) throws IOException {
-            switch (p.getParamType()) {
+            switch (p.getType()) {
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The
                     // byte order is not changed.
@@ -560,7 +560,7 @@ public class ContractParameter {
                     break;
                 default:
                     throw new UnsupportedOperationException("Parameter type '" +
-                            p.getParamType().toString() + "' not supported.");
+                            p.getType().toString() + "' not supported.");
             }
         }
 

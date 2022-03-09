@@ -34,7 +34,6 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
-import io.neow3j.transaction.Witness;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -42,10 +41,6 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
-import java.io.File;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -57,13 +52,11 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 
-import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.GAS_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
 import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
-import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.contractManagementHash;
@@ -75,7 +68,6 @@ import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
-import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -101,7 +93,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 // This test class uses a static container which is started once for the whole class and reused in
 // every test. Therefore, only tests that don't need a new and clean blockchain should be added
@@ -370,8 +361,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(abi1.getEvents(), hasSize(3));
         assertThat(abi1.getEvents().get(1).getName(), is("Update"));
         assertThat(abi1.getEvents().get(1).getParameters(), hasSize(1));
-        assertThat(abi1.getEvents().get(1).getParameters().get(0).getParamName(), is("Hash"));
-        assertThat(abi1.getEvents().get(1).getParameters().get(0).getParamType(),
+        assertThat(abi1.getEvents().get(1).getParameters().get(0).getName(), is("Hash"));
+        assertThat(abi1.getEvents().get(1).getParameters().get(0).getType(),
                 is(ContractParameterType.HASH160));
 
         assertThat(manifest1.getPermissions(), hasSize(1));
@@ -410,8 +401,8 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractEvent event = abi8.getEvents().get(0);
         assertThat(event.getName(), is("OracleRequest"));
         assertThat(event.getParameters(), hasSize(4));
-        assertThat(event.getParameters().get(3).getParamName(), is("Filter"));
-        assertThat(event.getParameters().get(3).getParamType(),
+        assertThat(event.getParameters().get(3).getName(), is("Filter"));
+        assertThat(event.getParameters().get(3).getType(),
                 is(ContractParameterType.STRING));
 
         assertThat(manifest8.getPermissions(), hasSize(1));
@@ -453,8 +444,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(abi.getMethods(), hasSize(17));
         ContractMethod method = abi.getMethods().get(8);
         assertThat(method.getName(), is("registerCandidate"));
-        assertThat(method.getParameters().get(0).getParamName(), is("pubkey"));
-        assertThat(method.getParameters().get(0).getParamType(),
+        assertThat(method.getParameters().get(0).getName(), is("pubkey"));
+        assertThat(method.getParameters().get(0).getType(),
                 is(ContractParameterType.PUBLIC_KEY));
         assertThat(method.getOffset(), is(56));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
@@ -465,8 +456,8 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractEvent event = abi.getEvents().get(0);
         assertThat(event.getName(), is("Transfer"));
         assertThat(event.getParameters(), hasSize(3));
-        assertThat(event.getParameters().get(0).getParamName(), is("from"));
-        assertThat(event.getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(event.getParameters().get(0).getName(), is("from"));
+        assertThat(event.getParameters().get(0).getType(), is(ContractParameterType.HASH160));
 
         assertNotNull(manifest.getPermissions());
         assertThat(manifest.getPermissions(), hasSize(1));
@@ -516,8 +507,8 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractMethod method = abi.getMethods().get(0);
         assertThat(method.getName(), is("balanceOf"));
         assertThat(method.getParameters(), hasSize(1));
-        assertThat(method.getParameters().get(0).getParamName(), is("account"));
-        assertThat(method.getParameters().get(0).getParamType(), is(ContractParameterType.HASH160));
+        assertThat(method.getParameters().get(0).getName(), is("account"));
+        assertThat(method.getParameters().get(0).getType(), is(ContractParameterType.HASH160));
         assertThat(method.getOffset(), is(0));
         assertThat(method.getReturnType(), is(ContractParameterType.INTEGER));
         assertTrue(method.isSafe());
@@ -527,8 +518,8 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractEvent event = abi.getEvents().get(0);
         assertThat(event.getName(), is("Transfer"));
         assertThat(event.getParameters(), hasSize(3));
-        assertThat(event.getParameters().get(2).getParamName(), is("amount"));
-        assertThat(event.getParameters().get(2).getParamType(), is(ContractParameterType.INTEGER));
+        assertThat(event.getParameters().get(2).getName(), is("amount"));
+        assertThat(event.getParameters().get(2).getType(), is(ContractParameterType.INTEGER));
 
         assertNotNull(manifest.getPermissions());
         assertThat(manifest.getPermissions(), hasSize(1));
