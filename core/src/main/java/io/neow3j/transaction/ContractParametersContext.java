@@ -37,7 +37,7 @@ public class ContractParametersContext {
     }
 
     /**
-     * Gets the type of parameter context, which is always {@code Neo.Network.P2P.Payloads.Transaction} for
+     * @return the type of parameter context, which is always {@code Neo.Network.P2P.Payloads.Transaction} for
      * transaction objects.
      */
     public String getType() {
@@ -45,29 +45,29 @@ public class ContractParametersContext {
     }
 
     /**
-     * The hash of the transaction.
+     * @return the hash of the transaction.
      */
     public String getHash() {
         return hash;
     }
 
     /**
-     * Base64 string of the transaction data without witnesses.
+     * @return the Base64 string of the transaction data without witnesses.
      */
     public String getData() {
         return data;
     }
 
     /**
-     * A mapping from the accounts (script hash) to their witnesses. These are the accounts used as signers on the
-     * transaction.
+     * @return a mapping from the accounts (script hash) to their witnesses. These are the accounts used as signers on
+     * the transaction.
      */
     public Map<String, ContextItem> getItems() {
         return items;
     }
 
     /**
-     * The number of the network on which to operate, e.g., testnet.
+     * @return the number of the network on which to operate, e.g., testnet.
      */
     public long getNetwork() {
         return network;
@@ -92,21 +92,21 @@ public class ContractParametersContext {
 
 
         /**
-         * Base64 string of the verification script
+         * @return the Base64 string of the verification script.
          */
         public String getScript() {
             return script;
         }
 
         /**
-         * The parameters passed to the script, i.e., the signatures passed to the verification script
+         * @return the parameters passed to the script, i.e., the signatures passed to the verification script.
          */
         public List<ContractParameter> getParameters() {
             return parameters;
         }
 
         /**
-         * Map of signing public key to their corresponding signature
+         * @return a Map of the signing public keys mapped to their corresponding signatures.
          */
         public Map<String, String> getSignatures() {
             return signatures;

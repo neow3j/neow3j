@@ -226,6 +226,7 @@ public class Transaction extends NeoSerializable {
      *
      * @param account The account to sign with.
      * @return this.
+     * @throws IOException if an error occurs when fetching the network's magic number.
      */
     public Transaction addWitness(Account account) throws IOException {
         this.witnesses.add(Witness.create(getHashData(), account.getECKeyPair()));
@@ -444,7 +445,7 @@ public class Transaction extends NeoSerializable {
      * via the {@code getversion} RPC method if not already available locally.
      *
      * @return the transaction data ready for hashing.
-     * @throws IOException if an error occurs when fetching the network's magic number
+     * @throws IOException if an error occurs when fetching the network's magic number.
      */
     public byte[] getHashData() throws IOException {
         return concatenate(neow3j.getNetworkMagicNumberBytes(), sha256(toArrayWithoutWitnesses()));
@@ -469,7 +470,7 @@ public class Transaction extends NeoSerializable {
      * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
      *
      * @return neo-cli compatible json of this transaction.
-     * @throws IOException if an error occurs when trying to fetch the network number.
+     * @throws IOException if an error occurs when trying to fetch the network's magic number.
      */
     public ContractParametersContext toContractParametersContext() throws IOException {
         String hash = getTxId().toString();

@@ -415,8 +415,7 @@ public class TransactionTest {
     public void toContractParameterContextJson() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException, IOException {
 
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(769));
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
 
         ECKeyPair.ECPublicKey pubKey = ECKeyPair.createEcKeyPair().getPublicKey();
         Account multiSigAccount = Account.createMultiSigAccount(asList(pubKey, pubKey, pubKey), 2);
@@ -475,6 +474,33 @@ public class TransactionTest {
         assertThat(item.getParameters().get(1).getType(), is(ContractParameterType.SIGNATURE));
         assertThat(item.getParameters().get(1).getValue(), is(nullValue()));
         assertThat(item.getSignatures().size(), is(0));
+    }
+
+    @Test
+    public void toContractParameterContextJson_unsupportedContractSigners() throws IOException {
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
+
+        Account singleSigAccount1 = Account.create();
+        Hash160 dummyHash = new Hash160("f32bf2a3e36a9fd3411337ffcd48eed7bec727ce");
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.none(singleSigAccount1));
+        signers.add(ContractSigner.calledByEntry(dummyHash));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+        Witness acc1witness = Witness.create(tx.getHashData(), singleSigAccount1.getECKeyPair());
+        tx.addWitness(acc1witness);
+
+        assertThrows("Cannot handle contract signers", UnsupportedOperationException.class,
+                tx::toContractParametersContext);
     }
 
 }

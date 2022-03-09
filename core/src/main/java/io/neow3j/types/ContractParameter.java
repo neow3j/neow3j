@@ -100,8 +100,7 @@ public class ContractParameter {
      * Creates an array parameter from the given values.
      * <p>
      * The method will try to map the given objects to the correct {@link ContractParameterType}s.
-     * You can pass in objects of type {@link ContractParameter} to fix the parameter type of an
-     * element.
+     * You can pass in objects of type {@link ContractParameter} to fix the parameter type of an element.
      * <p>
      * Use {@code array()} without a parameter if you need an empty array.
      *
@@ -145,8 +144,7 @@ public class ContractParameter {
      * map.put("two", 2);
      * ContractParameter param = map(map);
      * </pre>
-     * The second example leads to the same result but uses {@code ContractParameter} before
-     * adding elements.
+     * The second example leads to the same result but uses {@code ContractParameter} before adding elements.
      * <pre>
      * Map map = new HashMap{@literal <>}();
      * map.put(ContractParameter.string("one"), ContractParameter.string("first"));
@@ -154,13 +152,13 @@ public class ContractParameter {
      * ContractParameter param = map(map);
      * </pre>
      *
-     * @param map The map entries.
+     * @param map the map entries.
      * @return the contract parameter.
      */
     public static ContractParameter map(Map<?, ?> map) {
         if (map.isEmpty()) {
-            throw new IllegalArgumentException("At least one map entry is required to create a " +
-                    "map contract parameter.");
+            throw new IllegalArgumentException("At least one map entry is required to create a map contract parameter" +
+                    ".");
         }
 
         // Use a linked hash map to keep the ordering of the argument map.
@@ -169,8 +167,8 @@ public class ContractParameter {
             ContractParameter key = mapToContractParameter(k);
             ContractParameter value = mapToContractParameter(v);
             if (key.getType().equals(ARRAY) || key.getType().equals(MAP)) {
-                throw new IllegalArgumentException("The provided map contains an invalid key. The" +
-                        " keys cannot be of type array or map.");
+                throw new IllegalArgumentException("The provided map contains an invalid key. The keys cannot be of " +
+                        "type array or map.");
             }
             paramMap.put(key, value);
         });
@@ -180,8 +178,8 @@ public class ContractParameter {
     /**
      * Maps the given object to a contract parameter of the appropriate type.
      *
-     * @param o The object to map.
-     * @return The parameter.
+     * @param o the object to map.
+     * @return the parameter.
      * @throws IllegalArgumentException if no suitable parameter type is known for the object.
      */
     public static ContractParameter mapToContractParameter(Object o) {
@@ -216,8 +214,8 @@ public class ContractParameter {
         } else if (o == null) {
             return any(null);
         } else {
-            throw new IllegalArgumentException("The provided object could not be casted into " +
-                    "a supported contract parameter type.");
+            throw new IllegalArgumentException("The provided object could not be casted into a supported contract " +
+                    "parameter type.");
         }
     }
 
@@ -247,8 +245,7 @@ public class ContractParameter {
     }
 
     /**
-     * Create a byte array parameter from a string by converting the string to bytes using the UTF-8
-     * character set.
+     * Create a byte array parameter from a string by converting the string to bytes using the UTF-8 character set.
      *
      * @param value the parameter value.
      * @return the contract parameter.
@@ -273,7 +270,7 @@ public class ContractParameter {
     /**
      * Creates a signature parameter from the provided {@link io.neow3j.crypto.Sign.SignatureData}.
      *
-     * @param signatureData The signature data.
+     * @param signatureData the signature data.
      * @return the contract parameter.
      */
     public static ContractParameter signature(Sign.SignatureData signatureData) {
@@ -288,8 +285,8 @@ public class ContractParameter {
      */
     public static ContractParameter signature(byte[] signature) {
         if (signature.length != NeoConstants.SIGNATURE_SIZE) {
-            throw new IllegalArgumentException("Signature is expected to have a length of " +
-                    NeoConstants.SIGNATURE_SIZE + " bytes, but had " + signature.length + ".");
+            throw new IllegalArgumentException("Signature is expected to have a length of "
+                    + NeoConstants.SIGNATURE_SIZE + " bytes, but had " + signature.length + ".");
         }
         return new ContractParameter(SIGNATURE, signature);
     }
@@ -378,8 +375,8 @@ public class ContractParameter {
      */
     public static ContractParameter hash256(byte[] hash) {
         if (hash.length != 32) {
-            throw new IllegalArgumentException("A Hash256 parameter must be 32 bytes but was " +
-                    hash.length + " bytes.");
+            throw new IllegalArgumentException(
+                    "A Hash256 parameter must be 32 bytes but was " + hash.length + " bytes.");
         }
         return hash256(new Hash256(hash));
     }
@@ -418,9 +415,9 @@ public class ContractParameter {
      */
     public static ContractParameter publicKey(byte[] publicKey) {
         if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-            throw new IllegalArgumentException("Public key argument must be " +
-                    NeoConstants.PUBLIC_KEY_SIZE + " bytes but was " + publicKey.length +
-                    " bytes.");
+            throw new IllegalArgumentException(
+                    "Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE + " bytes but was " +
+                            publicKey.length + " bytes.");
         }
         return new ContractParameter(PUBLIC_KEY, publicKey);
     }
@@ -562,8 +559,8 @@ public class ContractParameter {
                     gen.writeEndArray();
                     break;
                 default:
-                    throw new UnsupportedOperationException("Parameter type '" +
-                            p.getType().toString() + "' not supported.");
+                    throw new UnsupportedOperationException(
+                            "Parameter type '" + p.getType().toString() + "' not supported.");
             }
         }
 
@@ -580,9 +577,7 @@ public class ContractParameter {
         }
 
         @Override
-        public ContractParameter deserialize(JsonParser p, DeserializationContext ctx)
-                throws IOException {
-
+        public ContractParameter deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             Map<String, Object> param = p.getCodec().readValue(p, Map.class);
             return deserializeParam(param);
         }
@@ -653,8 +648,7 @@ public class ContractParameter {
                 case ANY:
                     return null;
                 default:
-                    throw new UnsupportedOperationException("Parameter type '" + type
-                            + "' not supported.");
+                    throw new UnsupportedOperationException("Parameter type '" + type + "' not supported.");
             }
         }
     }
