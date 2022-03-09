@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -26,7 +27,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
@@ -35,7 +39,6 @@ import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 
 public class Transaction extends NeoSerializable {
 
@@ -93,7 +96,7 @@ public class Transaction extends NeoSerializable {
     /**
      * Sets the {@code Neow3j} instance of this transaction.
      *
-     * @param neow3j The Neow3j instance.
+     * @param neow3j the Neow3j instance.
      */
     public void setNeow3j(Neow3j neow3j) {
         this.neow3j = neow3j;
@@ -201,7 +204,7 @@ public class Transaction extends NeoSerializable {
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param witness The transaction witness.
+     * @param witness the transaction witness.
      * @return this.
      */
     public Transaction addWitness(Witness witness) {
@@ -219,14 +222,19 @@ public class Transaction extends NeoSerializable {
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param verificationScript The verification script of the multi-sig account.
-     * @param signatures         The signatures created with the participating private keys.
+     * @param verificationScript the verification script of the multi-sig account.
+     * @param pubKeySigMap       a map of participating public keys mapped to the signatures created with their
+     *                           corresponding private key.
      * @return this.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript,
-            Sign.SignatureData... signatures) {
+            Map<ECKeyPair.ECPublicKey, Sign.SignatureData> pubKeySigMap) {
 
-        Witness multiSigWitness = createMultiSigWitness(asList(signatures), verificationScript);
+        List<Sign.SignatureData> signatures = pubKeySigMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
+        Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);
         this.witnesses.add(multiSigWitness);
         return this;
     }
@@ -240,18 +248,20 @@ public class Transaction extends NeoSerializable {
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param verificationScript The verification script of the multi-sig account.
-     * @param accounts           The accounts to use for signing. They need to hold decrypted private keys.
+     * @param verificationScript the verification script of the multi-sig account.
+     * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
             throws IOException {
 
-        ArrayList<Sign.SignatureData> signatures = new ArrayList<>();
-        for (Account a : accounts) {
-            signatures.add(signMessage(getHashData(), a.getECKeyPair()));
-        }
+        byte[] hashData = getHashData();
+        List<ECKeyPair> keyPairs = Arrays.stream(accounts).map(Account::getECKeyPair).collect(Collectors.toList());
+        List<Sign.SignatureData> signatures = keyPairs.stream()
+                .sorted(ECKeyPair.comparingByPubKey())
+                .map(a -> signMessage(hashData, a))
+                .collect(Collectors.toList());
         Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);
         this.witnesses.add(multiSigWitness);
         return this;
@@ -295,7 +305,7 @@ public class Transaction extends NeoSerializable {
      * <p>
      * The observable starts tracking the blocks from the point at which the transaction has been sent.
      *
-     * @return The observable.
+     * @return the observable.
      * @throws IllegalStateException if this transaction has not yet been sent.
      */
     public Observable<Long> track() {
@@ -303,10 +313,8 @@ public class Transaction extends NeoSerializable {
             throw new IllegalStateException("Cannot subscribe before transaction has been sent.");
         }
 
-        Predicate<NeoGetBlock> pred = neoGetBlock ->
-                neoGetBlock.getBlock().getTransactions() != null &&
-                        neoGetBlock.getBlock().getTransactions().stream()
-                                .anyMatch(tx -> tx.getHash().equals(getTxId()));
+        Predicate<NeoGetBlock> pred = neoGetBlock -> neoGetBlock.getBlock().getTransactions() != null &&
+                neoGetBlock.getBlock().getTransactions().stream().anyMatch(tx -> tx.getHash().equals(getTxId()));
 
         return neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
                 .takeUntil(pred)
@@ -337,11 +345,8 @@ public class Transaction extends NeoSerializable {
 
     @Override
     public int getSize() {
-        return HEADER_SIZE +
-                IOUtils.getVarSize(this.signers) +
-                IOUtils.getVarSize(this.attributes) +
-                IOUtils.getVarSize(this.script) +
-                IOUtils.getVarSize(this.witnesses);
+        return HEADER_SIZE + IOUtils.getVarSize(this.signers) + IOUtils.getVarSize(this.attributes) +
+                IOUtils.getVarSize(this.script) + IOUtils.getVarSize(this.witnesses);
     }
 
     @Override
@@ -363,8 +368,7 @@ public class Transaction extends NeoSerializable {
         }
     }
 
-    private void readTransactionAttributes(BinaryReader reader)
-            throws IOException, DeserializationException {
+    private void readTransactionAttributes(BinaryReader reader) throws IOException, DeserializationException {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes + this.signers.size() > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
             throw new DeserializationException(

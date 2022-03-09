@@ -18,7 +18,6 @@ import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
-import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
@@ -88,8 +87,8 @@ public class FungibleTokenIntegrationTest {
         assertThat(script, is(ArrayUtils.concatenate(transferScript1, transferScript2)));
 
         Transaction tx = b.signers(calledByEntry(COMMITTEE_ACCOUNT)).getUnsignedTransaction();
-        tx.addMultiSigWitness(COMMITTEE_ACCOUNT.getVerificationScript(),
-                signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair()));
+
+        tx.addMultiSigWitness(COMMITTEE_ACCOUNT.getVerificationScript(), DEFAULT_ACCOUNT);
         Hash256 txHash = tx.send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 

@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A script (invocation and verification script) used to validate a transaction.
- * Usually, a witness is made up of a signature (invocation script) and a check-signature script
- * (verification script) that together prove that the signer has witnessed the signed data.
+ * A script (invocation and verification script) used to validate a transaction. Usually, a witness is made up of a
+ * signature (invocation script) and a check-signature script (verification script) that together prove that the
+ * signer has witnessed the signed data.
  */
 public class Witness extends NeoSerializable {
 
@@ -42,8 +42,7 @@ public class Witness extends NeoSerializable {
      * @see Witness#Witness(InvocationScript, VerificationScript)
      */
     public Witness(byte[] invocationScript, byte[] verificationScript) {
-        this(new InvocationScript(invocationScript),
-                new VerificationScript(verificationScript));
+        this(new InvocationScript(invocationScript), new VerificationScript(verificationScript));
     }
 
     /**
@@ -58,12 +57,12 @@ public class Witness extends NeoSerializable {
     }
 
     /**
-     * Creates a witness (invocation and verification scripts) from the given message, using the
-     * given keys for signing the message.
+     * Creates a witness (invocation and verification scripts) from the given message, using the given keys for
+     * signing the message.
      *
-     * @param messageToSign The message from which the signature is added to the invocation script.
-     * @param keyPair       The key pair which is used for signing. The verification script is
-     *                      created from the public key.
+     * @param messageToSign the message from which the signature is added to the invocation script.
+     * @param keyPair       the key pair which is used for signing. The verification script is created from the
+     *                      public key.
      * @return the constructed witness/script.
      */
     public static Witness create(byte[] messageToSign, ECKeyPair keyPair) {
@@ -73,52 +72,43 @@ public class Witness extends NeoSerializable {
     }
 
     /**
-     * Creates a witness in which the invocation script contains the given signatures and the
-     * verification script checks the signatures according to the given public keys and signing
-     * threshold.
+     * Creates a witness in which the invocation script contains the given signatures and the verification script
+     * checks the signatures according to the given public keys and signing threshold.
      *
-     * @param signingThreshold The minimum number of signatures required for successful multi-sig
-     *                         verification.
-     * @param signatures       The signatures to add to the invocation script.
-     * @param publicKeys       The public keys to add to verification script.
+     * @param signingThreshold the minimum number of signatures required for successful multi-sig verification.
+     * @param signatures       the signatures to add to the invocation script.
+     * @param publicKeys       the public keys to add to verification script.
      * @return the witness.
      */
-    public static Witness createMultiSigWitness(int signingThreshold,
-            List<SignatureData> signatures, List<ECPublicKey> publicKeys) {
+    public static Witness createMultiSigWitness(int signingThreshold, List<SignatureData> signatures,
+            List<ECPublicKey> publicKeys) {
 
         VerificationScript v = new VerificationScript(publicKeys, signingThreshold);
         return createMultiSigWitness(signatures, v);
     }
 
     /**
-     * Constructs a witness with the given verification script and an invocation script
-     * containing the given signatures. The number of signatures must reach the signing threshold
-     * given in the verification script.
+     * Constructs a witness with the given verification script and an invocation script containing the given
+     * signatures. The number of signatures must reach the signing threshold given in the verification script.
      *
-     * @param signatures         The signatures to add to the invocation script.
-     * @param verificationScript The verification script to use in the witness.
+     * @param signatures         the signatures to add to the invocation script.
+     * @param verificationScript the verification script to use in the witness.
      * @return the witness.
      */
-    public static Witness createMultiSigWitness(List<SignatureData> signatures,
-            VerificationScript verificationScript) {
-
+    public static Witness createMultiSigWitness(List<SignatureData> signatures, VerificationScript verificationScript) {
         int signingThreshold = verificationScript.getSigningThreshold();
         if (signatures.size() < signingThreshold) {
-            throw new IllegalArgumentException("Not enough signatures provided for the required " +
-                    "signing threshold.");
+            throw new IllegalArgumentException("Not enough signatures provided for the required signing threshold.");
         }
         return new Witness(
-                InvocationScript.fromSignatures(signatures.subList(0, signingThreshold)),
-                verificationScript);
+                InvocationScript.fromSignatures(signatures.subList(0, signingThreshold)), verificationScript);
     }
 
     /**
-     * Constructs a witness with an invocation script based on the provided parameters for the
-     * contract's verify method.
+     * Constructs a witness with an invocation script based on the provided parameters for the contract's verify method.
      * <p>
-     * This method is used if no signature is present, i.e. if the signer is a contract. In that
-     * case the invocation script is built based on the parameters of its verify method. No
-     * verification script is needed.
+     * This method is used if no signature is present, i.e. if the signer is a contract. In that case the invocation
+     * script is built based on the parameters of its verify method. No verification script is needed.
      *
      * @param verifyParams the parameters for the contract's verify method.
      * @return the witness.
@@ -142,8 +132,12 @@ public class Witness extends NeoSerializable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Witness)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Witness)) {
+            return false;
+        }
         Witness script = (Witness) o;
         return Objects.equals(getInvocationScript(), script.getInvocationScript()) &&
                 Objects.equals(getVerificationScript(), script.getVerificationScript());
@@ -156,7 +150,7 @@ public class Witness extends NeoSerializable {
 
     @Override
     public String toString() {
-        return "Script{" +
+        return "Witness{" +
                 "invocationScript='" + invocationScript + '\'' +
                 ", verificationScript='" + verificationScript + '\'' +
                 '}';
@@ -178,4 +172,5 @@ public class Witness extends NeoSerializable {
     public int getSize() {
         return this.invocationScript.getSize() + this.verificationScript.getSize();
     }
+
 }

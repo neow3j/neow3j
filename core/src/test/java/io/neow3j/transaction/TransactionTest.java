@@ -1,12 +1,16 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -20,12 +24,14 @@ import org.mockito.Mockito;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
@@ -40,6 +46,13 @@ public class TransactionTest {
     private Hash160 account2;
     private Hash160 account3;
 
+    // pubKey: 0x0200bb19db74b4ff21a51065635d5c63953324d0799ed0bae9e0f02e3bd3d32b70
+    private final Account a4 = Account.fromWIF("L3pLaHgKBf7ENNKPH1jfPM8FC9QhPCqwFyWguQ8CDB1G66p78wd6");
+    // pubKey: 0x022f66d6377f8737b5ee95df0ac4059b8523d77f96d095efe36430d7b2d3d72b15
+    private final Account a5 = Account.fromWIF("KypPpzztxDj26DiCmTkbwQJT2TrgaNtw5Wp3K2nYiMvWu99Xv3rP");
+    // pubKey: 0x03bf1d1b799412171f598be70916cbac39dba47a10d5e568aad46a9ec928c3b59d
+    private final Account a6 = Account.fromWIF("KxjePibw7BEdaS8diPeqgozFWevVx6tLE226jYU6tFF1HSYQ5z5u");
+
     private final Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
 
     @Before
@@ -52,7 +65,7 @@ public class TransactionTest {
     @Test
     public void serializeWithoutAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
-        signers.add(AccountSigner.calledByEntry(account1));
+        signers.add(calledByEntry(account1));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -88,7 +101,7 @@ public class TransactionTest {
     public void serializeWithAttributesAndWitnesses() {
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.global(account1));
-        signers.add(AccountSigner.calledByEntry(account2));
+        signers.add(calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -153,7 +166,7 @@ public class TransactionTest {
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
-                Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+                asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
 
         assertNull(tx.neow3j);
         Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
@@ -226,7 +239,7 @@ public class TransactionTest {
     public void getSize() {
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.global(account1));
-        signers.add(AccountSigner.calledByEntry(account2));
+        signers.add(calledByEntry(account2));
 
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
@@ -287,7 +300,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(AccountSigner.calledByEntry(account3));
+        signers.add(calledByEntry(account3));
 
         Transaction tx = new Transaction(neow,
                 (byte) 0,
@@ -311,7 +324,7 @@ public class TransactionTest {
                 new Neow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
-        signers.add(AccountSigner.calledByEntry(account3));
+        signers.add(calledByEntry(account3));
         Transaction tx = new Transaction(neow,
                 (byte) 0,
                 226292130L,
@@ -355,7 +368,7 @@ public class TransactionTest {
 
     @Test
     public void testTooBigTransaction() {
-        // The following transaction is 29 bytes without the script
+        // The following transaction is 29 bytes without the script.
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4 + 1];
         // This transaction exceeds the maximal allowed byte length by one.
@@ -386,7 +399,7 @@ public class TransactionTest {
         Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoBlockCount.class))).thenReturn(blockCount);
         Neow3j neow3j = Neow3j.build(mock);
 
-        // The following transaction is 29 bytes without the script
+        // The following transaction is 29 bytes without the script.
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4];
         // This transaction has exactly the maximal allowed byte length.
@@ -402,6 +415,92 @@ public class TransactionTest {
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
         tx.send();
+    }
+
+    @Test
+    public void testAddMultiSigWitnessWithPubKeySigMap() throws IOException {
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
+
+        byte[] verifScriptBytes = ScriptBuilder.buildVerificationScript(asList(
+                a4.getECKeyPair().getPublicKey(),
+                a5.getECKeyPair().getPublicKey(),
+                a6.getECKeyPair().getPublicKey()
+        ), 3);
+        VerificationScript verifScript = new VerificationScript(verifScriptBytes);
+
+        Account multiSigAccount = Account.createMultiSigAccount(asList(
+                        a4.getECKeyPair().getPublicKey(),
+                        a5.getECKeyPair().getPublicKey(),
+                        a6.getECKeyPair().getPublicKey()),
+                3);
+
+        Transaction dummyTx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                asList(calledByEntry(multiSigAccount)),
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+
+        byte[] dummyBytes = dummyTx.getHashData();
+        Sign.SignatureData sig4 = Sign.signMessage(dummyBytes, a4.getECKeyPair());
+        Sign.SignatureData sig5 = Sign.signMessage(dummyBytes, a5.getECKeyPair());
+        Sign.SignatureData sig6 = Sign.signMessage(dummyBytes, a6.getECKeyPair());
+
+        HashMap<ECKeyPair.ECPublicKey, Sign.SignatureData> pubKeySigMap = new HashMap<>();
+        pubKeySigMap.put(a4.getECKeyPair().getPublicKey(), sig4);
+        pubKeySigMap.put(a5.getECKeyPair().getPublicKey(), sig5);
+        pubKeySigMap.put(a6.getECKeyPair().getPublicKey(), sig6);
+        dummyTx.addMultiSigWitness(verifScript, pubKeySigMap);
+
+        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6), verifScript);
+        assertThat(dummyTx.getWitnesses(), hasSize(1));
+        assertThat(dummyTx.getWitnesses().get(0), is(expectedMultiSigWitness));
+    }
+
+    @Test
+    public void testAddMultiSigWitnessWithAccounts() throws IOException {
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
+
+        byte[] verifScriptBytes = ScriptBuilder.buildVerificationScript(asList(
+                a4.getECKeyPair().getPublicKey(),
+                a5.getECKeyPair().getPublicKey(),
+                a6.getECKeyPair().getPublicKey()
+        ), 3);
+        VerificationScript verifScript = new VerificationScript(verifScriptBytes);
+
+        Account multiSigAccount = Account.createMultiSigAccount(asList(
+                        a4.getECKeyPair().getPublicKey(),
+                        a5.getECKeyPair().getPublicKey(),
+                        a6.getECKeyPair().getPublicKey()),
+                3);
+
+        Transaction dummyTx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                asList(calledByEntry(multiSigAccount)),
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+
+        byte[] dummyBytes = dummyTx.getHashData();
+        Sign.SignatureData sig4 = Sign.signMessage(dummyBytes, a4.getECKeyPair());
+        Sign.SignatureData sig5 = Sign.signMessage(dummyBytes, a5.getECKeyPair());
+        Sign.SignatureData sig6 = Sign.signMessage(dummyBytes, a6.getECKeyPair());
+
+        dummyTx.addMultiSigWitness(verifScript, a5, a6, a4);
+        dummyTx.addMultiSigWitness(verifScript, a6, a4, a5);
+
+        Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6), verifScript);
+        assertThat(dummyTx.getWitnesses(), hasSize(2));
+        assertThat(dummyTx.getWitnesses().get(0), is(expectedMultiSigWitness));
+        assertThat(dummyTx.getWitnesses().get(1), is(expectedMultiSigWitness));
     }
 
 }
