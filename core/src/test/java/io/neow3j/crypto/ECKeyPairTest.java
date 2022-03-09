@@ -40,7 +40,7 @@ public class ECKeyPairTest {
         assertThat(pubKey.getECPoint(), is(expectedECPoint));
         assertArrayEquals(pubKey.getEncoded(true), hexStringToByteArray(encECPoint));
         assertThat(pubKey.getEncodedCompressedHex(), is(
-                "0x03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816"));
+                "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816"));
     }
 
     @Test

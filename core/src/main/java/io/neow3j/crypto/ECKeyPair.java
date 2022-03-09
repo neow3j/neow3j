@@ -398,10 +398,10 @@ public class ECKeyPair {
          * Gets this public key's elliptic curve point encoded as defined in section 2.3.3 of
          * <a href="http://www.secg.org/sec1-v2.pdf">SEC1</a> in compressed format as hexadecimal.
          *
-         * @return the encoded public key in compressed format as hexadecimal with a prefix.
+         * @return the encoded public key in compressed format as hexadecimal without a prefix.
          */
         public String getEncodedCompressedHex() {
-            return Numeric.toHexString(getEncoded(true));
+            return Numeric.toHexStringNoPrefix(getEncoded(true));
         }
 
         /**

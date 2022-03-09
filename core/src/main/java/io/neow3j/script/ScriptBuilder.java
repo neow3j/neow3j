@@ -137,7 +137,7 @@ public class ScriptBuilder {
             opCode(OpCode.PUSHNULL);
         } else {
             Object value = param.getValue();
-            switch (param.getParamType()) {
+            switch (param.getType()) {
                 case BYTE_ARRAY:
                 case SIGNATURE:
                 case PUBLIC_KEY:
@@ -170,7 +170,7 @@ public class ScriptBuilder {
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Parameter type '" + param.getParamType() + "' not supported.");
+                    throw new IllegalArgumentException("Parameter type '" + param.getType() + "' not supported.");
             }
         }
         return this;
