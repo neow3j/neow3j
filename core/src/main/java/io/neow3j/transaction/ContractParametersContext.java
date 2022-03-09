@@ -14,13 +14,6 @@ import java.util.Map;
  */
 public class ContractParametersContext {
 
-    public ContractParametersContext(String hash, String data, Map<String, ContextItem> items, long network) {
-        this.hash = hash;
-        this.data = data;
-        this.items = items == null ? new HashMap<>() : items;
-        this.network = network;
-    }
-
     @JsonProperty
     private final String type = "Neo.Network.P2P.Payloads.Transaction";
 
@@ -35,6 +28,13 @@ public class ContractParametersContext {
 
     @JsonProperty
     private long network;
+
+    public ContractParametersContext(String hash, String data, Map<String, ContextItem> items, long network) {
+        this.hash = hash;
+        this.data = data;
+        this.items = items == null ? new HashMap<>() : items;
+        this.network = network;
+    }
 
     /**
      * Gets the type of parameter context, which is always {@code Neo.Network.P2P.Payloads.Transaction} for
@@ -75,12 +75,6 @@ public class ContractParametersContext {
 
     public static class ContextItem {
 
-        public ContextItem(String script, List<ContractParameter> parameters, Map<String, String> signatures) {
-            this.script = script;
-            this.parameters = parameters;
-            this.signatures = signatures == null ? new HashMap<>() : signatures;
-        }
-
         @JsonProperty
         private String script;
 
@@ -89,6 +83,13 @@ public class ContractParametersContext {
 
         @JsonProperty
         private Map<String, String> signatures;
+
+        public ContextItem(String script, List<ContractParameter> parameters, Map<String, String> signatures) {
+            this.script = script;
+            this.parameters = parameters;
+            this.signatures = signatures == null ? new HashMap<>() : signatures;
+        }
+
 
         /**
          * Base64 string of the verification script

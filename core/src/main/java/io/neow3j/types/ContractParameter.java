@@ -26,9 +26,13 @@ import java.util.Map;
 import java.util.Objects;
 
 import static io.neow3j.types.ContractParameterType.ARRAY;
+import static io.neow3j.types.ContractParameterType.BYTE_ARRAY;
+import static io.neow3j.types.ContractParameterType.HASH160;
 import static io.neow3j.types.ContractParameterType.HASH256;
 import static io.neow3j.types.ContractParameterType.INTEGER;
 import static io.neow3j.types.ContractParameterType.MAP;
+import static io.neow3j.types.ContractParameterType.PUBLIC_KEY;
+import static io.neow3j.types.ContractParameterType.SIGNATURE;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
@@ -113,7 +117,7 @@ public class ContractParameter {
                     .map(ContractParameter::mapToContractParameter)
                     .toArray(ContractParameter[]::new);
         }
-        return new ContractParameter(ContractParameterType.ARRAY, params);
+        return new ContractParameter(ARRAY, params);
     }
 
     /**
@@ -226,7 +230,7 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter byteArray(byte[] byteArray) {
-        return new ContractParameter(ContractParameterType.BYTE_ARRAY, byteArray);
+        return new ContractParameter(BYTE_ARRAY, byteArray);
     }
 
     /**
@@ -287,7 +291,7 @@ public class ContractParameter {
             throw new IllegalArgumentException("Signature is expected to have a length of " +
                     NeoConstants.SIGNATURE_SIZE + " bytes, but had " + signature.length + ".");
         }
-        return new ContractParameter(ContractParameterType.SIGNATURE, signature);
+        return new ContractParameter(SIGNATURE, signature);
     }
 
     /**
@@ -340,7 +344,7 @@ public class ContractParameter {
         if (hash == null) {
             throw new IllegalArgumentException("The script hash argument must not be null.");
         }
-        return new ContractParameter(ContractParameterType.HASH160, hash);
+        return new ContractParameter(HASH160, hash);
     }
 
     /**
@@ -418,7 +422,7 @@ public class ContractParameter {
                     NeoConstants.PUBLIC_KEY_SIZE + " bytes but was " + publicKey.length +
                     " bytes.");
         }
-        return new ContractParameter(ContractParameterType.PUBLIC_KEY, publicKey);
+        return new ContractParameter(PUBLIC_KEY, publicKey);
     }
 
     public String getName() {
@@ -446,14 +450,13 @@ public class ContractParameter {
         if (type == that.type &&
                 Objects.equals(name, that.name)) {
 
-            if (type.equals(ContractParameterType.BYTE_ARRAY) ||
-                    type.equals(ContractParameterType.SIGNATURE) ||
-                    type.equals(ContractParameterType.PUBLIC_KEY) ||
-                    type.equals(ContractParameterType.HASH160) ||
-                    type.equals(ContractParameterType.HASH256)) {
-
+            if (type.equals(BYTE_ARRAY) ||
+                    type.equals(SIGNATURE) ||
+                    type.equals(PUBLIC_KEY) ||
+                    type.equals(HASH160) ||
+                    type.equals(HASH256)) {
                 return Arrays.equals((byte[]) value, (byte[]) that.value);
-            } else if (type.equals(ContractParameterType.ARRAY)) {
+            } else if (type.equals(ARRAY)) {
                 ContractParameter[] thatValue = (ContractParameter[]) that.getValue();
                 ContractParameter[] oValue =
                         (ContractParameter[]) ((ContractParameter) o).getValue();
