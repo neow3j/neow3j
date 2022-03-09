@@ -2,8 +2,8 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,7 +280,7 @@ public class Transaction extends NeoSerializable {
         byte[] hashData = getHashData();
         List<Sign.SignatureData> signatures = Arrays.stream(accounts)
                 .map(Account::getECKeyPair)
-                .sorted(ECKeyPair.comparingByPubKey())
+                .sorted(Comparator.comparing(ECKeyPair::getPublicKey))
                 .map(a -> signMessage(hashData, a))
                 .collect(Collectors.toList());
         Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);

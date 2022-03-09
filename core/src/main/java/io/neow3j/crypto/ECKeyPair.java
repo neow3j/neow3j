@@ -18,7 +18,6 @@ import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.util.BigIntegers;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -27,7 +26,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.spec.ECGenParameterSpec;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Objects;
 
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
@@ -234,13 +232,6 @@ public class ECKeyPair {
         int result = privateKey != null ? privateKey.hashCode() : 0;
         result = 31 * result + (publicKey != null ? publicKey.hashCode() : 0);
         return result;
-    }
-
-    /**
-     * @return a comparator that compares {@link ECKeyPair} by their public keys.
-     */
-    public static Comparator<ECKeyPair> comparingByPubKey() {
-        return (Comparator<ECKeyPair> & Serializable) (c1, c2) -> c1.getPublicKey().compareTo(c2.getPublicKey());
     }
 
     public static class ECPrivateKey {
