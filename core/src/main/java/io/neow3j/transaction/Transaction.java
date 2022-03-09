@@ -43,7 +43,6 @@ import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
-import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -468,10 +467,11 @@ public class Transaction extends NeoSerializable {
 
     /**
      * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
+     *
      * @return neo-cli compatible json of this transaction.
      * @throws IOException if an error occurs when trying to fetch the network number.
      */
-    public String toContractParametersContextJson() throws IOException {
+    public ContractParametersContext toContractParametersContext() throws IOException {
         String hash = getTxId().toString();
         String data = Base64.encode(toArrayWithoutWitnesses());
         long network = neow3j.getNetworkMagicNumber();
@@ -497,17 +497,15 @@ public class Transaction extends NeoSerializable {
             }
 
             Map<String, String> pubKeyToSignature = new HashMap<>();
-            if (verificationScript.isSingleSigScript()) {
-                String pubKey = cleanHexPrefix(verificationScript.getPublicKeys().get(0).getEncodedCompressedHex());
-                String sig = Base64.encode((byte[]) params.get(0).getValue());
-                pubKeyToSignature.put(pubKey, sig);
+            if (verificationScript.isSingleSigScript() && params.get(0).getValue() != null) {
+                String pubKey = verificationScript.getPublicKeys().get(0).getEncodedCompressedHex();
+                pubKeyToSignature.put(pubKey, Base64.encode((byte[]) params.get(0).getValue()));
             }
             String script = Base64.encode(verificationScript.getScript());
             return new ContractParametersContext.ContextItem(script, params, pubKeyToSignature);
         }).collect(Collectors.toMap(i -> "0x" + Hash160.fromScript(Base64.decode(i.getScript())), Function.identity()));
 
-        ContractParametersContext param = new ContractParametersContext(hash, data, items, network);
-        return ObjectMapperFactory.getObjectMapper().writeValueAsString(param);
+        return new ContractParametersContext(hash, data, items, network);
     }
 
 }

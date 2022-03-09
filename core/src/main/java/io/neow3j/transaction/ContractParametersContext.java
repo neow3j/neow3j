@@ -21,35 +21,57 @@ public class ContractParametersContext {
         this.network = network;
     }
 
-    /**
-     * The type can be different in neo-core code, but, we only need the one for transactions here.
-     */
     @JsonProperty
     private final String type = "Neo.Network.P2P.Payloads.Transaction";
+
+    @JsonProperty
+    private String hash;
+
+    @JsonProperty
+    private String data;
+
+    @JsonProperty
+    private Map<String, ContextItem> items;
+
+    @JsonProperty
+    private long network;
+
+    /**
+     * Gets the type of parameter context, which is always {@code Neo.Network.P2P.Payloads.Transaction} for
+     * transaction objects.
+     */
+    public String getType() {
+        return type;
+    }
 
     /**
      * The hash of the transaction.
      */
-    @JsonProperty
-    private String hash;
+    public String getHash() {
+        return hash;
+    }
 
     /**
      * Base64 string of the transaction data without witnesses.
      */
-    @JsonProperty
-    private String data;
+    public String getData() {
+        return data;
+    }
 
     /**
-     * A mapping from the accounts to their witnesses.
+     * A mapping from the accounts (script hash) to their witnesses. These are the accounts used as signers on the
+     * transaction.
      */
-    @JsonProperty
-    private Map<String, ContextItem> items;
+    public Map<String, ContextItem> getItems() {
+        return items;
+    }
 
     /**
      * The number of the network on which to operate, e.g., testnet.
      */
-    @JsonProperty
-    private long network;
+    public long getNetwork() {
+        return network;
+    }
 
     public static class ContextItem {
 
@@ -59,32 +81,32 @@ public class ContractParametersContext {
             this.signatures = signatures == null ? new HashMap<>() : signatures;
         }
 
-        /**
-         * Base64 string of the verification script
-         */
         @JsonProperty
         private String script;
 
-        /**
-         * The parameters passed to the script, i.e., the signatures passed to the verification script
-         */
         @JsonProperty
         private List<ContractParameter> parameters;
 
-        /**
-         * Map of signing public key to their corresponding signature
-         */
         @JsonProperty
         private Map<String, String> signatures;
 
+        /**
+         * Base64 string of the verification script
+         */
         public String getScript() {
             return script;
         }
 
+        /**
+         * The parameters passed to the script, i.e., the signatures passed to the verification script
+         */
         public List<ContractParameter> getParameters() {
             return parameters;
         }
 
+        /**
+         * Map of signing public key to their corresponding signature
+         */
         public Map<String, String> getSignatures() {
             return signatures;
         }

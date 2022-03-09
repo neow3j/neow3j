@@ -1,6 +1,8 @@
 package io.neow3j.transaction;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlockCount;
@@ -10,6 +12,7 @@ import io.neow3j.script.OpCode;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
@@ -19,17 +22,21 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
@@ -153,7 +160,7 @@ public class TransactionTest {
         assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
         assertArrayEquals(new byte[]{(byte) OpCode.PUSH1.getCode()}, tx.getScript());
         assertThat(tx.getWitnesses(), is(
-                Arrays.asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
+                asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
 
         assertNull(tx.neow3j);
         Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
@@ -402,6 +409,72 @@ public class TransactionTest {
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
         tx.send();
+    }
+
+    @Test
+    public void toContractParameterContextJson() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException, IOException {
+
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
+                new Neow3jConfig().setNetworkMagic(769));
+
+        ECKeyPair.ECPublicKey pubKey = ECKeyPair.createEcKeyPair().getPublicKey();
+        Account multiSigAccount = Account.createMultiSigAccount(asList(pubKey, pubKey, pubKey), 2);
+        Account singleSigAccount1 = Account.create();
+        Account singleSigAccount2 = Account.create();
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.none(singleSigAccount1));
+        signers.add(AccountSigner.calledByEntry(singleSigAccount2));
+        signers.add(AccountSigner.calledByEntry(multiSigAccount));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+        Witness acc1witness = Witness.create(tx.getHashData(), singleSigAccount1.getECKeyPair());
+        tx.addWitness(acc1witness);
+        ContractParametersContext ctx = tx.toContractParametersContext();
+        assertThat(ctx.getType(), is("Neo.Network.P2P.Payloads.Transaction"));
+        assertThat(ctx.getNetwork(), is(769L));
+        assertThat(ctx.getData(), is(Base64.encode(tx.toArrayWithoutWitnesses())));
+        assertThat(ctx.getHash(), is(tx.getTxId().toString()));
+        assertThat(ctx.getItems().size(), is (3));
+
+        // item 1
+        ContractParametersContext.ContextItem item =
+                ctx.getItems().get("0x" + singleSigAccount1.getScriptHash().toString());
+        assertThat(item.getScript(), is(Base64.encode(singleSigAccount1.getVerificationScript().getScript())));
+        assertThat(item.getParameters().size(), is(1));
+        assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getParameters().get(0).getValue(),
+                is(acc1witness.getInvocationScript().getSignatures().get(0).getConcatenated()));
+        assertThat(item.getSignatures().size(), is(1));
+        assertThat(item.getSignatures().get(singleSigAccount1.getECKeyPair().getPublicKey().getEncodedCompressedHex()),
+                is(Base64.encode(acc1witness.getInvocationScript().getSignatures().get(0).getConcatenated())));
+
+        // item 2
+        item = ctx.getItems().get("0x" + singleSigAccount2.getScriptHash().toString());
+        assertThat(item.getScript(), is(Base64.encode(singleSigAccount2.getVerificationScript().getScript())));
+        assertThat(item.getParameters().size(), is(1));
+        assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getParameters().get(0).getValue(), is(nullValue()));
+        assertThat(item.getSignatures().size(), is(0));
+
+        // item 3
+        item = ctx.getItems().get("0x" + multiSigAccount.getScriptHash().toString());
+        assertThat(item.getScript(), is(Base64.encode(multiSigAccount.getVerificationScript().getScript())));
+        assertThat(item.getParameters().size(), is(2));
+        assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getParameters().get(0).getValue(), is(nullValue()));
+        assertThat(item.getParameters().get(1).getType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getParameters().get(1).getValue(), is(nullValue()));
+        assertThat(item.getSignatures().size(), is(0));
     }
 
 }
