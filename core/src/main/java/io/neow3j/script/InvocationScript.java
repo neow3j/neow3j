@@ -1,5 +1,6 @@
 package io.neow3j.script;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.crypto.Sign.SignatureData;
@@ -11,6 +12,7 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -70,6 +72,7 @@ public class InvocationScript extends NeoSerializable {
 
     /**
      * Constructs an invocation script from the given signatures.
+     *
      * @param sigs The signatures.
      * @return the invocation script.
      */
@@ -81,6 +84,7 @@ public class InvocationScript extends NeoSerializable {
 
     /**
      * Gets this invocation script as a byte array.
+     *
      * @return this invocation script as a byte array.
      */
     public byte[] getScript() {
@@ -102,15 +106,14 @@ public class InvocationScript extends NeoSerializable {
 
     @Override
     public String toString() {
-        return "InvocationScript{" +
-                "script=" + Numeric.toHexStringNoPrefix(script) + '}';
+        return "InvocationScript{script=" + Numeric.toHexStringNoPrefix(script) + '}';
     }
 
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             script = reader.readVarBytes();
-        } catch(IOException e) {
+        } catch (IOException e) {
             throw new DeserializationException(e);
         }
     }
@@ -123,5 +126,23 @@ public class InvocationScript extends NeoSerializable {
     @Override
     public int getSize() {
         return IOUtils.getVarSize(this.script.length) + this.script.length;
+    }
+
+    /**
+     * Unbundles the script into a list of signatures if this invocation script contains signatures.
+     *
+     * @return the list of signatures found in this script.
+     */
+    public List<SignatureData> getSignatures() {
+        BinaryReader r = new BinaryReader(script);
+        List<SignatureData> sigs = new ArrayList<>();
+        try {
+            while (r.available() > 0 && OpCode.PUSHDATA1.getCode() == r.readByte()) {
+                r.readByte();
+                sigs.add(SignatureData.fromByteArray(r.readBytes(NeoConstants.SIGNATURE_SIZE)));
+            }
+        } catch (IOException ignore) {
+        }
+        return sigs;
     }
 }
