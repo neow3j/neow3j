@@ -398,7 +398,7 @@ public class ECKeyPair {
          * @return the encoded public key in compressed format as hexadecimal with a prefix.
          */
         public String getEncodedCompressedHex() {
-            return Numeric.toHexString(getEncoded(true));
+            return Numeric.toHexStringNoPrefix(getEncoded(true));
         }
 
         /**
