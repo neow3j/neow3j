@@ -77,10 +77,12 @@ compile smart contracts that are compatible with Neo Legacy.
 * [Binance](https://binance.com)
 * [OKEx](https://okex.com)
 * [AxLabs](https://axlabs.com)
-* [Neo Playground](https://neo-playground.dev)
 * [Neo Blockchain Toolkit](https://marketplace.visualstudio.com/items?itemName=ngd-seattle.neo-blockchain-toolkit)
 * [NekoHit](https://nekohit.com)
+* [NeoCandy](https://neocandy.io)
+* [Neo Playground](https://neo-playground.dev)
 * [intellij-neo](https://github.com/intellij-neo/intellij-neo)
+* [Elements](https://www.getelements.dev)
 * Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
