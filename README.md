@@ -83,6 +83,7 @@ compile smart contracts that are compatible with Neo Legacy.
 * [Neo Playground](https://neo-playground.dev)
 * [intellij-neo](https://github.com/intellij-neo/intellij-neo)
 * [Elements](https://www.getelements.dev)
+* [GrantShares](https://grantshares.io)
 * Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
