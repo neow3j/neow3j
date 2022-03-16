@@ -89,14 +89,7 @@ public class ObjectsConverter implements Converter {
     }
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
-        Type type;
-        if (typeInsn.desc.contains("/") && !typeInsn.desc.startsWith("[")) {
-            // In this specific descriptor ASM doesn't add the "L" in front, when it's an object.
-            // Without it the "L", Type.getType() fails.
-            type = Type.getType("L" + typeInsn.desc + ";");
-        } else {
-            type = Type.getType(typeInsn.desc);
-        }
+        Type type = Type.getObjectType(typeInsn.desc);
         StackItemType stackItemType = Compiler.mapTypeToStackItemType(type);
         if (stackItemType.equals(StackItemType.BOOLEAN)) {
             // The Boolean stack item almost never appears because bool values are usually

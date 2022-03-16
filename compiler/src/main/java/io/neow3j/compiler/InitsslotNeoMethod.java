@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.script.OpCode;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -80,11 +81,7 @@ public class InitsslotNeoMethod extends NeoMethod {
     private void throwOnEventConstructorCall(AbstractInsnNode insn, CompilationUnit compUnit) {
         if (insn instanceof TypeInsnNode) {
             TypeInsnNode typeInsn = (TypeInsnNode) insn;
-            String desc = typeInsn.desc;
-            if (desc.contains("/") && !desc.startsWith("[")) {
-                // In some descriptors AMS doesn't add the "L" and ";" when the type is a class.
-                desc = "L" + desc + ";";
-            }
+            String desc = Type.getObjectType(typeInsn.desc).getDescriptor();
             if (isEvent(desc, compUnit)) {
                 throw new CompilerException(this, "Events must not be initialized by calling " +
                         "their constructor.");
