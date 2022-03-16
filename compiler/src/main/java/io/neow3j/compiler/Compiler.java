@@ -820,9 +820,8 @@ public class Compiler {
                     .map(ClassUtils::getFullyQualifiedNameForInternalName)
                     .anyMatch(i -> i.equals(EventInterface.class.getName()));
         } catch (IOException e) {
-            throw new RuntimeException("Failed fetching class" + classDesc, e);
+            throw new RuntimeException("Failed fetching class " + classDesc, e);
         }
     }
-
 
 }
