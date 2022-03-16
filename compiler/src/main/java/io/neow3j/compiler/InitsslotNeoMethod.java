@@ -25,6 +25,7 @@ public class InitsslotNeoMethod extends NeoMethod {
      *
      * @param asmMethod   The Java method this Neo method is converted from.
      * @param sourceClass The Java class from which this method originates.
+     * @param compUnit    The compilation unit object of the ongoing compilation, required for its classloader.
      */
     public InitsslotNeoMethod(MethodNode asmMethod, ClassNode sourceClass, CompilationUnit compUnit) {
         super(asmMethod, sourceClass);

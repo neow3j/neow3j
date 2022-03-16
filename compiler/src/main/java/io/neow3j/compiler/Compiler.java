@@ -803,6 +803,13 @@ public class Compiler {
         return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
+    /**
+     * Checks if the given class descriptor belongs to an event class.
+     *
+     * @param classDesc The descriptor.
+     * @param compUnit  The compilation unit required for the classloader.
+     * @return true if the class descriptor is from an event class. False otherwise.
+     */
     public static boolean isEvent(String classDesc, CompilationUnit compUnit) {
         char firstChar = classDesc.charAt(0);
         if (AsmHelper.PRIMITIVE_TYPE_NAMES.contains(firstChar) || firstChar == '[') {
