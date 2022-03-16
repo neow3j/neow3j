@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.script.OpCode;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
@@ -24,22 +25,23 @@ public class InitsslotNeoMethod extends NeoMethod {
      *
      * @param asmMethod   The Java method this Neo method is converted from.
      * @param sourceClass The Java class from which this method originates.
+     * @param compUnit    The compilation unit object of the ongoing compilation, required for its classloader.
      */
-    public InitsslotNeoMethod(MethodNode asmMethod, ClassNode sourceClass) {
+    public InitsslotNeoMethod(MethodNode asmMethod, ClassNode sourceClass, CompilationUnit compUnit) {
         super(asmMethod, sourceClass);
         setName(INITSSLOT_METHOD_NAME);
         setIsAbiMethod(true);
-        byte[] operand = new byte[]{(byte) calcNumberOfContractVariables(sourceClass.fields)};
+        byte[] operand = new byte[]{(byte) calcNumberOfContractVariables(sourceClass.fields, compUnit)};
         addInstruction(new NeoInstruction(OpCode.INITSSLOT, operand));
     }
 
-    private int calcNumberOfContractVariables(List<FieldNode> fields) {
+    private int calcNumberOfContractVariables(List<FieldNode> fields, CompilationUnit compUnit) {
         // Events are not counted as contract variables. They are only definitions and don't
         // appear as actual variables in the NeoVM script. We don't check for a maximum amount of
         // contract variables here, that is done in
         // Compiler.collectContractVariables(ClassNode asmClass).
         return (int) fields.stream()
-                .filter(f -> !isEvent(f.desc))
+                .filter(f -> !isEvent(f.desc, compUnit))
                 .count();
     }
 
@@ -70,17 +72,18 @@ public class InitsslotNeoMethod extends NeoMethod {
             }
             // Events must not be initialized, i.e., their constructor's must not be called.
             // Event variable are not actually variables in the NeoVM script code, just definitions.
-            throwOnEventConstructorCall(insn);
+            throwOnEventConstructorCall(insn, compUnit);
             insn = Compiler.handleInsn(insn, this, compUnit);
             insn = insn.getNext();
         }
         insertTryCatchBlocks();
     }
 
-    private void throwOnEventConstructorCall(AbstractInsnNode insn) {
+    private void throwOnEventConstructorCall(AbstractInsnNode insn, CompilationUnit compUnit) {
         if (insn instanceof TypeInsnNode) {
             TypeInsnNode typeInsn = (TypeInsnNode) insn;
-            if (isEvent(typeInsn.desc)) {
+            String desc = Type.getObjectType(typeInsn.desc).getDescriptor();
+            if (isEvent(desc, compUnit)) {
                 throw new CompilerException(this, "Events must not be initialized by calling " +
                         "their constructor.");
             }

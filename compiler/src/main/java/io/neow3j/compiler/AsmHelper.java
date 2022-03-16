@@ -31,7 +31,7 @@ import static java.lang.String.format;
 
 public class AsmHelper {
 
-    private static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
+    protected static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
             Arrays.asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
 
     /**

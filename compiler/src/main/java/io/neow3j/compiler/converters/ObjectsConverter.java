@@ -59,7 +59,7 @@ public class ObjectsConverter implements Converter {
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-                if (isEvent(fieldInsn.desc)) {
+                if (isEvent(fieldInsn.desc, compUnit)) {
                     if (neoMethod.isVerifyMethod()) {
                         throw new CompilerException(neoMethod,
                                 "The verify method is not allowed to fire any event.");
@@ -89,14 +89,7 @@ public class ObjectsConverter implements Converter {
     }
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
-        Type type;
-        if (typeInsn.desc.contains("/") && !typeInsn.desc.startsWith("[")) {
-            // In this specific descriptor ASM doesn't add the "L" in front, when it's an object.
-            // Without it the "L", Type.getType() fails.
-            type = Type.getType("L" + typeInsn.desc + ";");
-        } else {
-            type = Type.getType(typeInsn.desc);
-        }
+        Type type = Type.getObjectType(typeInsn.desc);
         StackItemType stackItemType = Compiler.mapTypeToStackItemType(type);
         if (stackItemType.equals(StackItemType.BOOLEAN)) {
             // The Boolean stack item almost never appears because bool values are usually
@@ -376,7 +369,7 @@ public class ObjectsConverter implements Converter {
                         " the main contract class."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
-        while (!isMethodCallToEventSend(insn)) {
+        while (!isMethodCallToEventSend(insn, compUnit)) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
             assert insn != null : "Expected to find call to send() method of an event but reached"
@@ -395,13 +388,12 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    private static boolean isMethodCallToEventSend(AbstractInsnNode insn) {
-
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn, CompilationUnit compUnit) throws IOException {
         if (!(insn instanceof MethodInsnNode)) {
             return false;
         }
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        return isEvent(methodInsn.owner);
+        return isEvent(Type.getObjectType(methodInsn.owner).getDescriptor(), compUnit);
     }
 
 }
