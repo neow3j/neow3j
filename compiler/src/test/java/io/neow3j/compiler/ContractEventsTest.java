@@ -1,29 +1,32 @@
 package io.neow3j.compiler;
 
-import static java.util.Arrays.asList;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-
 import io.neow3j.compiler.DebugInfo.Event;
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
-import io.neow3j.types.ContractParameter;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event5Args;
-import io.neow3j.types.ContractParameterType;
+import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
+import org.junit.Test;
+import org.objectweb.asm.tree.AnnotationNode;
+import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldNode;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-import org.objectweb.asm.tree.AnnotationNode;
-import org.objectweb.asm.tree.ClassNode;
-import org.objectweb.asm.tree.FieldNode;
+import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 
 public class ContractEventsTest {
 
@@ -149,4 +152,32 @@ public class ContractEventsTest {
             event2.fire("notification", 0, false, "notification", "notification");
         }
     }
+
+    @Test
+    public void testFiringEventWithMethodCallWithDevpackMethodCall() throws IOException {
+        CompilationUnit res = new Compiler().compile(FireEventWithMethodCallThatCallsDevpackMethod.class.getName());
+
+        List<ContractManifest.ContractABI.ContractEvent> events = res.getManifest().getAbi().getEvents();
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0).getName(), is("onCall"));
+        assertThat(events.get(0).getParameters(), hasSize(1));
+        assertThat(events.get(0).getParameters().get(0).getType(), is(ContractParameterType.HASH160));
+    }
+
+    static class FireEventWithMethodCallThatCallsDevpackMethod {
+
+        public static Hash160 value = StringLiteralHelper.addressToScriptHash("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA");
+
+        private static Hash160 contractOwner() {
+            return value;
+        }
+
+        @DisplayName("onCall")
+        public static Event1Arg<Hash160> onCall;
+
+        public static void fireEvent() {
+            onCall.fire(contractOwner());
+        }
+    }
+
 }
