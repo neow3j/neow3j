@@ -59,7 +59,7 @@ public class ObjectsConverter implements Converter {
                 break;
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
-                if (isEvent(fieldInsn.desc)) {
+                if (isEvent(fieldInsn.desc, compUnit)) {
                     if (neoMethod.isVerifyMethod()) {
                         throw new CompilerException(neoMethod,
                                 "The verify method is not allowed to fire any event.");
@@ -376,7 +376,7 @@ public class ObjectsConverter implements Converter {
                         " the main contract class."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
-        while (!isMethodCallToEventSend(insn)) {
+        while (!isMethodCallToEventSend(insn, compUnit)) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
             assert insn != null : "Expected to find call to send() method of an event but reached"
@@ -395,13 +395,12 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
-    private static boolean isMethodCallToEventSend(AbstractInsnNode insn) {
-
+    private static boolean isMethodCallToEventSend(AbstractInsnNode insn, CompilationUnit compUnit) throws IOException {
         if (!(insn instanceof MethodInsnNode)) {
             return false;
         }
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        return isEvent(methodInsn.owner);
+        return isEvent(Type.getObjectType(methodInsn.owner).getDescriptor(), compUnit);
     }
 
 }

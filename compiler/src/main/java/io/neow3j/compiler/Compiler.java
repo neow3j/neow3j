@@ -20,6 +20,7 @@ import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
+import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -357,7 +358,7 @@ public class Compiler {
         annotations.addAll(classNode.methods.stream().filter(m -> m.invisibleAnnotations != null)
                 .flatMap(m -> m.invisibleAnnotations.stream()).collect(Collectors.toList()));
 
-       annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
+        annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
     }
 
     @SuppressWarnings("unchecked")
@@ -455,8 +456,7 @@ public class Compiler {
         if (!classCtorOpt.isPresent()) {
             return;
         }
-        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(),
-                compUnit.getContractClass());
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass(), compUnit);
         if (m.containsOnlyAssertionRelatedInstructions()) {
             return;
         }
@@ -486,7 +486,7 @@ public class Compiler {
         }
         List<FieldNode> eventFields = asmClass.fields
                 .stream()
-                .filter(field -> isEvent(field.desc))
+                .filter(field -> isEvent(field.desc, this.compUnit))
                 .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
@@ -803,23 +803,19 @@ public class Compiler {
         return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
-    /**
-     * Checks if the given class is an event.
-     *
-     * @param classDesc the descriptor of the class to check.
-     * @return true, if the given class is an event. False, otherwise.
-     */
-    public static boolean isEvent(String classDesc) {
-        String fqn = getFullyQualifiedNameForInternalName(
-                AsmHelper.stripObjectDescriptor(classDesc));
-        Class<?> clazz;
-        try {
-            clazz = Class.forName(fqn);
-        } catch (ClassNotFoundException e) {
+    public static boolean isEvent(String classDesc, CompilationUnit compUnit) {
+        char firstChar = classDesc.charAt(0);
+        if (AsmHelper.PRIMITIVE_TYPE_NAMES.contains(firstChar) || firstChar == '[') {
             return false;
         }
-        return clazz.getInterfaces() != null && clazz.getInterfaces().length == 1
-                && clazz.getInterfaces()[0].equals(EventInterface.class);
+        try {
+            return AsmHelper.getAsmClassForDescriptor(classDesc, compUnit.getClassLoader()).interfaces.stream()
+                    .map(ClassUtils::getFullyQualifiedNameForInternalName)
+                    .anyMatch(i -> i.equals(EventInterface.class.getName()));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed fetching class" + classDesc, e);
+        }
     }
+
 
 }
