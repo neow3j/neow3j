@@ -385,6 +385,14 @@ public class ObjectsConverter implements Converter {
             calledNeoMethod.convert(compUnit);
             fieldSize = calculateFieldSize(structClassNode, compUnit);
         }
+        return finalizeConstructorCall(fieldSize, typeInsnNode, ctorMethod, structClassNode, callingNeoMethod,
+                calledNeoMethod, compUnit);
+    }
+
+    private static AbstractInsnNode finalizeConstructorCall(int fieldSize, TypeInsnNode typeInsnNode,
+            MethodNode ctorMethod, ClassNode structClassNode, NeoMethod callingNeoMethod, NeoMethod calledNeoMethod,
+            CompilationUnit compUnit) throws IOException {
+
         addPushNumber(fieldSize, callingNeoMethod);
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
         // TODO: Determine when to use NEWSTRUCT.
@@ -403,6 +411,7 @@ public class ObjectsConverter implements Converter {
         return insn;
     }
 
+    // Calculates the struct's field size, i.e., including its inherited fields.
     private static int calculateFieldSize(ClassNode structClassNode, CompilationUnit compUnit) throws IOException {
         int fieldSize = structClassNode.fields.size();
         ClassNode currentClassNode = structClassNode;
@@ -423,46 +432,30 @@ public class ObjectsConverter implements Converter {
         }
     }
 
-    private static AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn,
-            MethodNode ctorMethod, ClassNode owner, NeoMethod callingNeoMethod,
-            CompilationUnit compUnit) throws IOException {
+    private static AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn, MethodNode ctorMethod,
+            ClassNode classNode, NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
 
         NeoMethod calledNeoMethod;
-        String ctorMethodId = NeoMethod.getMethodId(ctorMethod, owner);
+        String ctorMethodId = NeoMethod.getMethodId(ctorMethod, classNode);
         if (compUnit.getNeoModule().hasMethod(ctorMethodId)) {
             // If the module already contains the converted ctor.
             calledNeoMethod = compUnit.getNeoModule().getMethod(ctorMethodId);
         } else {
             // Create a new NeoMethod, i.e., convert the constructor to NeoVM code.
             // Skip the call to the Object ctor and continue processing the rest of the ctor.
-            calledNeoMethod = new NeoMethod(ctorMethod, owner);
+            calledNeoMethod = new NeoMethod(ctorMethod, classNode);
             compUnit.getNeoModule().addMethod(calledNeoMethod);
             calledNeoMethod.initialize(compUnit);
-            AbstractInsnNode insn = skipToSuperCtorCall(ctorMethod, owner);
+            AbstractInsnNode insn = skipToSuperCtorCall(ctorMethod, classNode);
             insn = insn.getNext();
             while (insn != null) {
                 insn = handleInsn(insn, calledNeoMethod, compUnit);
                 insn = insn.getNext();
             }
         }
-
-        addPushNumber(owner.fields.size(), callingNeoMethod);
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
-        // TODO: Determine when to use NEWSTRUCT.
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
-        // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
-        // follow. Those are handled in the following while.
-        AbstractInsnNode insn = typeInsn.getNext().getNext();
-        while (!isCallToCtor(insn, owner.name)) {
-            insn = handleInsn(insn, callingNeoMethod, compUnit);
-            insn = insn.getNext();
-        }
-        // Reverse the arguments that are passed to the constructor call.
-        addReverseArguments(ctorMethod, callingNeoMethod);
-        // The actual address offset for the method call is set at a later point.
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4])
-                .setExtra(calledNeoMethod));
-        return insn;
+        int fieldSize = classNode.fields.size();
+        return finalizeConstructorCall(fieldSize, typeInsn, ctorMethod, classNode, callingNeoMethod, calledNeoMethod,
+                compUnit);
     }
 
 

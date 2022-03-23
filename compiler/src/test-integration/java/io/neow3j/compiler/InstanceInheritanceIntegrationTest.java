@@ -126,6 +126,8 @@ public class InstanceInheritanceIntegrationTest {
 
     static class InstanceInheritanceIntegrationTestContract {
 
+        static Event2Args<Integer, String> event;
+
         public static ChildClass testStructMultiInheritance(int p1, String p2, Hash160 p3, String p4, int p5) {
             return new ChildClass(p1, p2, p3, p4, p5);
         }
@@ -176,8 +178,6 @@ public class InstanceInheritanceIntegrationTest {
                 this.i = i;
             }
         }
-
-        static Event2Args<Integer, String> event;
 
         public static void testFieldAccessWithEvent(int i, String s) {
             MySubclass subclass = new MySubclass(i, s);

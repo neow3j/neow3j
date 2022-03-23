@@ -182,8 +182,7 @@ public class MethodsConverter implements Converter {
     }
 
     private static AbstractInsnNode handleSuperMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
-            MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit)
-            throws IOException {
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit) throws IOException {
 
         String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
         if (compUnit.getNeoModule().hasMethod(calledMethodId)) {
@@ -229,7 +228,7 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
-    // Handles method calls that the compiler sees for the first time (in this compilation unit) or have special
+    // Handles 'super' method calls that the compiler sees for the first time (in this compilation unit) or have special
     // behavior that will not be cached in a reusable NeoMethod object.
     private static AbstractInsnNode handleUncachedSuperMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
             MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit) throws IOException {

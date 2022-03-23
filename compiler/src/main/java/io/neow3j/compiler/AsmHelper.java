@@ -314,14 +314,25 @@ public class AsmHelper {
         return sw.toString();
     }
 
+    /**
+     * Gets the field index of the given field instruction node to use on the NeoVM.
+     * <p>
+     * If a class inherits from another class, its field indexes are equal to its local index plus the sum of all
+     * inherited fields.
+     *
+     * @param fieldInsn the field instruction node.
+     * @param compUnit the compilation unit.
+     * @return the field index.
+     * @throws IOException if an error occurs when reading class files.
+     */
     public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit) throws IOException {
         ClassNode owner = getAsmClassForInternalName(fieldInsn.owner, compUnit.getClassLoader());
         ClassNode currentClassNode = owner;
-
         int idx = 0;
         boolean fieldFound = false;
         while (!getFullyQualifiedNameForInternalName(currentClassNode.name).equals(Object.class.getCanonicalName())) {
             if (fieldFound) {
+                // Increase the index by the sum of the inherited fields.
                 idx += currentClassNode.fields.size();
             } else {
                 idx = 0;
