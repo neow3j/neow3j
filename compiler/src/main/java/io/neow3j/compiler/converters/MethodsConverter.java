@@ -7,6 +7,7 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
+import io.neow3j.compiler.SuperNeoMethod;
 import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.ContractHash;
@@ -91,33 +92,47 @@ public class MethodsConverter implements Converter {
                 break;
             case INVOKESTATIC:
             case INVOKEVIRTUAL:
-            case INVOKESPECIAL:
                 insn = handleInvoke(insn, neoMethod, compUnit);
+                break;
+            case INVOKESPECIAL:
+                insn = handleSuperCall(insn, neoMethod, compUnit);
                 break;
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
-                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
-                        opcode.name()));
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
+        }
+        return insn;
+    }
+
+    private AbstractInsnNode handleSuperCall(AbstractInsnNode insn, NeoMethod callingNeoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        MethodInsnNode methodInsn = (MethodInsnNode) insn;
+        ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
+        Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
+        if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) {
+            processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
+        } else {
+            return handleSuperMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn, compUnit);
         }
         return insn;
     }
 
     /**
-     * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor
-     * calls (INVOKESPECIAL) are handled in the {@link ObjectsConverter}
+     * Handles all INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC instructions. Note that constructor calls
+     * (INVOKESPECIAL) are handled in the {@link ObjectsConverter}
      *
      * @param insn             The instruction to handle.
-     * @param callingNeoMethod The method in which the invoke happens.
+     * @param callingNeoMethod The method in which the {@code invoke} happens.
      * @param compUnit         The {@code CompilationUnit}.
      * @return the instruction that should be processed next.
      * @throws IOException if an error occurs when trying to read class files.
      */
-    public static AbstractInsnNode handleInvoke(AbstractInsnNode insn,
-            NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
+    public static AbstractInsnNode handleInvoke(AbstractInsnNode insn, NeoMethod callingNeoMethod,
+            CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner,
-                compUnit.getClassLoader());
+        ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
         Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         // If the called method cannot be found on the owner type, we look through the super types
         // until we find the method.
@@ -166,6 +181,23 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
+    private static AbstractInsnNode handleSuperMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit)
+            throws IOException {
+
+        String calledMethodId = NeoMethod.getMethodId(calledAsmMethod, owner);
+        if (compUnit.getNeoModule().hasMethod(calledMethodId)) {
+            // If the module already compiled the method simply add a CALL instruction.
+            NeoMethod calledNeoMethod = compUnit.getNeoModule().getMethod(calledMethodId);
+            addReverseArguments(calledAsmMethod, callingNeoMethod);
+            // The actual address offset for the method call is set at a later point in compilation.
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
+        } else {
+            return handleUncachedSuperMethodCall(callingNeoMethod, owner, calledAsmMethod, methodInsn, compUnit);
+        }
+        return methodInsn;
+    }
+
     // Handles method calls that the compiler sees for the first time (in this compilation unit)
     // or have special behavior that will not be cached in a reusable NeoMethod object.
     private static AbstractInsnNode handleUncachedMethodCall(NeoMethod callingNeoMethod,
@@ -194,6 +226,21 @@ public class MethodsConverter implements Converter {
         // The actual address offset for the method call is set at a later point in compilation.
         callingNeoMethod.addInstruction(
                 new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
+        return methodInsn;
+    }
+
+    // Handles method calls that the compiler sees for the first time (in this compilation unit) or have special
+    // behavior that will not be cached in a reusable NeoMethod object.
+    private static AbstractInsnNode handleUncachedSuperMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
+            MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit) throws IOException {
+
+        SuperNeoMethod calledNeoMethod = new SuperNeoMethod(calledAsmMethod, owner);
+        compUnit.getNeoModule().addMethod(calledNeoMethod);
+        calledNeoMethod.initialize(compUnit);
+        calledNeoMethod.convert(compUnit);
+        addReverseArguments(calledAsmMethod, callingNeoMethod);
+        // The actual address offset for the method call is set at a later point in compilation.
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
         return methodInsn;
     }
 

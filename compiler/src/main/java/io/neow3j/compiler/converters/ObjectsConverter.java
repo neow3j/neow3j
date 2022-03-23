@@ -7,7 +7,9 @@ import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
+import io.neow3j.compiler.SuperNeoMethod;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
@@ -23,6 +25,7 @@ import org.objectweb.asm.tree.TypeInsnNode;
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.compiler.AsmHelper.getAsmClass;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
@@ -76,7 +79,12 @@ public class ObjectsConverter implements Converter {
                 // There is no corresponding NeoVM opcode.
                 break;
             case NEW:
-                insn = handleNew(insn, neoMethod, compUnit);
+                TypeInsnNode typeInsn = (TypeInsnNode) insn;
+                if (isStruct(typeInsn.desc, compUnit)) {
+                    insn = handleNewStruct(insn, neoMethod, compUnit);
+                } else {
+                    insn = handleNew(insn, neoMethod, compUnit);
+                }
                 break;
             case ARRAYLENGTH:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.SIZE));
@@ -86,6 +94,11 @@ public class ObjectsConverter implements Converter {
                 break;
         }
         return insn;
+    }
+
+    private boolean isStruct(String desc, CompilationUnit compUnit) throws IOException {
+        ClassNode asmClass = getAsmClass(getFullyQualifiedNameForInternalName(desc), compUnit.getClassLoader());
+        return hasAnnotations(asmClass, Struct.class);
     }
 
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
@@ -122,6 +135,40 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
+    }
+
+    public static AbstractInsnNode handleNewStruct(AbstractInsnNode insn, NeoMethod callingNeoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        TypeInsnNode typeInsn = (TypeInsnNode) insn;
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
+                : "Expected DUP after NEW but got other instructions";
+
+        ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), ownerClassNode);
+        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, ownerClassNode).orElseThrow(() ->
+                new CompilerException(callingNeoMethod, format("Couldn't find constructor '%s' on class '%s'.",
+                        ctorMethodInsn.name, getClassNameForInternalName(ownerClassNode.name))));
+
+        // Annotations in struct constructors are ignored
+        if (ctorMethod.invisibleAnnotations == null || ctorMethod.invisibleAnnotations.size() == 0) {
+            // It's a generic struct constructor without any Neo-specific annotations.
+            return convertStructConstructorCall(typeInsn, ctorMethod, ownerClassNode, callingNeoMethod, compUnit);
+        } else {
+            // The constructor has some Neo-specific annotation.
+            // skip NEW and DUP.
+            insn = insn.getNext().getNext();
+            // Process possible arguments passed to INVOKESPECIAL.
+            while (!isCallToCtor(insn, ownerClassNode.name)) {
+                insn = handleInsn(insn, callingNeoMethod, compUnit);
+                insn = insn.getNext();
+            }
+            // Now we're at the INVOKESPECIAL call and can convert the ctor method.
+            if (hasAnnotations(ctorMethod, Instruction.class, Instruction.Instructions.class)) {
+                processInstructionAnnotations(ctorMethod, callingNeoMethod);
+            }
+            return insn;
+        }
     }
 
     public static AbstractInsnNode handleNew(AbstractInsnNode insn, NeoMethod callingNeoMethod,
@@ -319,6 +366,61 @@ public class ObjectsConverter implements Converter {
     private static boolean isCallToAnyStringBuilderMethod(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class));
+    }
+
+    private static AbstractInsnNode convertStructConstructorCall(TypeInsnNode typeInsnNode, MethodNode ctorMethod,
+            ClassNode structClassNode, NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
+
+        SuperNeoMethod calledNeoMethod;
+        String ctorMethodId = NeoMethod.getMethodId(ctorMethod, structClassNode);
+        int fieldSize = structClassNode.fields.size();
+        if (compUnit.getNeoModule().hasMethod(ctorMethodId)) {
+            // If the module already contains the converted ctor.
+            calledNeoMethod = (SuperNeoMethod) compUnit.getNeoModule().getMethod(ctorMethodId);
+        } else {
+            // Create a new NeoMethod, i.e., convert the constructor to NeoVM code.
+            calledNeoMethod = new SuperNeoMethod(ctorMethod, structClassNode);
+            compUnit.getNeoModule().addMethod(calledNeoMethod);
+            calledNeoMethod.initialize(compUnit);
+            calledNeoMethod.convert(compUnit);
+            fieldSize = calculateFieldSize(structClassNode, compUnit);
+        }
+        addPushNumber(fieldSize, callingNeoMethod);
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+        // TODO: Determine when to use NEWSTRUCT.
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
+        // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can
+        // follow. Those are handled in the following while.
+        AbstractInsnNode insn = typeInsnNode.getNext().getNext();
+        while (!isCallToCtor(insn, structClassNode.name)) {
+            insn = handleInsn(insn, callingNeoMethod, compUnit);
+            insn = insn.getNext();
+        }
+        // Reverse the arguments that are passed to the constructor call.
+        addReverseArguments(ctorMethod, callingNeoMethod);
+        // The actual address offset for the method call is set at a later point.
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
+        return insn;
+    }
+
+    private static int calculateFieldSize(ClassNode structClassNode, CompilationUnit compUnit) throws IOException {
+        int fieldSize = structClassNode.fields.size();
+        ClassNode currentClassNode = structClassNode;
+        while (!getFullyQualifiedNameForInternalName(currentClassNode.superName)
+                .equals(Object.class.getCanonicalName())) {
+            throwIfSuperIsNotStruct(currentClassNode.superName, compUnit);
+            currentClassNode = getAsmClass(currentClassNode.superName, compUnit.getClassLoader());
+            fieldSize += currentClassNode.fields.size();
+        }
+        return fieldSize;
+    }
+
+    private static void throwIfSuperIsNotStruct(String superName, CompilationUnit compUnit) throws IOException {
+        ClassNode superClassNode = getAsmClass(superName, compUnit.getClassLoader());
+        if (!hasAnnotations(superClassNode, Struct.class)) {
+            throw new CompilerException(format("Struct classes are not allowed to inherit non-struct classes. %s was " +
+                    "inherited by a struct class.", superName));
+        }
     }
 
     private static AbstractInsnNode convertConstructorCall(TypeInsnNode typeInsn,

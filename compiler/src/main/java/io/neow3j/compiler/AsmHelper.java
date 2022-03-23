@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 public class AsmHelper {
@@ -255,7 +256,7 @@ public class AsmHelper {
         if (property == null) {
             return null;
         }
-        return ((String[])property)[1];
+        return ((String[]) property)[1];
     }
 
     /**
@@ -313,10 +314,16 @@ public class AsmHelper {
         return sw.toString();
     }
 
-    public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit)
-            throws IOException {
-
+    public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit) throws IOException {
         ClassNode owner = getAsmClassForInternalName(fieldInsn.owner, compUnit.getClassLoader());
+        ClassNode currentClassNode = owner;
+        int nrParentFields = 0;
+        while (!getFullyQualifiedNameForInternalName(currentClassNode.superName)
+                .equals(Object.class.getCanonicalName())) {
+            currentClassNode = getAsmClass(currentClassNode.superName, compUnit.getClassLoader());
+            nrParentFields += currentClassNode.fields.size();
+        }
+
         int idx = 0;
         boolean fieldFound = false;
         for (FieldNode field : owner.fields) {
@@ -327,10 +334,10 @@ public class AsmHelper {
             idx++;
         }
         if (!fieldFound) {
-            throw new CompilerException(owner, format("Tried to access a field variable with " +
-                    "name '%s', but such a field does not exist on this class.", fieldInsn.name));
+            throw new CompilerException(owner, format("Tried to access a field variable with name '%s', but such a " +
+                    "field does not exist on this class.", fieldInsn.name));
         }
-        return idx;
+        return idx + nrParentFields;
     }
 
     /**
@@ -385,4 +392,5 @@ public class AsmHelper {
         }
         return desc;
     }
+
 }
