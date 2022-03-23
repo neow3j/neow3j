@@ -317,27 +317,29 @@ public class AsmHelper {
     public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit) throws IOException {
         ClassNode owner = getAsmClassForInternalName(fieldInsn.owner, compUnit.getClassLoader());
         ClassNode currentClassNode = owner;
-        int nrParentFields = 0;
-        while (!getFullyQualifiedNameForInternalName(currentClassNode.superName)
-                .equals(Object.class.getCanonicalName())) {
-            currentClassNode = getAsmClass(currentClassNode.superName, compUnit.getClassLoader());
-            nrParentFields += currentClassNode.fields.size();
-        }
 
         int idx = 0;
         boolean fieldFound = false;
-        for (FieldNode field : owner.fields) {
-            if (field.name.equals(fieldInsn.name)) {
-                fieldFound = true;
-                break;
+        while (!getFullyQualifiedNameForInternalName(currentClassNode.name).equals(Object.class.getCanonicalName())) {
+            if (fieldFound) {
+                idx += currentClassNode.fields.size();
+            } else {
+                idx = 0;
+                for (FieldNode field : currentClassNode.fields) {
+                    if (field.name.equals(fieldInsn.name)) {
+                        fieldFound = true;
+                        break;
+                    }
+                    idx++;
+                }
             }
-            idx++;
+            currentClassNode = getAsmClass(currentClassNode.superName, compUnit.getClassLoader());
         }
         if (!fieldFound) {
             throw new CompilerException(owner, format("Tried to access a field variable with name '%s', but such a " +
                     "field does not exist on this class.", fieldInsn.name));
         }
-        return idx + nrParentFields;
+        return idx;
     }
 
     /**
