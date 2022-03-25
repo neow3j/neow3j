@@ -72,6 +72,21 @@ public class InstanceInheritanceIntegrationTest {
     }
 
     @Test
+    public void testReuseChildClassConstructorMethodInNeoModule() throws IOException {
+        io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160("7b5a47622946b9e8c5fef9f6d31b6c9fc7f8d3fe");
+        InvocationResult result = ct.callInvokeFunction(testName, integer(42), string("neow3j"), hash160(scriptHash),
+                string("axlabs"), integer(2468)).getInvocationResult();
+
+        assertThat(result.getState(), is(NeoVMStateType.HALT));
+        List<StackItem> stack = result.getStack();
+        assertThat(stack, hasSize(1));
+        assertThat(stack.get(0).getType(), is(StackItemType.ARRAY));
+        List<StackItem> list = stack.get(0).getList();
+        // Check that the field size of the struct is set correctly by the compiler.
+        assertThat(list, hasSize(5));
+    }
+
+    @Test
     public void testInheritedFieldAccess() throws IOException {
         io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160("7b5a47622946b9e8c5fef9f6d31b6c9fc7f8d3fe");
         InvocationResult result = ct.callInvokeFunction(testName, integer(13579), string("neow3j"), hash160(scriptHash),
@@ -155,6 +170,11 @@ public class InstanceInheritanceIntegrationTest {
         static Event2Args<Integer, String> event;
 
         public static ChildClass testStructMultiInheritance(int p1, String p2, Hash160 p3, String p4, int p5) {
+            return new ChildClass(p1, p2, p3, p4, p5);
+        }
+
+        public static ChildClass testReuseChildClassConstructorMethodInNeoModule(int p1, String p2, Hash160 p3,
+                String p4, int p5) {
             return new ChildClass(p1, p2, p3, p4, p5);
         }
 

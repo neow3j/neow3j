@@ -373,7 +373,7 @@ public class ObjectsConverter implements Converter {
 
         SuperNeoMethod calledNeoMethod;
         String ctorMethodId = NeoMethod.getMethodId(ctorMethod, structClassNode);
-        int fieldSize = structClassNode.fields.size();
+        int fieldSize = calculateFieldSize(structClassNode, compUnit);
         if (compUnit.getNeoModule().hasMethod(ctorMethodId)) {
             // If the module already contains the converted ctor.
             calledNeoMethod = (SuperNeoMethod) compUnit.getNeoModule().getMethod(ctorMethodId);
@@ -383,7 +383,6 @@ public class ObjectsConverter implements Converter {
             compUnit.getNeoModule().addMethod(calledNeoMethod);
             calledNeoMethod.initialize(compUnit);
             calledNeoMethod.convert(compUnit);
-            fieldSize = calculateFieldSize(structClassNode, compUnit);
         }
         return finalizeConstructorCall(fieldSize, typeInsnNode, ctorMethod, structClassNode, callingNeoMethod,
                 calledNeoMethod, compUnit);
