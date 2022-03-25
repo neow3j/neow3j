@@ -32,8 +32,7 @@ public class InstanceInheritanceIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct =
-            new ContractTestRule(InstanceInheritanceIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(InstanceInheritanceContract.class.getName());
 
     @Test
     public void testStructMultiInheritance() throws IOException {
@@ -124,7 +123,34 @@ public class InstanceInheritanceIntegrationTest {
         assertThat(notification.getState().getList().get(1).getString(), is("neo"));
     }
 
-    static class InstanceInheritanceIntegrationTestContract {
+    @Test
+    public void testStructWithParentTryCatch() throws Throwable {
+        InvocationResult result = ct.callInvokeFunction(testName, integer(10), integer(22)).getInvocationResult();
+
+        assertThat(result.getState(), is(NeoVMStateType.HALT));
+        assertThat(result.getStack(), hasSize(1));
+        assertThat(result.getStack().get(0).getType(), is(StackItemType.ARRAY));
+        List<StackItem> list = result.getStack().get(0).getList();
+        assertThat(list, hasSize(2));
+        assertThat(list.get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(list.get(0).getInteger().intValue(), is(0));
+        assertThat(list.get(1).getType(), is(StackItemType.INTEGER));
+        assertThat(list.get(1).getInteger().intValue(), is(22));
+
+        result = ct.callInvokeFunction(testName, integer(1), integer(23)).getInvocationResult();
+
+        assertThat(result.getState(), is(NeoVMStateType.HALT));
+        assertThat(result.getStack(), hasSize(1));
+        assertThat(result.getStack().get(0).getType(), is(StackItemType.ARRAY));
+        list = result.getStack().get(0).getList();
+        assertThat(list, hasSize(2));
+        assertThat(list.get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(list.get(0).getInteger().intValue(), is(1));
+        assertThat(list.get(1).getType(), is(StackItemType.INTEGER));
+        assertThat(list.get(1).getInteger().intValue(), is(23));
+    }
+
+    static class InstanceInheritanceContract {
 
         static Event2Args<Integer, String> event;
 
@@ -150,7 +176,7 @@ public class InstanceInheritanceIntegrationTest {
         }
 
         @Struct
-        static class ParentClass extends InstanceInheritanceIntegrationTestContract.GrandParentClass {
+        static class ParentClass extends InstanceInheritanceContract.GrandParentClass {
             public ByteString second;
             public Hash160 third;
 
@@ -206,6 +232,38 @@ public class InstanceInheritanceIntegrationTest {
                 this.s = s;
             }
         }
+
+        public static StructWithParentTryCatch testStructWithParentTryCatch(int i1, int i2) {
+            return new StructWithParentTryCatch(i1, i2);
+        }
+
+        @Struct
+        static class StructWithTryCatch {
+            public int i1;
+
+            StructWithTryCatch(int i1) {
+                try {
+                    if (i1 != 1) {
+                        throw new Exception("Exception");
+                    } else {
+                        this.i1 = 1;
+                    }
+                } catch (Exception e) {
+                    this.i1 = 0;
+                }
+            }
+        }
+
+        @Struct
+        static class StructWithParentTryCatch extends InstanceInheritanceContract.StructWithTryCatch {
+            public int i2;
+
+            StructWithParentTryCatch(int i1, int i2) {
+                super(i1);
+                this.i2 = i2;
+            }
+        }
+
     }
 
 }
