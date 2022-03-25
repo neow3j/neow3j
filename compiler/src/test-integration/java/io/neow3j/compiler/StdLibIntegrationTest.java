@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.annotations.Struct;
-import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.StdLib;
@@ -33,8 +32,7 @@ public class StdLibIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StdLibIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(StdLibIntegrationTestContract.class.getName());
 
     @Test
     public void serialize() throws IOException {
@@ -79,7 +77,7 @@ public class StdLibIntegrationTest {
     @Test
     public void base58Encode() throws IOException {
         String bytes = "54686520717569";
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "4CXMH7EgaC";
         assertThat(encoded, is(expected));
@@ -97,7 +95,7 @@ public class StdLibIntegrationTest {
     @Test
     public void base58CheckEncode() throws IOException {
         String bytes = "54686520717569";
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "MvzwCLE8dynR7Yn"; // Base58(concat(bytes, sha256(sha256(bytes))))
         assertThat(encoded, is(expected));
@@ -115,7 +113,7 @@ public class StdLibIntegrationTest {
     @Test
     public void base64Encode() throws IOException {
         String bytes = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         assertThat(encoded, is(expected));
