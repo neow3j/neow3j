@@ -7,6 +7,7 @@ import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.events.Event1Arg;
 import org.junit.Test;
 
@@ -52,14 +53,14 @@ public class StaticVariablesTest {
             event.fire("hello, world");
         }
 
+        @Struct
         static class MyClass {
-
             public int i;
 
             public MyClass(int i) {
                 this.i = i;
             }
         }
-
     }
+
 }

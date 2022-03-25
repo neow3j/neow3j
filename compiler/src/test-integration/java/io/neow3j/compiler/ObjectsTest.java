@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
@@ -66,8 +67,7 @@ public class ObjectsTest {
     public void storeAndRetrieveLargePOJO() throws Throwable {
         int i = 5;
         String byteArray = "010203";
-        ct.invokeFunctionAndAwaitExecution("put", string("some String"), byteArray(byteArray),
-                integer(i));
+        ct.invokeFunctionAndAwaitExecution("put", string("some String"), byteArray(byteArray), integer(i));
 
         NeoInvokeFunction response = ct.callInvokeFunction("get");
 
@@ -147,6 +147,7 @@ public class ObjectsTest {
         }
     }
 
+    @Struct
     static class POJO1 {
 
         String s;
@@ -158,6 +159,7 @@ public class ObjectsTest {
         }
     }
 
+    @Struct
     static class POJO2 {
         String s;
         byte[] bs;
@@ -192,6 +194,7 @@ public class ObjectsTest {
         }
     }
 
+    @Struct
     static class POJO3 {
 
         public int[] method(int k) {
@@ -203,6 +206,7 @@ public class ObjectsTest {
         }
     }
 
+    @Struct
     public static class POJO4 {
 
         io.neow3j.devpack.List<String> list = new io.neow3j.devpack.List<>();

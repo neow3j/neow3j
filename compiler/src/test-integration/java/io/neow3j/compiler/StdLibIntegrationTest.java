@@ -1,13 +1,12 @@
 package io.neow3j.compiler;
 
-import io.neow3j.types.ContractParameter;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.utils.Numeric;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -22,6 +21,7 @@ import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
@@ -32,8 +32,7 @@ public class StdLibIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StdLibIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(StdLibIntegrationTestContract.class.getName());
 
     @Test
     public void serialize() throws IOException {
@@ -61,16 +60,14 @@ public class StdLibIntegrationTest {
 
     @Test
     public void jsonSerialize() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true), integer(5),
-                string("hello, world!"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true), integer(5), string("hello, world!"));
         String res = response.getInvocationResult().getStack().get(0).getString();
         assertThat(res, is("[1,5,\"hello, world!\"]"));
     }
 
     @Test
     public void jsonDeserialize() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("[\"true\", 5, \"hello, world!\"]"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("[\"true\", 5, \"hello, world!\"]"));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertThat(res.get(1).getInteger().intValue(), is(5));
@@ -80,8 +77,7 @@ public class StdLibIntegrationTest {
     @Test
     public void base58Encode() throws IOException {
         String bytes = "54686520717569";
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "4CXMH7EgaC";
         assertThat(encoded, is(expected));
@@ -99,8 +95,7 @@ public class StdLibIntegrationTest {
     @Test
     public void base58CheckEncode() throws IOException {
         String bytes = "54686520717569";
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "MvzwCLE8dynR7Yn"; // Base58(concat(bytes, sha256(sha256(bytes))))
         assertThat(encoded, is(expected));
@@ -117,10 +112,8 @@ public class StdLibIntegrationTest {
 
     @Test
     public void base64Encode() throws IOException {
-        String bytes =
-                "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, ContractParameter.byteArray(bytes));
+        String bytes = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
         String encoded = response.getInvocationResult().getStack().get(0).getString();
         String expected = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         assertThat(encoded, is(expected));
@@ -131,8 +124,7 @@ public class StdLibIntegrationTest {
         String encoded = "VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIDEzIGxhenkgZG9ncy4=";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string(encoded));
         String decoded = response.getInvocationResult().getStack().get(0).getHexString();
-        String expected =
-                "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
+        String expected = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
         assertThat(decoded, is(expected));
     }
 
@@ -140,54 +132,41 @@ public class StdLibIntegrationTest {
     public void itoa() throws IOException {
         // With base 10
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(100), integer(10));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("100"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("100"));
 
         response = ct.callInvokeFunction(testName, integer(-1), integer(10));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("-1"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("-1"));
 
         // With base 16
         response = ct.callInvokeFunction(testName, integer(105), integer(16));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("69"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("69"));
 
         // With base 16
         response = ct.callInvokeFunction(testName, integer(-1), integer(16));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("f"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("f"));
     }
 
     @Test
     public void atoi() throws IOException {
         // With base 10
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string("100"), integer(10));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(100));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(100));
 
         response = ct.callInvokeFunction(testName, string("-1"), integer(10));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
 
         // With base 16
         response = ct.callInvokeFunction(testName, string("69"), integer(16));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(105));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(105));
 
         response = ct.callInvokeFunction(testName, string("ff"), integer(16));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
     }
 
     @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(Numeric.reverseHexString(stdLibHash())));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(reverseHexString(stdLibHash())));
     }
 
     @Test
@@ -200,8 +179,7 @@ public class StdLibIntegrationTest {
         b1 = "000203";
         b2 = "010203";
         response = ct.callInvokeFunction(testName, byteArray(b1), byteArray(b2));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
 
         b1 = "020203";
         b2 = "010203";
@@ -213,14 +191,12 @@ public class StdLibIntegrationTest {
     public void memorySearch() throws Throwable {
         String b = "0102030405060708090a0b0c0d0e0f";
         String value = "040506";
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                byteArray(b), byteArray(value));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(3));
 
         value = "050406";
         response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
     }
 
     @Test
@@ -228,15 +204,13 @@ public class StdLibIntegrationTest {
         String b = "0102030405060708090a0b0c0d0e0f";
         String value = "060708";
         int start = 4;
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                byteArray(b), byteArray(value), integer(start));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(5));
 
         value = "030405";
         start = 4;
         response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
     }
 
     @Test
@@ -244,15 +218,13 @@ public class StdLibIntegrationTest {
         String b = "0102030405060708090a0b0c0d0e0f";
         String value = "060708";
         int start = 14;
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                byteArray(b), byteArray(value), integer(start));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(5));
 
         // start index doesn't cover the whole value.
         start = 6;
         response = ct.callInvokeFunction(testName, byteArray(b), byteArray(value), integer(start));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
 
         // start index doesn't cover the whole value.
         value = "010203";
@@ -361,8 +333,7 @@ public class StdLibIntegrationTest {
             return StdLib.memorySearch(b, value, start);
         }
 
-        public static int memorySearchWithStartAndBackwards(ByteString b, ByteString value,
-                int start) {
+        public static int memorySearchWithStartAndBackwards(ByteString b, ByteString value, int start) {
             return StdLib.memorySearch(b, value, start, true);
         }
 
@@ -374,6 +345,7 @@ public class StdLibIntegrationTest {
             return StdLib.stringSplit(s, sep, true);
         }
 
+        @Struct
         static class SimpleClass {
 
             boolean b;
@@ -385,6 +357,7 @@ public class StdLibIntegrationTest {
             }
         }
 
+        @Struct
         static class OtherClass {
 
             boolean b;
@@ -398,4 +371,5 @@ public class StdLibIntegrationTest {
             }
         }
     }
+
 }
