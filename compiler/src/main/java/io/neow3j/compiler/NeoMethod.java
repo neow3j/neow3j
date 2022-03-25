@@ -44,10 +44,10 @@ import static java.util.Arrays.stream;
 public class NeoMethod {
 
     // The ASM counterpart of this method.
-    protected final MethodNode asmMethod;
+    private final MethodNode asmMethod;
 
     // The type that contains this method.
-    protected final ClassNode sourceClass;
+    private final ClassNode sourceClass;
 
     // The method's name that is, e.g., used when generating the contract's ABI.
     private String name;
