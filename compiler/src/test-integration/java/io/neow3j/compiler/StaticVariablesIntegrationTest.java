@@ -4,6 +4,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageMap;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash256;
@@ -24,8 +25,7 @@ public class StaticVariablesIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StaticVariablesIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(StaticVariablesIntegrationTestContract.class.getName());
 
     @Test
     public void putToStaticStorageMap() throws Throwable {
@@ -42,8 +42,7 @@ public class StaticVariablesIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getString(),
                 StringStartsWith.startsWith("The platform: "));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                StringEndsWith.endsWith("NEO"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), StringEndsWith.endsWith("NEO"));
     }
 
     @Test
@@ -55,8 +54,7 @@ public class StaticVariablesIntegrationTest {
 
     static class StaticVariablesIntegrationTestContract {
 
-        private static final StorageMap map =
-                new StorageMap(Storage.getStorageContext(), new ByteString("data"));
+        private static final StorageMap map = new StorageMap(Storage.getStorageContext(), new ByteString("data"));
         private static final String platform = "The platform: " + Runtime.getPlatform();
 
         public static void putToStaticStorageMap(ByteString key, ByteString value) {
@@ -73,10 +71,10 @@ public class StaticVariablesIntegrationTest {
 
     }
 
+    @Struct
     static class NonContractClass {
 
         public static final String var = "Hello, world!";
     }
 
 }
-

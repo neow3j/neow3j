@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import org.junit.ClassRule;
@@ -63,6 +64,7 @@ public class NullCheckIntegrationTest {
             return false;
         }
 
+        @Struct
         static class POJO {
 
             public int i;
