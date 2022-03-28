@@ -14,12 +14,15 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.map;
 import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 
@@ -33,17 +36,14 @@ public class MapTest {
 
     @Test
     public void putAndGetFromMap() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string("world"));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("world"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello"), string("world"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("world"));
     }
 
     @Test
     public void getMapValues() throws IOException {
         NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string("world"),
-                        string("olleh"), string("dlrow"));
+                ct.callInvokeFunction(testName, string("hello"), string("world"), string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("world"));
         assertThat(items.get(1).getString(), is("dlrow"));
@@ -52,8 +52,7 @@ public class MapTest {
     @Test
     public void getMapKeys() throws IOException {
         NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string("world"),
-                        string("olleh"), string("dlrow"));
+                ct.callInvokeFunction(testName, string("hello"), string("world"), string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("hello"));
         assertThat(items.get(1).getString(), is("olleh"));
@@ -62,16 +61,14 @@ public class MapTest {
     @Test
     public void mapContainsKey() throws IOException {
         NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string("world"),
-                        string("olleh"), string("dlrow"));
+                ct.callInvokeFunction(testName, string("hello"), string("world"), string("olleh"), string("dlrow"));
         assertThat(response.getInvocationResult().getStack().get(0).getBoolean(), is(true));
     }
 
     @Test
     public void removeFromMap() throws IOException {
         NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello"), string("world"),
-                        string("olleh"), string("dlrow"));
+                ct.callInvokeFunction(testName, string("hello"), string("world"), string("olleh"), string("dlrow"));
         List<StackItem> items = response.getInvocationResult().getStack().get(0).getList();
         assertThat(items.get(0).getString(), is("olleh"));
     }
@@ -98,6 +95,82 @@ public class MapTest {
             assertThat(values.get(2).getString(), is("string"));
             assertTrue(values.get(3).getBoolean());
         }
+    }
+
+    @Test
+    public void returnMapStringValue() throws Throwable {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> stack = response.getInvocationResult().getStack();
+        assertThat(stack, hasSize(1));
+        java.util.Map<StackItem, StackItem> map = stack.get(0).getMap();
+
+        Optional<String> stringValue = map.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("stringKey"))
+                .map(e -> e.getValue().getString())
+                .findFirst();
+        assertTrue(stringValue.isPresent());
+        assertThat(stringValue.get(), is("value"));
+    }
+
+    @Test
+    public void returnMapIntegerValue() throws Throwable {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> stack = response.getInvocationResult().getStack();
+        assertThat(stack, hasSize(1));
+        java.util.Map<StackItem, StackItem> map = stack.get(0).getMap();
+
+        Optional<BigInteger> integerValue = map.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("integerKey"))
+                .map(e -> e.getValue().getInteger())
+                .findFirst();
+        assertTrue(integerValue.isPresent());
+        assertThat(integerValue.get(), is(BigInteger.valueOf(42)));
+    }
+
+    @Test
+    public void returnMapArrayValue() throws Throwable {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> stack = response.getInvocationResult().getStack();
+        assertThat(stack, hasSize(1));
+        java.util.Map<StackItem, StackItem> map = stack.get(0).getMap();
+
+        List<StackItem> value = map.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("mapKey"))
+                .map(java.util.Map.Entry::getValue)
+                .collect(Collectors.toList());
+        List<StackItem> arr = value.get(0).getList();
+        assertThat(arr.get(0).getString(), is("arrValue1"));
+        assertThat(arr.get(1).getString(), is("arrValue2"));
+    }
+
+    @Test
+    public void returnMapMapValue() throws Throwable {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> stack = response.getInvocationResult().getStack();
+        assertThat(stack, hasSize(1));
+        java.util.Map<StackItem, StackItem> map = stack.get(0).getMap();
+
+        List<StackItem> value = map.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("mapKey1"))
+                .map(java.util.Map.Entry::getValue)
+                .collect(Collectors.toList());
+
+        java.util.Map<StackItem, StackItem> nestedMap = value.get(0).getMap();
+        String nKey1Value = nestedMap.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("nKey1"))
+                .map(java.util.Map.Entry::getValue)
+                .map(StackItem::getString)
+                .findFirst()
+                .get();
+        assertThat(nKey1Value, is("nValue1"));
+
+        String nKey2Value = nestedMap.entrySet().stream()
+                .filter(e -> e.getKey().getString().equals("nKey2"))
+                .map(java.util.Map.Entry::getValue)
+                .map(StackItem::getString)
+                .findFirst()
+                .get();
+        assertThat(nKey2Value, is("nValue2"));
     }
 
     static class MapTests {
@@ -146,6 +219,36 @@ public class MapTest {
                 keysAndValues.add(o);
             }
             return keysAndValues;
+        }
+
+        public static Map<String, String> returnMapStringValue() {
+            Map<String, String> map = new Map<>();
+            map.put("stringKey", "value");
+            return map;
+        }
+
+        public static Map<String, Integer> returnMapIntegerValue() {
+            Map<String, Integer> map = new Map<>();
+            map.put("integerKey", 42);
+            return map;
+        }
+
+        public static Map<String, Object> returnMapArrayValue() {
+            Map<String, Object> map = new Map<>();
+            String[] valueMap = new String[2];
+            valueMap[0] = "arrValue1";
+            valueMap[1] = "arrValue2";
+            map.put("mapKey", valueMap);
+            return map;
+        }
+
+        public static Map<String, Object> returnMapMapValue() {
+            Map<String, Object> map = new Map<>();
+            Map<String, Object> nestedMap = new Map<>();
+            nestedMap.put("nKey1", "nValue1");
+            nestedMap.put("nKey2", "nValue2");
+            map.put("mapKey1", nestedMap);
+            return map;
         }
 
     }

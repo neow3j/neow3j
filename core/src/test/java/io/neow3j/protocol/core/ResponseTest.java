@@ -933,8 +933,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamName(), is("hash"));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getParamType(),
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getName(), is("hash"));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getType(),
                 is(ContractParameterType.HASH256));
         assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
 
@@ -1823,7 +1823,7 @@ public class ResponseTest extends ResponseTester {
         InvocationResult.PendingSignature.Item item =
                 items.get("0x05859de95ccbbd5668e0f055b208273634d4657f");
         assertThat(item.getScript(), is("base64 script"));
-        assertThat(item.getParameters().get(1).getParamType(), is(ContractParameterType.SIGNATURE));
+        assertThat(item.getParameters().get(1).getType(), is(ContractParameterType.SIGNATURE));
         assertThat(item.getSignatures()
                         .get("033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81"),
                 is("base64 string of signature"));

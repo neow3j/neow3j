@@ -1,13 +1,16 @@
 package io.neow3j.compiler;
 
-import io.neow3j.types.Hash256;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.contracts.PolicyContract;
+import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.Hash256;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -91,6 +94,15 @@ public class ContractEventsIntegrationTest {
         assertThat(state.get(2).getList().get(0).getInteger().intValue(), is(10));
     }
 
+    @Test
+    public void fireEventWithMethodCallOnSelf() throws Throwable {
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        NeoApplicationLog.Execution.Notification n = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getNotifications().get(0);
+        assertThat(n.getEventName(), is("event5"));
+        assertThat(n.getState().getList().get(0).getAddress(), is("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA"));
+    }
+
     static class ContractEventsIntegrationTestContract {
 
         private static Event2Args<String, Integer> event1;
@@ -101,6 +113,10 @@ public class ContractEventsIntegrationTest {
         private static Event3Args<byte[], byte[], int[]> event3;
 
         private static Event2Args<Integer, Integer> event4;
+
+        public static Event1Arg<Hash160> event5;
+
+        public static Hash160 value = StringLiteralHelper.addressToScriptHash("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA");
 
         public static boolean fireTwoEvents() {
             event1.fire("event text", 10);
@@ -114,6 +130,14 @@ public class ContractEventsIntegrationTest {
 
         public static void fireEvent(byte[] from, byte[] to, int i) {
             event3.fire(from, to, new int[]{i});
+        }
+
+        public static void fireEventWithMethodCallOnSelf() {
+            event5.fire(contractOwner());
+        }
+
+        private static Hash160 contractOwner() {
+            return value;
         }
     }
 

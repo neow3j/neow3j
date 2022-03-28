@@ -36,8 +36,8 @@ import java.util.stream.IntStream;
 /**
  * Represents a Neo account.
  * <p>
- * An account can be a single-signature or multi-signature account. The latter does not contain
- * EC key material because it is based on multiple EC key pairs.
+ * An account can be a single-signature or multi-signature account. The latter does not contain EC key material
+ * because it is based on multiple EC key pairs.
  */
 @SuppressWarnings("unchecked")
 public class Account {
@@ -60,7 +60,7 @@ public class Account {
     /**
      * Constructs a new account with the given EC key pair.
      *
-     * @param ecKeyPair The key pair of the account.
+     * @param ecKeyPair the key pair of the account.
      */
     public Account(ECKeyPair ecKeyPair) {
         this.keyPair = ecKeyPair;
@@ -137,10 +137,10 @@ public class Account {
     }
 
     /**
-     * Decrypts this account's private key, according to the NEP-2 standard, if not already
-     * decrypted. Uses the default Scrypt parameters.
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted. Uses the
+     * default Scrypt parameters.
      *
-     * @param password The passphrase used to decrypt this account's private key.
+     * @param password the passphrase used to decrypt this account's private key.
      * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
      * @throws CipherException       throws if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
@@ -148,21 +148,19 @@ public class Account {
      *                               <ul>
      *                               <li>the account doesn't hold an encrypted private key
      *                               <li>the account does already hold a decrypted private key
-     *                               <li>the public key derived from the decrypted private key is
-     *                               not equal to the already set public key.
+     *                               <li>the public key derived from the decrypted private key is not equal to the
+     *                               already set public key.
      *                               </ul>
      */
-    public void decryptPrivateKey(String password)
-            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+    public void decryptPrivateKey(String password) throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
         decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
 
     /**
-     * Decrypts this account's private key, according to the NEP-2 standard, if not already
-     * decrypted.
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
      *
-     * @param password     The passphrase used to decrypt this account's private key.
-     * @param scryptParams The Scrypt parameters used for decryption.
+     * @param password     the passphrase used to decrypt this account's private key.
+     * @param scryptParams the Scrypt parameters used for decryption.
      * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
      * @throws CipherException       throws if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
@@ -170,12 +168,12 @@ public class Account {
      *                               <ul>
      *                               <li>the account doesn't hold an encrypted private key
      *                               <li>the account does already hold a decrypted private key
-     *                               <li>the public key derived from the decrypted private key is
-     *                               not equal to the already set public key.
+     *                               <li>the public key derived from the decrypted private key is not equal to the
+     *                               already set public key.
      *                               </ul>
      */
-    public void decryptPrivateKey(String password, ScryptParams scryptParams)
-            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
+    public void decryptPrivateKey(String password, ScryptParams scryptParams) throws NEP2InvalidFormat,
+            CipherException, NEP2InvalidPassphrase {
 
         if (this.keyPair != null) {
             return;
@@ -187,10 +185,9 @@ public class Account {
     }
 
     /**
-     * Encrypts this account's private key according to the NEP-2 standard using the default Scrypt
-     * parameters.
+     * Encrypts this account's private key according to the NEP-2 standard using the default Scrypt parameters.
      *
-     * @param password The passphrase used to encrypt this account's private key.
+     * @param password the passphrase used to encrypt this account's private key.
      * @throws CipherException if failed encrypt the created wallet.
      */
     public void encryptPrivateKey(String password) throws CipherException {
@@ -200,13 +197,11 @@ public class Account {
     /**
      * Encrypts this account's private key according to the NEP-2 standard and
      *
-     * @param password     The passphrase used to encrypt this account's private key.
-     * @param scryptParams The Scrypt parameters used for encryption.
+     * @param password     the passphrase used to encrypt this account's private key.
+     * @param scryptParams the Scrypt parameters used for encryption.
      * @throws CipherException if failed encrypt the created wallet.
      */
-    public void encryptPrivateKey(String password, ScryptParams scryptParams)
-            throws CipherException {
-
+    public void encryptPrivateKey(String password, ScryptParams scryptParams) throws CipherException {
         if (this.keyPair == null) {
             throw new AccountStateException("The account does not hold a decrypted private key.");
         }
@@ -218,7 +213,7 @@ public class Account {
     /**
      * Checks if this account is a multi-sig account.
      *
-     * @return true if this account is a multi-sig account. False otherwise.
+     * @return true if this account is a multi-sig account. False, otherwise.
      */
     public boolean isMultiSig() {
         return signingThreshold != null && nrOfParticipants != null;
@@ -231,8 +226,8 @@ public class Account {
      */
     public Integer getSigningThreshold() {
         if (!isMultiSig()) {
-            throw new AccountStateException("Cannot get signing threshold from account " +
-                    this.getAddress() + ", because it is not multi-sig.");
+            throw new AccountStateException("Cannot get signing threshold from account " + this.getAddress() +
+                    ", because it is not multi-sig.");
         }
         return signingThreshold;
     }
@@ -244,8 +239,8 @@ public class Account {
      */
     public Integer getNrOfParticipants() {
         if (!isMultiSig()) {
-            throw new AccountStateException("Cannot get number of participants from account " +
-                    this.getAddress() + ", because it is not multi-sig.");
+            throw new AccountStateException("Cannot get number of participants from account " + this.getAddress() +
+                    ", because it is not multi-sig.");
         }
         return nrOfParticipants;
     }
@@ -253,23 +248,19 @@ public class Account {
     /**
      * Gets the balances of all NEP-17 tokens that this account owns.
      * <p>
-     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
-     * 1*10^8 GAS fractions.
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
      * <p>
-     * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached
-     * locally. Every time this method is called a request is send to the neo-node.
+     * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached locally. Every
+     * time this method is called a request is send to the neo-node.
      *
-     * @param neow3j The {@link Neow3j} object used to call a neo-node.
+     * @param neow3j the {@link Neow3j} object used to call a neo-node.
      * @return the map of token script hashes to token amounts.
-     * @throws IOException If something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
      */
-    public Map<Hash160, BigInteger> getNep17Balances(Neow3j neow3j)
-            throws IOException {
-
+    public Map<Hash160, BigInteger> getNep17Balances(Neow3j neow3j) throws IOException {
         NeoGetNep17Balances result = neow3j.getNep17Balances(getScriptHash()).send();
         Map<Hash160, BigInteger> balances = new HashMap<>();
-        result.getBalances().getBalances().forEach(b ->
-                balances.put(b.getAssetHash(), new BigInteger(b.getAmount())));
+        result.getBalances().getBalances().forEach(b -> balances.put(b.getAssetHash(), new BigInteger(b.getAmount())));
         return balances;
     }
 
@@ -283,16 +274,16 @@ public class Account {
         }
         List<NEP6Parameter> parameters = new ArrayList<>();
         if (this.verificationScript.isMultiSigScript()) {
-            IntStream.range(0, this.verificationScript.getNrOfAccounts()).forEachOrdered(i -> {
-                parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE));
-            });
+            IntStream.range(0, this.verificationScript.getNrOfAccounts()).forEachOrdered(i ->
+                    parameters.add(new NEP6Parameter("signature" + i, ContractParameterType.SIGNATURE))
+            );
         } else if (this.verificationScript.isSingleSigScript()) {
             parameters.add(new NEP6Parameter("signature", ContractParameterType.SIGNATURE));
         }
         String script = Base64.encode(this.verificationScript.getScript());
         NEP6Contract contract = new NEP6Contract(script, parameters, false);
-        return new NEP6Account(this.address, this.label, this.isDefault(), this.isLocked,
-                this.encryptedPrivateKey, contract, null);
+        return new NEP6Account(this.address, this.label, this.isDefault(), this.isLocked, this.encryptedPrivateKey,
+                contract, null);
     }
 
     /**
@@ -317,8 +308,8 @@ public class Account {
     /**
      * Creates an account from the given public key.
      * <p>
-     * Derives the verification script from the public key, which is needed to
-     * calculate the network fee of a transaction.
+     * Derives the verification script from the public key, which is needed to calculate the network fee of a
+     * transaction.
      *
      * @param publicKey The public key.
      * @return the account with a verification script.
@@ -334,16 +325,14 @@ public class Account {
     }
 
     /**
-     * Creates a multi-sig account from the given public keys. Mind that the ordering of the
-     * keys is important for later usage of the account.
+     * Creates a multi-sig account from the given public keys. Mind that the ordering of the keys is important for
+     * later usage of the account.
      *
-     * @param publicKeys       The public keys from which to derive the multi-sig account.
-     * @param signingThreshold The number of signatures needed when using this account for signing
-     *                         transactions.
+     * @param publicKeys       the public keys from which to derive the multi-sig account.
+     * @param signingThreshold the number of signatures needed when using this account for signing transactions.
      * @return the multi-sig account.
      */
-    public static Account createMultiSigAccount(List<ECPublicKey> publicKeys,
-            int signingThreshold) {
+    public static Account createMultiSigAccount(List<ECPublicKey> publicKeys, int signingThreshold) {
         VerificationScript script = new VerificationScript(publicKeys, signingThreshold);
         String address = Hash160.fromScript(script.getScript()).toAddress();
         Account account = new Account();
@@ -358,14 +347,12 @@ public class Account {
     /**
      * Creates a multi-sig account holding the given address.
      *
-     * @param address          The address of the multi-sig account.
-     * @param signingThreshold The number of signatures needed when using this account for signing
-     *                         transactions.
-     * @param nrOfParticipants The number of participating accounts.
+     * @param address          the address of the multi-sig account.
+     * @param signingThreshold the number of signatures needed when using this account for signing transactions.
+     * @param nrOfParticipants the number of participating accounts.
      * @return the multi-sig account.
      */
-    public static Account createMultiSigAccount(String address, int signingThreshold,
-            int nrOfParticipants) {
+    public static Account createMultiSigAccount(String address, int signingThreshold, int nrOfParticipants) {
         Account account = new Account();
         account.address = address;
         account.label = address;
@@ -377,7 +364,7 @@ public class Account {
     /**
      * Creates an account from the given WIF.
      *
-     * @param wif The WIF of the account.
+     * @param wif the WIF of the account.
      * @return the account.
      */
     public static Account fromWIF(String wif) {
@@ -394,7 +381,7 @@ public class Account {
     /**
      * Creates an account from the provided NEP-6 account.
      *
-     * @param nep6Acct The account in NEP-6 format.
+     * @param nep6Acct the account in NEP-6 format.
      * @return the account.
      */
     public static Account fromNEP6Account(NEP6Account nep6Acct) {
@@ -418,13 +405,14 @@ public class Account {
     /**
      * Creates an account from the given address.
      * <p>
-     * Note that an account created with this method does not contain a verification script nor
-     * an EC key pair. Therefore, it cannot be used for transaction signing.
+     * Note that an account created with this method does not contain a verification script nor an EC key pair.
+     * Therefore, it cannot be used for transaction signing.
      * <p>
      * Don't use this method for creating a multi-sig account from an address. Use
      * {@link Account#createMultiSigAccount(String, int, int)} instead.
-     * @param address The address of the account. Must be a valid Neo address. Make sure that the
-     *                address version used in this address is the same as the one configured in
+     *
+     * @param address the address of the account. Must be a valid Neo address. Make sure that the address version
+     *                used in this address is the same as the one configured in
      *                {@link Neow3jConfig#getAddressVersion()}.
      * @return the account.
      */
@@ -441,10 +429,10 @@ public class Account {
     /**
      * Creates an account from the given script hash.
      * <p>
-     * Note that an account created with this method does not contain a verification script nor
-     * an EC key pair. Therefore, it cannot be used for transaction signing.
+     * Note that an account created with this method does not contain a verification script nor an EC key pair.
+     * Therefore, it cannot be used for transaction signing.
      *
-     * @param scriptHash The script hash of the account.
+     * @param scriptHash the script hash of the account.
      * @return the account.
      */
     public static Account fromScriptHash(Hash160 scriptHash) {

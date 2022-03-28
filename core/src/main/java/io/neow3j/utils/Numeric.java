@@ -62,6 +62,14 @@ public final class Numeric {
         return true;
     }
 
+    /**
+     * Removes an existing prefix.
+     * <p>
+     * If the input has no prefix, it is returned unchanged.
+     *
+     * @param input The hex string.
+     * @return the hex string without a prefix.
+     */
     public static String cleanHexPrefix(String input) {
         if (containsHexPrefix(input)) {
             return input.substring(2);
@@ -70,6 +78,14 @@ public final class Numeric {
         }
     }
 
+    /**
+     * Prepends the input with a prefix.
+     * <p>
+     * If the input already has a prefix, the input is returned unchanged.
+     *
+     * @param input The hex string.
+     * @return the hex string with a prefix.
+     */
     public static String prependHexPrefix(String input) {
         if (!containsHexPrefix(input)) {
             return HEX_PREFIX + input;
@@ -78,6 +94,12 @@ public final class Numeric {
         }
     }
 
+    /**
+     * Checks if the input contains a prefix.
+     *
+     * @param input The hex string.
+     * @return true, if the input contains a prefix. False, otherwise.
+     */
     public static boolean containsHexPrefix(String input) {
         return !Strings.isEmpty(input) && input.length() > 1
                 && input.charAt(0) == '0' && input.charAt(1) == 'x';

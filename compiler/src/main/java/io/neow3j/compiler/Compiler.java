@@ -20,6 +20,7 @@ import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
+import io.neow3j.utils.ClassUtils;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -56,7 +57,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.15.0";
+    public static final String COMPILER_NAME = "neow3j-3.16.0";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
@@ -200,11 +201,9 @@ public class Compiler {
             return StackItemType.ARRAY;
         }
         if (typeName.equals(InteropInterface.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.INTEROP_INTERFACE;
         }
         if (typeName.equals(io.neow3j.devpack.Iterator.Struct.class.getTypeName())) {
-            // The io.neow3j.devpack.List type is simply an array-abstraction.
             return StackItemType.STRUCT;
         }
         try {
@@ -221,17 +220,16 @@ public class Compiler {
 
 
     /**
-     * Compiles the given contract class to neo-vm code and generates debug information with the
-     * help of the given source containers.
+     * Compiles the given contract class to neo-vm code and generates debug information with the help of the given
+     * source containers.
      * <p>
-     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
-     * the paths to the given class files.
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the paths to the
+     * given class files.
      *
      * @param contractClass    The fully qualified name of the contract class.
-     * @param sourceContainers A list of source containers used for generating debugging
-     *                         information.
+     * @param sourceContainers A list of source containers used for generating debugging information.
      * @return the compilation results.
-     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers)
             throws IOException {
@@ -241,20 +239,17 @@ public class Compiler {
     }
 
     /**
-     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
-     * compiles the contract to neo-vm code and generates debug information with the
-     * help of the given source containers.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and compiles the contract
+     * to neo-vm code and generates debug information with the help of the given source containers.
      * <p>
-     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes
-     * the paths to the given class files.
+     * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the paths to the
+     * given class files.
      *
      * @param contractClass    The fully qualified name of the contract class.
-     * @param sourceContainers A list of source containers used for generating debugging
-     *                         information.
-     * @param replaceMap       The {@link java.util.Map} mapping placeholder strings to the
-     *                         desired values.
+     * @param sourceContainers A list of source containers used for generating debugging information.
+     * @param replaceMap       The {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation results.
-     * @throws IOException if something goes wrong when reading Java and class files from disk.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers,
             java.util.Map<String, String> replaceMap) throws IOException {
@@ -274,17 +269,15 @@ public class Compiler {
     }
 
     /**
-     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
-     * compiles the contract to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and compiles the contract
+     * to neo-vm code.
      *
      * @param contractClass the fully qualified name of the contract class.
-     * @param replaceMap    The {@link java.util.Map} mapping placeholder strings to the desired
-     *                      values.
+     * @param replaceMap    The {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
-     * @throws IOException when reading class files runs into an error.
+     * @throws IOException if an error occurs when trying to read class files.
      */
-    public CompilationUnit compile(String contractClass, java.util.Map<String, String> replaceMap)
-            throws IOException {
+    public CompilationUnit compile(String contractClass, java.util.Map<String, String> replaceMap) throws IOException {
         return compile(getAsmClass(contractClass, compUnit.getClassLoader()), replaceMap);
     }
 
@@ -300,29 +293,28 @@ public class Compiler {
     }
 
     /**
-     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
-     * compiles the contract to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and compiles the contract
+     * to neo-vm code.
      *
      * @param classStream the {@link InputStream} pointing to a contract class file.
-     * @param replaceMap  The {@link java.util.Map} mapping placeholder strings to the desired
-     *                    values.
+     * @param replaceMap  The {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
-     * @throws IOException when reading class files runs into an error.
+     * @throws IOException if an error occurs when trying to read class files.
      */
-    public CompilationUnit compile(InputStream classStream,
-            java.util.Map<String, String> replaceMap) throws IOException {
+    public CompilationUnit compile(InputStream classStream, java.util.Map<String, String> replaceMap)
+            throws IOException {
+
         return compile(getAsmClass(classStream), replaceMap);
     }
 
     /**
-     * Replaces placeholder strings in the contract class according to {@code replaceMap} and
-     * compiles the contract to neo-vm code.
+     * Replaces placeholder strings in the contract class according to {@code replaceMap} and compiles the contract
+     * to neo-vm code.
      *
      * @param classNode  the {@link ClassNode} representing a contract class.
-     * @param replaceMap The {@link java.util.Map} mapping placeholder strings to the desired
-     *                   values.
+     * @param replaceMap The {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
-     * @throws IOException when reading class files runs into an error.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap)
             throws IOException {
@@ -359,16 +351,15 @@ public class Compiler {
         annotations.addAll(classNode.methods.stream().filter(m -> m.invisibleAnnotations != null)
                 .flatMap(m -> m.invisibleAnnotations.stream()).collect(Collectors.toList()));
 
-       annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
+        annotations.forEach((it) -> processAnnotationNode(it, replaceMap));
     }
 
     @SuppressWarnings("unchecked")
-    private static void processAnnotationNode(AnnotationNode annotationNode,
-            java.util.Map<String, String> replaceMap) {
-
+    private static void processAnnotationNode(AnnotationNode annotationNode, java.util.Map<String, String> replaceMap) {
         // safety check
-        if (annotationNode.values == null || annotationNode.values.size() % 2 != 0)
+        if (annotationNode.values == null || annotationNode.values.size() % 2 != 0) {
             return;
+        }
 
         // for each name-value pair
         for (int i = 0; i < annotationNode.values.size(); i += 2) {
@@ -376,8 +367,7 @@ public class Compiler {
             Object value = annotationNode.values.get(i + 1);
             if (value == null) continue;
 
-            // We only focused on String, AnnotationNode, List<String>
-            // and List<AnnotationNode>
+            // We only focused on String, AnnotationNode, List<String> and List<AnnotationNode>
             if (value instanceof String) {
                 // do the modification
                 if (replaceMap.containsKey(value)) {
@@ -407,7 +397,7 @@ public class Compiler {
      *
      * @param classNode the {@link ClassNode} representing a contract class.
      * @return the compilation unit holding the NEF and contract manifest.
-     * @throws IOException when reading class files runs into an error.
+     * @throws IOException if an error occurs when trying to read class files.
      */
     protected CompilationUnit compile(ClassNode classNode) throws IOException {
         checkForClassCompatibility(classNode);
@@ -416,12 +406,11 @@ public class Compiler {
 
         compUnit.setContractClass(classNode);
         collectSmartContractEvents(classNode);
-        compUnit.getNeoModule().addMethods(initializeContractMethods(classNode));
-        // Need to create a new list from the methods that have been added to the NeoModule so
-        // far because we are potentially adding new methods to the module in the compilation,
-        // which leads to concurrency errors.
-        ArrayList<NeoMethod> neoMethods =
-                new ArrayList<>(compUnit.getNeoModule().getSortedMethods());
+        List<NeoMethod> initializedNeoMethods = initializeContractMethods(classNode);
+        compUnit.getNeoModule().addMethods(initializedNeoMethods);
+        // Need to create a new list from the methods that have been added to the NeoModule so far because we are
+        // potentially adding new methods to the module in the compilation, which leads to concurrency errors.
+        ArrayList<NeoMethod> neoMethods = new ArrayList<>(compUnit.getNeoModule().getSortedMethods());
         for (NeoMethod neoMethod : neoMethods) {
             neoMethod.convert(compUnit);
         }
@@ -440,16 +429,19 @@ public class Compiler {
 
     private void checkForNonStaticVariablesOnContractClass(ClassNode contractClass) {
         if (contractClass.fields.stream().anyMatch(f -> (f.access & Opcodes.ACC_STATIC) == 0)) {
-            throw new CompilerException(format("Contract class %s has non-static fields but only " +
-                            "static fields are supported in smart contract classes.",
+            throw new CompilerException(format("Contract class %s has non-static fields but only static fields are " +
+                            "supported in smart contract classes.",
                     getFullyQualifiedNameForInternalName(contractClass.name)));
         }
     }
 
-    // Creates the method INITSSLOT method that initializes static variables in the NeoVM
-    // script. Currently, the compiler only considers static variables from the main contract
-    // class. Static variables in other classes lead to a compiler exception if they are
-    // non-final or final but not of constant value (e.g., set via method call).
+    /**
+     * Creates the method {@code INITSSLOT} that initialzes static variables in the NeoVM script. Currently, the
+     * compiler only considers static variables from the main contract class. Static variables in other classes lead
+     * to a compiler exception if they are non-final or final but not of constant value (e.g., set via method call).
+     *
+     * @throws IOException if an error occurs when trying to read class files.
+     */
     private void compileInitsslotMethod() throws IOException {
         Optional<MethodNode> classCtorOpt = compUnit.getContractClass().methods.stream()
                 .filter(m -> m.name.equals(CLASS_CTOR))
@@ -457,8 +449,7 @@ public class Compiler {
         if (!classCtorOpt.isPresent()) {
             return;
         }
-        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(),
-                compUnit.getContractClass());
+        InitsslotNeoMethod m = new InitsslotNeoMethod(classCtorOpt.get(), compUnit.getContractClass(), compUnit);
         if (m.containsOnlyAssertionRelatedInstructions()) {
             return;
         }
@@ -488,7 +479,7 @@ public class Compiler {
         }
         List<FieldNode> eventFields = asmClass.fields
                 .stream()
-                .filter(field -> isEvent(field.desc))
+                .filter(field -> isEvent(field.desc, this.compUnit))
                 .collect(Collectors.toList());
 
         if (eventFields.size() == 0) {
@@ -497,11 +488,14 @@ public class Compiler {
         eventFields.forEach(f -> compUnit.getNeoModule().addEvent(new NeoEvent(f, asmClass)));
     }
 
-    // Checks if there are any instructions in the given classes <init> method (the instance
-    // initializer) besides the call to the `Object` constructor. I.e., only line, label, frame, and
-    // return instructions are allowed.
-    // If instructions are found an exception is thrown because the compiler does not support
-    // instance constructors.
+    /**
+     * Checks if there are any instructions in the given classes <init> method (the instance initializer) besides the
+     * call to the {@code Object} constructor (i.e., only line, label, frame, and return instructions are allowed).
+     * <p>
+     * If instructions are found, an exception is thrown because the compiler does not support instance constructors.
+     *
+     * @param asmClass The asm class.
+     */
     private void checkForUsageOfInstanceConstructor(ClassNode asmClass) {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
                 .filter(m -> m.name.equals(INSTANCE_CTOR)).findFirst();
@@ -513,8 +507,8 @@ public class Compiler {
                         insn.getType() != AbstractInsnNode.LABEL &&
                         insn.getType() != AbstractInsnNode.FRAME &&
                         insn.getOpcode() != JVMOpcode.RETURN.getOpcode()) {
-                    throw new CompilerException(format("Class %s has an explicit instance "
-                                    + "constructor, which is not supported.",
+                    throw new CompilerException(format("Class %s has an explicit instance constructor, which is not " +
+                                    "supported.",
                             getFullyQualifiedNameForInternalName(asmClass.name)));
                 }
                 insn = insn.getNext();
@@ -522,33 +516,38 @@ public class Compiler {
         }
     }
 
-    // Checks the min. version of class compatibility.
-    // At the moment, only 'target compatibility' for 1.8 is supported.
+    /**
+     * Checks the minimum version of class compatibility. Currently, only 'target compatibility' for 1.8 is supported.
+     *
+     * @param asmClass The asm class.
+     */
     private void checkForClassCompatibility(ClassNode asmClass) {
         if (asmClass.version != CLASS_VERSION_SUPPORTED) {
-            throw new CompilerException(
-                    format("Class %s was compiled with JVM version %d, "
-                                    + "which is not supported. Please, change your environment "
-                                    + "to compile the class to version %d.",
-                            getFullyQualifiedNameForInternalName(asmClass.name),
-                            asmClass.version,
-                            CLASS_VERSION_SUPPORTED
-                    )
+            throw new CompilerException(format("Class %s was compiled with JVM version %d, which is not supported. " +
+                            "Please, change your environment to compile the class to version %d.",
+                    getFullyQualifiedNameForInternalName(asmClass.name),
+                    asmClass.version,
+                    CLASS_VERSION_SUPPORTED
+            )
             );
         }
     }
 
-    // Collects all static methods and initializes them, e.g., sets the parameters and local
-    // variables.
+    /**
+     * Collects all static method and initializes them, e.e.g, sets the parameters and local variables.
+     *
+     * @param asmClass The asm class.
+     * @return a list of all initialized Neo methods.
+     */
     private List<NeoMethod> initializeContractMethods(ClassNode asmClass) {
         List<NeoMethod> methods = new ArrayList<>();
         for (MethodNode asmMethod : asmClass.methods) {
             if (asmMethod.name.equals(INSTANCE_CTOR) || asmMethod.name.equals(CLASS_CTOR)) {
-                continue; // Handled in method `createInitsslotMethod()`.
+                continue; // Handled in method `compileInitsslotMethod()`.
             }
             if ((asmMethod.access & Opcodes.ACC_STATIC) == 0) {
-                throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static"
-                                + " but only static methods are allowed in smart contracts.",
+                throw new CompilerException(asmClass, format("Method '%s' of class %s is non-static but only static " +
+                                "methods are allowed in smart contracts.",
                         asmMethod.name, getFullyQualifiedNameForInternalName(asmClass.name)));
             }
             if (!compUnit.getNeoModule().hasMethod(NeoMethod.getMethodId(asmMethod, asmClass))) {
@@ -560,12 +559,19 @@ public class Compiler {
         return methods;
     }
 
-    // Handles/converts the given instruction. The given NeoMethod is the method that the
-    // instruction belongs to and the converted instruction will be added to that method. Returns
-    // the last instruction node that was processed, i.e., the returned instruction can be used
-    // to obtain the next instruction that should be processed.
-    public static AbstractInsnNode handleInsn(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    /**
+     * Handles and/or converts the given instructions. The provided {@code NeoMethod} is the method that the
+     * instruction belongs to and the converted instruction will be added to that method.
+     *
+     * @param insn      The instruction to start from.
+     * @param neoMethod The Neo method.
+     * @param compUnit  The compilation unit.
+     * @return the last instruction node that was processed, i.e., the returned instruction can be used to obtain the
+     * next instruction that should be processed.
+     * @throws IOException if an error occurs when trying to read class files.
+     */
+    public static AbstractInsnNode handleInsn(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
 
         if (insn.getType() == AbstractInsnNode.LINE) {
             neoMethod.setCurrentLine(((LineNumberNode) insn).line);
@@ -593,15 +599,14 @@ public class Compiler {
     private static void throwIfObjectIsOwner(MethodInsnNode insn) {
         if (getFullyQualifiedNameForInternalName(insn.owner)
                 .equals(Object.class.getCanonicalName())) {
-            throw new CompilerException("Inherited methods that are not specifically implemented " +
-                    "are not supported. Implement the method '" + insn.name + "' without a " +
-                    "'super' call to the class Object to use it.");
+            throw new CompilerException("Inherited methods that are not specifically implemented are not supported. " +
+                    "Implement the method '" + insn.name + "' without a 'super' call to the class Object to use it.");
         }
     }
 
     /**
-     * Checks if the {@code callee} has the {@link Instruction} or {@link Instructions} annotation
-     * and, if yes, processes it.
+     * Checks if the {@code callee} has the {@link Instruction} or {@link Instructions} annotation and, if yes,
+     * processes it.
      *
      * @param callee The method being called by {@code caller}.
      * @param caller The calling method.
@@ -623,8 +628,8 @@ public class Compiler {
     }
 
     /**
-     * Checks if the list of annotations only contains one annotation that represents a
-     * {@link OpCode#SYSCALL} instruction.
+     * Checks if the list of annotations only contains one annotation that represents a {@link OpCode#SYSCALL}
+     * instruction.
      *
      * @param annotations The list to check.
      * @return return true if the annotations only contain one syscall instruction.
@@ -633,14 +638,13 @@ public class Compiler {
         if (annotations.size() != 1) {
             return false;
         }
-        String name = getStringAnnotationProperty(annotations.get(0),
-                INSN_ANNOTATION_INTEROPSERVICE);
+        String name = getStringAnnotationProperty(annotations.get(0), INSN_ANNOTATION_INTEROPSERVICE);
         return name != null && !InteropService.valueOf(name).equals(InteropService.DUMMY);
     }
 
     /**
-     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack
-     * according to the number of parameters the called method takes.
+     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack according to the
+     * number of parameters the called method takes.
      *
      * @param calledAsmMethod  The method that is being called.
      * @param callingNeoMethod The calling method that will be extended with the instruction.
@@ -648,16 +652,15 @@ public class Compiler {
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
         if ((calledAsmMethod.access & Opcodes.ACC_STATIC) == 0) {
-            // The called method is an instance method, i.e., the instance itself ("this") is
-            // also an argument.
+            // The called method is an instance method, i.e., the instance itself ("this") is also an argument.
             paramsCount++;
         }
         addReverseArguments(callingNeoMethod, paramsCount);
     }
 
     /**
-     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack
-     * according to the given number of parameters.
+     * Adds an instruction that reverses the ordering of the parameters on the evaluation stack according to the
+     * given number of parameters.
      *
      * @param callingNeoMethod The calling method that will be extended with the instruction.
      * @param paramsCount      The number of parameters passed to the called method.
@@ -722,8 +725,8 @@ public class Compiler {
         } else if (ldcInsn.cst instanceof Long) {
             addPushNumber(((Long) ldcInsn.cst), neoMethod);
         } else if (ldcInsn.cst instanceof Float || ldcInsn.cst instanceof Double) {
-            throw new CompilerException(neoMethod, "Found use of float number but the compiler "
-                    + "does not support floats.");
+            throw new CompilerException(neoMethod, "Found use of float number but the compiler does not support " +
+                    "floats.");
         }
         // TODO: Handle `org.objectweb.asm.Type`.
     }
@@ -746,11 +749,12 @@ public class Compiler {
 
     /**
      * Skips instructions in the given constructor method up to the super constructor call.
+     * <p>
      * There should always be a super call even if it was not explicitly specified by the developer.
      *
      * @param constructor The constructor method.
      * @param owner       The class of the constructor method.
-     * @return The instruction that calls the super constructor.
+     * @return the instruction that calls the super constructor.
      */
     public static MethodInsnNode skipToSuperCtorCall(MethodNode constructor, ClassNode owner) {
         Iterator<AbstractInsnNode> it = constructor.instructions.iterator();
@@ -761,18 +765,17 @@ public class Compiler {
                 break;
             }
         }
-        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call " +
-                "to constructor but couldn't find it.";
+        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call to constructor but " +
+                "couldn't find it.";
         return (MethodInsnNode) insn;
     }
 
     /**
-     * Skips instructions, starting at the given one, until the constructor call to the given
-     * class is reached.
+     * Skips instructions, starting at the given one, until the constructor call to the given class is reached.
      *
      * @param insn  The instruction from which to start looking for the constructor.
      * @param owner The class that owns the constructor.
-     * @return The instruction that calls the constructor.
+     * @return the instruction that calls the constructor.
      */
     public static MethodInsnNode skipToCtorCall(AbstractInsnNode insn, ClassNode owner) {
         while (insn != null) {
@@ -781,47 +784,65 @@ public class Compiler {
                 break;
             }
         }
-        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call " +
-                "to constructor but couldn't find it.";
+        assert insn != null && insn.getType() == AbstractInsnNode.METHOD_INSN : "Expected call to constructor but " +
+                "couldn't find it.";
         return (MethodInsnNode) insn;
     }
 
-    // Checks if the given instruction is a call to the given classes constructor (i.e., <init>).
+    /**
+     * Checks if the given instruction is a call to the given class' constructor (i.e., <init>).
+     *
+     * @param insn              The instruction.
+     * @param ownerInternalName The owner's internal name.
+     * @return true, if the given instruction is a call to the given class' constructor. False, otherwise.
+     */
     public static boolean isCallToCtor(AbstractInsnNode insn, String ownerInternalName) {
         return insn.getType() == AbstractInsnNode.METHOD_INSN
                 && ((MethodInsnNode) insn).owner.equals(ownerInternalName)
                 && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
     }
 
-
+    /**
+     * Adds an instruction to push the given number on the stack.
+     *
+     * @param number    The number to push on the stack.
+     * @param neoMethod The Neo method to add the instruction to.
+     */
     public static void addPushNumber(long number, NeoMethod neoMethod) {
         neoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(number)));
     }
 
+    /**
+     * Builds an instruction that pushes the given number on the stack.
+     *
+     * @param number The number to push on the stack.
+     * @return the {@link NeoInstruction} that pushes the given number on the stack.
+     */
     public static NeoInstruction buildPushNumberInstruction(BigInteger number) {
-        byte[] insnBytes = new ScriptBuilder().pushInteger(number)
-                .toArray();
+        byte[] insnBytes = new ScriptBuilder().pushInteger(number).toArray();
         byte[] operand = Arrays.copyOfRange(insnBytes, 1, insnBytes.length);
         return new NeoInstruction(OpCode.get(insnBytes[0]), operand);
     }
 
     /**
-     * Checks if the given class is an event.
+     * Checks if the given class descriptor belongs to an event class.
      *
-     * @param classDesc the descriptor of the class to check.
-     * @return true, if the given class is an event. False, otherwise.
+     * @param classDesc The descriptor.
+     * @param compUnit  The compilation unit required for the classloader.
+     * @return true if the class descriptor is from an event class. False otherwise.
      */
-    public static boolean isEvent(String classDesc) {
-        String fqn = getFullyQualifiedNameForInternalName(
-                AsmHelper.stripObjectDescriptor(classDesc));
-        Class<?> clazz;
-        try {
-            clazz = Class.forName(fqn);
-        } catch (ClassNotFoundException e) {
+    public static boolean isEvent(String classDesc, CompilationUnit compUnit) {
+        char firstChar = classDesc.charAt(0);
+        if (AsmHelper.PRIMITIVE_TYPE_NAMES.contains(firstChar) || firstChar == '[') {
             return false;
         }
-        return clazz.getInterfaces() != null && clazz.getInterfaces().length == 1
-                && clazz.getInterfaces()[0].equals(EventInterface.class);
+        try {
+            return AsmHelper.getAsmClassForDescriptor(classDesc, compUnit.getClassLoader()).interfaces.stream()
+                    .map(ClassUtils::getFullyQualifiedNameForInternalName)
+                    .anyMatch(i -> i.equals(EventInterface.class.getName()));
+        } catch (IOException e) {
+            throw new RuntimeException("Failed fetching class " + classDesc, e);
+        }
     }
 
 }

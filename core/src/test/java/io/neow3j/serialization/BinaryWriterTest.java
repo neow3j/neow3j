@@ -2,7 +2,7 @@ package io.neow3j.serialization;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
@@ -40,20 +40,16 @@ public class BinaryWriterTest {
     }
 
     @Test
-    public void failWritingUInt32NotInRange() throws IOException {
-        try {
-            Long uint = (long) Math.pow(2, 32);
+    public void failWritingUInt32NotInRange() {
+        long uint = (long) Math.pow(2, 32);
+        assertThrows(IllegalArgumentException.class, () -> {
             writer.writeUInt32(uint);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        });
 
-        try {
-            Long uint = -1L;
-            writer.writeUInt32(uint);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        long negativeUint = -1L;
+        assertThrows(IllegalArgumentException.class, () -> {
+            writer.writeUInt32(negativeUint);
+        });
     }
 
     @Test
@@ -95,20 +91,12 @@ public class BinaryWriterTest {
     }
 
     @Test
-    public void failWritingUInt16NotInRange() throws IOException {
-        try {
-            int uint = (int) Math.pow(2, 16);
-            writer.writeUInt16(uint);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+    public void failWritingUInt16NotInRange() {
+        int uint = (int) Math.pow(2, 16);
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt16(uint));
 
-        try {
-            int uint = -1;
-            writer.writeUInt16(uint);
-            fail();
-        } catch (IllegalArgumentException ignored) {
-        }
+        int negativeUint = -1;
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt16(negativeUint));
     }
 
     @Test
@@ -158,9 +146,9 @@ public class BinaryWriterTest {
             0x00, 0x00});
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void failWriteVarInt() throws IOException {
-        writer.writeVarInt(-1L);
+    @Test
+    public void failWriteVarInt() {
+        assertThrows(IllegalArgumentException.class, () -> writer.writeVarInt(-1L));
     }
 
     private void assertAndResetStreamContents(byte[] expected) throws IOException {

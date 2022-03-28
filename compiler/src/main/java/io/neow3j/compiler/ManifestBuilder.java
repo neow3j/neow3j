@@ -9,15 +9,16 @@ import io.neow3j.devpack.annotations.ManifestExtra.ManifestExtras;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Permission.Permissions;
 import io.neow3j.devpack.annotations.Safe;
-import io.neow3j.devpack.annotations.SupportedStandards;
+import io.neow3j.devpack.annotations.SupportedStandard;
+import io.neow3j.devpack.annotations.SupportedStandard.SupportedStandards;
 import io.neow3j.devpack.annotations.Trust;
 import io.neow3j.devpack.annotations.Trust.Trusts;
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.constants.NeoStandard;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
@@ -38,7 +39,6 @@ import java.util.stream.Collectors;
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
 import static java.util.Arrays.asList;
-import static java.util.Optional.ofNullable;
 
 /**
  * Contains all functionality required to build a contract manifest from a compilation unit.
@@ -53,16 +53,13 @@ public class ManifestBuilder {
         if (annotationNode.isPresent()) {
             name = (String) annotationNode.get().values.get(1);
         }
-        Map<String, String> extras = buildManifestExtra(compUnit.getContractClass());
         List<String> supportedStandards = buildSupportedStandards(compUnit.getContractClass());
         ContractABI abi = buildABI(compUnit.getNeoModule());
-
-        List<ContractGroup> groups = new ArrayList<>();
         List<ContractPermission> permissions = buildPermissions(compUnit.getContractClass());
         List<String> trusts = buildTrusts(compUnit.getContractClass());
+        Map<String, String> extras = buildManifestExtra(compUnit.getContractClass());
 
-        return new ContractManifest(name, groups, null, supportedStandards, abi, permissions,
-                trusts, extras);
+        return new ContractManifest(name, null, null, supportedStandards, abi, permissions, trusts, extras);
     }
 
     private static ContractABI buildABI(NeoModule neoModule) {
@@ -107,12 +104,14 @@ public class ManifestBuilder {
     }
 
     private static List<String> buildSupportedStandards(ClassNode asmClass) {
-        return getAnnotationNode(asmClass, SupportedStandards.class)
-                .flatMap(ManifestBuilder::transformAnnotationNodeStringValue)
-                .orElse(new ArrayList<>());
+        return checkForSingleOrMultipleAnnotations(asmClass, SupportedStandards.class,
+                SupportedStandard.class)
+                .stream()
+                .map(ManifestBuilder::getSupportedStandard)
+                .collect(Collectors.toList());
     }
 
-    public static List<ContractPermission> buildPermissions(ClassNode asmClass) {
+    private static List<ContractPermission> buildPermissions(ClassNode asmClass) {
         List<ContractPermission> permissions = checkForSingleOrMultipleAnnotations(asmClass,
                 Permissions.class, Permission.class)
                 .stream()
@@ -121,9 +120,8 @@ public class ManifestBuilder {
 
         if (permissions.isEmpty()) {
             return new ArrayList<>();
-        } else {
-            return permissions;
         }
+        return permissions;
     }
 
     private static List<String> buildTrusts(ClassNode asmClass) {
@@ -134,17 +132,20 @@ public class ManifestBuilder {
                 .collect(Collectors.toList());
     }
 
-    private static Optional<List<String>> transformAnnotationNodeStringValue(
-            AnnotationNode annotationNode) {
-
-        return ofNullable(annotationNode)
-                .map(ann -> {
-                    List<String> values = new ArrayList<>();
-                    for (Object value : (List<?>) ann.values.get(1)) {
-                        values.add((String) value);
-                    }
-                    return values;
-                });
+    private static String getSupportedStandard(AnnotationNode ann) {
+        int neoStandardIndex = ann.values.indexOf("neoStandard");
+        int customStandardIndex = ann.values.indexOf("customStandard");
+        boolean bothPresent = neoStandardIndex != -1 && customStandardIndex != -1;
+        if (bothPresent) {
+            throw new CompilerException("A @SupportedStandard annotation must only have one of " +
+                    "the attributes 'neoStandard' or 'customStandard' set.");
+        }
+        if (neoStandardIndex != -1) {
+            NeoStandard neoStandard = NeoStandard.valueOf(
+                    asList((String[]) ann.values.get(neoStandardIndex + 1)).get(1));
+            return neoStandard.getStandard();
+        }
+        return (String) ann.values.get(customStandardIndex + 1);
     }
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
@@ -198,6 +199,12 @@ public class ManifestBuilder {
         return hashOrPubKey;
     }
 
+    /**
+     * Adds missing prefixes for {@link Hash160} hashes and removes existing prefixes for public key values.
+     *
+     * @param hashOrPubKey the hash or public key.
+     * @return hash with prefix or public key without prefix.
+     */
     private static String addOrClearHexPrefix(String hashOrPubKey) {
         // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
         if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
@@ -206,18 +213,6 @@ public class ManifestBuilder {
             hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
         }
         return hashOrPubKey;
-    }
-
-    private static ContractGroup getContractGroup(AnnotationNode ann) {
-        int i = ann.values.indexOf("pubKey");
-        String pubKey = (String) ann.values.get(i + 1);
-        i = ann.values.indexOf("signature");
-        String signature = (String) ann.values.get(i + 1);
-
-        throwIfNotValidPubKey(pubKey);
-        throwIfNotValidSignature(signature);
-
-        return new ContractGroup(pubKey, signature);
     }
 
     private static void throwIfNotValidNativeContract(NativeContract nativeContract) {

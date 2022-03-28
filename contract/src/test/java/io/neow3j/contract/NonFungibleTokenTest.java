@@ -4,13 +4,15 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.core.response.NFTokenState;
+import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
 import org.junit.Rule;
@@ -18,8 +20,9 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
@@ -27,10 +30,12 @@ import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThrows;
 
@@ -41,8 +46,7 @@ public class NonFungibleTokenTest {
 
     private Account account1;
     private Account account2;
-    private static final Hash160 NF_TOKEN_SCRIPT_HASH =
-            Hash160.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
+    private static final Hash160 NF_TOKEN_SCRIPT_HASH = Hash160.fromAddress("NQyYa8wycZRkEvQKr5qRUvMUwyDgvQMqL7");
     private static final byte[] TOKEN_ID = new byte[]{1, 2, 3};
     private static final String TRANSFER = "transfer";
     private static NonFungibleToken nfTestToken;
@@ -151,16 +155,16 @@ public class NonFungibleTokenTest {
         List<byte[]> tokens = nfTestToken.tokensOf(account1.getScriptHash());
 
         assertThat(tokens, hasSize(2));
-        assertThat(tokens.get(0), is("tokenof1".getBytes(StandardCharsets.UTF_8)));
-        assertThat(tokens.get(1), is("tokenof2".getBytes(StandardCharsets.UTF_8)));
+        assertThat(tokens.get(0), is("tokenof1".getBytes(UTF_8)));
+        assertThat(tokens.get(1), is("tokenof2".getBytes(UTF_8)));
     }
 
     @Test
     public void testGetProperties() throws IOException {
         setUpWireMockForInvokeFunction("properties", "nft_properties.json");
-        NFTokenState properties = nfTestToken.properties(new byte[]{1});
+        Map<String, String> properties = nfTestToken.properties(new byte[]{1});
 
-        assertThat(properties.getName(), is("A name"));
+        assertThat(properties.get("name"), is("A name"));
     }
 
     @Test
@@ -173,13 +177,44 @@ public class NonFungibleTokenTest {
     }
 
     @Test
+    public void testGetCustomProperties() throws IOException {
+        setUpWireMockForInvokeFunction("properties", "nft_customProperties.json");
+        Map<String, StackItem> properties = nfTestToken.customProperties(new byte[]{1});
+
+        assertThat(properties.size(), is(4));
+        ArrayList<String> keys = new ArrayList<>(properties.keySet());
+        assertThat(keys, containsInAnyOrder("name", "map1", "array1", "array2"));
+        StackItem nameProperty = properties.get("name");
+        assertThat(nameProperty.getType(), is(StackItemType.BYTE_STRING));
+        assertThat(nameProperty.getString(), is("yak"));
+
+        StackItem mapProperty1 = properties.get("map1");
+        assertThat(mapProperty1.getType(), is(StackItemType.MAP));
+        Map<StackItem, StackItem> map1 = mapProperty1.getMap();
+        assertThat(map1.get(new ByteStringStackItem("key1".getBytes(UTF_8))).getString(), is("value1"));
+        assertThat(map1.get(new ByteStringStackItem("key2".getBytes(UTF_8))).getInteger(), is(BigInteger.valueOf(42)));
+
+        StackItem arrayProperty1 = properties.get("array1");
+        assertThat(arrayProperty1.getType(), is(StackItemType.ARRAY));
+        List<StackItem> arr1 = arrayProperty1.getList();
+        assertThat(arr1.get(0).getString(), is("hello1"));
+        assertThat(arr1.get(1).getString(), is("hello2"));
+
+        StackItem arrayProperty2 = properties.get("array2");
+        assertThat(arrayProperty2.getType(), is(StackItemType.ARRAY));
+        List<StackItem> arr2 = arrayProperty2.getList();
+        assertThat(arr2.get(0).getString(), is("b0"));
+        assertThat(arr2.get(1).getInteger(), is(BigInteger.valueOf(12)));
+    }
+
+    @Test
     public void testTokens() throws IOException {
         setUpWireMockForInvokeFunction("tokens", "nft_tokens.json");
         List<byte[]> tokens = nfTestToken.tokens();
 
         assertThat(tokens, hasSize(2));
-        assertThat(tokens.get(0), is("token1".getBytes(StandardCharsets.UTF_8)));
-        assertThat(tokens.get(1), is("token2".getBytes(StandardCharsets.UTF_8)));
+        assertThat(tokens.get(0), is("token1".getBytes(UTF_8)));
+        assertThat(tokens.get(1), is("token2".getBytes(UTF_8)));
     }
 
     @Test

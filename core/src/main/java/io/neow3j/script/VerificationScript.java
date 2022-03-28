@@ -162,8 +162,7 @@ public class VerificationScript extends NeoSerializable {
         return script[0] == OpCode.PUSHDATA1.getCode()
                 && script[1] == 33 // 33 bytes of public key
                 && script[35] == OpCode.SYSCALL.getCode()
-                && interopService.equals(
-                        InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
+                && interopService.equals(InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
     }
 
     /**
@@ -226,6 +225,9 @@ public class VerificationScript extends NeoSerializable {
     /**
      * Gets the public keys that are encoded in this verification script. If this script is from a
      * single signature account the resulting list will only contain one key.
+     * <p>
+     * In case of a multi-sig script, the public keys are returned in their natural ordering (public key value). This
+     * is also the order in which they appear in the script.
      *
      * @return the list of public keys encoded in this script.
      */

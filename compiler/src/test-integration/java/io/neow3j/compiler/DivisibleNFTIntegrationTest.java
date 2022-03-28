@@ -40,8 +40,7 @@ public class DivisibleNFTIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            DivisibleNFTTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(DivisibleNFTTestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
@@ -51,8 +50,8 @@ public class DivisibleNFTIntegrationTest {
     @Test
     public void testTransfer() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(io.neow3j.types.Hash160.ZERO), hash160(io.neow3j.types.Hash160.ZERO),
-                integer(10), byteArrayFromString("anyId"), any(null));
+                hash160(io.neow3j.types.Hash160.ZERO), hash160(io.neow3j.types.Hash160.ZERO), integer(10),
+                byteArrayFromString("anyId"), any(null));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -68,16 +67,13 @@ public class DivisibleNFTIntegrationTest {
     public void testBalanceOf() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 hash160(Account.create()), byteArrayFromString("id1"));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(38));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(38));
     }
 
     @Permission(contract = "*")
     static class DivisibleNFTTestContract {
 
-        public static boolean testTransfer(Hash160 from, Hash160 to, int amount,
-                ByteString tokenId, Object data) {
-
+        public static boolean testTransfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
             return CustomDivisibleNFT.transfer(from, to, amount, tokenId, data);
         }
 
@@ -95,19 +91,14 @@ public class DivisibleNFTIntegrationTest {
         static final StorageContext ctx = Storage.getStorageContext();
         static final byte[] mapPrefix = Helper.toByteArray((byte) 1);
 
-        public static boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId,
-                Object data) {
-
+        public static boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
             return true;
         }
 
         public static Iterator<ByteString> ownerOf(ByteString tokenId) {
             StorageMap map = new StorageMap(ctx, mapPrefix);
-            map.put(Helper.toByteArray((byte) 1),
-                    addressToScriptHash("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
-            map.put(Helper.toByteArray((byte) 2),
-                    addressToScriptHash("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
-
+            map.put(Helper.toByteArray((byte) 1), addressToScriptHash("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
+            map.put(Helper.toByteArray((byte) 2), addressToScriptHash("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
             return (Iterator<ByteString>) Storage.find(ctx, mapPrefix, FindOptions.ValuesOnly);
         }
 
@@ -117,7 +108,7 @@ public class DivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("589ccb366bbdd0b620494565276dc04fce3be7c7")
+    @ContractHash("5b3dd4601bbbcbb80c94696bca698c0e85378650")
     static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 

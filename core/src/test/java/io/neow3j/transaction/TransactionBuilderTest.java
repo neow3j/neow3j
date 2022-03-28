@@ -95,8 +95,7 @@ public class TransactionBuilderTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = this.wireMockRule.port();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
-                new Neow3jConfig().setNetworkMagic(769));
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
         account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(hexStringToByteArray(
@@ -137,26 +136,15 @@ public class TransactionBuilderTest {
                 .validUntilBlock(1L)
                 .script(new byte[]{1, 2, 3})
                 .signers(calledByEntry(account1.getScriptHash()));
-        try {
-            long nonce = Integer.toUnsignedLong(-1) + 1;
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
 
-        try {
-            long nonce = (long) Math.pow(2, 32);
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
+        long nonce = Integer.toUnsignedLong(-1) + 1;
+        assertThrows(TransactionConfigurationException.class, () -> b.nonce(nonce));
 
-        try {
-            long nonce = -1L;
-            b.nonce(nonce);
-            fail();
-        } catch (TransactionConfigurationException ignored) {
-        }
+        long highLimitNonce = (long) Math.pow(2, 32);
+        assertThrows(TransactionConfigurationException.class, () -> b.nonce(highLimitNonce));
+
+        long negativeNonce = -1L;
+        assertThrows(TransactionConfigurationException.class, () -> b.nonce(negativeNonce));
     }
 
     @Test
@@ -802,6 +790,30 @@ public class TransactionBuilderTest {
                 .getUnsignedTransaction();
 
         assertThat(tx.getNetworkFee(), is(baseNetworkFee + 2000L));
+    }
+
+    @Test
+    public void testAdditionalSystemFee() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Account account = Account.create();
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(Account.create()))
+                .getUnsignedTransaction();
+
+        long baseSystemFee = 984060L;
+        assertThat(tx.getSystemFee(), is(baseSystemFee));
+
+        tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account))
+                .additionalSystemFee(3000L)
+                .getUnsignedTransaction();
+
+        assertThat(tx.getSystemFee(), is(baseSystemFee + 3000L));
     }
 
     @Test

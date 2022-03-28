@@ -9,7 +9,6 @@ import okhttp3.Protocol;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
@@ -28,8 +27,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class HttpServiceTest {
 
@@ -93,14 +95,14 @@ public class HttpServiceTest {
         try {
             mockedHttpService.send(request, NeoBlockCount.class);
         } catch (ClientConnectionException e) {
-            Assert.assertEquals(
+            assertEquals(
                     e.getMessage(),
                     "Invalid response received: "
                             + response.code() + "; " + content);
             return;
         }
 
-        Assert.fail("No exception");
+        fail("No exception");
     }
 
     @Test
@@ -137,7 +139,7 @@ public class HttpServiceTest {
                 NeoBlockCount.class);
 
         mockedHttpService1.sendAsync(request1, NeoBlockCount.class);
-        Assert.assertThat(executor.isCalled(), is(true));
+        assertThat(executor.isCalled(), is(true));
 
         HttpService mockedHttpService2 = new HttpService(executor, false);
 
@@ -148,7 +150,7 @@ public class HttpServiceTest {
                 NeoBlockCount.class);
 
         CompletableFuture<NeoBlockCount> result = mockedHttpService2.sendAsync(request2, NeoBlockCount.class);
-        Assert.assertThat(executor.isCalled(), is(true));
+        assertThat(executor.isCalled(), is(true));
     }
 
     private class TestExecutorService implements ExecutorService {

@@ -37,7 +37,7 @@ public class ScriptBuilder {
     /**
      * Appends an OpCode to the script.
      *
-     * @param opCode The OpCode to append.
+     * @param opCode the OpCode to append.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder opCode(OpCode opCode) {
@@ -48,8 +48,8 @@ public class ScriptBuilder {
     /**
      * Appends an OpCode and a belonging argument to the script.
      *
-     * @param opCode   The OpCode to append.
-     * @param argument The argument of the OpCode.
+     * @param opCode   the OpCode to append.
+     * @param argument the argument of the OpCode.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder opCode(OpCode opCode, byte[] argument) {
@@ -59,31 +59,28 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends a call to the contract denoted by the given script hash. Uses {@link CallFlags#ALL}
-     * for the call.
+     * Appends a call to the contract denoted by the given script hash. Uses {@link CallFlags#ALL} for the call.
      *
-     * @param hash160 The script hash of the contract to call.
-     * @param method  The method to call.
-     * @param params  The parameters that will be used in the call. Need to be in correct order.
+     * @param hash160 the script hash of the contract to call.
+     * @param method  the method to call.
+     * @param params  the parameters that will be used in the call. Need to be in correct order.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder contractCall(Hash160 hash160, String method,
-            List<ContractParameter> params) {
-
+    public ScriptBuilder contractCall(Hash160 hash160, String method, List<ContractParameter> params) {
         return contractCall(hash160, method, params, CallFlags.ALL);
     }
 
     /**
      * Appends a call to the contract denoted by the given script hash.
      *
-     * @param hash160   The script hash of the contract to call.
-     * @param method    The method to call.
-     * @param params    The parameters that will be used in the call. Need to be in correct order.
-     * @param callFlags The call flags to use for the contract call.
+     * @param hash160   the script hash of the contract to call.
+     * @param method    the method to call.
+     * @param params    the parameters that will be used in the call. Need to be in correct order.
+     * @param callFlags the call flags to use for the contract call.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder contractCall(Hash160 hash160, String method,
-            List<ContractParameter> params, CallFlags callFlags) {
+    public ScriptBuilder contractCall(Hash160 hash160, String method, List<ContractParameter> params,
+            CallFlags callFlags) {
 
         if (params != null && params.size() > 0) {
             pushParams(params);
@@ -114,14 +111,14 @@ public class ScriptBuilder {
      *  PACK
      * </pre>
      * <p>
-     * This method should also be used if the parameters list is empty. In that case the script
-     * looks like the following:
+     * This method should also be used if the parameters list is empty. In that case the script looks like the
+     * following:
      * <pre>
      *  PUSH0
      *  PACK
      * </pre>
      *
-     * @param params The list of parameters to add.
+     * @param params the list of parameters to add.
      * @return this
      */
     public ScriptBuilder pushParams(List<ContractParameter> params) {
@@ -140,7 +137,7 @@ public class ScriptBuilder {
             opCode(OpCode.PUSHNULL);
         } else {
             Object value = param.getValue();
-            switch (param.getParamType()) {
+            switch (param.getType()) {
                 case BYTE_ARRAY:
                 case SIGNATURE:
                 case PUBLIC_KEY:
@@ -173,8 +170,7 @@ public class ScriptBuilder {
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Parameter type '" + param.getParamType() +
-                            "' not supported.");
+                    throw new IllegalArgumentException("Parameter type '" + param.getType() + "' not supported.");
             }
         }
         return this;
@@ -183,7 +179,7 @@ public class ScriptBuilder {
     /**
      * Adds a push operation with the given integer to the script.
      *
-     * @param v The number to push.
+     * @param v the number to push.
      * @return this.
      * @throws IllegalArgumentException if the given number is smaller than -1.
      */
@@ -195,15 +191,14 @@ public class ScriptBuilder {
     private static final BigInteger sixteen = BigInteger.valueOf(16);
 
     /**
-     * Adds a push operation with the given integer to the script. The integer is encoded in its
-     * two's complement and in little-endian order.
+     * Adds a push operation with the given integer to the script. The integer is encoded in its two's complement and
+     * in little-endian order.
      * <p>
      * The integer can be up to 32 bytes long.
      *
-     * @param v The integer to push.
+     * @param v the integer to push.
      * @return this.
-     * @throws IllegalArgumentException if the given integer is smaller than -1 or takes more space
-     *                                  than 32 bytes.
+     * @throws IllegalArgumentException if the given integer is smaller than -1 or takes more space than 32 bytes.
      */
     public ScriptBuilder pushInteger(BigInteger v) {
         int i = v.intValue();
@@ -268,7 +263,7 @@ public class ScriptBuilder {
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
      *
-     * @param data The data to add to the script.
+     * @param data the data to add to the script.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(String data) {
@@ -283,7 +278,7 @@ public class ScriptBuilder {
     /**
      * Adds the data to the script, prefixed with the correct code for its length.
      *
-     * @param data The data to add to the script.
+     * @param data the data to add to the script.
      * @return this ScriptBuilder object.
      */
     public ScriptBuilder pushData(byte[] data) {
@@ -381,7 +376,7 @@ public class ScriptBuilder {
     /**
      * Builds a verification script for the given public key.
      *
-     * @param encodedPublicKey The public key encoded in compressed format.
+     * @param encodedPublicKey the public key encoded in compressed format.
      * @return the script.
      */
     public static byte[] buildVerificationScript(byte[] encodedPublicKey) {
@@ -394,18 +389,36 @@ public class ScriptBuilder {
     /**
      * Builds a verification script for a multi signature account from the given public keys.
      *
-     * @param pubKeys          The public keys.
-     * @param signingThreshold The desired minimum number of signatures required when using the
-     *                         multi-sig account.
+     * @param pubKeys          the public keys.
+     * @param signingThreshold the desired minimum number of signatures required when using the multi-sig account.
      * @return the script.
      */
-    public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys,
-            int signingThreshold) {
+    public static byte[] buildVerificationScript(List<ECKeyPair.ECPublicKey> pubKeys, int signingThreshold) {
         ScriptBuilder builder = new ScriptBuilder().pushInteger(signingThreshold);
         pubKeys.stream().sorted().forEach(k -> builder.pushData(k.getEncoded(true)));
         return builder
                 .pushInteger(pubKeys.size())
                 .sysCall(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG)
+                .toArray();
+    }
+
+    /**
+     * Calculates the script of the contract hash deployed by {@code sender}.
+     * <p>
+     * A contract's hash doesn't change after deployment. Even if the contract's script is updated the hash stays the
+     * same. It depends on the initial NEF checksum, contract name, and the sender of the deployment transaction.
+     *
+     * @param sender       the account that deployed the contract.
+     * @param nefCheckSum  the checksum of the contract's NEF file.
+     * @param contractName the contract's name.
+     * @return the bytes of the contract hash.
+     */
+    public static byte[] buildContractHashScript(Hash160 sender, long nefCheckSum, String contractName) {
+        return new ScriptBuilder()
+                .opCode(OpCode.ABORT)
+                .pushData(sender.toLittleEndianArray())
+                .pushInteger(nefCheckSum)
+                .pushData(contractName)
                 .toArray();
     }
 

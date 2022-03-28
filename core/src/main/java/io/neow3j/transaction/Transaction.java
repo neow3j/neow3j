@@ -2,6 +2,8 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.Base64;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -15,9 +17,10 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
+import io.neow3j.types.ContractParameter;
+import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import io.reactivex.Observable;
 import io.reactivex.functions.Predicate;
@@ -26,7 +29,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
@@ -34,8 +44,8 @@ import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
-import static java.util.Arrays.asList;
 
 public class Transaction extends NeoSerializable {
 
@@ -49,16 +59,15 @@ public class Transaction extends NeoSerializable {
 
     private byte version;
     /**
-     * Is a random number added to the transaction to prevent replay attacks. It is an unsigned
-     * 32-bit integer in the neo C# implementation. It is represented as a integer here, but when
-     * serializing it
+     * Is a random number added to the transaction to prevent replay attacks. It is an unsigned 32-bit integer in the
+     * neo C# implementation. It is represented as a integer here, but when serializing it
      */
     private long nonce;
     /**
-     * Defines up to which block this transaction remains valid. If this transaction is not added
-     * into a block up to this number it will become invalid and be dropped. It is an unsigned
-     * 32-bit integer in the neo C# implementation. Here it is represented as a signed 32-bit
-     * integer which offers a smaller but still large enough range.
+     * Defines up to which block this transaction remains valid. If this transaction is not added into a block up to
+     * this number it will become invalid and be dropped. It is an unsigned 32-bit integer in the neo C#
+     * implementation. Here it is represented as a signed 32-bit integer which offers a smaller but still large
+     * enough range.
      */
     private long validUntilBlock;
     private List<Signer> signers;
@@ -75,9 +84,10 @@ public class Transaction extends NeoSerializable {
         witnesses = new ArrayList<>();
     }
 
-    public Transaction(Neow3j neow3j, byte version, long nonce, long validUntilBlock,
-            List<Signer> signers, long systemFee, long networkFee,
-            List<TransactionAttribute> attributes, byte[] script, List<Witness> witnesses) {
+    public Transaction(Neow3j neow3j, byte version, long nonce, long validUntilBlock, List<Signer> signers,
+            long systemFee, long networkFee, List<TransactionAttribute> attributes, byte[] script,
+            List<Witness> witnesses) {
+
         this.neow3j = neow3j;
         this.version = version;
         this.nonce = nonce;
@@ -93,7 +103,7 @@ public class Transaction extends NeoSerializable {
     /**
      * Sets the {@code Neow3j} instance of this transaction.
      *
-     * @param neow3j The Neow3j instance.
+     * @param neow3j the Neow3j instance.
      */
     public void setNeow3j(Neow3j neow3j) {
         this.neow3j = neow3j;
@@ -136,15 +146,14 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets the sender of this transaction. The sender is the account that pays for the
-     * transaction's fees.
+     * Gets the sender of this transaction. The sender is the account that pays for the transaction's fees.
      *
      * @return the sender account's script hash.
      */
     public Hash160 getSender() {
-        // First we look for a signer that has the fee-only scope. The signer with that scope is
-        // the sender of the transaction. If there is no such signer then the order of the
-        // signers defines the sender, i.e., the first signer is the sender of the transaction.
+        // First we look for a signer that has the fee-only scope. The signer with that scope is the sender of the
+        // transaction. If there is no such signer then the order of the signers defines the sender, i.e., the first
+        // signer is the sender of the transaction.
         return signers.stream()
                 .filter(signer -> signer.getScopes().contains(WitnessScope.NONE))
                 .findFirst()
@@ -202,7 +211,7 @@ public class Transaction extends NeoSerializable {
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param witness The transaction witness.
+     * @param witness the transaction witness.
      * @return this.
      */
     public Transaction addWitness(Witness witness) {
@@ -211,56 +220,76 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
-     * signer that is part of this transaction.
-     * <p>
-     * The witness is constructed from the multi-sig account's {@code verificationScript} and the
-     * {@code signatures}. Obviously, the signatures should be derived from this transaction's hash
-     * data (see {@link Transaction#getHashData()}).
+     * Adds a witness to this transaction by signing it with the given account.
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param verificationScript The verification script of the multi-sig account.
-     * @param signatures         The signatures created with the participating private keys.
+     * @param account The account to sign with.
      * @return this.
+     * @throws IOException if an error occurs when fetching the network's magic number.
      */
-    public Transaction addMultiSigWitness(VerificationScript verificationScript,
-            Sign.SignatureData... signatures) {
-
-        Witness multiSigWitness = createMultiSigWitness(asList(signatures), verificationScript);
-        this.witnesses.add(multiSigWitness);
+    public Transaction addWitness(Account account) throws IOException {
+        this.witnesses.add(Witness.create(getHashData(), account.getECKeyPair()));
         return this;
     }
 
     /**
-     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig
-     * signer that is part of this transaction.
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
+     * this transaction.
      * <p>
-     * The witness is constructed from the multi-sig account's {@code verificationScript} and by
-     * signing this transaction with the given accounts.
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and the {@code signatures}.
+     * Obviously, the signatures should be derived from this transaction's hash data (see
+     * {@link Transaction#getHashData()}).
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param verificationScript The verification script of the multi-sig account.
-     * @param accounts           The accounts to use for signing. They need to hold decrypted
-     *                           private keys.
+     * @param verificationScript the verification script of the multi-sig account.
+     * @param pubKeySigMap       a map of participating public keys mapped to the signatures created with their
+     *                           corresponding private key.
      * @return this.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript,
-            Account... accounts) throws IOException {
+            Map<ECKeyPair.ECPublicKey, Sign.SignatureData> pubKeySigMap) {
 
-        ArrayList<Sign.SignatureData> signatures = new ArrayList<>();
-        for (Account a : accounts) {
-            signatures.add(signMessage(getHashData(), a.getECKeyPair()));
-        }
+        List<Sign.SignatureData> signatures = pubKeySigMap.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(Map.Entry::getValue)
+                .collect(Collectors.toList());
         Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);
         this.witnesses.add(multiSigWitness);
         return this;
     }
 
     /**
-     * Gets this transactions uniquely identifying ID/hash.
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
+     * this transaction.
+     * <p>
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and by signing this
+     * transaction with the given accounts.
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
+     *
+     * @param verificationScript the verification script of the multi-sig account.
+     * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
+     * @return this.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
+            throws IOException {
+
+        byte[] hashData = getHashData();
+        List<Sign.SignatureData> signatures = Arrays.stream(accounts)
+                .map(Account::getECKeyPair)
+                .sorted(Comparator.comparing(ECKeyPair::getPublicKey))
+                .map(a -> signMessage(hashData, a))
+                .collect(Collectors.toList());
+        Witness multiSigWitness = createMultiSigWitness(signatures, verificationScript);
+        this.witnesses.add(multiSigWitness);
+        return this;
+    }
+
+    /**
+     * Gets this transaction's uniquely identifying ID/hash.
      *
      * @return the transaction ID.
      */
@@ -272,37 +301,32 @@ public class Transaction extends NeoSerializable {
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
      * @return the Neo node's response.
-     * @throws IOException                       if a problem in communicating with the Neo node
-     *                                           occurs.
-     * @throws TransactionConfigurationException if the number of signers and witnesses on the
-     *                                           transaction are not equal.
+     * @throws IOException                       if a problem in communicating with the Neo node occurs.
+     * @throws TransactionConfigurationException if the number of signers and witnesses on the transaction are not
+     *                                           equal.
      */
     public NeoSendRawTransaction send() throws IOException {
         if (getSigners().size() != getWitnesses().size()) {
-            throw new TransactionConfigurationException("The transaction does not have the same " +
-                    "number of signers and witnesses. For every signer there has to be one " +
-                    "witness, even if that witness is empty.");
+            throw new TransactionConfigurationException("The transaction does not have the same number of signers and" +
+                    " witnesses. For every signer there has to be one witness, even if that witness is empty.");
         }
         int size = getSize();
         if (size > MAX_TRANSACTION_SIZE) {
-            throw new TransactionConfigurationException(format("The transaction exceeds the " +
-                    "maximum transaction size. The maximum size is {} bytes. This transaction " +
-                    "has size {}", MAX_TRANSACTION_SIZE, size));
+            throw new TransactionConfigurationException(format("The transaction exceeds the maximum transaction size." +
+                    " The maximum size is {} bytes. This transaction has size {}", MAX_TRANSACTION_SIZE, size));
         }
-        String hex = Numeric.toHexStringNoPrefix(toArray());
+        String hex = toHexStringNoPrefix(toArray());
         blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();
         return neow3j.sendRawTransaction(hex).send();
     }
 
     /**
-     * Creates an {@code Observable} that emits the block number containing this transaction as soon
-     * as it has been integrated in one. The observable completes right after emitting the block
-     * number.
+     * Creates an {@code Observable} that emits the block number containing this transaction as soon as it has been
+     * integrated in one. The observable completes right after emitting the block number.
      * <p>
-     * The observable starts tracking the blocks from the point at which the transaction has been
-     * sent.
+     * The observable starts tracking the blocks from the point at which the transaction has been sent.
      *
-     * @return The observable.
+     * @return the observable.
      * @throws IllegalStateException if this transaction has not yet been sent.
      */
     public Observable<Long> track() {
@@ -310,10 +334,8 @@ public class Transaction extends NeoSerializable {
             throw new IllegalStateException("Cannot subscribe before transaction has been sent.");
         }
 
-        Predicate<NeoGetBlock> pred = neoGetBlock ->
-                neoGetBlock.getBlock().getTransactions() != null &&
-                        neoGetBlock.getBlock().getTransactions().stream()
-                                .anyMatch(tx -> tx.getHash().equals(getTxId()));
+        Predicate<NeoGetBlock> pred = neoGetBlock -> neoGetBlock.getBlock().getTransactions() != null &&
+                neoGetBlock.getBlock().getTransactions().stream().anyMatch(tx -> tx.getHash().equals(getTxId()));
 
         return neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
                 .takeUntil(pred)
@@ -324,8 +346,7 @@ public class Transaction extends NeoSerializable {
     /**
      * Gets the application log of this transaction.
      * <p>
-     * The application log is not cached locally. Every time this method is called, requests are
-     * send to the Neo node.
+     * The application log is not cached locally. Every time this method is called, requests are sent to the Neo node.
      * <p>
      * If the application log could not be fetched, {@code null} is returned.
      *
@@ -333,8 +354,7 @@ public class Transaction extends NeoSerializable {
      */
     public NeoApplicationLog getApplicationLog() {
         if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Cannot get the application log before transaction " +
-                    "has been sent.");
+            throw new IllegalStateException("Cannot get the application log before transaction has been sent.");
         }
         NeoApplicationLog applicationLog = null;
         try {
@@ -372,13 +392,12 @@ public class Transaction extends NeoSerializable {
         }
     }
 
-    private void readTransactionAttributes(BinaryReader reader)
-            throws IOException, DeserializationException {
+    private void readTransactionAttributes(BinaryReader reader) throws IOException, DeserializationException {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes + this.signers.size() > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
-            throw new DeserializationException("A transaction can hold at most " +
-                    NeoConstants.MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers). " +
-                    "Input data had " + nrOfAttributes + " attributes.");
+            throw new DeserializationException(
+                    "A transaction can hold at most " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
+                            " attributes (including signers). Input data had " + nrOfAttributes + " attributes.");
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
@@ -422,14 +441,14 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for
-     * producing the transaction ID or a transaction signature.
+     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for producing the
+     * transaction ID or a transaction signature.
      * <p>
-     * The returned value depends on the magic number of the used Neo network, which is retrieved
-     * from the Neo node via the {@code getversion} RPC method if not already available locally.
+     * The returned value depends on the magic number of the used Neo network, which is retrieved from the Neo node
+     * via the {@code getversion} RPC method if not already available locally.
      *
      * @return the transaction data ready for hashing.
-     * @throws IOException if an error occurs when fetching the network's magic number
+     * @throws IOException if an error occurs when fetching the network's magic number.
      */
     public byte[] getHashData() throws IOException {
         return concatenate(neow3j.getNetworkMagicNumberBytes(), sha256(toArrayWithoutWitnesses()));
@@ -446,9 +465,51 @@ public class Transaction extends NeoSerializable {
     }
 
     public String toJson() throws JsonProcessingException {
-        io.neow3j.protocol.core.response.Transaction dtoTx =
-                new io.neow3j.protocol.core.response.Transaction(this);
+        io.neow3j.protocol.core.response.Transaction dtoTx = new io.neow3j.protocol.core.response.Transaction(this);
         return ObjectMapperFactory.getObjectMapper().writeValueAsString(dtoTx);
+    }
+
+    /**
+     * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
+     *
+     * @return neo-cli compatible json of this transaction.
+     * @throws IOException if an error occurs when trying to fetch the network's magic number.
+     */
+    public ContractParametersContext toContractParametersContext() throws IOException {
+        String hash = getTxId().toString();
+        String data = Base64.encode(toArrayWithoutWitnesses());
+        long network = neow3j.getNetworkMagicNumber();
+
+        Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
+            if (signer instanceof ContractSigner) {
+                throw new UnsupportedOperationException("Cannot handle contract signers");
+            }
+            AccountSigner accountSigner = (AccountSigner) signer;
+            VerificationScript verificationScript = accountSigner.getAccount().getVerificationScript();
+
+            // Check if there's a witness for this signer and add all corresponding signatures as parameters.
+            List<ContractParameter> params = new ArrayList<>();
+            witnesses.stream().filter(w -> w.getVerificationScript().equals(verificationScript))
+                    .map(Witness::getInvocationScript).findFirst()
+                    .ifPresent(invocationScript -> invocationScript.getSignatures().stream()
+                            .map(Sign.SignatureData::getConcatenated)
+                            .forEach(s -> params.add(new ContractParameter(ContractParameterType.SIGNATURE, s))));
+            if (params.isEmpty()) {
+                // If no witness was found we need to set the parameter without a value.
+                IntStream.range(0, verificationScript.getSigningThreshold())
+                        .forEach(i -> params.add(new ContractParameter(ContractParameterType.SIGNATURE)));
+            }
+
+            Map<String, String> pubKeyToSignature = new HashMap<>();
+            if (verificationScript.isSingleSigScript() && params.get(0).getValue() != null) {
+                String pubKey = verificationScript.getPublicKeys().get(0).getEncodedCompressedHex();
+                pubKeyToSignature.put(pubKey, Base64.encode((byte[]) params.get(0).getValue()));
+            }
+            String script = Base64.encode(verificationScript.getScript());
+            return new ContractParametersContext.ContextItem(script, params, pubKeyToSignature);
+        }).collect(Collectors.toMap(i -> "0x" + Hash160.fromScript(Base64.decode(i.getScript())), Function.identity()));
+
+        return new ContractParametersContext(hash, data, items, network);
     }
 
 }

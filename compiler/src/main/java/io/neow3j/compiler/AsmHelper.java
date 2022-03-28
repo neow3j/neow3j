@@ -27,11 +27,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
 
 public class AsmHelper {
 
-    private static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
+    protected static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
             Arrays.asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
 
     /**
@@ -255,7 +256,7 @@ public class AsmHelper {
         if (property == null) {
             return null;
         }
-        return ((String[])property)[1];
+        return ((String[]) property)[1];
     }
 
     /**
@@ -313,22 +314,41 @@ public class AsmHelper {
         return sw.toString();
     }
 
-    public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit)
-            throws IOException {
-
+    /**
+     * Gets the field index of the given field instruction node to use on the NeoVM.
+     * <p>
+     * If a class inherits from another class, its field indexes are equal to its local index plus the sum of all
+     * inherited fields.
+     *
+     * @param fieldInsn the field instruction node.
+     * @param compUnit the compilation unit.
+     * @return the field index.
+     * @throws IOException if an error occurs when reading class files.
+     */
+    public static int getFieldIndex(FieldInsnNode fieldInsn, CompilationUnit compUnit) throws IOException {
         ClassNode owner = getAsmClassForInternalName(fieldInsn.owner, compUnit.getClassLoader());
+        ClassNode currentClassNode = owner;
         int idx = 0;
         boolean fieldFound = false;
-        for (FieldNode field : owner.fields) {
-            if (field.name.equals(fieldInsn.name)) {
-                fieldFound = true;
-                break;
+        while (!getFullyQualifiedNameForInternalName(currentClassNode.name).equals(Object.class.getCanonicalName())) {
+            if (fieldFound) {
+                // Increase the index by the sum of the inherited fields.
+                idx += currentClassNode.fields.size();
+            } else {
+                idx = 0;
+                for (FieldNode field : currentClassNode.fields) {
+                    if (field.name.equals(fieldInsn.name)) {
+                        fieldFound = true;
+                        break;
+                    }
+                    idx++;
+                }
             }
-            idx++;
+            currentClassNode = getAsmClass(currentClassNode.superName, compUnit.getClassLoader());
         }
         if (!fieldFound) {
-            throw new CompilerException(owner, format("Tried to access a field variable with " +
-                    "name '%s', but such a field does not exist on this class.", fieldInsn.name));
+            throw new CompilerException(owner, format("Tried to access a field variable with name '%s', but such a " +
+                    "field does not exist on this class.", fieldInsn.name));
         }
         return idx;
     }
@@ -385,4 +405,5 @@ public class AsmHelper {
         }
         return desc;
     }
+
 }

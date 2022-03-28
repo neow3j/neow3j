@@ -30,7 +30,7 @@ To make use of all neow3j SDK features, add `io.neow3j:contract` to your depende
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.15.0'
+implementation 'io.neow3j:contract:3.16.0'
 ```
 
 __Maven__
@@ -39,7 +39,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>3.15.0</version>
+    <version>3.16.0</version>
 </dependency>
 ```
 
@@ -56,7 +56,7 @@ Then, add the following dependency to your project.
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.15.0'
+implementation 'io.neow3j:devpack:3.16.0'
 ```
 
 __Maven__
@@ -65,7 +65,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>3.15.0</version>
+    <version>3.16.0</version>
 </dependency>
 ```
 
@@ -77,10 +77,13 @@ compile smart contracts that are compatible with Neo Legacy.
 * [Binance](https://binance.com)
 * [OKEx](https://okex.com)
 * [AxLabs](https://axlabs.com)
-* [Neo Playground](https://neo-playground.dev)
 * [Neo Blockchain Toolkit](https://marketplace.visualstudio.com/items?itemName=ngd-seattle.neo-blockchain-toolkit)
 * [NekoHit](https://nekohit.com)
+* [NeoCandy](https://neocandy.io)
+* [Neo Playground](https://neo-playground.dev)
 * [intellij-neo](https://github.com/intellij-neo/intellij-neo)
+* [Elements](https://www.getelements.dev)
+* [GrantShares](https://grantshares.io)
 * Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
