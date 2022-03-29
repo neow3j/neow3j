@@ -79,9 +79,16 @@ Where:
 3. Merge the changes into the master branch of the neow3j-docs repository. That will automatically update the neow3j.io
    website.
 
+## neo-dev-portal
+
+Update the forked [neo-dev-portal](https://github.com/AxLabs/neo-dev-portal) repository and open a Pull Request to its
+origin [repository](https://github.com/neo-project/neo-dev-portal). Make sure to target the `dev` branch on both
+repositories.
+
 ## neow3j-boilerplate
 
-Update the boilerplate [repo's](https://github.com/neow3j/neow3j-boilerplate) gradle.build file and possibly the example
+Update the boilerplate repos (i.e., [sdk template](https://github.com/neow3j/neow3j-boilerplate-sdk) and
+[contracts template](https://github.com/neow3j/neow3j-boilerplate-sdk)) gradle.build file and possibly the example
 contract if major changes happened.
 
 ## GitHub release
