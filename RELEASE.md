@@ -6,14 +6,14 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 ## Release the Source Code
 
 1. Create a branch `release` from `main`.
-2. Bump the neow3j version on that branch to the release version. Do a global search with the previous version number
+2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
    and replace it with the new version number. There should be two affected files, i.e., `README.md`,
    and `DEVELOPMENT.md`.
 3. Verify that the release version is also set correctly in the files `build.gradle` and `Compiler.java`.
     - In case that the version number in `build.gradle` and `Compiler.java` need updating, the tests
       `NNSIntegrationTest`, `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and
       `NonDivisibleNFTIntegrationTest` will fail because of the version change in the compiler.
-        - Change the contract hashes in these tests accordingly to make them pass again.
+        - If this is the case, change the contract hashes in these tests accordingly to make them pass again.
 4. Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
     - Set the name as "Release x.x.x".
     - Set the correct milestone, project and a reviewer.
