@@ -5,27 +5,25 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 
 ## Release the Source Code
 
-- Create a branch `release` from `main`.
-- Bump the neow3j version on that branch to the release version. Do a global search with the previous version number and
-  replace it with the new version number. There should be two affected files, i.e., `README.md`, and `DEVELOPMENT.md`.
-- Verify that the release version is also set correctly in the files `build.gradle` and `Compiler.java`.
+1. Create a branch `release` from `main`.
+2. Bump the neow3j version on that branch to the release version. Do a global search with the previous version number
+   and replace it with the new version number. There should be two affected files, i.e., `README.md`,
+   and `DEVELOPMENT.md`.
+3. Verify that the release version is also set correctly in the files `build.gradle` and `Compiler.java`.
     - In case that the version number in `build.gradle` and `Compiler.java` need updating, the tests
       `NNSIntegrationTest`, `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and
       `NonDivisibleNFTIntegrationTest` will fail because of the version change in the compiler.
         - Change the contract hashes in these tests accordingly to make them pass again.
-
-- Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
+4. Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
     - Set the name as "Release x.x.x".
     - Set the correct milestone, project and a reviewer.
-
-- Review the Release Pull Request, mainly checking for critical changes **or** changes that shouldn't be in the release.
-- Merge the Pull Request, and then, delete the `release` branch.
-
-- Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
-
-- Right after merging, bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch. Thus, also
-  update the NFT integration tests accordingly to make them pass again, (i.e., `NNSIntegrationTest`,
-  `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and `NonDivisibleNFTIntegrationTest`).
+5. Review the Release Pull Request, mainly checking for critical changes **or** changes that shouldn't be in the
+   release.
+6. Merge the Pull Request, and then, delete the `release` branch.
+7. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
+8. Right after merging, bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch. Thus, also
+   update the NFT integration tests accordingly to make them pass again, (i.e., `NNSIntegrationTest`,
+   `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and `NonDivisibleNFTIntegrationTest`).
 
 ## Credentials
 
@@ -67,8 +65,7 @@ Where:
 ## neow3j-examples and Smoke Tests
 
 1. Update the neow3j-examples repository to use the new neow3j version.
-2. Run some examples as smoke tests.
-    - Compile example smart contracts with the Gradle plugin and programmatically.
+2. Run some examples as smoke tests. Compile example smart contracts with the Gradle plugin and programmatically.
 3. Correct broken examples according to the changes in neow3j.
 4. Add examples that cover new features.
 
