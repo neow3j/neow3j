@@ -32,9 +32,9 @@ public class SuperNeoMethod extends NeoMethod {
      */
     @Override
     public void convert(CompilationUnit compUnit) throws IOException {
-        AbstractInsnNode insn = asmMethod.instructions.get(0);
-        if (getFullyQualifiedNameForInternalName(sourceClass.superName).equals(Object.class.getCanonicalName())) {
-            insn = skipToSuperCtorCall(asmMethod, sourceClass).getNext();
+        AbstractInsnNode insn = getAsmMethod().instructions.get(0);
+        if (getFullyQualifiedNameForInternalName(getOwnerClass().superName).equals(Object.class.getCanonicalName())) {
+            insn = skipToSuperCtorCall(getAsmMethod(), getOwnerClass()).getNext();
         }
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);

@@ -63,10 +63,6 @@ public class ObjectsConverter implements Converter {
             case GETSTATIC:
                 FieldInsnNode fieldInsn = (FieldInsnNode) insn;
                 if (isEvent(fieldInsn.desc, compUnit)) {
-                    if (neoMethod.isVerifyMethod()) {
-                        throw new CompilerException(neoMethod,
-                                "The verify method is not allowed to fire any event.");
-                    }
                     insn = convertEvent(fieldInsn, neoMethod, compUnit);
                 } else if (isAssertionDisabledStaticField(fieldInsn)) {
                     insn = fieldInsn.getNext();
@@ -454,6 +450,9 @@ public class ObjectsConverter implements Converter {
     private static AbstractInsnNode convertEvent(FieldInsnNode eventFieldInsn, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {
 
+        if (neoMethod.isVerifyMethod()) {
+            throw new CompilerException(neoMethod, "The verify method is not allowed to fire any event.");
+        }
         String eventVariableName = eventFieldInsn.name;
         List<NeoEvent> events = compUnit.getNeoModule().getEvents();
         NeoEvent event = events.stream()
