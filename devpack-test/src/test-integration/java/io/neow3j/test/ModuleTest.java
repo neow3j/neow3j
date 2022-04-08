@@ -21,6 +21,7 @@ import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
 @ContractTest(
@@ -110,6 +111,46 @@ public class ModuleTest {
 
         Await.waitUntilTransactionIsExecuted(resp.getSendRawTransaction().getHash(), neow3j);
         assertThat(neoToken.getBalanceOf(newAcc), is(BigInteger.ONE));
+    }
+
+    @Test
+    public void fastForward() throws Throwable {
+        BigInteger startCount = neow3j.getBlockCount().send().getBlockCount();
+        long startTime = neow3j.getBlock(startCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
+        ext.fastForward(60, 10);
+        BigInteger endCount = neow3j.getBlockCount().send().getBlockCount();
+        long endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
+        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat(endTime, is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
+
+        startCount = endCount;
+        startTime = endTime;
+        ext.fastForwardOneBlock(60);
+        endCount = neow3j.getBlockCount().send().getBlockCount();
+        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
+        assertThat(endCount, is(startCount.add(BigInteger.ONE)));
+        assertThat(endTime, is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
+
+        startCount = endCount;
+        startTime = endTime;
+        ext.fastForward(30, 1, 1, 1, 10);
+        endCount = neow3j.getBlockCount().send().getBlockCount();
+        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
+        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat(endTime, is(greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000))); // milliseconds
+
+        startCount = endCount;
+        startTime = endTime;
+        ext.fastForwardOneBlock(30, 1, 1, 1);
+        endCount = neow3j.getBlockCount().send().getBlockCount();
+        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
+        assertThat(endCount, is(startCount.add(BigInteger.ONE)));
+        assertThat(endTime, is(greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000))); // milliseconds
+
+        startCount = neow3j.getBlockCount().send().getBlockCount();
+        ext.fastForward(10);
+        endCount = neow3j.getBlockCount().send().getBlockCount();
+        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
     }
 
 }

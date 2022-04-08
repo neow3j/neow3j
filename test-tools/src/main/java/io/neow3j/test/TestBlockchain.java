@@ -94,6 +94,16 @@ public interface TestBlockchain {
     String fastForward(int n) throws Exception;
 
     /**
+     * Mints {@code n} blocks with the last block being {@code seconds} in the future.
+     *
+     * @param seconds The time delta in seconds from now.
+     * @param n       The number of blocks to mint.
+     * @return The message emitted on minting the blocks.
+     * @throws Exception if an error occurred when minting the blocks.
+     */
+    public String fastForward(int seconds, int n) throws Exception;
+
+    /**
      * Executes the given command.
      *
      * @param commandParts The command separated into its parts.
