@@ -298,7 +298,7 @@ public class ObjectsConverter implements Converter {
                 break;
             case JMPIF:
             case JMPIF_L:
-                // JMPIF_L does not require a replacement.
+                // JMPIF and JMPIF_L do not require a replacement.
                 break;
             default:
                 throw new CompilerException("Could not handle jump condition. The compiler does not support hard " +
