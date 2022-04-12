@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+
 import java.util.List;
 import java.util.Objects;
 
@@ -16,6 +17,9 @@ public class ContractNef {
 
     @JsonProperty("compiler")
     private String compiler;
+
+    @JsonProperty("source")
+    private String source;
 
     @JsonProperty("tokens")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -31,10 +35,12 @@ public class ContractNef {
     public ContractNef() {
     }
 
-    public ContractNef(Long magic, String compiler,
-            List<ContractMethodToken> tokens, String script, Long checksum) {
+    public ContractNef(Long magic, String compiler, String source, List<ContractMethodToken> tokens, String script,
+            Long checksum) {
+
         this.magic = magic;
         this.compiler = compiler;
+        this.source = source;
         this.tokens = tokens;
         this.script = script;
         this.checksum = checksum;
@@ -46,6 +52,10 @@ public class ContractNef {
 
     public String getCompiler() {
         return compiler;
+    }
+
+    public String getSource() {
+        return source;
     }
 
     public List<ContractMethodToken> getTokens() {

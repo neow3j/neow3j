@@ -16,9 +16,7 @@ public class ContractState extends CoreContractState {
         super();
     }
 
-    public ContractState(int id, int updateCounter, Hash160 hash, ContractNef nef,
-            ContractManifest manifest) {
-
+    public ContractState(int id, int updateCounter, Hash160 hash, ContractNef nef, ContractManifest manifest) {
         super(id, hash, nef, manifest);
         this.updateCounter = updateCounter;
     }
