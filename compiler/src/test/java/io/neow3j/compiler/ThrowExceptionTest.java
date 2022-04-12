@@ -1,6 +1,8 @@
 package io.neow3j.compiler;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 import io.neow3j.script.OpCode;
@@ -8,14 +10,16 @@ import io.neow3j.utils.Numeric;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.SortedMap;
+
 import org.junit.Test;
 
 public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringLiteralArgument() throws IOException {
-        CompilationUnit res = new Compiler().compile(
-                ExceptionWithStringLiteralArgument.class.getName());
+        CompilationUnit res = new Compiler().compile(ExceptionWithStringLiteralArgument.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(byteStream);
@@ -45,8 +49,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringVariableArgument() throws IOException {
-        CompilationUnit res = new Compiler().compile(
-                ExceptionWithStringVariableArgument.class.getName());
+        CompilationUnit res = new Compiler().compile(ExceptionWithStringVariableArgument.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(byteStream);
@@ -61,8 +64,7 @@ public class ThrowExceptionTest {
 
     @Test
     public void exceptionWithStringReturnValueFromMethodCall() throws IOException {
-        CompilationUnit res = new Compiler().compile(
-                ExceptionWithStringReturnValueFromMethod.class.getName());
+        CompilationUnit res = new Compiler().compile(ExceptionWithStringReturnValueFromMethod.class.getName());
 
         ByteArrayOutputStream byteStream = new ByteArrayOutputStream();
         DataOutputStream stream = new DataOutputStream(byteStream);
@@ -76,6 +78,48 @@ public class ThrowExceptionTest {
         byte[] expectedScript = byteStream.toByteArray();
 
         assertThat(res.getNefFile().getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void testIsThrowableGetMessage() throws IOException {
+        // Tests the method MethodsConverter.isThrowableGetMessage()
+        // The method 'Throwable.getMessage()' should be ignored by the compiler and the message on the stack should
+        // be returned.
+        CompilationUnit compUnit = new Compiler().compile(ExceptionGetMessageInCatch.class.getName());
+
+        List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
+        assertThat(methods, hasSize(1));
+
+        SortedMap<Integer, NeoInstruction> insns = methods.get(0).getInstructions();
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(3).getOpcode(), is(OpCode.TRY_L));
+        assertThat(insns.get(12).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns.get(12).getOperand(), is("Neowww!".getBytes(UTF_8)));
+        assertThat(insns.get(21).getOpcode(), is(OpCode.THROW));
+        assertThat(insns.get(22).getOpcode(), is(OpCode.STLOC0));
+        assertThat(insns.get(23).getOpcode(), is(OpCode.LDLOC0));
+        assertThat(insns.get(24).getOpcode(), is(OpCode.RET));
+    }
+
+    @Test
+    public void testExceptionGetMessageEmpty() throws IOException {
+        // Tests the method MethodsConverter.isThrowableGetMessage()
+        // The method 'Exception.getMessage()' should be ignored by the compiler and the message on the stack should
+        // be returned.
+        CompilationUnit compUnit = new Compiler().compile(ExceptionGetMessageInCatchEmpty.class.getName());
+
+        List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
+        assertThat(methods, hasSize(1));
+
+        SortedMap<Integer, NeoInstruction> insns = methods.get(0).getInstructions();
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(3).getOpcode(), is(OpCode.TRY_L));
+        assertThat(insns.get(12).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns.get(12).getOperand(), is("error".getBytes(UTF_8)));
+        assertThat(insns.get(19).getOpcode(), is(OpCode.THROW));
+        assertThat(insns.get(20).getOpcode(), is(OpCode.STLOC0));
+        assertThat(insns.get(21).getOpcode(), is(OpCode.LDLOC0));
+        assertThat(insns.get(22).getOpcode(), is(OpCode.RET));
     }
 
     static class ExceptionWithStringLiteralArgument {
@@ -108,4 +152,25 @@ public class ThrowExceptionTest {
             return "error message";
         }
     }
+
+    static class ExceptionGetMessageInCatch {
+        public static String exception() {
+            try {
+                throw new Exception("Neowww!");
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+    }
+
+    static class ExceptionGetMessageInCatchEmpty {
+        public static String exception() {
+            try {
+                throw new Exception();
+            } catch (Exception e) {
+                return e.getMessage();
+            }
+        }
+    }
+
 }

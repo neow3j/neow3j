@@ -619,6 +619,9 @@ public class NeoMethod {
      * @return the last instruction.
      */
     public NeoInstruction getLastInstruction() {
+        if (this.instructions.size() == 0) {
+            throw new CompilerException("Could not find any instruction in this NeoMethod.");
+        }
         return this.instructions.get(this.instructions.lastKey());
     }
 

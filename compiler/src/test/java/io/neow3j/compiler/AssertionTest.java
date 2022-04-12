@@ -4,30 +4,35 @@ import io.neow3j.script.OpCode;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.SortedMap;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThrows;
 
 public class AssertionTest {
 
+    private static final String NO_INSN_BEFORE_ASSERTION_MSG = " seems to hold a hard coded 'assert false' statement " +
+            "or it throws an 'AssertionError'. The compiler does not support that.";
+    private static final String UNSUPPORTED_JUMP_CONDITION_CONVERSION_MSG = "Could not handle jump condition. Make " +
+            "sure not to hard code an 'assert false' statement and to not throw an 'AssertionError'.";
+
     @Test
     public void testInitsslotOnlyAssertionInstructions() throws IOException {
-        CompilationUnit compUnit = new Compiler()
-                .compile(InitsslotWithoutOtherStaticVar.class.getName());
+        CompilationUnit compUnit = new Compiler().compile(InitsslotWithoutStaticVar.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
         assertThat(methods, hasSize(1));
         NeoMethod method = methods.get(0);
         assertThat(method.getName(), is("testAssert1"));
 
         SortedMap<Integer, NeoInstruction> insns = method.getInstructions();
-        assertThat(insns.entrySet(), hasSize(7));
-        assertThat(insns.get(11).getOpcode(), is(OpCode.PUSHDATA1));
-        assertThat(insns.get(11).getOperand(),
-                is("assertion failed".getBytes(StandardCharsets.UTF_8)));
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.EQUAL));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(8).getOpcode(), is(OpCode.RET));
     }
 
     @Test
@@ -35,10 +40,24 @@ public class AssertionTest {
         CompilationUnit compUnit = new Compiler().compile(InitsslotWithStaticVar.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
         assertThat(methods, hasSize(2));
+
+        NeoMethod method = methods.get(0);
+        assertThat(method.getName(), is("testAssert2"));
+
+        SortedMap<Integer, NeoInstruction> insns = method.getInstructions();
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(3).getOpcode(), is(OpCode.LDSFLD0));
+        assertThat(insns.get(4).getOpcode(), is(OpCode.LDARG0));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.NOTEQUAL));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.NOTEQUAL));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.PUSH1));
+        assertThat(insns.get(8).getOpcode(), is(OpCode.RET));
+
         NeoMethod initsslotMethod = methods.get(1);
         assertThat(initsslotMethod.getName(), is("_initialize"));
 
-        SortedMap<Integer, NeoInstruction> insns = initsslotMethod.getInstructions();
+        insns = initsslotMethod.getInstructions();
         assertThat(insns.entrySet(), hasSize(4));
         assertThat(insns.get(0).getOpcode(), is(OpCode.INITSSLOT));
         assertThat(insns.get(2).getOpcode(), is(OpCode.PUSHINT8));
@@ -48,38 +67,77 @@ public class AssertionTest {
     }
 
     @Test
-    public void testIsThrowableGetMessage() throws IOException {
-        // Tests the method MethodsConverter.isThrowableGetMessage()
-        // The method 'Throwable.getMessage()' should be ignored by the compiler and the message
-        // on the stack should be returned.
-        CompilationUnit compUnit = new Compiler().compile(GetMessageInCatch.class.getName());
+    public void testAssertConditions() throws IOException {
+        // The JVM assert conditions are jump instructions to jump over the <init> instruction of AssertionError and
+        // potential additional instructions (e.g., a message). For the NeoVM ASSERT opcode, these jump instructions
+        // should be transpiled into corresponding NeoVM opcodes that just return 0 or 1.
+        CompilationUnit compUnit = new Compiler().compile(AssertConditionsContract.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
-        assertThat(methods, hasSize(3));
-        SortedMap<Integer, NeoInstruction> insns = methods.get(0).getInstructions();
-        assertThat(insns.entrySet(), hasSize(7));
-        assertThat(insns.get(19).getOpcode(), is(OpCode.THROW));
-        assertThat(insns.get(20).getOpcode(), is(OpCode.STLOC0));
-        assertThat(insns.get(21).getOpcode(), is(OpCode.LDLOC0));
-        assertThat(insns.get(22).getOpcode(), is(OpCode.RET));
+        assertThat(methods, hasSize(8));
 
-        insns = methods.get(1).getInstructions();
-        assertThat(insns.entrySet(), hasSize(10));
-        assertThat(insns.get(28).getOpcode(), is(OpCode.THROW));
-        assertThat(insns.get(29).getOpcode(), is(OpCode.JMP_L));
-        assertThat(insns.get(29).getOperand().length, is(4));
-        assertThat(insns.get(34).getOpcode(), is(OpCode.STLOC0));
-        assertThat(insns.get(35).getOpcode(), is(OpCode.LDLOC0));
-        assertThat(insns.get(36).getOpcode(), is(OpCode.RET));
+        NeoMethod method_eq = methods.get(0);
+        SortedMap<Integer, NeoInstruction> insns = method_eq.getInstructions();
+        assertThat(insns.get(5).getOpcode(), is(OpCode.EQUAL));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
 
-        insns = methods.get(2).getInstructions();
-        assertThat(insns.entrySet(), hasSize(7));
-        assertThat(insns.get(31).getOpcode(), is(OpCode.THROW));
-        assertThat(insns.get(32).getOpcode(), is(OpCode.STLOC0));
-        assertThat(insns.get(33).getOpcode(), is(OpCode.LDLOC0));
-        assertThat(insns.get(34).getOpcode(), is(OpCode.RET));
+        NeoMethod method_ne = methods.get(1);
+        insns = method_ne.getInstructions();
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.NOTEQUAL));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_lt = methods.get(2);
+        insns = method_lt.getInstructions();
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.LT));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_gt = methods.get(3);
+        insns = method_gt.getInstructions();
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.GT));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_le = methods.get(4);
+        insns = method_le.getInstructions();
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.LE));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_ge = methods.get(5);
+        insns = method_ge.getInstructions();
+        assertThat(insns.entrySet(), hasSize(6));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.GE));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_ifnot = methods.get(6);
+        insns = method_ifnot.getInstructions();
+        assertThat(insns.entrySet(), hasSize(5));
+        assertThat(insns.get(4).getOpcode(), is(OpCode.NOT));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.RET));
+
+        NeoMethod method_if = methods.get(7);
+        insns = method_if.getInstructions();
+        assertThat(insns.entrySet(), hasSize(4));
+        assertThat(insns.get(4).getOpcode(), is(OpCode.ASSERT));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.RET));
     }
 
-    static class InitsslotWithoutOtherStaticVar {
+    @Test
+    public void testNoMessageSupportInAssertion() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(AssertionWithMessage.class.getName()));
+        assertThat(thrown.getMessage(), is("Passing a message with the 'assert' statement is not supported."));
+    }
+
+    static class InitsslotWithoutStaticVar {
         public static void testAssert1(int i) {
             assert i == 17;
         }
@@ -89,36 +147,123 @@ public class AssertionTest {
         public static int VAR = 42;
 
         public static boolean testAssert2(int i) {
-            assert VAR == i : "neoowww";
+            assert VAR != i;
             return true;
         }
     }
 
-    static class GetMessageInCatch {
+    @Test
+    public void testTryCatchAssertionError() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TryCatchAssertionErrorContract.class.getName()));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_JUMP_CONDITION_CONVERSION_MSG));
+    }
 
-        public static String exception() {
+    @Test
+    public void testUseOfAssertFalse() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UseOfAssertFalseContract.class.getName()));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_JUMP_CONDITION_CONVERSION_MSG));
+    }
+
+    @Test
+    public void testThrowingAssertionError() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ThrowingAssertionErrorContract.class.getName()));
+        assertThat(thrown.getMessage(), containsString(NO_INSN_BEFORE_ASSERTION_MSG));
+    }
+
+    @Test
+    public void testCallingMethodWithOnlyAssertFalse() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(CallingMethodWithOnlyAssertFalseContract.class.getName()));
+        assertThat(thrown.getMessage(), containsString(NO_INSN_BEFORE_ASSERTION_MSG));
+    }
+
+    @Test
+    public void testMethodWithOnlyAssertFalse() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(MethodWithOnlyAssertFalseContract.class.getName()));
+        assertThat(thrown.getMessage(), containsString(NO_INSN_BEFORE_ASSERTION_MSG));
+    }
+
+    static class AssertConditionsContract {
+        public static void testEQ(int i) {
+            assert 11 == i;
+        }
+
+        public static void testNE(int i) {
+            assert 11 != i;
+        }
+
+        public static void testLT(int i) {
+            assert 11 < i;
+        }
+
+        public static void testGT(int i) {
+            assert 12 > i;
+        }
+
+        public static void testLE(int i) {
+            assert 1 <= i;
+        }
+
+        public static void testGE(int i) {
+            assert 1 >= i;
+        }
+
+        public static void testIFNOT(boolean b) {
+            assert !b;
+        }
+
+        public static void testIF(boolean b) {
+            assert b;
+        }
+    }
+
+    static class AssertionWithMessage {
+        public static void assertWithMessage(int i) {
+            assert i != 1 : "Value must be 1.";
+        }
+    }
+
+    static class TryCatchAssertionErrorContract {
+        public static String tryCatchingAssertionError() {
             try {
-                throw new Exception();
+                throw new AssertionError();
             } catch (Exception e) {
                 return e.getMessage();
             }
         }
+    }
 
-        public static String assertion() {
-            try {
-                assert false : "Assert failed.";
-            } catch (Exception e) {
-                return e.getMessage();
-            }
-            return "";
+    static class UseOfAssertFalseContract {
+        public static String usingAssertFalse() {
+            String s = "hello";
+            assert false;
+            return s;
+        }
+    }
+
+    static class ThrowingAssertionErrorContract {
+        public static String throwingAssertionError() {
+            throw new AssertionError();
+        }
+    }
+
+    static class MethodWithOnlyAssertFalseContract {
+        public static void assertFalse() {
+            assert false;
+        }
+    }
+
+    static class CallingMethodWithOnlyAssertFalseContract {
+        public static void callingMethodWithOnlyAssertFalse() {
+            assertFalse();
         }
 
-        public static String newAssertion() {
-            try {
-                throw new AssertionError("Assertion failed.");
-            } catch (Exception e) {
-                return e.getMessage();
-            }
+        private static void assertFalse() {
+            assert false;
         }
     }
 
