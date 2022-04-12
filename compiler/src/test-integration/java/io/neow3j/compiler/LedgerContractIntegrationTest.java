@@ -25,6 +25,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.fail;
 
 public class LedgerContractIntegrationTest {
 
@@ -118,6 +119,11 @@ public class LedgerContractIntegrationTest {
     }
 
     @Test
+    public void getTransactionState() {
+        fail();
+    }
+
+    @Test
     public void getBlockWithBlockHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 hash256(ct.getBlockHashOfDeployTx()));
@@ -205,6 +211,10 @@ public class LedgerContractIntegrationTest {
                 return true;
             }
             return false;
+        }
+
+        public static byte getTransactionState(Hash256 txHash) {
+            return LedgerContract.getTransactionVMState(txHash);
         }
 
         public static Block getBlockWithBlockHash(Hash256 blockHash) {

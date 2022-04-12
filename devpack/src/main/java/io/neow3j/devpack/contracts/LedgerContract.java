@@ -65,6 +65,14 @@ public class LedgerContract extends ContractInterface {
     public static native Transaction getTransactionFromBlock(int blockIndex, int index);
 
     /**
+     * Gets the VM state of the transaction with the given hash.
+     *
+     * @param hash the transaction hash.
+     * @return the transaction's VM state.
+     */
+    public static native byte getTransactionVMState(Hash256 hash);
+
+    /**
      * Gets the index of the block that contains the transaction with the given hash.
      *
      * @param hash The transaction hash.
