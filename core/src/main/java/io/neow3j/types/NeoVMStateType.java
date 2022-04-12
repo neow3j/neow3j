@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+/**
+ * Indicates the status of the VM.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public enum NeoVMStateType {
 
