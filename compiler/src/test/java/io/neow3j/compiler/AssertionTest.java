@@ -16,9 +16,10 @@ import static org.junit.Assert.assertThrows;
 public class AssertionTest {
 
     private static final String NO_INSN_BEFORE_ASSERTION_MSG = " seems to hold a hard coded 'assert false' statement " +
-            "or it throws an 'AssertionError'. The compiler does not support that.";
-    private static final String UNSUPPORTED_JUMP_CONDITION_CONVERSION_MSG = "Could not handle jump condition. Make " +
-            "sure not to hard code an 'assert false' statement and to not throw an 'AssertionError'.";
+            "or it throws an 'AssertionError'. The compiler does not support that. Use 'Helper.abort()' instead.";
+    private static final String UNSUPPORTED_JUMP_CONDITION_CONVERSION_MSG = "Could not handle jump condition. The " +
+            "compiler does not support hard coded 'assert false' statements nor throwing an 'AssertionError'. Use " +
+            "'Helper.abort()' instead.";
 
     @Test
     public void testInitsslotOnlyAssertionInstructions() throws IOException {

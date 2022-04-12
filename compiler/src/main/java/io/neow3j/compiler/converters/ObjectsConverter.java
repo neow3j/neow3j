@@ -262,7 +262,8 @@ public class ObjectsConverter implements Converter {
         // are in the following transpiled into corresponding NeoVM opcodes that just return 0 or 1.
         if (neoMethod.getInstructions().size() == 0) {
             throw new CompilerException(format("The method '%s' seems to hold a hard coded 'assert false' statement " +
-                    "or it throws an 'AssertionError'. The compiler does not support that.", neoMethod.getName()));
+                    "or it throws an 'AssertionError'. The compiler does not support that. Use 'Helper.abort()' " +
+                    "instead.", neoMethod.getName()));
         }
         NeoInstruction lastInstruction = neoMethod.getLastInstruction();
         neoMethod.removeLastInstruction();
@@ -292,8 +293,9 @@ public class ObjectsConverter implements Converter {
                 // JMPIF_L does not require a replacement.
                 break;
             default:
-                throw new CompilerException("Could not handle jump condition. Make sure not to hard code an 'assert " +
-                        "false' statement and to not throw an 'AssertionError'.");
+                throw new CompilerException("Could not handle jump condition. The compiler does not support hard " +
+                        "coded 'assert false' statements nor throwing an 'AssertionError'. Use 'Helper.abort()' " +
+                        "instead.");
         }
     }
 
