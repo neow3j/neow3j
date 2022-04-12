@@ -27,6 +27,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class CryptoLibIntegrationTest {
 
@@ -49,6 +50,11 @@ public class CryptoLibIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("0102030405"));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is("eb825c4b24f425077a067cc3bef457783f5ad705"));
+    }
+
+    @Test
+    public void murmur32() {
+        fail();
     }
 
     @Test
