@@ -38,7 +38,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * │ Magic    │ uint32        │ Magic header                               │
  * │ Compiler │ byte[64]      │ Compiler name and version                  │
  * ├──────────┼───────────────┼────────────────────────────────────────────┤
- * │ Source   │ byte[]        │ The url of the source files, max 255 bytes |
+ * │ Source   │ byte[]        │ The url of the source files, max 255 bytes │
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
  * │ Tokens   │ MethodToken[] │ Method tokens                              │
  * │ Reserve  │ byte[2]       │ Reserved for future extensions. Must be 0. │
@@ -51,9 +51,9 @@ public class NefFile extends NeoSerializable {
     private static final int MAGIC = 0x3346454E; // "NEF3".getBytes(UTF_8));
     private static final int MAGIC_SIZE = 4;
     private static final int COMPILER_SIZE = 64;
+    private static final int MAX_SOURCE_URL_SIZE = 256;
     private static final int MAX_SCRIPT_LENGTH = 512 * 1024;
     private static final int CHECKSUM_SIZE = 4;
-    private static final int MAX_SOURCE_URL_SIZE = 256;
 
     private static final int HEADER_SIZE = MAGIC_SIZE + COMPILER_SIZE;
 
@@ -66,33 +66,32 @@ public class NefFile extends NeoSerializable {
     public NefFile() {
         sourceUrl = "";
         methodTokens = new ArrayList<>();
-        checkSum = new byte[]{};
         script = new byte[]{};
+        checkSum = new byte[]{};
     }
 
     /**
      * Constructs a new {@code NefFile} from the given contract information.
      *
      * @param compiler     the compiler name and version with which the contract has been compiled.
+     * @param sourceUrl    the URL to the source code of the contract.
      * @param script       the contract's script.
      * @param methodTokens the method tokens of the contract.
-     * @param sourceUrl    The URL to the source code of the contract.
      */
-    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens,
-            String sourceUrl) {
+    public NefFile(String compiler, String sourceUrl, List<MethodToken> methodTokens, byte[] script) {
         int compilerSize = compiler.getBytes(UTF_8).length;
         if (compilerSize > COMPILER_SIZE) {
-            throw new IllegalArgumentException(format("The compiler name and version string can " +
-                    "be max %d bytes long, but was %d bytes long.", COMPILER_SIZE, compilerSize));
+            throw new IllegalArgumentException(format("The compiler name and version string can be max %d bytes long," +
+                    " but was %d bytes long.", COMPILER_SIZE, compilerSize));
         }
         this.compiler = compiler;
-        this.script = script;
-        this.methodTokens = methodTokens == null ? new ArrayList<>() : methodTokens;
         this.sourceUrl = sourceUrl == null ? "" : sourceUrl;
+        this.methodTokens = methodTokens == null ? new ArrayList<>() : methodTokens;
         if (this.sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
-            throw new IllegalArgumentException("The source URL must not be longer than " +
-                    MAX_SOURCE_URL_SIZE + " bytes");
+            throw new IllegalArgumentException(
+                    "The source URL must not be longer than " + MAX_SOURCE_URL_SIZE + " bytes");
         }
+        this.script = script;
         // Need to initialize the check sum because it is required for calculating the check sum.
         checkSum = new byte[CHECKSUM_SIZE];
         checkSum = computeChecksum(this);
@@ -105,8 +104,8 @@ public class NefFile extends NeoSerializable {
      * @param script       the contract's script.
      * @param methodTokens the method tokens of the contract.
      */
-    public NefFile(String compiler, byte[] script, List<MethodToken> methodTokens) {
-        this(compiler, script, methodTokens, "");
+    public NefFile(String compiler, List<MethodToken> methodTokens, byte[] script) {
+        this(compiler, "", methodTokens, script);
     }
 
     /**
@@ -116,6 +115,13 @@ public class NefFile extends NeoSerializable {
      */
     public String getCompiler() {
         return compiler;
+    }
+
+    /**
+     * @return the source code URL.
+     */
+    public String getSourceUrl() {
+        return sourceUrl;
     }
 
     /**
@@ -130,8 +136,6 @@ public class NefFile extends NeoSerializable {
     }
 
     /**
-     * Gets the contract script.
-     *
      * @return the contract script.
      */
     public byte[] getScript() {
@@ -139,8 +143,6 @@ public class NefFile extends NeoSerializable {
     }
 
     /**
-     * Gets this NEF file's check sum.
-     *
      * @return the check sum.
      */
     public byte[] getCheckSum() {
@@ -152,7 +154,7 @@ public class NefFile extends NeoSerializable {
      * <p>
      * The check sum bytes of the NEF file are read as a little endian unsigned integer.
      *
-     * @return the check sum.
+     * @return the check sum as an integer.
      */
     public long getCheckSumAsInteger() {
         return getCheckSumAsInteger(checkSum);
@@ -161,29 +163,17 @@ public class NefFile extends NeoSerializable {
     /**
      * Converts check sum bytes to an integer.
      * <p>
-     * The check sum is expected to be 4 bytes and it is interpreted as a little endian unsigned
-     * integer.
+     * The check sum is expected to be 4 bytes, and it is interpreted as a little endian unsigned integer.
      *
      * @param checkSumBytes the check sum bytes.
-     * @return the check sum.
+     * @return the check sum as an integer.
      */
     public static long getCheckSumAsInteger(byte[] checkSumBytes) {
         return toBigInt(reverseArray(checkSumBytes)).longValue();
     }
 
     /**
-     * Gets the source code URL of this NEF.
-     *
-     * @return the source code URL.
-     */
-    public String getSourceUrl() {
-        return sourceUrl;
-    }
-
-    /**
-     * Gets the byte size of this NEF file when serialized.
-     *
-     * @return the byte size.
+     * @return the byte size of this NEF file when serialized.
      */
     @Override
     public int getSize() {
@@ -221,8 +211,8 @@ public class NefFile extends NeoSerializable {
             // Source URL
             sourceUrl = reader.readVarString();
             if (sourceUrl != null && sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
-                throw new DeserializationException("Source URL must not be longer than "
-                        + MAX_SOURCE_URL_SIZE + " bytes.");
+                throw new DeserializationException(
+                        "Source URL must not be longer than " + MAX_SOURCE_URL_SIZE + " bytes.");
             }
             // Reserved bytes
             if (reader.readByte() != 0) {
@@ -252,7 +242,7 @@ public class NefFile extends NeoSerializable {
     /**
      * Computes the checksum for the given NEF file.
      *
-     * @param file The NEF file.
+     * @param file the NEF file.
      * @return the checksum.
      */
     public static byte[] computeChecksum(NefFile file) {
@@ -277,18 +267,18 @@ public class NefFile extends NeoSerializable {
     /**
      * Reads and constructs an {@code NefFile} instance from the fiven file.
      *
-     * @param nefFile The file to read from.
-     * @return The deserialized {@code NefFile} instance.
-     * @throws DeserializationException If an error occurs while trying to deserialize the file
-     *                                  bytes to the {@code NefFile}.
-     * @throws IOException              If an error occurs when reading from the file.
+     * @param nefFile the file to read from.
+     * @return the deserialized {@code NefFile} instance.
+     * @throws DeserializationException if an error occurs while trying to deserialize the file bytes to the
+     *                                  {@code NefFile}.
+     * @throws IOException              if an error occurs when reading from the file.
      */
     public static NefFile readFromFile(File nefFile) throws DeserializationException, IOException {
         int nefFileSize = (int) nefFile.length();
         if (nefFileSize > 0x100000) {
             // This maximum size was taken from the neo-core code.
-            throw new IllegalArgumentException("The given NEF file is too large. File was " +
-                    nefFileSize + " bytes, but a max of 2^20 bytes is allowed.");
+            throw new IllegalArgumentException("The given NEF file is too large. File was " + nefFileSize +
+                    " bytes, but a max of 2^20 bytes is allowed.");
         }
         try (FileInputStream nefStream = new FileInputStream(nefFile)) {
             BinaryReader reader = new BinaryReader(nefStream);
@@ -299,18 +289,15 @@ public class NefFile extends NeoSerializable {
     /**
      * Deserializes and constructs a {@code NefFile} from the given stack item.
      * <p>
-     * It is expected that the stack item is of type
-     * {@link StackItemType#BYTE_STRING} and its content is simply a
+     * It is expected that the stack item is of type {@link StackItemType#BYTE_STRING} and its content is simply a
      * serialized NEF file.
      *
-     * @param stackItem The stack item to deserialize.
-     * @return The deserialized {@code NefFile}.
-     * @throws DeserializationException If an error occurs while trying to deserialize the file
-     *                                  bytes to the {@code NefFile}.
+     * @param stackItem the stack item to deserialize.
+     * @return the deserialized {@code NefFile}.
+     * @throws DeserializationException if an error occurs while trying to deserialize the file bytes to the
+     *                                  {@code NefFile}.
      */
-    public static NefFile readFromStackItem(StackItem stackItem)
-            throws DeserializationException {
-
+    public static NefFile readFromStackItem(StackItem stackItem) throws DeserializationException {
         // the 'nef' is represented in a ByteString stack item
         if (!stackItem.getType().equals(BYTE_STRING)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), BYTE_STRING);
@@ -328,8 +315,7 @@ public class NefFile extends NeoSerializable {
     /**
      * Represents a static call to another contract from within a smart contract.
      * <p>
-     * Method tokens are referenced in the smart contract's script whenever the referenced method is
-     * called.
+     * Method tokens are referenced in the smart contract's script whenever the referenced method is called.
      */
     public static class MethodToken extends NeoSerializable {
 
@@ -343,8 +329,9 @@ public class NefFile extends NeoSerializable {
         private boolean hasReturnValue;
         private CallFlags callFlags;
 
-        public MethodToken(Hash160 hash, String method, int parametersCount,
-                boolean hasReturnValue, CallFlags callFlags) {
+        public MethodToken(Hash160 hash, String method, int parametersCount, boolean hasReturnValue,
+                CallFlags callFlags) {
+
             this.hash = hash;
             this.method = method;
             this.parametersCount = parametersCount;

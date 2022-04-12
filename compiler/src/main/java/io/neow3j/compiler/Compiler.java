@@ -460,8 +460,8 @@ public class Compiler {
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
         String sourceUrl = getSourceUrl(compUnit.getContractClass());
-        NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(),
-                compUnit.getNeoModule().getMethodTokens(), sourceUrl);
+        NefFile nef = new NefFile(COMPILER_NAME, sourceUrl, compUnit.getNeoModule().getMethodTokens(),
+                compUnit.getNeoModule().toByteArray());
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
