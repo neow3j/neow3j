@@ -268,27 +268,35 @@ public class ObjectsConverter implements Converter {
         NeoInstruction lastInstruction = neoMethod.getLastInstruction();
         neoMethod.removeLastInstruction();
         switch (lastInstruction.getOpcode()) {
+            case JMPEQ:
             case JMPEQ_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
                 break;
+            case JMPNE:
             case JMPNE_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NOTEQUAL));
                 break;
+            case JMPLT:
             case JMPLT_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.LT));
                 break;
+            case JMPGT:
             case JMPGT_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.GT));
                 break;
+            case JMPLE:
             case JMPLE_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.LE));
                 break;
+            case JMPGE:
             case JMPGE_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.GE));
                 break;
+            case JMPIFNOT:
             case JMPIFNOT_L:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NOT));
                 break;
+            case JMPIF:
             case JMPIF_L:
                 // JMPIF_L does not require a replacement.
                 break;
