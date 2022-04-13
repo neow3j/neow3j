@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Runtime;
+import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.NeoVMStateType;
@@ -195,6 +196,22 @@ public class AssertionIntegrationTest {
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
     }
 
+    @Test
+    public void testComplexAssertion() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("string"), string("string"), integer(5), string("5"), bool(false));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+        response = ct.callInvokeFunction(testName,
+                string("string"), string("not-string"), integer(42), string("5"), bool(true));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+        response = ct.callInvokeFunction(testName,
+                string("hello" + ", world!"), string("not-string"), integer(1), string("5"), bool(false));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+        response = ct.callInvokeFunction(testName,
+                string("string"), string("not-string"), integer(1), string("1"), bool(true));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+    }
+
     static class AssertionTestContract {
 
         public static int VAR = 42;
@@ -250,6 +267,10 @@ public class AssertionIntegrationTest {
 
         public static void testIF(boolean b) {
             assert b;
+        }
+
+        public static void testComplexAssertion(String a, String b, Integer i, String n, boolean c) {
+            assert a == b && i == StdLib.atoi(n, 10) || i == 42 && c || a == getString();
         }
 
     }
