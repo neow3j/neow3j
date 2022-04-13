@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 public class TryCatchBlocksTest {
 
+    private static final String NEOVM_FAILED_ASSERT_MESSAGE = "ASSERT is executed with false result.";
+
     @Rule
     public TestName testName = new TestName();
 
@@ -81,8 +83,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitFirstExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
-                integer(1), integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks", integer(1), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -95,15 +96,13 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitSecondExceptionInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
-                integer(0), integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks", integer(0), integer(1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
     public void dontHitAnyExceptionsInMultipleTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks",
-                integer(0), integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("multipleTryCatchFinallyBlocks", integer(0), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -116,9 +115,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitFirstExceptionInNestedTryCatchFinallyBlocks() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1),
-                        integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(1), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -133,9 +130,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitSecondExceptionInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                        integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0), integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -150,9 +145,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitNoExceptionsInNestedTryCatchBlocks() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0),
-                        integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedTryCatchFinallyBlocks", integer(0), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -185,8 +178,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void hitExceptionInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
-                integer(1), integer(1));
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch", integer(1), integer(1));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertFalse(res.get(0).getBoolean());
         assertTrue(res.get(1).getBoolean());
@@ -197,8 +189,7 @@ public class TryCatchBlocksTest {
 
     @Test
     public void dontHitExceptionsInNestedBlockInCatch() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch",
-                integer(1), integer(0));
+        NeoInvokeFunction response = ct.callInvokeFunction("nestedBlockInCatch", integer(1), integer(0));
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(res.get(0).getBoolean());
         assertFalse(res.get(1).getBoolean());
@@ -236,17 +227,14 @@ public class TryCatchBlocksTest {
     }
 
     @Test
-    public void getCaughtAssertionMessage() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        StackItem res = response.getInvocationResult().getStack().get(0);
-        assertThat(res.getString(), is("Assert not passed."));
-    }
+    public void tryToCatchAssertion() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(11));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(response.getInvocationResult().getException(), is(NEOVM_FAILED_ASSERT_MESSAGE));
 
-    @Test
-    public void getCaughtAssertionMessageInAssertionError() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        StackItem res = response.getInvocationResult().getStack().get(0);
-        assertThat(res.getString(), is("Assertion not passed."));
+        response = ct.callInvokeFunction(testName, integer(12));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("neoww"));
     }
 
     static class TryCatchBlocks {
@@ -368,7 +356,7 @@ public class TryCatchBlocksTest {
             }
         }
 
-        public static boolean[] nestedBlockInCatch(int i, int j) throws Exception {
+        public static boolean[] nestedBlockInCatch(int i, int j) {
             boolean[] b = new boolean[5];
             try {
                 if (i == 1) {
@@ -428,22 +416,15 @@ public class TryCatchBlocksTest {
             }
         }
 
-        public static String getCaughtAssertionMessage() {
+        public static String tryToCatchAssertion(int i) {
             try {
-                assert false : "Assert not passed.";
+                assert i == 12;
             } catch (Exception e) {
                 return e.getMessage();
             }
-            return "";
-        }
-
-        public static String getCaughtAssertionMessageInAssertionError() {
-            try {
-                throw new AssertionError("Assertion not passed.");
-            } catch (Exception e) {
-                return e.getMessage();
-            }
+            return "neoww";
         }
 
     }
+
 }
