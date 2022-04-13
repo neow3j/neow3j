@@ -489,8 +489,9 @@ public class Compiler {
     }
 
     /**
-     * Checks if there are any instructions in the given classes <init> method (the instance initializer) besides the
-     * call to the {@code Object} constructor (i.e., only line, label, frame, and return instructions are allowed).
+     * Checks if there are any instructions in the {@code <init>} method of the given class (the instance initializer)
+     * besides the call to the {@code Object} constructor (i.e., only line, label, frame, and return instructions are
+     * allowed).
      * <p>
      * If instructions are found, an exception is thrown because the compiler does not support instance constructors.
      *
@@ -790,7 +791,7 @@ public class Compiler {
     }
 
     /**
-     * Checks if the given instruction is a call to the given class' constructor (i.e., <init>).
+     * Checks if the given instruction is a call to the given class' constructor (i.e., {@code <init>}).
      *
      * @param insn              The instruction.
      * @param ownerInternalName The owner's internal name.
