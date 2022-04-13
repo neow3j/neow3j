@@ -17,8 +17,8 @@ public class NativeContractState extends CoreContractState {
         super();
     }
 
-    public NativeContractState(int id, Hash160 hash, ContractNef nef,
-            ContractManifest manifest, List<Integer> updateHistory) {
+    public NativeContractState(int id, Hash160 hash, ContractNef nef, ContractManifest manifest,
+            List<Integer> updateHistory) {
 
         super(id, hash, nef, manifest);
         this.updateHistory = updateHistory;
