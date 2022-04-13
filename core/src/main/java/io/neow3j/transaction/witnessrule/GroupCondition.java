@@ -46,4 +46,8 @@ public class GroupCondition extends WitnessCondition {
     public int getSize() {
         return group.getSize();
     }
+
+    public ECKeyPair.ECPublicKey getGroup() {
+        return group;
+    }
 }

@@ -73,6 +73,9 @@ public enum WitnessConditionType {
         return this.byteValue;
     }
 
+    public Class<? extends WitnessCondition> conditionClass() {
+        return conditionClass;
+    }
     public static WitnessConditionType valueOf(byte byteValue) {
         for (WitnessConditionType e : WitnessConditionType.values()) {
             if (e.byteValue == byteValue) {

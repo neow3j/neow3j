@@ -26,6 +26,7 @@ public class CalledByGroupCondition extends WitnessCondition {
      * @param group The group's EC point.
      */
     public CalledByGroupCondition(ECKeyPair.ECPublicKey group) {
+        this();
         this.group = group;
     }
 
@@ -41,5 +42,9 @@ public class CalledByGroupCondition extends WitnessCondition {
     @Override
     public int getSize() {
         return group.getSize();
+    }
+
+    public ECKeyPair.ECPublicKey getGroup() {
+        return group;
     }
 }

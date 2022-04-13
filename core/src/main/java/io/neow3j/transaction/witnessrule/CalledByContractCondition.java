@@ -39,9 +39,12 @@ public class CalledByContractCondition extends WitnessCondition {
         writer.writeSerializableFixed(hash);
     }
 
-
     @Override
     public int getSize() {
         return hash.getSize();
+    }
+
+    public Hash160 getScriptHash() {
+        return hash;
     }
 }

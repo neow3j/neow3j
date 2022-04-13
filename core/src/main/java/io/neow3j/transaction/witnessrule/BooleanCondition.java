@@ -42,4 +42,8 @@ public class BooleanCondition extends WitnessCondition {
     public int getSize() {
         return 1; // one byte for boolean
     }
+
+    public boolean getCondition() {
+        return condition;
+    }
 }

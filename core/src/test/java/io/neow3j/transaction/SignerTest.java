@@ -7,9 +7,11 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
 import io.neow3j.transaction.witnessrule.AndCondition;
+import io.neow3j.transaction.witnessrule.CalledByContractCondition;
 import io.neow3j.transaction.witnessrule.NotCondition;
 import io.neow3j.transaction.witnessrule.ScriptHashCondition;
 import io.neow3j.transaction.witnessrule.WitnessCondition;
+import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.transaction.witnessrule.WitnessRuleAction;
 import io.neow3j.types.Hash160;
@@ -241,24 +243,29 @@ public class SignerTest {
     }
 
     @Test
-    public void serializeWithMultipleScopesContractsAndGroups() throws IOException {
+    public void serializeWithMultipleScopesContractsGroupsAndRules() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         AccountSigner.calledByEntry(accScriptHash)
                 .setAllowedGroups(groupPubKey1, groupPubKey2)
                 .setAllowedContracts(contract1, contract2)
+                .setRules(new WitnessRule(WitnessRuleAction.ALLOW,
+                        new CalledByContractCondition(contract1)))
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
         byte[] expected = hexStringToByteArray(""
                 + reverseHexString(accScriptHash.toString())
-                + "31" // calledByEntry, custom contracts and custom groups scope
+                + "71" // calledByEntry, custom contracts, custom groups and witness rule scopes
                 + "02" // array length 2
                 + reverseHexString(contract1.toString())
                 + reverseHexString(contract2.toString())
                 + "02" // array length 2
                 + toHexStringNoPrefix(groupPubKey1.toArray())
-                + toHexStringNoPrefix(groupPubKey2.toArray()));
-
+                + toHexStringNoPrefix(groupPubKey2.toArray())
+                + "01" // Rules list length 1
+                + "01" // WitnessRuleAction "Allow"
+                + "28" // CalleByContract WitnessConditionType
+                + reverseHexString(contract1.toString()));
         assertArrayEquals(expected, actual);
     }
 
@@ -266,13 +273,17 @@ public class SignerTest {
     public void deserialize() throws DeserializationException {
         byte[] data = hexStringToByteArray(""
                 + reverseHexString(accScriptHash.toString())
-                + "31" // calledByEntry, custom contracts and custom groups scope
+                + "71" // calledByEntry, custom contracts and custom groups scope
                 + "02" // array length 2
                 + reverseHexString(contract1.toString())
                 + reverseHexString(contract2.toString())
                 + "02" // array length 2
                 + toHexStringNoPrefix(groupPubKey1.toArray())
-                + toHexStringNoPrefix(groupPubKey2.toArray()));
+                + toHexStringNoPrefix(groupPubKey2.toArray())
+                + "01" // Rules list length 1
+                + "01" // WitnessRuleAction "Allow"
+                + "28" // CalleByContract WitnessConditionType
+                + reverseHexString(contract1.toString()));
 
         Signer c = NeoSerializableInterface.from(data, Signer.class);
 
@@ -280,9 +291,15 @@ public class SignerTest {
         assertThat(c.getScopes(), containsInAnyOrder(
                 WitnessScope.CUSTOM_CONTRACTS,
                 WitnessScope.CALLED_BY_ENTRY,
-                WitnessScope.CUSTOM_GROUPS));
+                WitnessScope.CUSTOM_GROUPS,
+                WitnessScope.WITNESS_RULES));
         assertThat(c.getAllowedContracts(), containsInAnyOrder(contract1, contract2));
         assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
+        WitnessRule rule = c.getRules().get(0);
+        assertThat(rule.getAction(), is(WitnessRuleAction.ALLOW));
+        assertThat(rule.getCondition().getType(), is(WitnessConditionType.CALLED_BY_CONTRACT));
+        assertThat(((CalledByContractCondition) rule.getCondition()).getScriptHash(),
+                is(contract1));
     }
 
     @Test
@@ -298,7 +315,7 @@ public class SignerTest {
         byte[] serializedBytes = hexStringToByteArray(serialized.toString());
 
         assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS +
-                " allowed contracts.", DeserializationException.class,
+                        " allowed contracts.", DeserializationException.class,
                 () -> NeoSerializableInterface.from(serializedBytes, Signer.class)
         );
     }
@@ -316,9 +333,29 @@ public class SignerTest {
         byte[] serializedBytes = hexStringToByteArray(serialized.toString());
 
         assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS +
-                " allowed contract groups.", DeserializationException.class,
+                        " allowed contract groups.", DeserializationException.class,
                 () -> NeoSerializableInterface.from(serializedBytes, Signer.class)
         );
+    }
+
+    @Test
+    public void failDeserializingWithTooManyRules() throws DeserializationException {
+        StringBuilder serialized = new StringBuilder(""
+                + reverseHexString(accScriptHash.toString())
+                + "41" // calledByEntry, custom contracts
+                + "11"); // array length 17 (0x11)
+        // Add one too many contract group public keys.
+        for (int i = 0; i <= 17; i++) {
+            serialized.append("01") // WitnessRuleAction "Allow"
+                    .append("28") // CalleByContract WitnessConditionType
+                    .append(reverseHexString(contract1.toString()));
+        }
+        byte[] serializedBytes = hexStringToByteArray(serialized.toString());
+
+
+        assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS + " rules.",
+                DeserializationException.class,
+                () -> NeoSerializableInterface.from(serializedBytes, Signer.class));
     }
 
     @Test
@@ -365,20 +402,20 @@ public class SignerTest {
         AndCondition and = new AndCondition(Arrays.asList(not));
 
         WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, and);
-        exceptionRule.expect(SignerConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("A maximum nesting depth of " +
-                WitnessCondition.MAX_NESTING_DEPTH + " is allowed for witness conditions."));
-        AccountSigner.none(acc).setRules(rule);
+
+        assertThrows("A maximum nesting depth of " + WitnessCondition.MAX_NESTING_DEPTH + " is allowed for witness " +
+                        "conditions.",
+                SignerConfigurationException.class,
+                () -> AccountSigner.none(acc).setRules(rule));
     }
 
     @Test
     public void failAddingRuleToGlobalSigner() {
         ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
         WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, cond);
-        exceptionRule.expect(SignerConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("Trying to set more witness rules on a " +
-                "Signer with global scope."));
-        AccountSigner.global(acc).setRules(rule);
+        assertThrows("Trying to set witness rules on a Signer with global scope.",
+                SignerConfigurationException.class,
+                () -> AccountSigner.global(acc).setRules(rule));
     }
 
     @Test
@@ -389,10 +426,10 @@ public class SignerTest {
         for (int i = 0; i < MAX_SIGNER_SUBITEMS; i++) {
             signer.setRules(rule);
         }
-        exceptionRule.expect(SignerConfigurationException.class);
-        exceptionRule.expectMessage(new StringContains("Tyring to set more than "
-                + MAX_SIGNER_SUBITEMS + " allowed witness rules on a signer."));
-        signer.setRules(rule);
+
+        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS + " allowed witness rules on a signer.",
+                SignerConfigurationException.class,
+                () -> signer.setRules(rule));
     }
 
 }

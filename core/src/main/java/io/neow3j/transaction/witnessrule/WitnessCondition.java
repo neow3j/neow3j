@@ -30,6 +30,19 @@ public abstract class WitnessCondition extends NeoSerializable {
         }
     }
 
+    public static WitnessCondition deserializeWitnessCondition(BinaryReader reader)
+            throws DeserializationException {
+
+        try {
+            WitnessConditionType type = WitnessConditionType.valueOf(reader.readByte());
+            WitnessCondition a = type.conditionClass().newInstance();
+            a.deserializeWithoutType(reader);
+            return a;
+        } catch (IOException | IllegalAccessException | InstantiationException e) {
+            throw new DeserializationException(e);
+        }
+    }
+
     protected abstract void deserializeWithoutType(BinaryReader reader) throws IOException,
             DeserializationException;
 
