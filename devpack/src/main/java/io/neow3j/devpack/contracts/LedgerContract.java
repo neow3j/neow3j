@@ -66,6 +66,8 @@ public class LedgerContract extends ContractInterface {
 
     /**
      * Gets the VM state of the transaction with the given hash.
+     * <p>
+     * Compare the state byte with the values in {@link io.neow3j.devpack.constants.VMState}.
      *
      * @param hash the transaction hash.
      * @return the transaction's VM state.

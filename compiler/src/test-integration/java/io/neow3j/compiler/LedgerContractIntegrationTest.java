@@ -8,6 +8,7 @@ import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -119,8 +120,9 @@ public class LedgerContractIntegrationTest {
     }
 
     @Test
-    public void getTransactionState() {
-        fail();
+    public void getTransactionVMState() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(NeoVMStateType.HALT));
     }
 
     @Test
@@ -189,6 +191,10 @@ public class LedgerContractIntegrationTest {
     }
 
     static class LedgerContractIntegrationTestContract {
+
+        public static byte getTransactionVMState(Hash256 hash) {
+            return LedgerContract.getTransactionVMState(hash);
+        }
 
         public static int getTransactionHeight(Hash256 blockHash) {
             return LedgerContract.getTransactionHeight(blockHash);
