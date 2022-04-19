@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
+import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -25,6 +26,7 @@ import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.fail;
 
@@ -94,6 +96,23 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(6).getInteger().longValue(),
                 greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
+    }
+
+    @Test
+    public void getTransactionSigners() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
+        List<StackItem> signers = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(signers, hasSize(1));
+        List<StackItem> signer = signers.get(0).getList();
+        assertThat(signer, hasSize(3));
+
+        assertThat(signer.get(0).getAddress(), is(ct.getCommittee().getAddress()));
+        List<StackItem> allowedContracts = signer.get(1).getList();
+        assertThat(allowedContracts, hasSize(0));
+
+        List<StackItem> allowedGroups = signer.get(2).getList();
+        assertThat(allowedGroups, hasSize(0));
+        fail();
     }
 
     @Test
@@ -206,6 +225,10 @@ public class LedgerContractIntegrationTest {
 
         public static Object getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
             return LedgerContract.getTransactionFromBlock(blockHash, txNr);
+        }
+
+        public static Signer[] getTransactionSigners(Hash256 txHash) {
+            return LedgerContract.getTransactionSigners(txHash);
         }
 
         public static Object getTransaction(Hash256 txHash) {
