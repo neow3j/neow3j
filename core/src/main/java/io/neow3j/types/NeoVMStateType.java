@@ -61,7 +61,6 @@ public enum NeoVMStateType {
         throw new IllegalArgumentException();
     }
 
-    @JsonCreator
     public static NeoVMStateType fromIntValue(Integer intValue) {
         if (intValue == null) {
             return NONE;
