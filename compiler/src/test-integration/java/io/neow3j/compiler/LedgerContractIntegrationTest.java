@@ -141,7 +141,8 @@ public class LedgerContractIntegrationTest {
     @Test
     public void getTransactionVMState() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(NeoVMStateType.HALT));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
+                is(NeoVMStateType.HALT.intValue()));
     }
 
     @Test
