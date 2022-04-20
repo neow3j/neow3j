@@ -23,11 +23,11 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.signature;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class CryptoLibIntegrationTest {
 
@@ -53,8 +53,10 @@ public class CryptoLibIntegrationTest {
     }
 
     @Test
-    public void murmur32() {
-        fail();
+    public void murmur32() throws IOException {
+        // Verified by https://github.com/shorelabs/murmurhash-online (MurmurHash3)
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("6e656f77336a"), integer(425653234));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(reverseHexString("fcee1b3a")));
     }
 
     @Test
@@ -100,6 +102,10 @@ public class CryptoLibIntegrationTest {
 
         public static ByteString ripemd160(ByteString value) {
             return CryptoLib.ripemd160(value);
+        }
+
+        public static ByteString murmur32(ByteString value, int seed) {
+            return CryptoLib.murmur32(value, seed);
         }
 
         public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey,
