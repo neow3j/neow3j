@@ -57,7 +57,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.16.1";
+    public static final String COMPILER_NAME = "neow3j-3.17.0";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
@@ -460,8 +460,8 @@ public class Compiler {
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
         String sourceUrl = getSourceUrl(compUnit.getContractClass());
-        NefFile nef = new NefFile(COMPILER_NAME, compUnit.getNeoModule().toByteArray(),
-                compUnit.getNeoModule().getMethodTokens(), sourceUrl);
+        NefFile nef = new NefFile(COMPILER_NAME, sourceUrl, compUnit.getNeoModule().getMethodTokens(),
+                compUnit.getNeoModule().toByteArray());
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
         compUnit.setManifest(manifest);
@@ -489,8 +489,9 @@ public class Compiler {
     }
 
     /**
-     * Checks if there are any instructions in the given classes <init> method (the instance initializer) besides the
-     * call to the {@code Object} constructor (i.e., only line, label, frame, and return instructions are allowed).
+     * Checks if there are any instructions in the {@code <init>} method of the given class (the instance initializer)
+     * besides the call to the {@code Object} constructor (i.e., only line, label, frame, and return instructions are
+     * allowed).
      * <p>
      * If instructions are found, an exception is thrown because the compiler does not support instance constructors.
      *
@@ -790,7 +791,7 @@ public class Compiler {
     }
 
     /**
-     * Checks if the given instruction is a call to the given class' constructor (i.e., <init>).
+     * Checks if the given instruction is a call to the given class' constructor (i.e., {@code <init>}).
      *
      * @param insn              The instruction.
      * @param ownerInternalName The owner's internal name.

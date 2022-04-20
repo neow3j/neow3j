@@ -2,6 +2,7 @@ package io.neow3j.transaction;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -29,6 +30,11 @@ public enum WitnessScope {
      * This scope allows the specification of contract groups in which the witness can be used.
      */
     CUSTOM_GROUPS("CustomGroups", 0x20),
+
+    /**
+     * Indicates that the current context must satisfy the specified rules.
+     */
+    WITNESS_RULES("WitnessRules", 0x40),
 
     /**
      * The global scope allows to use a witness in all contexts. It cannot be combined with other
@@ -67,6 +73,9 @@ public enum WitnessScope {
         }
         if ((combinedScopes & CUSTOM_GROUPS.byteValue()) != 0) {
             scopes.add(CUSTOM_GROUPS);
+        }
+        if ((combinedScopes & WITNESS_RULES.byteValue()) != 0) {
+            scopes.add(WITNESS_RULES);
         }
         return scopes;
     }

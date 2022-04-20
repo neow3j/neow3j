@@ -7,8 +7,7 @@ import java.lang.annotation.Annotation;
 /**
  * This enum contains a <b>subset</b> of NEO VM opcodes.
  * <p>
- * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for
- * a complete list.
+ * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for a complete list.
  */
 public enum OpCode {
 
@@ -415,7 +414,7 @@ public enum OpCode {
     XDROP(0x48, 1 << 4),
 
     /**
-     * Clear the stack
+     * Clears the stack.
      */
     CLEAR(0x49, 1 << 4),
 
@@ -776,7 +775,7 @@ public enum OpCode {
 //region Bitwise logic
 
     /**
-     * Flips all of the bits in the input.
+     * Flips all bits in the input.
      */
     INVERT(0x90, 1 << 2),
 
@@ -931,12 +930,12 @@ public enum OpCode {
     GE(0xB8, 1 << 3),
 
     /**
-     * Returns the smaller of a and b.
+     * Returns the smallest of a and b.
      */
     MIN(0xB9, 1 << 3),
 
     /**
-     * Returns the larger of a and b.
+     * Returns the largest of a and b.
      */
     MAX(0xBA, 1 << 3),
 
@@ -1129,8 +1128,7 @@ public enum OpCode {
                 return c;
             }
         }
-        throw new IllegalArgumentException("No Opcode found for byte value " +
-                Numeric.toHexString(code) + ".");
+        throw new IllegalArgumentException("No Opcode found for byte value " + Numeric.toHexString(code) + ".");
     }
 
     @Override

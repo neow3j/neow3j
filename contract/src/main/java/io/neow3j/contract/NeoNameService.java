@@ -129,6 +129,7 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Gets the price to register a domain of a certain length.
      *
+     * @param domainNameLength the length of the domain name.
      * @return The price to register a domain.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */

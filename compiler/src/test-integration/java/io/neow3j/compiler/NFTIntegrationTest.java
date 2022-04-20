@@ -197,7 +197,7 @@ public class NFTIntegrationTest {
         }
     }
 
-    @ContractHash("59091cc02731557a466fddaa3575ec372eb027cd")
+    @ContractHash("d7be9f061dd70a75e2b1da109b3eb343ac82e722")
     static class CustomNonFungibleToken extends NonFungibleToken {
     }
 

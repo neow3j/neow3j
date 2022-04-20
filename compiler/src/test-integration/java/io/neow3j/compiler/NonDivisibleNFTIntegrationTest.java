@@ -57,7 +57,7 @@ public class NonDivisibleNFTIntegrationTest {
 
     }
 
-    @ContractHash("96075b05fe4c619832a678f655b53ddb7c4c2ae0")
+    @ContractHash("3ee0cb4cf51cc611e09881c1a8744052ee4c5633")
     static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 

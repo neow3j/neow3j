@@ -52,8 +52,8 @@ public class ObjectsConverter implements Converter {
     private static final String TOSTRING_METHOD_NAME = "toString";
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
 
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (requireNonNull(opcode)) {
@@ -101,21 +101,20 @@ public class ObjectsConverter implements Converter {
         Type type = Type.getObjectType(typeInsn.desc);
         StackItemType stackItemType = Compiler.mapTypeToStackItemType(type);
         if (stackItemType.equals(StackItemType.BOOLEAN)) {
-            // The Boolean stack item almost never appears because bool values are usually
-            // represented as 0 and 1 valued integer stack items.
+            // The Boolean stack item almost never appears because bool values are usually represented as 0 and 1
+            // valued integer stack items.
             stackItemType = StackItemType.INTEGER;
         }
         if (stackItemType.equals(StackItemType.ANY)) {
-            throw new CompilerException(neoMethod, format("The type '%s' is not supported for " +
-                    "the instanceof operation.", getFullyQualifiedNameForInternalName(
-                    type.getInternalName())));
+            throw new CompilerException(neoMethod, format("The type '%s' is not supported for the instanceof " +
+                    "operation.", getFullyQualifiedNameForInternalName(type.getInternalName())));
         }
-        neoMethod.addInstruction(
-                new NeoInstruction(OpCode.ISTYPE, new byte[]{stackItemType.byteValue()}));
+        neoMethod.addInstruction(new NeoInstruction(OpCode.ISTYPE, new byte[]{stackItemType.byteValue()}));
     }
 
-    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
+
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
@@ -135,9 +134,10 @@ public class ObjectsConverter implements Converter {
 
         ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), ownerClassNode);
-        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, ownerClassNode).orElseThrow(() ->
-                new CompilerException(callingNeoMethod, format("Couldn't find constructor '%s' on class '%s'.",
-                        ctorMethodInsn.name, getClassNameForInternalName(ownerClassNode.name))));
+        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, ownerClassNode)
+                .orElseThrow(() -> new CompilerException(callingNeoMethod,
+                        format("Couldn't find constructor '%s' on class '%s'.", ctorMethodInsn.name,
+                                getClassNameForInternalName(ownerClassNode.name))));
 
         // Annotations in struct constructors are ignored
         if (ctorMethod.invisibleAnnotations == null || ctorMethod.invisibleAnnotations.size() == 0) {
@@ -168,24 +168,27 @@ public class ObjectsConverter implements Converter {
                 : "Expected DUP after NEW but got other instructions";
 
         if (isNewStringBuilder(typeInsn)) {
-            // Java, in the background, performs String concatenation, like `s1 + s2`, with the
-            // instantiation of a StringBuilder. This is handled here.
+            // Java, in the background, performs String concatenation, like `s1 + s2`, with the instantiation of a
+            // StringBuilder. This is handled here.
             return handleStringConcatenation(typeInsn, callingNeoMethod, compUnit);
         }
 
-        if (isNewThrowable(typeInsn, compUnit)) {
-            return handleNewThrowable(typeInsn, callingNeoMethod, compUnit);
+        if (isAssertion(typeInsn, compUnit)) {
+            return handleAssertion(typeInsn, callingNeoMethod);
+        }
+
+        if (isNewException(typeInsn, compUnit)) {
+            return handleNewException(typeInsn, callingNeoMethod, compUnit);
         }
 
         ClassNode owner = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), owner);
-        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner).orElseThrow(() ->
-                new CompilerException(callingNeoMethod, format(
-                        "Couldn't find constructor '%s' on class '%s'.",
-                        ctorMethodInsn.name, getClassNameForInternalName(owner.name))));
+        MethodNode ctorMethod = getMethodNode(ctorMethodInsn, owner)
+                .orElseThrow(() -> new CompilerException(callingNeoMethod,
+                        format("Couldn't find constructor '%s' on class '%s'.", ctorMethodInsn.name,
+                                getClassNameForInternalName(owner.name))));
 
-        if (ctorMethod.invisibleAnnotations == null
-                || ctorMethod.invisibleAnnotations.size() == 0) {
+        if (ctorMethod.invisibleAnnotations == null || ctorMethod.invisibleAnnotations.size() == 0) {
             // It's a generic constructor without any Neo-specific annotations.
             return convertConstructorCall(typeInsn, ctorMethod, owner, callingNeoMethod, compUnit);
         } else { // The constructor has some Neo-specific annotation.
@@ -208,104 +211,147 @@ public class ObjectsConverter implements Converter {
         return typeInsn.desc.equals(getInternalName(StringBuilder.class));
     }
 
-    private static boolean isNewThrowable(TypeInsnNode typeInsn,
-            CompilationUnit compUnit) throws IOException {
-
+    private static boolean isAssertion(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
         ClassNode type = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
-
-        if (getFullyQualifiedNameForInternalName(type.name).equals(
-                Throwable.class.getCanonicalName())) {
+        if (getFullyQualifiedNameForInternalName(type.name).equals(AssertionError.class.getCanonicalName())) {
             return true;
         }
         while (type.superName != null) {
             type = getAsmClassForInternalName(type.superName, compUnit.getClassLoader());
-            if (getFullyQualifiedNameForInternalName(type.name).equals(
-                    Throwable.class.getCanonicalName())) {
+            if (getFullyQualifiedNameForInternalName(type.name).equals(AssertionError.class.getCanonicalName())) {
                 return true;
             }
         }
         return false;
     }
 
-    private static AbstractInsnNode handleNewThrowable(TypeInsnNode typeInsn,
-            NeoMethod callingNeoMethod, CompilationUnit compUnit) throws IOException {
+    private static boolean isNewException(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        ClassNode type = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        if (getFullyQualifiedNameForInternalName(type.name).equals(Exception.class.getCanonicalName())) {
+            return true;
+        }
+        while (type.superName != null) {
+            type = getAsmClassForInternalName(type.superName, compUnit.getClassLoader());
+            if (getFullyQualifiedNameForInternalName(type.name).equals(Exception.class.getCanonicalName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static AbstractInsnNode handleAssertion(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
+        convertJumpConditionBeforeAssertion(callingNeoMethod);
+
+        AbstractInsnNode insn = typeInsn.getNext().getNext();
+        while (!isCallToCtor(insn, Type.getType(AssertionError.class).getInternalName())) {
+            // Instructions between the type instruction and <init> method of the AssertionError can be ignored.
+            insn = insn.getNext();
+        }
+
+        Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
+        if (argTypes.length != 0) {
+            throw new CompilerException("Passing a message with the 'assert' statement is not supported.");
+        }
+        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.ASSERT));
+        return insn.getNext(); // Skip the throw instruction.
+    }
+
+    private static void convertJumpConditionBeforeAssertion(NeoMethod neoMethod) {
+        // The JVM assert conditions are jump instructions to jump over the <init> instruction of AssertionError and
+        // potential additional instructions (e.g., a message). For the NeoVM ASSERT opcode, these jump instructions
+        // are in the following transpiled into corresponding NeoVM opcodes that just return 0 or 1.
+        if (neoMethod.getInstructions().size() == 0) {
+            throw new CompilerException(format("The method '%s' seems to hold a hard coded 'assert false' statement " +
+                    "or it throws an 'AssertionError'. The compiler does not support that. Use 'Helper.abort()' " +
+                    "instead.", neoMethod.getName()));
+        }
+        NeoInstruction lastInstruction = neoMethod.getLastInstruction();
+        neoMethod.removeLastInstruction();
+        switch (lastInstruction.getOpcode()) {
+            case JMPEQ:
+            case JMPEQ_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.EQUAL));
+                break;
+            case JMPNE:
+            case JMPNE_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOTEQUAL));
+                break;
+            case JMPLT:
+            case JMPLT_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.LT));
+                break;
+            case JMPGT:
+            case JMPGT_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.GT));
+                break;
+            case JMPLE:
+            case JMPLE_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.LE));
+                break;
+            case JMPGE:
+            case JMPGE_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.GE));
+                break;
+            case JMPIFNOT:
+            case JMPIFNOT_L:
+                neoMethod.addInstruction(new NeoInstruction(OpCode.NOT));
+                break;
+            case JMPIF:
+            case JMPIF_L:
+                // JMPIF and JMPIF_L do not require a replacement.
+                break;
+            default:
+                throw new CompilerException("Could not handle jump condition. The compiler does not support hard " +
+                        "coded 'assert false' statements nor throwing an 'AssertionError'. Use 'Helper.abort()' " +
+                        "instead.");
+        }
+    }
+
+    private static AbstractInsnNode handleNewException(TypeInsnNode typeInsn, NeoMethod callingNeoMethod,
+            CompilationUnit compUnit) throws IOException {
 
         String fullyQualifiedExceptionName = getFullyQualifiedNameForInternalName(typeInsn.desc);
-        ThrowableType throwableType = getThrowableType(fullyQualifiedExceptionName);
-        if (throwableType.equals(ThrowableType.OTHER)) {
-            throw new CompilerException(callingNeoMethod, format("Contract uses exception of type" +
-                            " %s but only %s and %s are allowed.", fullyQualifiedExceptionName,
-                    Exception.class.getCanonicalName(), AssertionError.class.getCanonicalName()));
+        if (!fullyQualifiedExceptionName.equals(Exception.class.getCanonicalName())) {
+            throw new CompilerException(callingNeoMethod,
+                    format("Contract uses exception of type %s but only %s is allowed.", fullyQualifiedExceptionName,
+                            Exception.class.getCanonicalName()));
         }
         // Skip to the next instruction after DUP.
         AbstractInsnNode insn = typeInsn.getNext().getNext();
         // Process any instructions that come before the INVOKESPECIAL, e.g., a PUSHDATA insn.
-        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName()) &&
-                !isCallToCtor(insn, Type.getType(AssertionError.class).getInternalName())) {
+        while (!isCallToCtor(insn, Type.getType(Exception.class).getInternalName())) {
             insn = handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
 
         Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
-        checkForInvalidExceptionArguments(argTypes, throwableType, callingNeoMethod);
-
-        if (argTypes.length == 0) {
+        if (argTypes.length > 1) {
+            throw new CompilerException(callingNeoMethod, format("An exception thrown in a contract can either take " +
+                    "no arguments or a String argument. You provided %d arguments.", argTypes.length));
+        } else if (argTypes.length == 1) {
+            if (!getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
+                    .equals(String.class.getCanonicalName())) {
+                // Only string messages are allowed in exceptions.
+                throw new CompilerException(callingNeoMethod, "An exception thrown in a contract can either take no " +
+                        "arguments or a String argument. You provided a non-string argument.");
+            }
+        } else {
             // No exception message is given, thus a dummy message is added.
             String dummyMessage = "error";
-            if (throwableType.equals(ThrowableType.ASSERTION)) {
-                dummyMessage = "assertion failed";
-            }
             callingNeoMethod.addInstruction(buildPushDataInsn(dummyMessage));
         }
         return insn;
     }
 
-    private static void checkForInvalidExceptionArguments(Type[] argTypes,
-            ThrowableType throwableType, NeoMethod callingNeoMethod) {
-
-        if (argTypes.length > 1) {
-            throw new CompilerException(callingNeoMethod, format("An exception thrown in a contract"
-                    + " can either take no arguments or a String argument. You provided %d "
-                    + "arguments.", argTypes.length));
-        }
-
-        // Only string messages are allowed in exceptions. In assert statements, this cannot
-        // be checked properly. Therefore, if an assertion message is not a string, it is
-        // ignored when converting it.
-        if (argTypes.length == 1 && !throwableType.equals(ThrowableType.ASSERTION) &&
-                !getFullyQualifiedNameForInternalName(argTypes[0].getInternalName())
-                        .equals(String.class.getCanonicalName())) {
-            throw new CompilerException(callingNeoMethod, "An exception thrown in a contract " +
-                    "can either take no arguments or a String argument. You provided a " +
-                    "non-string argument.");
-        }
-    }
-
-    private static ThrowableType getThrowableType(String fullyQualifiedExceptionName) {
-        if (Exception.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            return ThrowableType.EXCEPTION;
-        }
-        if (AssertionError.class.getCanonicalName().equals(fullyQualifiedExceptionName)) {
-            return ThrowableType.ASSERTION;
-        }
-        return ThrowableType.OTHER;
-    }
-
-    private enum ThrowableType {
-        EXCEPTION,
-        ASSERTION,
-        OTHER
-    }
-
     /**
-     * Handles the concatenation of strings, as in {@code "hello" + " world"}. Java in the
-     * background uses a StringBuilder for this.
+     * Handles the concatenation of strings, as in {@code "hello" + " world"}. Java in the background uses a
+     * StringBuilder for this.
      *
-     * @param typeInsnNode The NEW instruction concerning the StringBuilder.
+     * @param typeInsnNode the NEW instruction concerning the StringBuilder.
      * @return the last processed instruction.
      */
-    private static AbstractInsnNode handleStringConcatenation(TypeInsnNode typeInsnNode,
-            NeoMethod neoMethod, CompilationUnit compUnit) throws IOException {
+    private static AbstractInsnNode handleStringConcatenation(TypeInsnNode typeInsnNode, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
 
         // Skip to the next instruction after DUP and INVOKESPECIAL.
         AbstractInsnNode insn = typeInsnNode.getNext().getNext().getNext();
@@ -326,16 +372,15 @@ public class ObjectsConverter implements Converter {
                 break; // End of string concatenation.
             }
             if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(neoMethod, format("Only 'append()' and 'toString()' "
-                                + "are supported for StringBuilder, but '%s' was called",
-                        ((MethodInsnNode) insn).name));
+                throw new CompilerException(neoMethod, format("Only 'append()' and 'toString()' are supported for " +
+                        "StringBuilder, but '%s' was called", ((MethodInsnNode) insn).name));
             }
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
         if (insn == null) {
-            throw new CompilerException(neoMethod, "Expected to find ScriptBuilder.toString() but "
-                    + "reached end of method.");
+            throw new CompilerException(neoMethod, "Expected to find ScriptBuilder.toString() but reached end of " +
+                    "method.");
         }
         return insn;
     }
@@ -457,26 +502,26 @@ public class ObjectsConverter implements Converter {
         List<NeoEvent> events = compUnit.getNeoModule().getEvents();
         NeoEvent event = events.stream()
                 .filter(e -> eventVariableName.equals(e.getAsmVariable().name))
-                .findFirst().orElseThrow(() -> new CompilerException(neoMethod, "Couldn't find " +
-                        "triggered event in list of events. Make sure to declare events only in" +
-                        " the main contract class."));
+                .findFirst()
+                .orElseThrow(() -> new CompilerException(neoMethod,
+                        "Couldn't find triggered event in list of events. Make sure to declare events only in the " +
+                                "main contract class."));
 
         AbstractInsnNode insn = eventFieldInsn.getNext();
         while (!isMethodCallToEventSend(insn, compUnit)) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
-            assert insn != null : "Expected to find call to send() method of an event but reached"
-                    + " the end of the instructions.";
+            assert insn != null : "Expected to find call to send() method of an event but reached the end of the " +
+                    "instructions.";
         }
 
-        // The current instruction is the method call to Event.send(...). We can pack the arguments
-        // and do the syscall instead of actually calling the send(...) method.
+        // The current instruction is the method call to Event.send(...). We can pack the arguments and do the
+        // syscall instead of actually calling the send(...) method.
         addReverseArguments(neoMethod, event.getNumberOfParams());
         addPushNumber(event.getNumberOfParams(), neoMethod);
         neoMethod.addInstruction(new NeoInstruction(OpCode.PACK));
         neoMethod.addInstruction(buildPushDataInsn(event.getDisplayName()));
-        byte[] syscallHash = Numeric.hexStringToByteArray(
-                InteropService.SYSTEM_RUNTIME_NOTIFY.getHash());
+        byte[] syscallHash = Numeric.hexStringToByteArray(InteropService.SYSTEM_RUNTIME_NOTIFY.getHash());
         neoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, syscallHash));
         return insn;
     }

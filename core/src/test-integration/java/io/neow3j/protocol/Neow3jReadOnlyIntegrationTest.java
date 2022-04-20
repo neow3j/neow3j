@@ -94,9 +94,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-// This test class uses a static container which is started once for the whole class and reused in
-// every test. Therefore, only tests that don't need a new and clean blockchain should be added
-// here.
+// This test class uses a static container which is started once for the whole class and reused in every test.
+// Therefore, only tests that don't need a new and clean blockchain should be added here.
 public class Neow3jReadOnlyIntegrationTest {
 
     // Hashes of the transactions that are sent before all tests.
@@ -142,7 +141,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Exception {
-        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         // open the wallet for JSON-RPC calls
         getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
@@ -341,6 +340,7 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractNef nef1 = contractState1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
                 "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
@@ -379,6 +379,7 @@ public class Neow3jReadOnlyIntegrationTest {
         ContractNef nef8 = contractState8.getNef();
         assertThat(nef8.getMagic(), is(860243278L));
         assertThat(nef8.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef8.getSource(), is(""));
         assertThat(nef8.getTokens(), hasSize(0));
         assertThat(nef8.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef8.getChecksum(), is(2663858513L));
@@ -427,6 +428,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef, is(notNullValue()));
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
         assertThat(nef.getScript(), is(
                 "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
@@ -486,6 +488,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(nef);
         assertThat(nef.getMagic(), is(860243278L));
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
         assertThat(nef.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef.getChecksum(), is(2663858513L));

@@ -85,6 +85,8 @@ import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
+import io.neow3j.transaction.witnessrule.WitnessConditionType;
+import io.neow3j.transaction.witnessrule.WitnessRuleAction;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -92,7 +94,6 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.NodePluginType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -100,9 +101,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -289,8 +290,7 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
-        assertThat(getBlock.getBlock().getNextConsensus(),
-                is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
+        assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
 
         assertThat(getBlock.getBlock().getWitnesses(), is(notNullValue()));
         assertThat(getBlock.getBlock().getWitnesses(), hasSize(1));
@@ -319,13 +319,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                singletonList(new TransactionSigner(
+                                asList(new TransactionSigner(
                                         new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
-                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
+                                        asList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
                                 emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                singletonList(new NeoWitness(
+                                asList(new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                                         )
@@ -340,13 +340,13 @@ public class ResponseTest extends ResponseTester {
                                 "0",
                                 "0",
                                 2107425L,
-                                singletonList(new TransactionSigner(
+                                asList(new TransactionSigner(
                                         new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
-                                        singletonList(WitnessScope.CALLED_BY_ENTRY))
+                                        asList(WitnessScope.CALLED_BY_ENTRY))
                                 ),
                                 emptyList(),
                                 "AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg",
-                                singletonList(
+                                asList(
                                         new NeoWitness(
                                                 "DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+",
                                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
@@ -358,8 +358,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
-                is(new Hash256(
-                        "0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
+                is(new Hash256("0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643")));
     }
 
     @Test
@@ -402,8 +401,7 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
-        assertThat(getBlock.getBlock().getNextConsensus(),
-                is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
+        assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
 
         assertThat(getBlock.getBlock().getWitnesses(), is(notNullValue()));
         assertThat(getBlock.getBlock().getWitnesses(), hasSize(1));
@@ -486,6 +484,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"nef\": {\n" +
                         "                \"magic\": 860243278,\n" +
                         "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"source\": \"variable-size-source-gastoken\",\n" +
                         "                \"tokens\": [],\n" +
                         "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
                         "                \"checksum\": 2663858513\n" +
@@ -595,6 +594,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"nef\": {\n" +
                         "                \"magic\": 860243278,\n" +
                         "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"source\": \"variable-size-source-rolemanagement\",\n" +
                         "                \"tokens\": [],\n" +
                         "                \"script\": \"EEEa93tnQBBBGvd7Z0A=\",\n" +
                         "                \"checksum\": 983638438\n" +
@@ -659,6 +659,7 @@ public class ResponseTest extends ResponseTester {
                         "            \"nef\": {\n" +
                         "                \"magic\": 860243278,\n" +
                         "                \"compiler\": \"neo-core-v3.0\",\n" +
+                        "                \"source\": \"variable-size-source-oraclecontract\",\n" +
                         "                \"tokens\": [],\n" +
                         "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
                         "                \"checksum\": 2663858513\n" +
@@ -794,6 +795,7 @@ public class ResponseTest extends ResponseTester {
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef1.getSource(), is("variable-size-source-gastoken"));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef1.getChecksum(), is(2663858513L));
@@ -813,6 +815,7 @@ public class ResponseTest extends ResponseTester {
         ContractNef nef2 = c2.getNef();
         assertThat(nef2.getMagic(), is(860243278L));
         assertThat(nef2.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef2.getSource(), is("variable-size-source-rolemanagement"));
         assertThat(nef2.getTokens(), hasSize(0));
         assertThat(nef2.getScript(), is("EEEa93tnQBBBGvd7Z0A="));
         assertThat(nef2.getChecksum(), is(983638438L));
@@ -830,6 +833,7 @@ public class ResponseTest extends ResponseTester {
         ContractNef nef3 = c3.getNef();
         assertThat(nef3.getMagic(), is(860243278L));
         assertThat(nef3.getCompiler(), is("neo-core-v3.0"));
+        assertThat(nef3.getSource(), is("variable-size-source-oraclecontract"));
         assertThat(nef3.getTokens(), hasSize(0));
         assertThat(nef3.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef3.getChecksum(), is(2663858513L));
@@ -854,6 +858,7 @@ public class ResponseTest extends ResponseTester {
                 "        \"nef\": {\n" +
                 "            \"magic\": 860243278,\n" +
                 "            \"compiler\": \"neo-core-v3.0\",\n" +
+                "            \"source\": \"variable-size-source-ledgercontract\",\n" +
                 "            \"tokens\": [],\n" +
                 "            \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA\",\n" +
                 "            \"checksum\": 529571427\n" +
@@ -905,12 +910,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(contractState, is(notNullValue()));
         assertThat(contractState.getId(), is(-4));
         assertThat(contractState.getUpdateCounter(), is(0));
-        assertThat(contractState.getHash(),
-                is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
+        assertThat(contractState.getHash(), is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
         assertThat(contractState.getNef().getMagic(), is(860243278L));
         assertThat(contractState.getNef().getCompiler(), is("neo-core-v3.0"));
-        assertThat(contractState.getNef().getScript(),
-                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(contractState.getNef().getSource(), is("variable-size-source-ledgercontract"));
+        assertThat(contractState.getNef().getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
         assertThat(contractState.getNef().getTokens(), is(empty()));
         assertThat(contractState.getNef().getChecksum(), is(529571427L));
 
@@ -934,8 +938,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
         assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
         assertThat(abi.getMethods().get(1).getParameters().get(0).getName(), is("hash"));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getType(),
-                is(ContractParameterType.HASH256));
+        assertThat(abi.getMethods().get(1).getParameters().get(0).getType(), is(ContractParameterType.HASH256));
         assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
 
         assertThat(abi.getEvents(), is(notNullValue()));
@@ -956,21 +959,17 @@ public class ResponseTest extends ResponseTester {
         int id = -4;
         int updateCounter = 0;
         Hash160 hash = new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be");
-        ContractNef nef = new ContractNef(860243278L, "neo-core-v3.0", emptyList(),
-                        "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA", 529571427L);
-        ContractMethod method1 =
-                new ContractMethod("currentHash", emptyList(), 0,
-                        ContractParameterType.HASH256, true);
-        ContractMethod method2 =
-                new ContractMethod("getTransactionHeight", singletonList(
-                        new ContractParameter("hash", ContractParameterType.HASH256)), 35,
-                        ContractParameterType.INTEGER, true);
+        ContractNef nef = new ContractNef(860243278L, "neo-core-v3.0", "variable-size-source-ledgercontract",
+                emptyList(), "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA", 529571427L);
+        ContractMethod method1 = new ContractMethod("currentHash", emptyList(), 0, ContractParameterType.HASH256, true);
+        ContractMethod method2 = new ContractMethod("getTransactionHeight",
+                asList(new ContractParameter("hash", ContractParameterType.HASH256)), 35,
+                ContractParameterType.INTEGER, true);
         ContractABI contractABI = new ContractABI(asList(method1, method2), emptyList());
-        ContractPermission permission = new ContractPermission("*", singletonList("*"));
-        ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(),
-                null, emptyList(), contractABI, singletonList(permission), emptyList(), null);
-        ContractState expectedEqual =
-                new ContractState(id, updateCounter, hash, nef, contractManifest);
+        ContractPermission permission = new ContractPermission("*", asList("*"));
+        ContractManifest contractManifest = new ContractManifest("LedgerContract", emptyList(), null, emptyList(),
+                contractABI, asList(permission), emptyList(), null);
+        ContractState expectedEqual = new ContractState(id, updateCounter, hash, nef, contractManifest);
         assertThat(contractState, is(expectedEqual));
     }
 
@@ -1019,15 +1018,13 @@ public class ResponseTest extends ResponseTester {
         assertThat(contracts.size(), is(1));
 
         ExpressContractState expressContractState = contracts.get(0);
-        assertThat(expressContractState.getHash(),
-                is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
+        assertThat(expressContractState.getHash(), is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
 
         List<ContractMethod> methods = asList(new ContractMethod("currentHash", emptyList(), 0,
                 ContractParameterType.HASH256, true));
         ContractABI abi = new ContractABI(methods, emptyList());
-        ContractManifest manifest = new ContractManifest("LedgerContract", emptyList(),
-                new HashMap<>(), emptyList(), abi, asList(new ContractPermission("*", asList("*"))),
-                emptyList(), null);
+        ContractManifest manifest = new ContractManifest("LedgerContract", emptyList(), new HashMap<>(), emptyList(),
+                abi, asList(new ContractPermission("*", asList("*"))), emptyList(), null);
         assertThat(expressContractState.getManifest(), is(manifest));
     }
 
@@ -1161,13 +1158,21 @@ public class ResponseTest extends ResponseTester {
                         "        \"signers\": [" +
                         "           {" +
                         "               \"account\": \"0x69ecca587293047be4c59159bf8bc399985c160d\"," +
-                        "               \"scopes\": \"CustomContracts, CustomGroups\"," +
+                        "               \"scopes\": \"CustomContracts, CustomGroups, WitnessRules\"," +
                         "               \"allowedcontracts\": [" +
                         "                   \"0xd2a4cff31913016155e38e474a2c06d08be276cf\"," +
                         "                   \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"" +
                         "               ]," +
                         "               \"allowedgroups\": [" +
                         "                   \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"" +
+                        "               ]," +
+                        "               \"rules\": [" +
+                        "                   {" +
+                        "                       \"action\": \"Allow\",\n" +
+                        "                       \"condition\": {\n" +
+                        "                           \"type\":\"ScriptHash\"\n" +
+                        "                       }" +
+                        "                   }" +
                         "               ]" +
                         "           }" +
                         "        ]," +
@@ -1214,14 +1219,17 @@ public class ResponseTest extends ResponseTester {
         assertThat(signers, is(notNullValue()));
         assertThat(signers, hasSize(1));
 
-        assertThat(signers.get(0).getAccount(),
-                is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
-        assertThat(signers.get(0).getScopes(), hasSize(2));
+        assertThat(signers.get(0).getAccount(), is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
+        assertThat(signers.get(0).getScopes(), hasSize(3));
         assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CUSTOM_CONTRACTS));
         assertThat(signers.get(0).getScopes().get(1), is(WitnessScope.CUSTOM_GROUPS));
+        assertThat(signers.get(0).getScopes().get(2), is(WitnessScope.WITNESS_RULES));
         assertThat(signers.get(0).getAllowedContracts().get(0), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
         assertThat(signers.get(0).getAllowedContracts().get(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
         assertThat(signers.get(0).getAllowedGroups().get(0), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+        TransactionSigner.WitnessRule rule = signers.get(0).getRules().get(0);
+        assertThat(rule.getAction(), is(WitnessRuleAction.ALLOW));
+        assertThat(rule.getCondition().getType(), is(WitnessConditionType.SCRIPT_HASH));
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
@@ -1231,8 +1239,7 @@ public class ResponseTest extends ResponseTester {
         OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
-        assertThat(oracleResp.getResult(),
-                is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
+        assertThat(oracleResp.getResult(), is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
         assertThat(oracleResp.getId(), is(0));
 
         assertThat(transaction.getScript(),
@@ -1419,42 +1426,24 @@ public class ResponseTest extends ResponseTester {
         assertThat(getPeers.getPeers().getUnconnected(), hasSize(3));
         assertThat(getPeers.getPeers().getUnconnected(),
                 containsInAnyOrder(
-                        new NeoGetPeers.AddressEntry(
-                                "127.0.0.1",
-                                20335
-                        ),
-                        new NeoGetPeers.AddressEntry(
-                                "127.0.0.1",
-                                20336
-                        ),
-                        new NeoGetPeers.AddressEntry(
-                                "127.0.0.1",
-                                20337
-                        )
+                        new NeoGetPeers.AddressEntry("127.0.0.1", 20335),
+                        new NeoGetPeers.AddressEntry("127.0.0.1", 20336),
+                        new NeoGetPeers.AddressEntry("127.0.0.1", 20337)
                 ));
 
         assertThat(getPeers.getPeers().getBad(), is(notNullValue()));
         assertThat(getPeers.getPeers().getBad(), hasSize(1));
         assertThat(getPeers.getPeers().getBad(),
                 containsInAnyOrder(
-                        new NeoGetPeers.AddressEntry(
-                                "127.0.0.1",
-                                20333
-                        )
+                        new NeoGetPeers.AddressEntry("127.0.0.1", 20333)
                 ));
 
         assertThat(getPeers.getPeers().getConnected(), is(notNullValue()));
         assertThat(getPeers.getPeers().getConnected(), hasSize(2));
         assertThat(getPeers.getPeers().getConnected(),
                 containsInAnyOrder(
-                        new NeoGetPeers.AddressEntry(
-                                "172.18.0.3",
-                                40333
-                        ),
-                        new NeoGetPeers.AddressEntry(
-                                "172.18.0.4",
-                                20333
-                        )
+                        new NeoGetPeers.AddressEntry("172.18.0.3", 40333),
+                        new NeoGetPeers.AddressEntry("172.18.0.4", 20333)
                 )
         );
     }
@@ -1661,8 +1650,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(stackItem1.getType(), is(StackItemType.MAP));
         assertThat(stackItem1.getMap().size(), equalTo(1));
         BigInteger value = stackItem1.getMap()
-                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
-                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .get(new ByteStringStackItem(hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96")))
                 .getInteger();
         assertThat(value, is(new BigInteger("1")));
     }
@@ -1733,7 +1721,7 @@ public class ResponseTest extends ResponseTester {
 
         StackItem stackItem2 = invokeFunction.getInvocationResult().getStack().get(2);
         assertThat(stackItem2.getType(), is(StackItemType.BUFFER));
-        assertArrayEquals(Numeric.hexStringToByteArray("c16a"), stackItem2.getByteArray());
+        assertArrayEquals(hexStringToByteArray("c16a"), stackItem2.getByteArray());
         assertThat(stackItem2.getInteger(), is(new BigInteger("27329")));
 
         StackItem stackItem3 = invokeFunction.getInvocationResult().getStack().get(3);
@@ -1744,8 +1732,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(stackItem4.getType(), is(StackItemType.MAP));
         assertThat(stackItem4.getMap().size(), equalTo(1));
         BigInteger value = stackItem4.getMap()
-                .get(new ByteStringStackItem(Numeric.hexStringToByteArray(
-                        "941343239213fa0e765f1027ce742f48db779a96")))
+                .get(new ByteStringStackItem(hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96")))
                 .getPointer();
         assertThat(value, is(new BigInteger("12")));
     }
@@ -1756,8 +1743,7 @@ public class ResponseTest extends ResponseTester {
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
-                "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\"," +
-                "\n" +
+                "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
                 "        \"state\": \"HALT\",\n" +
                 "        \"gasconsumed\": \"2.489\",\n" +
                 "        \"stack\": [],\n" +
@@ -1814,18 +1800,15 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
-        InvocationResult.PendingSignature pendingSig =
-                invokeFunction.getInvocationResult().getPendingSignature();
+        InvocationResult.PendingSignature pendingSig = invokeFunction.getInvocationResult().getPendingSignature();
         assertThat(pendingSig.getType(), is("Transaction"));
         assertThat(pendingSig.getData(), is("base64 string of the tx bytes"));
         assertThat(pendingSig.getNetwork(), is(305419896L));
         Map<String, InvocationResult.PendingSignature.Item> items = pendingSig.getItems();
-        InvocationResult.PendingSignature.Item item =
-                items.get("0x05859de95ccbbd5668e0f055b208273634d4657f");
+        InvocationResult.PendingSignature.Item item = items.get("0x05859de95ccbbd5668e0f055b208273634d4657f");
         assertThat(item.getScript(), is("base64 script"));
         assertThat(item.getParameters().get(1).getType(), is(ContractParameterType.SIGNATURE));
-        assertThat(item.getSignatures()
-                        .get("033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81"),
+        assertThat(item.getSignatures().get("033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81"),
                 is("base64 string of signature"));
     }
 
@@ -1918,12 +1901,11 @@ public class ResponseTest extends ResponseTester {
                         + "  \"jsonrpc\": \"2.0\",\n"
                         + "  \"id\": 1,\n"
                         + "  \"result\": {\n"
-                        + "    \"script\": "
-                        + "\"VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA\",\n"
+                        + "    \"script\": \"VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA\",\n"
                         + "    \"state\": \"FAULT\",\n"
                         + "    \"gasconsumed\": \"0.0103542\",\n"
-                        + "    \"exception\": \"Specified argument was out of the range of valid "
-                        + "values. (Parameter 'index')\",\n"
+                        + "    \"exception\": \"Specified argument was out of the range of valid values. (Parameter " +
+                        "'index')\",\n"
                         + "    \"stack\": [\n"
                         + "            {\n"
                         + "                \"type\": \"Buffer\",\n"
@@ -1938,8 +1920,8 @@ public class ResponseTest extends ResponseTester {
                 is("VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA"));
         assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("0.0103542"));
-        assertThat(invokeFunction.getInvocationResult().getException(), is(
-                "Specified argument was out of the range of valid values. (Parameter 'index')"));
+        assertThat(invokeFunction.getInvocationResult().getException(),
+                is("Specified argument was out of the range of valid values. (Parameter 'index')"));
         StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
         assertThat(stackItem0.getType(), is(StackItemType.BUFFER));
         assertThat(stackItem0.getString(), is("transfer"));
@@ -2006,53 +1988,46 @@ public class ResponseTest extends ResponseTester {
         assertThat(listPlugins.getPlugins(), hasSize(7));
 
         NeoListPlugins.Plugin plugin = listPlugins.getPlugins().get(0);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.APPLICATION_LOGS));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.APPLICATION_LOGS));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
         assertThat(plugin.getInterfaces(), containsInAnyOrder("IPersistencePlugin"));
 
         plugin = listPlugins.getPlugins().get(1);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.LEVEL_DB_STORE));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.LEVEL_DB_STORE));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(0));
 
         plugin = listPlugins.getPlugins().get(2);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.ROCKS_DB_STORE));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.ROCKS_DB_STORE));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(0));
 
         plugin = listPlugins.getPlugins().get(3);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.RPC_NEP17_TRACKER));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.RPC_NEP17_TRACKER));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
         assertThat(plugin.getInterfaces(), containsInAnyOrder("IPersistencePlugin"));
 
         plugin = listPlugins.getPlugins().get(4);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.RPC_SERVER_PLUGIN));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.RPC_SERVER_PLUGIN));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(0));
 
         plugin = listPlugins.getPlugins().get(5);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.STATES_DUMPER));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.STATES_DUMPER));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
         assertThat(plugin.getInterfaces(), containsInAnyOrder("IPersistencePlugin"));
 
         plugin = listPlugins.getPlugins().get(6);
-        assertThat(NodePluginType.valueOfName(plugin.getName()),
-                is(NodePluginType.SYSTEM_LOG));
+        assertThat(NodePluginType.valueOfName(plugin.getName()), is(NodePluginType.SYSTEM_LOG));
         assertThat(plugin.getVersion(), is("3.0.0.0"));
         assertThat(plugin.getInterfaces(), is(notNullValue()));
         assertThat(plugin.getInterfaces(), hasSize(1));
@@ -2184,8 +2159,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoGetUnclaimedGas getUnclaimedGas = deserialiseResponse(NeoGetUnclaimedGas.class);
         assertThat(getUnclaimedGas.getUnclaimedGas().getUnclaimed(), is("79199824176"));
-        assertThat(getUnclaimedGas.getUnclaimedGas().getAddress(),
-                is("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN"));
+        assertThat(getUnclaimedGas.getUnclaimedGas().getAddress(), is("AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN"));
     }
 
     @Test
@@ -2396,10 +2370,10 @@ public class ResponseTest extends ResponseTester {
                 containsInAnyOrder(
                         new TransactionSigner(
                                 new Hash160("0xbe175fb771d5782282b7598b56c26a2f5ebf2d24"),
-                                singletonList(WitnessScope.CALLED_BY_ENTRY)),
+                                asList(WitnessScope.CALLED_BY_ENTRY)),
                         new TransactionSigner(
                                 new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
-                                singletonList(WitnessScope.CALLED_BY_ENTRY))
+                                asList(WitnessScope.CALLED_BY_ENTRY))
                 ));
 
         assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
@@ -2558,8 +2532,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoGetNep17Transfers getNep17Transfers = deserialiseResponse(NeoGetNep17Transfers.class);
 
-        List<NeoGetNep17Transfers.Nep17Transfer> sent =
-                getNep17Transfers.getNep17Transfers().getSent();
+        List<NeoGetNep17Transfers.Nep17Transfer> sent = getNep17Transfers.getNep17Transfers().getSent();
 
         assertThat(sent, is(notNullValue()));
         assertThat(sent, hasSize(2));
@@ -2585,8 +2558,7 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
 
-        List<NeoGetNep17Transfers.Nep17Transfer> received =
-                getNep17Transfers.getNep17Transfers().getReceived();
+        List<NeoGetNep17Transfers.Nep17Transfer> received = getNep17Transfers.getNep17Transfers().getReceived();
 
         assertThat(received, is(notNullValue()));
         assertThat(received, hasSize(1));
@@ -2605,10 +2577,8 @@ public class ResponseTest extends ResponseTester {
 
         // First Sent Entry
         assertThat(sent.get(0).getTimestamp(), is(1554283931L));
-        assertThat(sent.get(0).getAssetHash(),
-                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
-        assertThat(sent.get(0).getTransferAddress(),
-                is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
+        assertThat(sent.get(0).getAssetHash(), is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
+        assertThat(sent.get(0).getTransferAddress(), is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
 
         // Second Sent Entry
         assertThat(sent.get(1).getAmount(), is(new BigInteger("100000000000")));
@@ -2769,8 +2739,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 0
         NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
 
-        assertThat(notification0.getContract(),
-                is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
+        assertThat(notification0.getContract(), is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification0.getEventName(), is("Transfer"));
 
@@ -2787,8 +2756,7 @@ public class ResponseTest extends ResponseTester {
         // Notification 1
         NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
 
-        assertThat(notification1.getContract(),
-                is(new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83")));
+        assertThat(notification1.getContract(), is(new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83")));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification1.getEventName(), is("Transfer"));
 
@@ -2946,10 +2914,8 @@ public class ResponseTest extends ResponseTester {
 
         NeoFindStates.States.Result expectedResult1 = new NeoFindStates.States.Result(key1, value1);
         NeoFindStates.States.Result expectedResult2 = new NeoFindStates.States.Result(key2, value2);
-        List<NeoFindStates.States.Result> expectedResults =
-                asList(expectedResult1, expectedResult2);
-        NeoFindStates.States expectedStates =
-                new NeoFindStates.States(firstProof, lastProof, false, expectedResults);
+        List<NeoFindStates.States.Result> expectedResults = asList(expectedResult1, expectedResult2);
+        NeoFindStates.States expectedStates = new NeoFindStates.States(firstProof, lastProof, false, expectedResults);
         assertThat(states, is(expectedStates));
     }
 
@@ -3049,8 +3015,7 @@ public class ResponseTest extends ResponseTester {
                 "}"
         );
 
-        NeoExpressGetNep17Contracts expressGetNep17Contracts =
-                deserialiseResponse(NeoExpressGetNep17Contracts.class);
+        NeoExpressGetNep17Contracts expressGetNep17Contracts = deserialiseResponse(NeoExpressGetNep17Contracts.class);
 
         List<Nep17Contract> nep17Contracts = expressGetNep17Contracts.getNep17Contracts();
         assertThat(nep17Contracts, hasSize(2));
@@ -3064,8 +3029,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(nep17Contracts.get(1).getDecimals(), is(8));
 
         assertThat(nep17Contracts.get(0),
-                is(new Nep17Contract(
-                        new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"), "NEO", 0)));
+                is(new Nep17Contract(new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"), "NEO", 0)));
     }
 
     @Test
@@ -3126,8 +3090,7 @@ public class ResponseTest extends ResponseTester {
                 "}"
         );
 
-        NeoExpressCreateCheckpoint expressCreateCheckpoint =
-                deserialiseResponse(NeoExpressCreateCheckpoint.class);
+        NeoExpressCreateCheckpoint expressCreateCheckpoint = deserialiseResponse(NeoExpressCreateCheckpoint.class);
 
         String filename = expressCreateCheckpoint.getFilename();
         assertThat(filename, is("checkpoint-1.neoxp-checkpoint"));
@@ -3334,8 +3297,7 @@ public class ResponseTest extends ResponseTester {
 
         NeoGetNep11Transfers getNep11Transfers = deserialiseResponse(NeoGetNep11Transfers.class);
 
-        List<NeoGetNep11Transfers.Nep11Transfer> sent =
-                getNep11Transfers.getNep11Transfers().getSent();
+        List<NeoGetNep11Transfers.Nep11Transfer> sent = getNep11Transfers.getNep11Transfers().getSent();
 
         assertThat(sent, is(notNullValue()));
         assertThat(sent, hasSize(2));
@@ -3363,8 +3325,7 @@ public class ResponseTest extends ResponseTester {
                         )
                 ));
 
-        List<NeoGetNep11Transfers.Nep11Transfer> received =
-                getNep11Transfers.getNep11Transfers().getReceived();
+        List<NeoGetNep11Transfers.Nep11Transfer> received = getNep11Transfers.getNep11Transfers().getReceived();
 
         assertThat(received, is(notNullValue()));
         assertThat(received, hasSize(1));
@@ -3384,25 +3345,20 @@ public class ResponseTest extends ResponseTester {
 
         // First Sent Entry
         assertThat(sent.get(0).getTimestamp(), is(1554283931L));
-        assertThat(sent.get(0).getAssetHash(),
-                is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
-        assertThat(sent.get(0).getTransferAddress(),
-                is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
-        assertThat(sent.get(0).getTokenId(),
-                is("1"));
+        assertThat(sent.get(0).getAssetHash(), is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
+        assertThat(sent.get(0).getTransferAddress(), is("AYwgBNMepiv5ocGcyNT4mA8zPLTQ8pDBis"));
+        assertThat(sent.get(0).getTokenId(), is("1"));
 
         // Second Sent Entry
         assertThat(sent.get(1).getAmount(), is(new BigInteger("100000000000")));
         assertThat(sent.get(1).getBlockIndex(), is(397769L));
-        assertThat(sent.get(1).getTokenId(),
-                is("2"));
+        assertThat(sent.get(1).getTokenId(), is("2"));
 
         // Received Entry
         assertThat(received.get(0).getTransferNotifyIndex(), is(0L));
         assertThat(received.get(0).getTxHash(),
                 is(new Hash256("df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58")));
-        assertThat(received.get(0).getTokenId(),
-                is("3"));
+        assertThat(received.get(0).getTokenId(), is("3"));
     }
 
     @Test

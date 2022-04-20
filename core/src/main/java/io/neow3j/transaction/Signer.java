@@ -8,6 +8,9 @@ import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.SignerConfigurationException;
+import io.neow3j.transaction.witnessrule.CompositeCondition;
+import io.neow3j.transaction.witnessrule.WitnessCondition;
+import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
@@ -17,6 +20,8 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
+import static io.neow3j.transaction.witnessrule.WitnessCondition.MAX_NESTING_DEPTH;
+import static java.util.Arrays.asList;
 
 /**
  * A signer of a transaction. It defines a scope in which the signer's signature is valid.
@@ -43,6 +48,11 @@ public class Signer extends NeoSerializable {
      */
     private List<ECKeyPair.ECPublicKey> allowedGroups;
 
+    /**
+     * The rules that the witness must meet.
+     */
+    private List<WitnessRule> rules;
+
     public Signer() {
     }
 
@@ -52,6 +62,7 @@ public class Signer extends NeoSerializable {
         scopes.add(scope);
         allowedContracts = new ArrayList<>();
         allowedGroups = new ArrayList<>();
+        rules = new ArrayList<>();
     }
 
     /**
@@ -74,8 +85,10 @@ public class Signer extends NeoSerializable {
                     + " allowed contracts on a signer.");
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
-        scopes.add(WitnessScope.CUSTOM_CONTRACTS);
-        this.allowedContracts.addAll(Arrays.asList(allowedContracts));
+        if (!scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
+            scopes.add(WitnessScope.CUSTOM_CONTRACTS);
+        }
+        this.allowedContracts.addAll(asList(allowedContracts));
         return this;
     }
 
@@ -99,9 +112,45 @@ public class Signer extends NeoSerializable {
                     + " allowed contract groups on a signer.");
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
-        scopes.add(WitnessScope.CUSTOM_GROUPS);
-        this.allowedGroups.addAll(Arrays.asList(allowedGroups));
+        if (!scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
+            scopes.add(WitnessScope.CUSTOM_GROUPS);
+        }
+        this.allowedGroups.addAll(asList(allowedGroups));
         return this;
+    }
+
+    /**
+     * Adds the given witness rules to this signer.
+     *
+     * @param rules The rules.
+     * @return this.
+     */
+    public Signer setRules(WitnessRule... rules) {
+        if (scopes.contains(WitnessScope.GLOBAL)) {
+            throw new SignerConfigurationException("Trying to set witness rules on a Signer with " +
+                    "global scope.");
+        }
+        if (this.rules.size() + rules.length > MAX_SIGNER_SUBITEMS) {
+            throw new SignerConfigurationException("Tyring to set more than " + MAX_SIGNER_SUBITEMS
+                    + " allowed witness rules on a signer.");
+        }
+        Arrays.stream(rules).forEach(r -> checkDepth(r.getCondition(), MAX_NESTING_DEPTH));
+        scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
+        if (!scopes.contains(WitnessScope.WITNESS_RULES)) {
+            scopes.add(WitnessScope.WITNESS_RULES);
+        }
+        this.rules.addAll(asList(rules));
+        return this;
+    }
+
+    private void checkDepth(WitnessCondition condition, int depth) {
+        if (depth < 0) {
+            throw new SignerConfigurationException("A maximum nesting depth of " +
+                    MAX_NESTING_DEPTH + " is allowed for witness conditions.");
+        }
+        if (condition instanceof CompositeCondition) {
+            ((CompositeCondition) condition).getConditions().forEach(c -> checkDepth(c, depth - 1));
+        }
     }
 
     public Hash160 getScriptHash() {
@@ -118,6 +167,10 @@ public class Signer extends NeoSerializable {
 
     public List<ECKeyPair.ECPublicKey> getAllowedGroups() {
         return allowedGroups;
+    }
+
+    public List<WitnessRule> getRules() {
+        return rules;
     }
 
     @Override
@@ -141,6 +194,14 @@ public class Signer extends NeoSerializable {
                             "contained " + allowedGroups.size() + " groups.");
                 }
             }
+            if (scopes.contains(WitnessScope.WITNESS_RULES)) {
+                rules = reader.readSerializableList(WitnessRule.class);
+                if (rules.size() > MAX_SIGNER_SUBITEMS) {
+                    throw new DeserializationException("A signer's scope can only contain "
+                            + MAX_SIGNER_SUBITEMS + " rules. The input data " +
+                            "contained " + rules.size() + " rules.");
+                }
+            }
         } catch (IOException e) {
             throw new DeserializationException(e);
         }
@@ -156,6 +217,9 @@ public class Signer extends NeoSerializable {
         if (scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             writer.writeSerializableVariable(allowedGroups);
         }
+        if (scopes.contains(WitnessScope.WITNESS_RULES)) {
+            writer.writeSerializableVariable(rules);
+        }
     }
 
     @Override
@@ -167,6 +231,9 @@ public class Signer extends NeoSerializable {
         }
         if (this.scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
             size += IOUtils.getVarSize(this.allowedGroups);
+        }
+        if (this.scopes.contains(WitnessScope.WITNESS_RULES)) {
+            size += IOUtils.getVarSize(rules);
         }
         return size;
     }
@@ -183,12 +250,14 @@ public class Signer extends NeoSerializable {
         return Objects.equals(this.signerHash, that.signerHash) &&
                 Objects.equals(this.scopes, that.scopes) &&
                 Objects.equals(this.allowedContracts, that.allowedContracts) &&
-                Objects.equals(this.allowedGroups, that.allowedGroups);
+                Objects.equals(this.allowedGroups, that.allowedGroups) &&
+                Objects.equals(this.rules, that.rules);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups);
+        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups,
+                rules);
     }
 
 }
