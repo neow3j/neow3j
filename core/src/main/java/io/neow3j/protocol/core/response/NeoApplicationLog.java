@@ -86,10 +86,7 @@ public class NeoApplicationLog {
         }
 
         /**
-         * Gets the state in which the NeoVM exited this invocation/execution, e.g., FALSE if
-         * something went wrong.
-         *
-         * @return the NeoVM exit state of the invocation.
+         * @return the NeoVM state of this execution.
          */
         public NeoVMStateType getState() {
             return state;
