@@ -402,7 +402,7 @@ public class MethodsConverter implements Converter {
             // Next, follow instructions for the equality case. We retrieve the number that
             // points us to the correct case in the TABLESWITCH instruction following later.
             insn = jumpInsn.getNext();
-            int branchNr = extractBranchNumber(insn, callingNeoMethod);
+            int branchNr = extractBranchNumber(insn);
             // The branch number gets stored to a local variable in the next opcode. But we
             // can ignore that.
             insn = insn.getNext();
@@ -429,7 +429,7 @@ public class MethodsConverter implements Converter {
         }
     }
 
-    private static int extractBranchNumber(AbstractInsnNode insn, NeoMethod neoMethod) {
+    private static int extractBranchNumber(AbstractInsnNode insn) {
         if (insn instanceof InsnNode) {
             return insn.getOpcode() - 3;
         } else {
