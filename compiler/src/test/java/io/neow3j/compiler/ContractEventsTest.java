@@ -25,6 +25,7 @@ import java.util.List;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
@@ -101,6 +102,7 @@ public class ContractEventsTest {
         CompilationUnit res = new Compiler().compile(ContractEventsTestContract.class.getName());
 
         List<ContractEvent> manifestEvents = res.getManifest().getAbi().getEvents();
+
         assertThat(manifestEvents.get(0).getName(), is("event1"));
         ContractParameter arg1 = new ContractParameter("arg1", ContractParameterType.STRING);
         ContractParameter arg2 = new ContractParameter("arg2", ContractParameterType.INTEGER);
@@ -113,6 +115,9 @@ public class ContractEventsTest {
         ContractParameter arg4 = new ContractParameter("arg4", ContractParameterType.STRING);
         ContractParameter arg5 = new ContractParameter("arg5", ContractParameterType.ANY);
         assertThat(manifestEvents.get(1).getParameters(), contains(arg1, arg2, arg3, arg4, arg5));
+
+        assertThat(manifestEvents.get(2).getName(), is("EventWithoutParameters"));
+        assertThat(manifestEvents.get(2).getParameters(), is(empty()));
     }
 
     @Test
@@ -142,12 +147,16 @@ public class ContractEventsTest {
 
     public static class ContractEventsTestContract {
 
+        @DisplayName("EventWithoutParameters")
+        private static io.neow3j.devpack.events.Event event0;
+
         private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
         private static Event5Args<String, Integer, Boolean, String, Object> event2;
 
         public static void main() {
+            event0.fire();
             event1.fire("notification", 0);
             event2.fire("notification", 0, false, "notification", "notification");
         }
