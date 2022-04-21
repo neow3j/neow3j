@@ -432,11 +432,9 @@ public class MethodsConverter implements Converter {
     private static int extractBranchNumber(AbstractInsnNode insn, NeoMethod neoMethod) {
         if (insn instanceof InsnNode) {
             return insn.getOpcode() - 3;
-        }
-        if (insn instanceof IntInsnNode) {
+        } else {
             return ((IntInsnNode) insn).operand;
         }
-        throw new CompilerException(neoMethod, "Unexpected instruction in branch of a switch-case.");
     }
 
     // Checks if the given instruction is a method call to the `String.equals()` method.
