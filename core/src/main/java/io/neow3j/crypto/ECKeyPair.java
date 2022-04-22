@@ -32,6 +32,7 @@ import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -392,7 +393,7 @@ public class ECKeyPair {
          * @return the encoded public key in compressed format as hexadecimal without a prefix.
          */
         public String getEncodedCompressedHex() {
-            return Numeric.toHexStringNoPrefix(getEncoded(true));
+            return toHexStringNoPrefix(getEncoded(true));
         }
 
         /**
@@ -460,6 +461,12 @@ public class ECKeyPair {
             return this.getECPoint().getYCoord().toBigInteger()
                     .compareTo(o.getECPoint().getYCoord().toBigInteger());
         }
+
+        @Override
+        public String toString() {
+            return "ECPublicKey{" + toHexStringNoPrefix(getEncoded(true)) + "}";
+        }
+
     }
 
 }
