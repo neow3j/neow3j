@@ -50,7 +50,6 @@ public class WitnessRule {
                 "action=" + action +
                 ", condition=" + condition +
                 "}";
-
     }
 
 }

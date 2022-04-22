@@ -149,7 +149,7 @@ public class Signer extends NeoSerializable {
                     MAX_NESTING_DEPTH + " is allowed for witness conditions.");
         }
         if (condition instanceof CompositeCondition) {
-            ((CompositeCondition) condition).getConditions().forEach(c -> checkDepth(c, depth - 1));
+            ((CompositeCondition) condition).getExpressions().forEach(c -> checkDepth(c, depth - 1));
         }
     }
 
@@ -256,8 +256,7 @@ public class Signer extends NeoSerializable {
 
     @Override
     public int hashCode() {
-        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups,
-                rules);
+        return Objects.hash(super.hashCode(), signerHash, scopes, allowedContracts, allowedGroups, rules);
     }
 
 }

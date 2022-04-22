@@ -1,12 +1,12 @@
 package io.neow3j.crypto;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
@@ -392,6 +392,7 @@ public class ECKeyPair {
          *
          * @return the encoded public key in compressed format as hexadecimal without a prefix.
          */
+        @JsonValue
         public String getEncodedCompressedHex() {
             return toHexStringNoPrefix(getEncoded(true));
         }

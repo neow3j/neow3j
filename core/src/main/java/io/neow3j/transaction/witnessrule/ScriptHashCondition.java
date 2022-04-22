@@ -9,42 +9,49 @@ import io.neow3j.types.Hash160;
 import java.io.IOException;
 
 /**
- * This condition allows including or excluding a specific contract (with the defined script hash)
- * from using the witness. This is the same as adding the contract with
+ * This condition allows including or excluding a specific contract (with the defined script hash) from using the
+ * witness. This is the same as adding the contract to the scope of a {@link Signer} with
  * {@link Signer#setAllowedContracts(Hash160...)}.
  */
 public class ScriptHashCondition extends WitnessCondition {
 
-    private Hash160 hash;
+    private Hash160 contractHash;
 
     public ScriptHashCondition() {
         type = WitnessConditionType.SCRIPT_HASH;
     }
 
     /**
-     * Constructs condition with the given contract script hash.
+     * Constructs a witness condition of type {@link WitnessConditionType#SCRIPT_HASH} with the given contract script
+     * hash.
      *
      * @param scriptHash the contract hash.
      */
     public ScriptHashCondition(Hash160 scriptHash) {
         this();
-        this.hash = scriptHash;
+        this.contractHash = scriptHash;
     }
 
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
-        hash = reader.readSerializable(Hash160.class);
+        contractHash = reader.readSerializable(Hash160.class);
     }
 
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(hash);
+        writer.writeSerializableFixed(contractHash);
     }
 
     @Override
     public int getSize() {
-        return super.getSize() + hash.getSize();
+        return super.getSize() + contractHash.getSize();
     }
 
     public Hash160 getScriptHash() {
-        return hash;
+        return contractHash;
     }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.ScriptHashCondition(getScriptHash());
+    }
+
 }

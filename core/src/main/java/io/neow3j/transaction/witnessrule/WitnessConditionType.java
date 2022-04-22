@@ -27,8 +27,7 @@ public enum WitnessConditionType {
     OR(WitnessConditionType.OR_VALUE, 0x03, OrCondition.class),
 
     /**
-     * Indicates that the condition is met when the current context has the specified script
-     * hash.
+     * Indicates that the condition is met when the current context has the specified script hash.
      */
     SCRIPT_HASH(WitnessConditionType.SCRIPT_HASH_VALUE, 0x18, ScriptHashCondition.class),
 
@@ -38,20 +37,17 @@ public enum WitnessConditionType {
     GROUP(WitnessConditionType.GROUP_VALUE, 0x19, GroupCondition.class),
 
     /**
-     * Indicates that the condition is met when the current context is the entry point or is
-     * called by the entry point.
+     * Indicates that the condition is met when the current context is the entry point or is called by the entry point.
      */
     CALLED_BY_ENTRY(WitnessConditionType.CALLED_BY_ENTRY_VALUE, 0x20, CalledByEntryCondition.class),
 
     /**
-     * Indicates that the condition is met when the current context is called by the
-     * specified contract.
+     * Indicates that the condition is met when the current context is called by the specified contract.
      */
     CALLED_BY_CONTRACT(WitnessConditionType.CALLED_BY_CONTRACT_VALUE, 0x28, CalledByContractCondition.class),
 
     /**
-     * Indicates that the condition is met when the current context is called by the
-     * specified group.
+     * Indicates that the condition is met when the current context is called by the specified group.
      */
     CALLED_BY_GROUP(WitnessConditionType.CALLED_BY_GROUP_VALUE, 0x29, CalledByGroupCondition.class);
 
@@ -69,8 +65,7 @@ public enum WitnessConditionType {
     private byte byteValue;
     private Class<? extends WitnessCondition> conditionClass;
 
-    WitnessConditionType(String jsonValue, int byteValue,
-            Class<? extends WitnessCondition> conditionClass) {
+    WitnessConditionType(String jsonValue, int byteValue, Class<? extends WitnessCondition> conditionClass) {
         this.jsonValue = jsonValue;
         this.byteValue = (byte) byteValue;
         this.conditionClass = conditionClass;

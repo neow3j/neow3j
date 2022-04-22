@@ -8,43 +8,44 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 /**
- * Represents the condition that all its sub-conditions must be met.
+ * Represents a witness condition where all its contained expressions must be met.
  */
 public class AndCondition extends CompositeCondition {
 
-    private List<WitnessCondition> conditions;
+    private List<WitnessCondition> expressions;
 
     public AndCondition() {
         type = WitnessConditionType.AND;
-        conditions = new ArrayList<>();
+        expressions = new ArrayList<>();
     }
 
     /**
-     * Constructs an AND condition with the given sub-conditions.
+     * Constructs a witness condition of type {@link WitnessConditionType#AND} with the given expressions.
      *
-     * @param conditions The conditions.
-     * @throws IllegalArgumentException if more than {@link WitnessCondition#MAX_SUBITEMS} are
-     *                                  added.
+     * @param expressions the expressions.
+     * @throws IllegalArgumentException if more than {@link WitnessCondition#MAX_SUBITEMS} are added.
      */
-    public AndCondition(WitnessCondition... conditions) {
+    public AndCondition(WitnessCondition... expressions) {
         this();
-        if (conditions.length > MAX_SUBITEMS) {
-            throw new IllegalArgumentException("A maximum of " + MAX_SUBITEMS + " subitems is " +
-                    "allowed for the AND witness condition.");
+        if (expressions.length > MAX_SUBITEMS) {
+            throw new IllegalArgumentException(
+                    format("A maximum of %s subitems is allowed for an AND witness condition.", MAX_SUBITEMS));
         }
-        this.conditions = asList(conditions);
+        this.expressions = asList(expressions);
     }
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
         try {
-            long nrOfConditions = reader.readVarInt();
-            for (int i = 0; i < nrOfConditions; i++) {
-                this.conditions.add(WitnessCondition.deserializeWitnessCondition(reader));
+            long nrOfExpressions = reader.readVarInt();
+            for (int i = 0; i < nrOfExpressions; i++) {
+                this.expressions.add(WitnessCondition.deserializeWitnessCondition(reader));
             }
         } catch (IOException e) {
             throw new DeserializationException(e);
@@ -53,17 +54,23 @@ public class AndCondition extends CompositeCondition {
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableVariable(conditions);
+        writer.writeSerializableVariable(expressions);
     }
 
     @Override
     public int getSize() {
-        return super.getSize() + IOUtils.getVarSize(conditions);
+        return super.getSize() + IOUtils.getVarSize(expressions);
     }
 
     @Override
-    public List<WitnessCondition> getConditions() {
-        return conditions;
+    public List<WitnessCondition> getExpressions() {
+        return expressions;
+    }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.AndCondition(
+                getExpressions().stream().map(WitnessCondition::toJson).collect(Collectors.toList()));
     }
 
 }

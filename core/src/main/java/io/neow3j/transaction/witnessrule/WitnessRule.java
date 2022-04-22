@@ -15,7 +15,7 @@ public class WitnessRule extends NeoSerializable {
     /**
      * Indicates the action to be taken if the current context meets with the rule.
      */
-    private WitnessRuleAction action;
+    private WitnessAction action;
 
     /**
      * The condition of the rule.
@@ -25,7 +25,7 @@ public class WitnessRule extends NeoSerializable {
     public WitnessRule() {
     }
 
-    public WitnessRule(WitnessRuleAction action, WitnessCondition condition) {
+    public WitnessRule(WitnessAction action, WitnessCondition condition) {
         this.action = action;
         this.condition = condition;
     }
@@ -33,7 +33,7 @@ public class WitnessRule extends NeoSerializable {
     @Override
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
-            action = WitnessRuleAction.valueOf(reader.readByte());
+            action = WitnessAction.valueOf(reader.readByte());
             condition = WitnessCondition.deserializeWitnessCondition(reader);
         } catch (IOException e) {
             throw new DeserializationException(e);
@@ -52,11 +52,12 @@ public class WitnessRule extends NeoSerializable {
                 + condition.getSize();
     }
 
-    public WitnessRuleAction getAction() {
+    public WitnessAction getAction() {
         return action;
     }
 
     public WitnessCondition getCondition() {
         return condition;
     }
+
 }

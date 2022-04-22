@@ -8,9 +8,8 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import java.io.IOException;
 
 /**
- * This condition defines that the calling contract must be part of the specified contract group.
- * I.e., a contract can only use the witness when it is invoked by a contract in the here
- * specified contract group.
+ * This condition defines that the calling contract must be part of the specified contract group. I.e., a contract
+ * can only use the witness when it is invoked by a contract that is part of the here specified contract group.
  */
 public class CalledByGroupCondition extends WitnessCondition {
 
@@ -21,9 +20,10 @@ public class CalledByGroupCondition extends WitnessCondition {
     }
 
     /**
-     * Constructs a condition with the given group EC point/public key.
+     * Constructs a witness condition of type {@link WitnessConditionType#CALLED_BY_GROUP} with the given group's
+     * public key.
      *
-     * @param group The group's EC point.
+     * @param group the group's public key.
      */
     public CalledByGroupCondition(ECKeyPair.ECPublicKey group) {
         this();
@@ -47,4 +47,10 @@ public class CalledByGroupCondition extends WitnessCondition {
     public ECKeyPair.ECPublicKey getGroup() {
         return group;
     }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.CalledByGroupCondition(getGroup());
+    }
+
 }

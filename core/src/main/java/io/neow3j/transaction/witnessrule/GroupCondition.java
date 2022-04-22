@@ -8,10 +8,9 @@ import io.neow3j.transaction.Signer;
 
 import java.io.IOException;
 
-
 /**
- * This condition allows including or excluding a contract group (with the defined EC point)
- * from using the witness. This is the same as adding the group with
+ * This condition allows including or excluding a contract group (with the defined public key) from using the witness.
+ * This is the same as adding the group to the scope of a {@link Signer} with
  * {@link Signer#setAllowedGroups(ECKeyPair.ECPublicKey...)}.
  */
 public class GroupCondition extends WitnessCondition {
@@ -23,9 +22,9 @@ public class GroupCondition extends WitnessCondition {
     }
 
     /**
-     * Constructs condition with the given group EC point/public key.
+     * Constructs a witness condition of type {@link WitnessConditionType#GROUP} with the given group's public key.
      *
-     * @param group the group's EC point.
+     * @param group the group's public key.
      */
     public GroupCondition(ECKeyPair.ECPublicKey group) {
         this();
@@ -50,4 +49,10 @@ public class GroupCondition extends WitnessCondition {
     public ECKeyPair.ECPublicKey getGroup() {
         return group;
     }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.GroupCondition(getGroup());
+    }
+
 }

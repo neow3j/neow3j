@@ -15,12 +15,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.protocol.core.witnessrule.WitnessRule;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.WitnessScope;
-import io.neow3j.transaction.witnessrule.WitnessConditionType;
-import io.neow3j.transaction.witnessrule.WitnessRuleAction;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,6 +26,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionSigner {
@@ -63,11 +63,10 @@ public class TransactionSigner {
                 .map(Hash160::toString)
                 .collect(Collectors.toList());
         this.allowedGroups = signer.getAllowedGroups().stream()
-                .map(s -> Numeric.toHexStringNoPrefix(s.getEncoded(true)))
+                .map(s -> toHexStringNoPrefix(s.getEncoded(true)))
                 .collect(Collectors.toList());
         this.rules = signer.getRules().stream()
-                .map(r -> new WitnessRule(r.getAction(),
-                        new WitnessRule.WitnessCondition(r.getCondition().getType())))
+                .map(r -> new WitnessRule(r.getAction(), r.getCondition().toJson()))
                 .collect(Collectors.toList());
     }
 
@@ -122,8 +121,7 @@ public class TransactionSigner {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getAccount(), getScopes(), getAllowedContracts(), getAllowedGroups(),
-                getRules());
+        return Objects.hash(getAccount(), getScopes(), getAllowedContracts(), getAllowedGroups(), getRules());
     }
 
     @Override
@@ -175,45 +173,4 @@ public class TransactionSigner {
         }
     }
 
-    public static class WitnessRule {
-
-        @JsonProperty("action")
-        private WitnessRuleAction action;
-
-        @JsonProperty("condition")
-        private WitnessCondition condition;
-
-        public WitnessRule() {
-        }
-
-        public WitnessRule(WitnessRuleAction action, WitnessCondition condition) {
-            this.action = action;
-            this.condition = condition;
-        }
-
-        public WitnessRuleAction getAction() {
-            return action;
-        }
-
-        public WitnessCondition getCondition() {
-            return condition;
-        }
-
-        public static class WitnessCondition {
-
-            @JsonProperty("type")
-            private WitnessConditionType type;
-
-            public WitnessCondition() {
-            }
-
-            public WitnessCondition(WitnessConditionType type) {
-                this.type = type;
-            }
-
-            public WitnessConditionType getType() {
-                return type;
-            }
-        }
-    }
 }

@@ -8,41 +8,44 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 /**
- * Represents the condition that at least one of the sub-conditions must meet.
+ * Represents a witness condition where at least one of its contained expressions must be met.
  */
 public class OrCondition extends CompositeCondition {
 
-    private List<WitnessCondition> conditions;
+    private List<WitnessCondition> expressions;
 
     public OrCondition() {
         type = WitnessConditionType.OR;
-        conditions = new ArrayList<>();
+        expressions = new ArrayList<>();
     }
 
     /**
-     * Constructs an OR condition with the given sub-conditions.
+     * Constructs a witness condition of type {@link WitnessConditionType#OR} with the given expressions.
      *
-     * @param conditions The conditions.
-     * @throws IllegalArgumentException if more than {@link WitnessCondition#MAX_SUBITEMS} are
-     *                                  added.
+     * @param expressions the expressions.
+     * @throws IllegalArgumentException if more than {@link WitnessCondition#MAX_SUBITEMS} are added.
      */
-    public OrCondition(List<WitnessCondition> conditions) {
+    public OrCondition(WitnessCondition... expressions) {
         this();
-        if (conditions.size() > MAX_SUBITEMS) {
-            throw new IllegalArgumentException("A maximum of " + MAX_SUBITEMS + " subitems is " +
-                    "allowed for the OR witness condition.");
+        if (expressions.length > MAX_SUBITEMS) {
+            throw new IllegalArgumentException(
+                    format("A maximum of %s subitems is allowed for an OR witness condition.", MAX_SUBITEMS));
         }
-        this.conditions = conditions;
+        this.expressions = asList(expressions);
     }
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
         try {
-            long nrOfConditions = reader.readVarInt();
-            for (int i = 0; i < nrOfConditions; i++) {
-                this.conditions.add(WitnessCondition.deserializeWitnessCondition(reader));
+            long nrOfExpressions = reader.readVarInt();
+            for (int i = 0; i < nrOfExpressions; i++) {
+                this.expressions.add(WitnessCondition.deserializeWitnessCondition(reader));
             }
         } catch (IOException e) {
             throw new DeserializationException(e);
@@ -51,17 +54,23 @@ public class OrCondition extends CompositeCondition {
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableVariable(conditions);
+        writer.writeSerializableVariable(expressions);
     }
 
     @Override
     public int getSize() {
-        return super.getSize() + IOUtils.getVarSize(conditions);
+        return super.getSize() + IOUtils.getVarSize(expressions);
     }
 
     @Override
-    public List<WitnessCondition> getConditions() {
-        return conditions;
+    public List<WitnessCondition> getExpressions() {
+        return expressions;
+    }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.OrCondition(
+                getExpressions().stream().map(WitnessCondition::toJson).collect(Collectors.toList()));
     }
 
 }

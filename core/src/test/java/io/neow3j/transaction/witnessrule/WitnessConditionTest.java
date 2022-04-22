@@ -15,11 +15,10 @@ import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
-import static java.util.Arrays.asList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class WitnessConditionTest {
@@ -30,7 +29,7 @@ public class WitnessConditionTest {
                 + "00"
                 + "01"); // value for "true"
         BooleanCondition c = NeoSerializableInterface.from(data, BooleanCondition.class);
-        assertTrue(c.getCondition());
+        assertTrue(c.getExpression());
         assertThat(c.getType(), is(WitnessConditionType.BOOLEAN));
 
     }
@@ -52,7 +51,7 @@ public class WitnessConditionTest {
                 + "01"
                 + "0001"); // a boolean condition in the not condition
         NotCondition c = NeoSerializableInterface.from(data, NotCondition.class);
-        assertThat(c.getCondition().getType(), is(WitnessConditionType.BOOLEAN));
+        assertThat(c.getExpression().getType(), is(WitnessConditionType.BOOLEAN));
         assertThat(c.getType(), is(WitnessConditionType.NOT));
     }
 
@@ -75,10 +74,10 @@ public class WitnessConditionTest {
                 + "0001" // a boolean condition
                 + "0000"); // a boolean condition
         AndCondition c = NeoSerializableInterface.from(data, AndCondition.class);
-        assertThat(c.getConditions().get(0).getType(), is(WitnessConditionType.BOOLEAN));
-        assertTrue(((BooleanCondition) c.getConditions().get(0)).getCondition());
-        assertThat(c.getConditions().get(1).getType(), is(WitnessConditionType.BOOLEAN));
-        assertFalse(((BooleanCondition) c.getConditions().get(1)).getCondition());
+        assertThat(c.getExpressions().get(0).getType(), is(WitnessConditionType.BOOLEAN));
+        assertTrue(((BooleanCondition) c.getExpressions().get(0)).getExpression());
+        assertThat(c.getExpressions().get(1).getType(), is(WitnessConditionType.BOOLEAN));
+        assertFalse(((BooleanCondition) c.getExpressions().get(1)).getExpression());
         assertThat(c.getType(), is(WitnessConditionType.AND));
     }
 
@@ -104,10 +103,10 @@ public class WitnessConditionTest {
                 + "0001" // a boolean condition
                 + "0000"); // a boolean condition
         OrCondition c = NeoSerializableInterface.from(data, OrCondition.class);
-        assertThat(c.getConditions().get(0).getType(), is(WitnessConditionType.BOOLEAN));
-        assertTrue(((BooleanCondition) c.getConditions().get(0)).getCondition());
-        assertThat(c.getConditions().get(1).getType(), is(WitnessConditionType.BOOLEAN));
-        assertFalse(((BooleanCondition) c.getConditions().get(1)).getCondition());
+        assertThat(c.getExpressions().get(0).getType(), is(WitnessConditionType.BOOLEAN));
+        assertTrue(((BooleanCondition) c.getExpressions().get(0)).getExpression());
+        assertThat(c.getExpressions().get(1).getType(), is(WitnessConditionType.BOOLEAN));
+        assertFalse(((BooleanCondition) c.getExpressions().get(1)).getExpression());
         assertThat(c.getType(), is(WitnessConditionType.OR));
     }
 
@@ -115,8 +114,7 @@ public class WitnessConditionTest {
     public void serializeOrCondition() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new OrCondition(asList(new BooleanCondition(true), new BooleanCondition(false)))
-                .serialize(writer);
+        new OrCondition(new BooleanCondition(true), new BooleanCondition(false)).serialize(writer);
         byte[] expected = Numeric.hexStringToByteArray(""
                 + "03"
                 + "02" // two sub-conditions

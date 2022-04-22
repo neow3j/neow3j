@@ -21,8 +21,8 @@ public abstract class WitnessCondition extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             if (!WitnessConditionType.valueOf(reader.readByte()).equals(this.type)) {
-                throw new DeserializationException("The deserialized type does not match the type "
-                        + "information in the serialized data.");
+                throw new DeserializationException("The deserialized type does not match the type information in the " +
+                        "serialized data.");
             }
             deserializeWithoutType(reader);
         } catch (IOException e) {
@@ -30,9 +30,7 @@ public abstract class WitnessCondition extends NeoSerializable {
         }
     }
 
-    public static WitnessCondition deserializeWitnessCondition(BinaryReader reader)
-            throws DeserializationException {
-
+    public static WitnessCondition deserializeWitnessCondition(BinaryReader reader) throws DeserializationException {
         try {
             WitnessConditionType type = WitnessConditionType.valueOf(reader.readByte());
             WitnessCondition a = type.conditionClass().newInstance();
@@ -43,8 +41,7 @@ public abstract class WitnessCondition extends NeoSerializable {
         }
     }
 
-    protected abstract void deserializeWithoutType(BinaryReader reader) throws IOException,
-            DeserializationException;
+    protected abstract void deserializeWithoutType(BinaryReader reader) throws IOException, DeserializationException;
 
     @Override
     public void serialize(BinaryWriter writer) throws IOException {
@@ -62,4 +59,7 @@ public abstract class WitnessCondition extends NeoSerializable {
     public int getSize() {
         return 1; // type byte
     }
+
+    public abstract io.neow3j.protocol.core.witnessrule.WitnessCondition toJson();
+
 }

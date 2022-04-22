@@ -5,52 +5,50 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-
 
 /**
- * Reverses another condition.
+ * Reverses an expression.
  */
-public class NotCondition extends CompositeCondition {
+public class NotCondition extends WitnessCondition {
 
-    private WitnessCondition condition;
+    private WitnessCondition expression;
 
     public NotCondition() {
         type = WitnessConditionType.NOT;
     }
 
     /**
-     * Constructs the reverse of the given condition.
+     * Constructs a witness condition of type {@link WitnessConditionType#NOT}.
      *
-     * @param condition the condition to reverse.
+     * @param expression the expression to reverse.
      */
-    public NotCondition(WitnessCondition condition) {
+    public NotCondition(WitnessCondition expression) {
         this();
-        this.condition = condition;
+        this.expression = expression;
     }
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
-        condition = WitnessCondition.deserializeWitnessCondition(reader);
+        expression = WitnessCondition.deserializeWitnessCondition(reader);
     }
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(condition);
+        writer.writeSerializableFixed(expression);
     }
 
     @Override
     public int getSize() {
-        return super.getSize() + condition.getSize();
+        return super.getSize() + expression.getSize();
+    }
+
+    public WitnessCondition getExpression() {
+        return expression;
     }
 
     @Override
-    public List<WitnessCondition> getConditions() {
-        return Arrays.asList(condition);
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.NotCondition(getExpression().toJson());
     }
 
-    public WitnessCondition getCondition() {
-        return condition;
-    }
 }

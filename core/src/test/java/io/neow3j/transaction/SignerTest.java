@@ -14,7 +14,7 @@ import io.neow3j.transaction.witnessrule.ScriptHashCondition;
 import io.neow3j.transaction.witnessrule.WitnessCondition;
 import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessRule;
-import io.neow3j.transaction.witnessrule.WitnessRuleAction;
+import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
@@ -249,7 +249,7 @@ public class SignerTest {
         AccountSigner.calledByEntry(accScriptHash)
                 .setAllowedGroups(groupPubKey1, groupPubKey2)
                 .setAllowedContracts(contract1, contract2)
-                .setRules(new WitnessRule(WitnessRuleAction.ALLOW,
+                .setRules(new WitnessRule(WitnessAction.ALLOW,
                         new CalledByContractCondition(contract1)))
                 .serialize(writer);
         byte[] actual = outStream.toByteArray();
@@ -296,7 +296,7 @@ public class SignerTest {
         assertThat(c.getAllowedContracts(), containsInAnyOrder(contract1, contract2));
         assertThat(c.getAllowedGroups(), containsInAnyOrder(groupPubKey1, groupPubKey2));
         WitnessRule rule = c.getRules().get(0);
-        assertThat(rule.getAction(), is(WitnessRuleAction.ALLOW));
+        assertThat(rule.getAction(), is(WitnessAction.ALLOW));
         assertThat(rule.getCondition().getType(), is(WitnessConditionType.CALLED_BY_CONTRACT));
         assertThat(((CalledByContractCondition) rule.getCondition()).getScriptHash(),
                 is(contract1));
@@ -360,7 +360,7 @@ public class SignerTest {
 
     @Test
     public void getSize() {
-        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, new AndCondition(
+        WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, new AndCondition(
                 new BooleanCondition(true), new BooleanCondition(false)));
 
         Signer signer = AccountSigner.calledByEntry(accScriptHash)
@@ -422,7 +422,7 @@ public class SignerTest {
                         new AndCondition(
                                 new NotCondition(cond))));
 
-        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, and);
+        WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, and);
 
         assertThrows("A maximum nesting depth of " + WitnessCondition.MAX_NESTING_DEPTH + " is allowed for witness " +
                         "conditions.",
@@ -433,16 +433,16 @@ public class SignerTest {
     @Test
     public void failAddingRuleToGlobalSigner() {
         ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
-        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, cond);
-        assertThrows("Trying to set witness rules on a Signer with global scope.",
-                SignerConfigurationException.class,
+        WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, cond);
+        SignerConfigurationException thrown = assertThrows(SignerConfigurationException.class,
                 () -> AccountSigner.global(acc).setRules(rule));
+        assertThat(thrown.getMessage(), is("Trying to set witness rules on a Signer with global scope."));
     }
 
     @Test
     public void failAddingTooManyRules() {
         ScriptHashCondition cond = new ScriptHashCondition(accScriptHash);
-        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW, cond);
+        WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, cond);
         AccountSigner signer = AccountSigner.none(acc);
         for (int i = 0; i < MAX_SIGNER_SUBITEMS; i++) {
             signer.setRules(rule);
@@ -457,7 +457,7 @@ public class SignerTest {
     public void serialize_deserialize_max_nested_rules() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        WitnessRule rule = new WitnessRule(WitnessRuleAction.ALLOW,
+        WitnessRule rule = new WitnessRule(WitnessAction.ALLOW,
                 new AndCondition(
                         new AndCondition(
                                 new BooleanCondition(true))));

@@ -8,8 +8,8 @@ import io.neow3j.types.Hash160;
 import java.io.IOException;
 
 /**
- * This condition defines that the calling contract must match the specified script hash. I.e., a
- * contract can only use the witness when it is invoked by the here specified contract.
+ * This condition defines that the calling contract must match the specified script hash. I.e., a contract can only
+ * use the witness when it is invoked by the here specified contract.
  */
 public class CalledByContractCondition extends WitnessCondition {
 
@@ -20,9 +20,10 @@ public class CalledByContractCondition extends WitnessCondition {
     }
 
     /**
-     * Constructs a condition with the given contract script hash.
+     * Constructs a witness condition of type {@link WitnessConditionType#CALLED_BY_CONTRACT} with the given contract
+     * script hash.
      *
-     * @param hash The contract script hash.
+     * @param hash the contract script hash.
      */
     public CalledByContractCondition(Hash160 hash) {
         this();
@@ -47,4 +48,10 @@ public class CalledByContractCondition extends WitnessCondition {
     public Hash160 getScriptHash() {
         return hash;
     }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.CalledByContractCondition(getScriptHash());
+    }
+
 }

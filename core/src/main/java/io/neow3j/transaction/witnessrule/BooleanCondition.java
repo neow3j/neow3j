@@ -7,35 +7,35 @@ import io.neow3j.transaction.WitnessScope;
 import java.io.IOException;
 
 /**
- * This condition either gives permission to use the witness or not. This behaves like the
- * {@link WitnessScope#GLOBAL} in that {@code true} means the scope is global.
+ * This condition either gives permission to use the witness or not. It behaves like the {@link WitnessScope#GLOBAL}
+ * in that {@code true} means the scope is global.
  */
 public class BooleanCondition extends WitnessCondition {
 
-    private boolean condition;
+    private boolean expression;
 
     public BooleanCondition() {
         type = WitnessConditionType.BOOLEAN;
     }
 
     /**
-     * Constructs a condition with the given boolean value.
+     * Constructs a witness condition of type {@link WitnessConditionType#BOOLEAN} with the given boolean value.
      *
-     * @param condition The condition.
+     * @param expression the boolean expression.
      */
-    public BooleanCondition(boolean condition) {
+    public BooleanCondition(boolean expression) {
         this();
-        this.condition = condition;
+        this.expression = expression;
     }
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws IOException {
-        condition = reader.readBoolean();
+        expression = reader.readBoolean();
     }
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeBoolean(condition);
+        writer.writeBoolean(expression);
     }
 
     @Override
@@ -43,7 +43,13 @@ public class BooleanCondition extends WitnessCondition {
         return super.getSize() + 1; // one byte for boolean
     }
 
-    public boolean getCondition() {
-        return condition;
+    public boolean getExpression() {
+        return expression;
     }
+
+    @Override
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+        return new io.neow3j.protocol.core.witnessrule.BooleanCondition(getExpression());
+    }
+
 }

@@ -7,6 +7,6 @@ public abstract class CompositeCondition extends WitnessCondition {
     public CompositeCondition() {
     }
 
-    public abstract List<WitnessCondition> getConditions();
+    public abstract List<WitnessCondition> getExpressions();
 
 }
