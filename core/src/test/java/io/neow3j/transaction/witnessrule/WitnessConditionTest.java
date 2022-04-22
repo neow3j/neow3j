@@ -39,7 +39,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new BooleanCondition(true).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "00" // type
                 + "01"); // value
         assertArrayEquals(expected, outStream.toByteArray());
@@ -60,7 +60,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new NotCondition(new BooleanCondition(true)).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "01" // type
                 + "0001"); // value
         assertArrayEquals(expected, outStream.toByteArray());
@@ -85,9 +85,8 @@ public class WitnessConditionTest {
     public void serializeAndCondition() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new AndCondition(new BooleanCondition(true), new BooleanCondition(false))
-                .serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        new AndCondition(new BooleanCondition(true), new BooleanCondition(false)).serialize(writer);
+        byte[] expected = hexStringToByteArray(""
                 + "02"
                 + "02" // two sub-conditions
                 + "0001" // a boolean condition
@@ -115,7 +114,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new OrCondition(new BooleanCondition(true), new BooleanCondition(false)).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "03"
                 + "02" // two sub-conditions
                 + "0001" // a boolean condition
@@ -138,7 +137,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new ScriptHashCondition(new Hash160(defaultAccountScriptHash())).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "18"
                 + reverseHexString(defaultAccountScriptHash()));
         assertArrayEquals(expected, outStream.toByteArray());
@@ -150,8 +149,7 @@ public class WitnessConditionTest {
                 + "19"
                 + defaultAccountPublicKey());
         GroupCondition c = NeoSerializableInterface.from(data, GroupCondition.class);
-        assertThat(c.getGroup().getEncoded(true),
-                is(Numeric.hexStringToByteArray(defaultAccountPublicKey())));
+        assertThat(c.getGroup().getEncoded(true), is(hexStringToByteArray(defaultAccountPublicKey())));
         assertThat(c.getType(), is(WitnessConditionType.GROUP));
     }
 
@@ -160,7 +158,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new GroupCondition(new ECKeyPair.ECPublicKey(defaultAccountPublicKey())).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "19"
                 + defaultAccountPublicKey());
         assertArrayEquals(expected, outStream.toByteArray());
@@ -169,8 +167,7 @@ public class WitnessConditionTest {
     @Test
     public void deserializeCalledByEntryCondition() throws DeserializationException {
         byte[] data = hexStringToByteArray("20");
-        CalledByEntryCondition c =
-                NeoSerializableInterface.from(data, CalledByEntryCondition.class);
+        CalledByEntryCondition c = NeoSerializableInterface.from(data, CalledByEntryCondition.class);
         assertThat(c.getType(), is(WitnessConditionType.CALLED_BY_ENTRY));
     }
 
@@ -179,7 +176,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new CalledByEntryCondition().serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray("20");
+        byte[] expected = hexStringToByteArray("20");
         assertArrayEquals(expected, outStream.toByteArray());
     }
 
@@ -188,8 +185,7 @@ public class WitnessConditionTest {
         byte[] data = hexStringToByteArray(""
                 + "28"
                 + reverseHexString(defaultAccountScriptHash()));
-        CalledByContractCondition c =
-                NeoSerializableInterface.from(data, CalledByContractCondition.class);
+        CalledByContractCondition c = NeoSerializableInterface.from(data, CalledByContractCondition.class);
         assertThat(c.getScriptHash().toString(), is(defaultAccountScriptHash()));
         assertThat(c.getType(), is(WitnessConditionType.CALLED_BY_CONTRACT));
     }
@@ -199,7 +195,7 @@ public class WitnessConditionTest {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
         new CalledByContractCondition(new Hash160(defaultAccountScriptHash())).serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        byte[] expected = hexStringToByteArray(""
                 + "28"
                 + reverseHexString(defaultAccountScriptHash()));
         assertArrayEquals(expected, outStream.toByteArray());
@@ -210,10 +206,8 @@ public class WitnessConditionTest {
         byte[] data = hexStringToByteArray(""
                 + "29"
                 + defaultAccountPublicKey());
-        CalledByGroupCondition c =
-                NeoSerializableInterface.from(data, CalledByGroupCondition.class);
-        assertThat(c.getGroup().getEncoded(true),
-                is(Numeric.hexStringToByteArray(defaultAccountPublicKey())));
+        CalledByGroupCondition c = NeoSerializableInterface.from(data, CalledByGroupCondition.class);
+        assertThat(c.getGroup().getEncoded(true), is(hexStringToByteArray(defaultAccountPublicKey())));
         assertThat(c.getType(), is(WitnessConditionType.CALLED_BY_GROUP));
     }
 
@@ -221,9 +215,8 @@ public class WitnessConditionTest {
     public void serializeCalledByGroupCondition() throws IOException {
         ByteArrayOutputStream outStream = new ByteArrayOutputStream();
         BinaryWriter writer = new BinaryWriter(outStream);
-        new CalledByGroupCondition(new ECKeyPair.ECPublicKey(defaultAccountPublicKey()))
-                .serialize(writer);
-        byte[] expected = Numeric.hexStringToByteArray(""
+        new CalledByGroupCondition(new ECKeyPair.ECPublicKey(defaultAccountPublicKey())).serialize(writer);
+        byte[] expected = hexStringToByteArray(""
                 + "29"
                 + defaultAccountPublicKey());
         assertArrayEquals(expected, outStream.toByteArray());

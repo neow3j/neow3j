@@ -91,7 +91,7 @@ public class CryptoLibIntegrationTest {
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(Numeric.reverseHexString(cryptoLibHash())));
+                is(reverseHexString(cryptoLibHash())));
     }
 
     static class CryptoLibIntegrationTestContract {

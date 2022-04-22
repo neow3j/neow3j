@@ -9,7 +9,6 @@ import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseCode;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.witnessrule.AndCondition;
 import io.neow3j.transaction.witnessrule.BooleanCondition;
@@ -37,7 +36,6 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 public class RequestTest extends RequestTester {
 
@@ -344,13 +342,12 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeFunction() throws Exception {
-        ECKeyPair.ECPublicKey pubKey =
-                new ECKeyPair.ECPublicKey(TestProperties.defaultAccountPublicKey());
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
 
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
-                singletonList(
+                asList(
                         hash160(new Hash160(
                                 "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
@@ -358,8 +355,7 @@ public class RequestTest extends RequestTester {
                         .setAllowedContracts(new Hash160(neoTokenHash()))
                         .setAllowedGroups(pubKey)
                         .setRules(new WitnessRule(WitnessAction.ALLOW,
-                                new CalledByContractCondition(
-                                        new Hash160(neoTokenHash()))))
+                                new CalledByContractCondition(new Hash160(neoTokenHash()))))
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -387,15 +383,12 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeFunction_witnessRules() throws Exception {
-        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(TestProperties.defaultAccountPublicKey());
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
 
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
-                singletonList(
-                        hash160(new Hash160(
-                                "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
-                ),
+                asList(hash160(new Hash160("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))),
                 AccountSigner.calledByEntry(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
                         .setAllowedContracts(new Hash160(neoTokenHash()))
                         .setAllowedGroups(pubKey)
@@ -406,14 +399,16 @@ public class RequestTest extends RequestTester {
                                                 new CalledByContractCondition(new Hash160(neoTokenHash())),
                                                 new CalledByGroupCondition(pubKey),
                                                 new GroupCondition(pubKey)
-                                )),
+                                        )
+                                ),
                                 new WitnessRule(WitnessAction.DENY,
                                         new OrCondition(
                                                 new CalledByGroupCondition(pubKey),
-                                                new ScriptHashCondition(
-                                                        new Hash160(committeeAccountScriptHash())))),
-                                new WitnessRule(WitnessAction.ALLOW,
-                                        new NotCondition(new CalledByEntryCondition())))
+                                                new ScriptHashCondition(new Hash160(committeeAccountScriptHash()))
+                                        )
+                                ),
+                                new WitnessRule(WitnessAction.ALLOW, new NotCondition(new CalledByEntryCondition()))
+                        )
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
