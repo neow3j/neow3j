@@ -2,7 +2,6 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash256;
-import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.annotations.ContractHash;
 
@@ -64,14 +63,6 @@ public class LedgerContract extends ContractInterface {
      * @return the transaction or {@code null} if it doesn't exist.
      */
     public static native Transaction getTransactionFromBlock(int blockIndex, int index);
-
-    /**
-     * Gets the signers of the transaction with the specified hash.
-     *
-     * @param txHash the transaction hash.
-     * @return the signers of the transaction with the specified hash.
-     */
-    public static native Signer[] getTransactionSigners(Hash256 txHash);
 
     /**
      * Gets the VM state of the transaction with the given hash.
