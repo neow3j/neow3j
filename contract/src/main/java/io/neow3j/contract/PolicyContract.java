@@ -1,14 +1,14 @@
 package io.neow3j.contract;
 
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
-
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;
+
+import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 
 /**
  * Represents a Policy contract and provides methods to invoke it.
@@ -29,8 +29,7 @@ public class PolicyContract extends SmartContract {
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
 
     /**
-     * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for
-     * invocations.
+     * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
@@ -80,11 +79,11 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the fee per byte and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the fee per byte and initializes a {@link TransactionBuilder} based on
+     * this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param fee the fee per byte.
      * @return a {@link TransactionBuilder}.
@@ -94,8 +93,8 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the execution fee factor and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the execution fee factor and initializes a {@link TransactionBuilder}
+     * based on this script.
      *
      * @param fee the execution fee factor.
      * @return a {@link TransactionBuilder}.
@@ -105,11 +104,11 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the storage price and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script to set the storage price and initializes a {@link TransactionBuilder} based on
+     * this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param price the storage price.
      * @return a {@link TransactionBuilder}.
@@ -122,8 +121,8 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to block an account in the neo-network and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param addressToBlock the address of the account to block.
      * @return a {@link TransactionBuilder}.
@@ -136,8 +135,8 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to block an account in the neo-network and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param accountToBlock the account to block.
      * @return a {@link TransactionBuilder}.
@@ -150,8 +149,8 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to unblock an account in the neo-network and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param addressToBlock the address of the account to unblock.
      * @return a {@link TransactionBuilder}.
@@ -164,8 +163,8 @@ public class PolicyContract extends SmartContract {
      * Creates a transaction script to unblock an account in the neo-network and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param accountToUnblock the account to unblock.
      * @return a {@link TransactionBuilder}.
