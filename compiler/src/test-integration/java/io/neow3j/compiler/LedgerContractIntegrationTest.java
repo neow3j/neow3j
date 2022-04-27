@@ -2,10 +2,12 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Block;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Signer;
+import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -44,6 +46,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
 
 public class LedgerContractIntegrationTest {
 
@@ -70,6 +73,8 @@ public class LedgerContractIntegrationTest {
                 ));
         WitnessRule rule2 = new WitnessRule(WitnessAction.ALLOW, new NotCondition(new BooleanCondition(false)));
         io.neow3j.transaction.Signer signer = AccountSigner.none(ct.getClient1()).setRules(rule1, rule2);
+//        io.neow3j.transaction.Signer signer2 = AccountSigner.none(ct.getClient2())
+//                .setAllowedContracts(ct.getContract().getScriptHash()).setRules(rule1, rule2);
         return ct.invokeFunctionAndAwaitExecution("setup", asList(), signer);
     }
 
@@ -201,6 +206,58 @@ public class LedgerContractIntegrationTest {
     }
 
     @Test
+    public void getTransactionSignerValues() throws Throwable {
+//        preparedTx = ct.getDeployTxHash();
+//        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction("getTransactionSigners", hash256(preparedTx));
+        List<StackItem> stack = response.getInvocationResult().getStack();
+        String exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(0));
+        // when witness rules present, this works
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(1));
+        // when witness rules present, this works
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(2));
+        // when witness rules present, this works
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerSerialized", hash256(preparedTx), integer(0));
+        // all fault
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerAccount", hash256(preparedTx), integer(0));
+        // all fault
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerWitnessScope", hash256(preparedTx), integer(0));
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerAllowedContracts", hash256(preparedTx), integer(0));
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerAllowedGroups", hash256(preparedTx), integer(0));
+        stack = response.getInvocationResult().getStack();
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+
+        response = ct.callInvokeFunction("getTransactionSignerWitnessRules", hash256(preparedTx), integer(0));
+        stack = response.getInvocationResult().getStack();
+        exception = response.getInvocationResult().getException();
+        fail();
+    }
+
+    @Test
     public void getTransaction() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
@@ -313,7 +370,7 @@ public class LedgerContractIntegrationTest {
             return LedgerContract.getTransactionFromBlock(blockNr, txNr);
         }
 
-        public static Object getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
+        public static Transaction getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
             return LedgerContract.getTransactionFromBlock(blockHash, txNr);
         }
 
@@ -321,7 +378,35 @@ public class LedgerContractIntegrationTest {
             return LedgerContract.getTransactionSigners(txHash);
         }
 
-        public static Object getTransaction(Hash256 txHash) {
+        public static Signer getTransactionSigner(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index];
+        }
+
+        public static ByteString getTransactionSignerSerialized(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].serialized;
+        }
+
+        public static Hash160 getTransactionSignerAccount(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].account;
+        }
+
+        public static byte getTransactionSignerWitnessScope(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].witnessScopes;
+        }
+
+        public static Hash160[] getTransactionSignerAllowedContracts(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].allowedContracts;
+        }
+
+        public static ECPoint[] getTransactionSignerAllowedGroups(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].allowedGroups;
+        }
+
+        public static io.neow3j.devpack.WitnessRule[] getTransactionSignerWitnessRules(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules;
+        }
+
+        public static Transaction getTransaction(Hash256 txHash) {
             return LedgerContract.getTransaction(txHash);
         }
 

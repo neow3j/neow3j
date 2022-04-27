@@ -19,6 +19,9 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
+import io.neow3j.transaction.witnessrule.CalledByEntryCondition;
+import io.neow3j.transaction.witnessrule.WitnessAction;
+import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -38,6 +41,7 @@ import java.util.List;
 
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
+import static io.neow3j.test.TestProperties.client2AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
@@ -58,6 +62,7 @@ public class ContractTestRule implements TestRule {
     private Account defaultAccount;
     private Account committee;
     private Account client1;
+    private Account client2;
     private Neow3j neow3j;
     private SmartContract contract;
     private Hash256 deployTxHash;
@@ -99,6 +104,7 @@ public class ContractTestRule implements TestRule {
         committee = Account.createMultiSigAccount(
                 asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         client1 = Account.fromWIF(client1AccountWIF());
+        client2 = Account.fromWIF(client2AccountWIF());
         neow3j = Neow3j.build(new HttpService(containerURL, true));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
     }
@@ -151,6 +157,10 @@ public class ContractTestRule implements TestRule {
 
     public Account getClient1() {
         return client1;
+    }
+
+    public Account getClient2() {
+        return client2;
     }
 
     public Neow3j getNeow3j() {
@@ -315,6 +325,10 @@ public class ContractTestRule implements TestRule {
         TransactionBuilder b = contract.invokeFunction(function, params.toArray(new ContractParameter[0]));
         List<Signer> signerList = new ArrayList<>(asList(additionalSigners));
         if (signAsCommittee) {
+//            signerList.add(AccountSigner.none(committee).setAllowedContracts(getContract().getScriptHash()));
+            WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, new CalledByEntryCondition());
+//            AccountSigner.none(committee).setRules(rule);
+//            signerList.add(AccountSigner.none(committee).setRules(rule));
             signerList.add(AccountSigner.global(committee));
             Signer[] modifiedSigners = signerList.toArray(new Signer[0]);
             tx = b.signers(modifiedSigners).firstSigner(committee).getUnsignedTransaction();

@@ -2,46 +2,52 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.OpCode;
+import io.neow3j.transaction.WitnessScope;
 
 /**
- * Represents a transaction and provides transaction-related information. It is returned for example
- * when calling {@link io.neow3j.devpack.contracts.LedgerContract#getTransaction(Hash256)} .
+ * Represents a signer and provides signer-related information. It is returned for example when calling
+ * {@link io.neow3j.devpack.contracts.LedgerContract#getTransactionSigners(Hash256)} .
  */
 public class Signer {
+
+    public ByteString serialized;
 
     /**
      * The account of the signer.
      */
-    public Hash160 Account;
+    public Hash160 account;
 
-//    /**
-//     * The scopes of the witness.
-//     */
-//    public WitnessScope Scopes;
+    /**
+     * The scopes of the witness.
+     */
+    public byte witnessScopes;
 
     /**
      * The contracts that are allowed by the witness. Only available when the corresponding signer has a witness scope
-     * {@link io.neow3j.transaction.WitnessScope#CUSTOM_CONTRACTS}.
+     * {@link WitnessScope#CUSTOM_CONTRACTS}.
      */
-    public Hash160[] AllowedContracts;
+    public Hash160[] allowedContracts;
 
     /**
      * The groups that are allowed by the witness. Only available when the corresponding signer has a witness scope
      * {@link io.neow3j.transaction.WitnessScope#CUSTOM_GROUPS}.
      */
-    public ECPoint[] AllowedGroups;
+    public ECPoint[] allowedGroups;
+
+    /**
+     * The groups that are allowed by the witness. Only available when the corresponding signer has a witness scope
+     * {@link io.neow3j.transaction.WitnessScope#CUSTOM_GROUPS}.
+     */
+    public WitnessRule[] witnessRules;
 
     private Signer() {
-        this.Account = new Hash160(new byte[0]);
-        this.AllowedContracts = new Hash160[0];
-        this.AllowedGroups = new ECPoint[0];
     }
 
     /**
-     * Compares this signer to the given object. The comparison happens by reference only.
-     * I.e., if you retrieve the same signer twice, e.g., with
-     * {@link io.neow3j.devpack.contracts.LedgerContract#getTransactionSigners(Hash256)}, then comparing
-     * the two will return false.
+     * Compares this signer to the given object. The comparison happens by reference only. I.e., if you retrieve the
+     * same signer twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.LedgerContract#getTransactionSigners(Hash256)}, then comparing the two will
+     * return false.
      *
      * @param other the object to compare with.
      * @return true if this and {@code other} reference the same transaction. False otherwise.
@@ -53,15 +59,15 @@ public class Signer {
     /**
      * Compares this and the given signer by value.
      *
-     * @param signer Other signer to compare to.
+     * @param signer other signer to compare to.
      * @return true if all fields of the two contracts are equal. False otherwise.
      */
     public boolean equals(Signer signer) {
         if (this == signer) {
             return true;
         }
-        return Account == signer.Account && AllowedContracts == signer.AllowedContracts &&
-                AllowedGroups == signer.AllowedGroups;
+        return account == signer.account && allowedContracts == signer.allowedContracts &&
+                allowedGroups == signer.allowedGroups;
     }
 
 }
