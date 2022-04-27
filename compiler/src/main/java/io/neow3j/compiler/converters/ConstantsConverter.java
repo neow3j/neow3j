@@ -1,10 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.Compiler.addLoadConstant;
-import static io.neow3j.compiler.Compiler.addPushNumber;
-import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
-import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
@@ -14,14 +9,17 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 
+import static io.neow3j.compiler.Compiler.addLoadConstant;
+import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.Compiler.isAssertionDisabledStaticField;
+import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
+
 public class ConstantsConverter implements Converter {
 
     private static final String DESIRED_ASSERTION_STATUS = "desiredAssertionStatus";
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit) {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (opcode) {
             case ICONST_M1:
@@ -69,8 +67,7 @@ public class ConstantsConverter implements Converter {
         }
         MethodInsnNode methodInsn = (MethodInsnNode) insn.getNext();
         return methodInsn.name.equals(DESIRED_ASSERTION_STATUS) &&
-                getFullyQualifiedNameForInternalName(methodInsn.owner)
-                        .equals(Class.class.getCanonicalName());
+                getFullyQualifiedNameForInternalName(methodInsn.owner).equals(Class.class.getCanonicalName());
     }
 
 }

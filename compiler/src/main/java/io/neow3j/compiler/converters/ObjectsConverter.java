@@ -114,7 +114,6 @@ public class ObjectsConverter implements Converter {
 
     public static void addLoadStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod, CompilationUnit compUnit)
             throws IOException {
-
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }

@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 /**
@@ -47,8 +48,7 @@ import static java.util.Arrays.asList;
 public class ManifestBuilder {
 
     public static ContractManifest buildManifest(CompilationUnit compUnit) {
-        Optional<AnnotationNode> annotationNode = getAnnotationNode(
-                compUnit.getContractClass(), DisplayName.class);
+        Optional<AnnotationNode> annotationNode = getAnnotationNode(compUnit.getContractClass(), DisplayName.class);
         String name = ClassUtils.getClassNameForInternalName(compUnit.getContractClass().name);
         if (annotationNode.isPresent()) {
             name = (String) annotationNode.get().values.get(1);
@@ -81,15 +81,15 @@ public class ManifestBuilder {
             ContractParameterType paramType = Compiler.mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType());
             boolean isSafe = hasAnnotations(neoMethod.getAsmMethod(), Safe.class);
-            methods.add(new ContractMethod(neoMethod.getName(), contractParams,
-                    neoMethod.getStartAddress(), paramType, isSafe));
+            methods.add(new ContractMethod(neoMethod.getName(), contractParams, neoMethod.getStartAddress(),
+                    paramType, isSafe));
         }
         return new ContractABI(methods, events);
     }
 
     private static Map<String, String> buildManifestExtra(ClassNode classNode) {
-        List<AnnotationNode> annotations = checkForSingleOrMultipleAnnotations(classNode,
-                ManifestExtras.class, ManifestExtra.class);
+        List<AnnotationNode> annotations = checkForSingleOrMultipleAnnotations(classNode, ManifestExtras.class,
+                ManifestExtra.class);
 
         Map<String, String> extras = new HashMap<>();
         for (AnnotationNode node : annotations) {
@@ -104,16 +104,15 @@ public class ManifestBuilder {
     }
 
     private static List<String> buildSupportedStandards(ClassNode asmClass) {
-        return checkForSingleOrMultipleAnnotations(asmClass, SupportedStandards.class,
-                SupportedStandard.class)
+        return checkForSingleOrMultipleAnnotations(asmClass, SupportedStandards.class, SupportedStandard.class)
                 .stream()
                 .map(ManifestBuilder::getSupportedStandard)
                 .collect(Collectors.toList());
     }
 
     private static List<ContractPermission> buildPermissions(ClassNode asmClass) {
-        List<ContractPermission> permissions = checkForSingleOrMultipleAnnotations(asmClass,
-                Permissions.class, Permission.class)
+        List<ContractPermission> permissions = checkForSingleOrMultipleAnnotations(asmClass, Permissions.class,
+                Permission.class)
                 .stream()
                 .map(ManifestBuilder::getContractPermission)
                 .collect(Collectors.toList());
@@ -125,8 +124,7 @@ public class ManifestBuilder {
     }
 
     private static List<String> buildTrusts(ClassNode asmClass) {
-        return checkForSingleOrMultipleAnnotations(asmClass,
-                Trusts.class, Trust.class)
+        return checkForSingleOrMultipleAnnotations(asmClass, Trusts.class, Trust.class)
                 .stream()
                 .map(ManifestBuilder::getContractTrust)
                 .collect(Collectors.toList());
@@ -137,8 +135,8 @@ public class ManifestBuilder {
         int customStandardIndex = ann.values.indexOf("customStandard");
         boolean bothPresent = neoStandardIndex != -1 && customStandardIndex != -1;
         if (bothPresent) {
-            throw new CompilerException("A @SupportedStandard annotation must only have one of " +
-                    "the attributes 'neoStandard' or 'customStandard' set.");
+            throw new CompilerException("A @SupportedStandard annotation must only have one of the attributes " +
+                    "'neoStandard' or 'customStandard' set.");
         }
         if (neoStandardIndex != -1) {
             NeoStandard neoStandard = NeoStandard.valueOf(
@@ -152,14 +150,13 @@ public class ManifestBuilder {
         String hashOrPubKey = getHashOrPubKey(ann);
         int i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
-        // if 'methods' is not found, it means we need to add a "wildcard"
-        // to that manifest
+        // if 'methods' is not found, it means we need to add a "wildcard" to that manifest
         if (i < 0) {
             methods.add("*");
         } else {
             List<?> methodsValues = (List<?>) ann.values.get(i + 1);
-            // this is required since we want to create an ArrayList of new
-            // String objects, and not rely on what ASM provides us
+            // this is required since we want to create an ArrayList of new String objects, and not rely on what ASM
+            // provides us
             methods.addAll((List<String>) methodsValues);
         }
 
@@ -170,20 +167,19 @@ public class ManifestBuilder {
         return getHashOrPubKey(ann);
     }
 
-    // Retrieves the hash or public key from annotations which allow both fields 'contract' and
-    // 'nativeContract'.
+    // Retrieves the hash or public key from annotations which allow both fields 'contract' and 'nativeContract'.
     private static String getHashOrPubKey(AnnotationNode ann) {
         if (ann.values == null) {
-            throw new CompilerException("This annotation requires either the attribute " +
-                    "'contract' or 'nativeContract' to be set.");
+            throw new CompilerException("This annotation requires either the attribute 'contract' or 'nativeContract'" +
+                    " to be set.");
         }
         int contractIndex = ann.values.indexOf("contract");
         int nativeContractIndex = ann.values.indexOf("nativeContract");
         boolean bothPresent = contractIndex != -1 && nativeContractIndex != -1;
         boolean bothAbsent = contractIndex == nativeContractIndex;
         if (bothPresent || bothAbsent) {
-            throw new CompilerException("A @Permission or @Trust annotation must either have the " +
-                    "attribute 'contract' or 'nativeContract' set but not both at the same time.");
+            throw new CompilerException("A @Permission or @Trust annotation must either have the attribute 'contract'" +
+                    " or 'nativeContract' set but not both at the same time.");
         }
         String hashOrPubKey;
         if (contractIndex != -1) {
@@ -217,9 +213,8 @@ public class ManifestBuilder {
 
     private static void throwIfNotValidNativeContract(NativeContract nativeContract) {
         if (nativeContract == NativeContract.None) {
-            throw new CompilerException("The provided native contract does not exist. The None " +
-                    "value exists for the sole purpose to serve as an internal default value and " +
-                    "is not meant to be used.");
+            throw new CompilerException("The provided native contract does not exist. The None value exists for the " +
+                    "sole purpose to serve as an internal default value and is not meant to be used.");
         }
     }
 
@@ -228,8 +223,7 @@ public class ManifestBuilder {
             Base64.decode(signature);
         } catch (Exception e) {
             throw new CompilerException(
-                    String.format("Invalid signature: %s. Please, add a valid signature in "
-                            + "base64 format.", signature)
+                    format("Invalid signature: %s. Please, add a valid signature in base64 format.", signature)
             );
         }
     }
@@ -238,8 +232,7 @@ public class ManifestBuilder {
         try {
             new ECPublicKey(pubKey);
         } catch (Exception e) {
-            throw new CompilerException(
-                    String.format("Invalid public key: %s", pubKey)
+            throw new CompilerException(format("Invalid public key: %s", pubKey)
             );
         }
     }
@@ -248,8 +241,7 @@ public class ManifestBuilder {
         try {
             new Hash160(contractHash);
         } catch (Exception e) {
-            throw new CompilerException(
-                    String.format("Invalid contract hash: %s", contractHash)
+            throw new CompilerException(format("Invalid contract hash: %s", contractHash)
             );
         }
     }
@@ -273,19 +265,15 @@ public class ManifestBuilder {
         }
 
         if (notValidContractHash != null && notValidPubKey != null) {
-            // we can't evaluate which one is not valid, so, we raise an
-            // exception with a message specifying both.
-            throw new CompilerException(
-                    String.format("Invalid contract hash or public key: %s", contract)
-            );
+            // we can't evaluate which one is not valid, so, we raise an exception with a message specifying both.
+            throw new CompilerException(format("Invalid contract hash or public key: %s", contract));
         }
     }
 
     private static List<AnnotationNode> checkForSingleOrMultipleAnnotations(ClassNode asmClass,
             Class<?> multipleAnnotationType, Class<?> singleAnnotationType) {
 
-        Optional<AnnotationNode> annotation = getAnnotationNode(asmClass,
-                multipleAnnotationType);
+        Optional<AnnotationNode> annotation = getAnnotationNode(asmClass, multipleAnnotationType);
 
         return annotation
                 .map(a -> (List<AnnotationNode>) a.values.get(1))
@@ -293,8 +281,7 @@ public class ManifestBuilder {
                     // For example:
                     // If there is no @ManifestExtras, there could still be a single @ManifestExtra.
                     // We check for this, here.
-                    Optional<AnnotationNode> ann = getAnnotationNode(asmClass,
-                            singleAnnotationType);
+                    Optional<AnnotationNode> ann = getAnnotationNode(asmClass, singleAnnotationType);
                     List<AnnotationNode> annotations = new ArrayList<>();
                     ann.map(annotations::add);
                     return annotations;

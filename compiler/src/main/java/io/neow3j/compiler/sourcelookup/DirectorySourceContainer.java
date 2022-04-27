@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A source container that is a simple directory, its contents and sub-directories.
+ * A source container that is a simple directory, its contents and subdirectories.
  */
 public class DirectorySourceContainer extends CompositeSourceContainer {
 
@@ -15,9 +15,8 @@ public class DirectorySourceContainer extends CompositeSourceContainer {
     /**
      * Constructs a new source container with the given directory as its root directory.
      *
-     * @param directory     The directory in the local file system
-     * @param searchSubDirs Whether subdirectories within the root directory should be searched
-     *                      for source files.
+     * @param directory     the directory in the local file system
+     * @param searchSubDirs whether subdirectories within the root directory should be searched for source files.
      */
     public DirectorySourceContainer(File directory, boolean searchSubDirs) {
         this.directory = directory;
@@ -25,14 +24,14 @@ public class DirectorySourceContainer extends CompositeSourceContainer {
     }
 
     /**
-     * Looks for the given file name in this container's root directory and subdirectories
-     * (depending on configuration). Only returns the first occurrence of a match.
+     * Looks for the given file name in this container's root directory and subdirectories (depending on
+     * configuration). Only returns the first occurrence of a match.
      * <p>
-     * The name can be a single file name or a path, e.g., a package structure like
-     * {@code io/neow3j/compiler/Compiler.java}. In the latter case, the whole path will be matched.
+     * The name can be a single file name or a path, e.g., a package structure like {@code io/neow3j/compiler
+     * /Compiler.java}. In the latter case, the whole path will be matched.
      *
      * @param name the name of the source file to search for.
-     * @return The list of found source files matching the name.
+     * @return the list of found source files matching the name.
      */
     @Override
     public File findSourceFile(String name) {
@@ -52,10 +51,10 @@ public class DirectorySourceContainer extends CompositeSourceContainer {
     }
 
     /**
-     * If this container is configured to search through subdirectories, this method returns
-     * new {@code DirectorySourceContainer}s for each of its subdirectories.
+     * If this container is configured to search through subdirectories, this method returns new {@code
+     * DirectorySourceContainer}s for each of its subdirectories.
      *
-     * @return The list of source containers made up of this container's subdirectories.
+     * @return the list of source containers made up of this container's subdirectories.
      */
     @Override
     protected List<ISourceContainer> createSourceContainers() {

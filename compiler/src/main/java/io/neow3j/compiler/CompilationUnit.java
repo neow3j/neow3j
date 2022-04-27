@@ -13,9 +13,9 @@ import java.util.Map;
 import org.objectweb.asm.tree.ClassNode;
 
 /**
- * Acts as the central object that is passed around in the compilation process and holds the class
- * loader to use for loading classes required for the compilation, the {@link NeoModule} that is
- * built in the compilation, and the Java smart contract class that is compiled.
+ * Acts as the central object that is passed around in the compilation process and holds the class loader to use for
+ * loading classes required for the compilation, the {@link NeoModule} that is built in the compilation, and the Java
+ * smart contract class that is compiled.
  */
 public class CompilationUnit {
 
@@ -93,10 +93,10 @@ public class CompilationUnit {
     }
 
     /**
-     * Adds the given {@code ClassNode} to the list of classes that form the smart contract. I.e.,
-     * only classes that are added here can contribute to a contract's public interface.
+     * Adds the given {@code ClassNode} to the list of classes that form the smart contract. I.e., only classes that
+     * are added here can contribute to a contract's public interface.
      *
-     * @param classNode The class to add.
+     * @param classNode the class to add.
      */
     protected void setContractClass(ClassNode classNode) {
         contractClass = classNode;
@@ -112,12 +112,11 @@ public class CompilationUnit {
     }
 
     /**
-     * Gets the source file corresponding to the given class if available in this compilation's
-     * source containers. Only returns the first occurrence of a match.
-     * <p>
+     * Gets the source file corresponding to the given class if available in this compilation's source containers.
+     * Only returns the first occurrence of a match.
      *
-     * @param classNode The class to get the source file for.
-     * @return the matching source file found in the source containers, or null if if not found.
+     * @param classNode the class to get the source file for.
+     * @return the matching source file found in the source containers, or null if not found.
      */
     protected File getSourceFile(ClassNode classNode) {
         if (sourceFileMap.containsKey(classNode.name)) {
@@ -131,18 +130,17 @@ public class CompilationUnit {
                 return sourceFile;
             }
         }
-        // If we cannot find a source for a class we remember that in the source map as well to
-        // save time the next time this class is searched for.
+        // If we cannot find a source for a class we remember that in the source map as well to save time the next
+        // time this class is searched for.
         sourceFileMap.put(classNode.name, null);
         return null;
     }
 
-    // Extracts the path of the source file of the given class node. The source file's name is
-    // taken from the node's `sourceFile` variable, a ".java" is appended, and the package name is
-    // prepended.
+    // Extracts the path of the source file of the given class node. The source file's name is taken from the node's
+    // `sourceFile` variable, a ".java" is appended, and the package name is prepended.
     private String extractFilePathWithPackage(ClassNode classNode) {
         int idx = classNode.name.lastIndexOf('/');
-        String packageName = classNode.name.substring(0, idx+1); // includes last slash.
+        String packageName = classNode.name.substring(0, idx + 1); // includes last slash.
         String sourceFileName = classNode.sourceFile;
         if (!classNode.sourceFile.contains(".java")) {
             sourceFileName = sourceFileName + ".java";
@@ -153,4 +151,5 @@ public class CompilationUnit {
     public void addSourceContainers(List<ISourceContainer> sourceContainers) {
         this.sourceContainers.addAll(sourceContainers);
     }
+
 }

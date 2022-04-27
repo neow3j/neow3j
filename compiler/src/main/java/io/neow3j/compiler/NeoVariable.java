@@ -9,7 +9,7 @@ import org.objectweb.asm.tree.LocalVariableNode;
 public class NeoVariable {
 
     /**
-     * This variable's index inside of the {@link NeoMethod}.
+     * This variable's index inside the {@link NeoMethod}.
      */
     private int neoIndex;
 
@@ -42,9 +42,7 @@ public class NeoVariable {
     }
 
     /**
-     * Gets this variables name.
-     *
-     * @return the name.
+     * @return the variable's name.
      */
     public String getName() {
         if (asmVariable == null) {
@@ -59,4 +57,5 @@ public class NeoVariable {
         }
         return asmVariable.desc;
     }
+
 }

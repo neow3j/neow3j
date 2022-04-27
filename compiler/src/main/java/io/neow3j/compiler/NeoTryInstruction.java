@@ -13,9 +13,8 @@ public class NeoTryInstruction extends NeoInstruction {
     public NeoTryInstruction(Label catchOffsetLabel, Label finallyOffsetLabel) {
         super(OpCode.TRY_L, new byte[8]); // The operand holds two offsets of 4 bytes each.
         if (catchOffsetLabel == null && finallyOffsetLabel == null) {
-            throw new CompilerException("Constructing try instruction without catch offset and "
-                    + "without finally offset is illegal. Every try instruction must at least have "
-                    + "a catch offset or a finally offset.");
+            throw new CompilerException("Constructing try instruction without catch offset and without finally offset" +
+                    " is illegal. Every try instruction must at least have a catch offset or a finally offset.");
         }
         this.catchOffsetLabel = catchOffsetLabel;
         this.finallyOffsetLabel = finallyOffsetLabel;
@@ -28,4 +27,5 @@ public class NeoTryInstruction extends NeoInstruction {
     public Label getFinallyOffsetLabel() {
         return finallyOffsetLabel;
     }
+
 }

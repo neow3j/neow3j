@@ -54,22 +54,20 @@ public class NeoMethod {
 
     private final String VERIFY_METHOD_NAME = "verify";
 
-    // This method's instructions sorted by their address. The addresses in this map are only
-    // relative to this method and not the whole `NeoModule` in which this method lives in.
+    // This method's instructions sorted by their address. The addresses in this map are only relative to this method
+    // and not the whole `NeoModule` in which this method lives in.
     private SortedMap<Integer, NeoInstruction> instructions = new TreeMap<>();
 
-    // This list contains those instructions that represent a jump, i.e. they remember a label to
-    // which they need to jump. All instructions in this list are also present in the `instructions`
-    // map.
+    // This list contains those instructions that represent a jump, i.e. they remember a label to which they need to
+    // jump. All instructions in this list are also present in the `instructions` map.
     private final List<NeoJumpInstruction> jumpInstructions = new ArrayList<>();
 
-    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep
-    // track of possible jump targets. This is needed when resolving jump addresses for
-    // opcodes like JMPIF.
+    // A mapping between labels - received from `LabelNodes` - and `NeoInstructions` used to keep track of possible
+    // jump targets. This is needed when resolving jump addresses for opcodes like JMPIF.
     private final Map<Label, NeoInstruction> jumpTargets = new HashMap<>();
 
-    // This list contains those instructions that represent the beginning of a try block.
-    // All instructions in this list are also present in the `instructions` map.
+    // This list contains those instructions that represent the beginning of a try block. All instructions in this
+    // list are also present in the `instructions` map.
     private final List<NeoTryInstruction> tryInstructions = new ArrayList<>();
 
     // This method's local variables (excl. method parametrs).
@@ -87,26 +85,23 @@ public class NeoMethod {
     // Determines if this method will show up in the contract's ABI.
     private boolean isAbiMethod = false;
 
-    // The address after this method's last instruction byte. I.e. the next free address. This
-    // address is not absolute in relation to the {@link NeoModule} this method belongs to. It is a
-    // method-internal address.
+    // The address after this method's last instruction byte. I.e. the next free address. This address is not
+    // absolute in relation to the {@link NeoModule} this method belongs to. It is a method-internal address.
     private int lastAddress = 0;
 
     // The address in the NeoModule at which this method starts.
     private Integer startAddress = null;
 
-    // The current label of an instruction. Used in the compilation process to resolve jump
-    // addresses. In contrast to `LineNumberNodes`, `LableNodes` are only applicable to the
-    // very next instruction node.
+    // The current label of an instruction. Used in the compilation process to resolve jump addresses. In contrast to
+    // `LineNumberNodes`, `LableNodes` are only applicable to the very next instruction node.
     private Label currentLabel;
 
-    // The current JVM instruction line number. Used in the compilation process to map line
-    // numbers to `NeoInstructions`.
+    // The current JVM instruction line number. Used in the compilation process to map line numbers to
+    // `NeoInstructions`.
     private int currentLine;
 
-    // Tells if the current line number should be added to an instruction that is added to this
-    // method. If it is the first instruction corresponding to the current line, then the line
-    // number is added to the instruction.
+    // Tells if the current line number should be added to an instruction that is added to this method. If it is the
+    // first instruction corresponding to the current line, then the line number is added to the instruction.
     private boolean isFreshNewLine = false;
 
     private final List<TryCatchFinallyBlock> tryCatchFinallyBlocks = new ArrayList<>();
@@ -114,8 +109,8 @@ public class NeoMethod {
     /**
      * Constructs a new Neo method.
      *
-     * @param asmMethod   The Java method this Neo method is converted from.
-     * @param sourceClass The Java class from which this method originates.
+     * @param asmMethod   the Java method this Neo method is converted from.
+     * @param sourceClass the Java class from which this method originates.
      */
     public NeoMethod(MethodNode asmMethod, ClassNode sourceClass) {
         this.asmMethod = asmMethod;
@@ -128,8 +123,8 @@ public class NeoMethod {
     /**
      * Gets this method's {@code MethodSignature} annotation if it has one.
      *
-     * @return The {@code MethodSignature} annotation, or null if this method is not annotated with
-     * a specific signature requirement.
+     * @return the {@code MethodSignature} annotation, or null if this method is not annotated with a specific
+     * signature requirement.
      */
     public MethodSignature getMethodSignatureAnnotation() {
         if (asmMethod.invisibleAnnotations == null) {
@@ -138,30 +133,30 @@ public class NeoMethod {
         List<MethodSignature> annotations = asmMethod.invisibleAnnotations.stream()
                 .map(a -> {
                     try {
-                        return Class.forName(Type.getType(a.desc).getClassName())
-                                .getAnnotation(MethodSignature.class);
+                        return Class.forName(Type.getType(a.desc).getClassName()).getAnnotation(MethodSignature.class);
                     } catch (ClassNotFoundException e) {
                         throw new CompilerException(e);
                     }
-                }).filter(Objects::nonNull).collect(Collectors.toList());
+                })
+                .filter(Objects::nonNull).collect(Collectors.toList());
 
         if (annotations.isEmpty()) {
             return null;
         }
         if (annotations.size() > 1) {
-            throw new CompilerException(sourceClass, format("The method %s cannot have multiple "
-                            + "annotations that require a specific method signature.",
-                    getSourceMethodName()));
+            throw new CompilerException(sourceClass, format("The method %s cannot have multiple annotations that " +
+                    "require a specific method signature.", getSourceMethodName()));
         }
         return annotations.get(0);
     }
 
     private void handleExpectedMethodSignatureAnnotation() {
         MethodSignature expectedSig = getMethodSignatureAnnotation();
-        if (expectedSig == null) return;
+        if (expectedSig == null) {
+            return;
+        }
         Type[] actualParameterTypes = Type.getType(asmMethod.desc).getArgumentTypes();
-        Type[] expectedParameterTypes = stream(expectedSig.parameterTypes()).map(Type::getType)
-                .toArray(Type[]::new);
+        Type[] expectedParameterTypes = stream(expectedSig.parameterTypes()).map(Type::getType).toArray(Type[]::new);
         Type actualReturnType = Type.getType(asmMethod.desc).getReturnType();
         Type expectedReturnType = Type.getType(expectedSig.returnType());
 
@@ -170,8 +165,8 @@ public class NeoMethod {
 
             String paramTypesString = Arrays.stream(expectedSig.parameterTypes())
                     .map(c -> "'" + c.getName() + "'").collect(Collectors.joining(", "));
-            String message = format("The annotated method '%s' is required to have the parameters "
-                            + "(%s) and return type '%s'.", getSourceMethodName(), paramTypesString,
+            String message = format("The annotated method '%s' is required to have the parameters (%s) and return " +
+                            "type '%s'.", getSourceMethodName(), paramTypesString,
                     expectedSig.returnType().getName());
             if (expectedParameterTypes.length == 0) {
                 message = format("The annotated method '%s' is required to have return type '%s'.",
@@ -184,8 +179,8 @@ public class NeoMethod {
         name = expectedSig.name();
     }
 
-    // Sifts through the exception table of this method and constructs try-catch-finally blocks
-    // that are later used to insert the corresponding instructions into the VM script.
+    // Sifts through the exception table of this method and constructs try-catch-finally blocks that are later used
+    // to insert the corresponding instructions into the VM script.
     private void collectTryCatchBlocks(List<TryCatchBlockNode> blockNodes) {
         if (blockNodes == null || blockNodes.isEmpty()) {
             return;
@@ -198,23 +193,19 @@ public class NeoMethod {
     private void checkForUnsupportedExceptionTypes(List<TryCatchBlockNode> blockNodes) {
         Optional<String> unsupportedException = blockNodes.stream()
                 .map(node -> node.type)
-                .filter(type -> type != null &&
-                        !type.equals(Type.getType(Exception.class).getInternalName()))
+                .filter(type -> type != null && !type.equals(Type.getType(Exception.class).getInternalName()))
                 .findFirst();
 
         if (unsupportedException.isPresent()) {
-            throw new CompilerException(sourceClass, format("Contract tries to catch an exception "
-                            + "of type %s but only %s is supported.",
-                    getFullyQualifiedNameForInternalName(unsupportedException.get()),
+            throw new CompilerException(sourceClass, format("Contract tries to catch an exception of type %s but only" +
+                            " %s is supported.", getFullyQualifiedNameForInternalName(unsupportedException.get()),
                     Exception.class.getCanonicalName()));
         }
     }
 
     // Go through blocks that have a try, catch, and optionally a finally block. Blocks that
     // have a try and finally only are processed later.
-    private Set<TryCatchBlockNode> collectBlocksWithCatchAndOptionallyFinally(
-            List<TryCatchBlockNode> blockNodes) {
-
+    private Set<TryCatchBlockNode> collectBlocksWithCatchAndOptionallyFinally(List<TryCatchBlockNode> blockNodes) {
         Set<TryCatchBlockNode> parsedNodes = new HashSet<>();
         for (TryCatchBlockNode block : blockNodes) {
             if (block.type != null) {
@@ -247,39 +238,36 @@ public class NeoMethod {
         return parsedNodes;
     }
 
-    // Filter for blocks that only have a try and finally part. Those blocks have not been
-    // processed above, don't have a exception type set, and the start is not equal the handler.
+    // Filter for blocks that only have a try and finally part. Those blocks have not been processed above, don't
+    // have a exception type set, and the start is not equal the handler.
     private void collectBlocksWithNoCatchButFinally(List<TryCatchBlockNode> blockNodes,
             Set<TryCatchBlockNode> parsedNodes) {
 
-        blockNodes.stream().filter(blockNode -> !parsedNodes.contains(blockNode)
-                && blockNode.type == null && blockNode.start != blockNode.handler)
+        blockNodes.stream().filter(blockNode -> !parsedNodes.contains(blockNode) &&
+                        blockNode.type == null &&
+                        blockNode.start != blockNode.handler)
                 .forEach(block -> tryCatchFinallyBlocks.add(
                         new TryCatchFinallyBlock(block.start, block.end, null, null,
                                 block.handler)));
     }
 
     /**
-     * Gets the corresponding JVM method that this method was converted from.
-     *
-     * @return the method.
+     * @return the corresponding JVM method that this method was converted from.
      */
     public MethodNode getAsmMethod() {
         return asmMethod;
     }
 
     /**
-     * Gets the class that this method is converted from.
-     *
-     * @return The class.
+     * @return the class that this method is converted from.
      */
     public ClassNode getOwnerClass() {
         return sourceClass;
     }
 
     /**
-     * Gets this method's ID, a string uniquely identifying this method. It includes the owner
-     * type's name, the method's signature, and the method's name.
+     * Gets this method's ID, a string uniquely identifying this method. It includes the owner type's name, the
+     * method's signature, and the method's name.
      *
      * @return this method's ID.
      */
@@ -317,11 +305,10 @@ public class NeoMethod {
     }
 
     /**
-     * Creates a unique ID for the given method used to identify this method in the {@link
-     * NeoModule}.
+     * Creates a unique ID for the given method used to identify this method in the {@link NeoModule}.
      *
-     * @param asmMethod The method to create the ID for.
-     * @param owner     The class owning the method.
+     * @param asmMethod the method to create the ID for.
+     * @param owner     the class owning the method.
      * @return the ID.
      */
     public static String getMethodId(MethodNode asmMethod, ClassNode owner) {
@@ -340,7 +327,7 @@ public class NeoMethod {
     /**
      * Set the current line of this meethod to the given number.
      *
-     * @param currentLine The current line to set.
+     * @param currentLine the current line to set.
      */
     public void setCurrentLine(int currentLine) {
         this.currentLine = currentLine;
@@ -355,9 +342,9 @@ public class NeoMethod {
     /**
      * Gets this methods start address.
      * <p>
-     * This address is set by the NeoModule when it is finalized. It is the absolute position of the
-     * method inside of the module/script. The addresses of this method's instructions are only
-     * relative and have to be used with the start address in order to get absolute addresses.
+     * This address is set by the NeoModule when it is finalized. It is the absolute position of the method inside
+     * the module/script. The addresses of this method's instructions are only relative and have to be used with the
+     * start address in order to get absolute addresses.
      *
      * @return the start address, or null if the corresponding NeoModule was not yet finalized.
      */
@@ -368,7 +355,7 @@ public class NeoMethod {
     /**
      * Sets the given start address on this method.
      *
-     * @param startAddress The address where this method begins inside of its NeoModule.
+     * @param startAddress the address where this method begins inside its NeoModule.
      */
     public void setStartAddress(int startAddress) {
         this.startAddress = startAddress;
@@ -376,8 +363,8 @@ public class NeoMethod {
 
 
     /**
-     * Checks if this method should show up in the ABI, i.e., is public and directly invocable from
-     * outside of the smart contract.
+     * Checks if this method should show up in the ABI, i.e., is public and directly invocable from outside the smart
+     * contract.
      *
      * @return true if this method is an ABI method. False, otherwise.
      */
@@ -390,8 +377,8 @@ public class NeoMethod {
     }
 
     /**
-     * Gets the sorted instructions of this method. The map is sorted by instruction addresses,
-     * i.e., the keys are the addresses.
+     * Gets the sorted instructions of this method. The map is sorted by instruction addresses, i.e., the keys are
+     * the addresses.
      *
      * @return the instructions.
      */
@@ -400,8 +387,8 @@ public class NeoMethod {
     }
 
     /**
-     * Gets this method's variables sorted by their index. The index is the one these variables have
-     * in the Neo script. It might defer from the one they have in the Java bytecode.
+     * Gets this method's variables sorted by their index. The index is the one these variables have in the Neo
+     * script. It might defer from the one they have in the Java bytecode.
      *
      * @return the variables.
      */
@@ -410,8 +397,8 @@ public class NeoMethod {
     }
 
     /**
-     * Gets this method's parameters sorted by their index. The index is the one these parameters
-     * have in the Neo script. It might defer from the one they have in the Java bytecode.
+     * Gets this method's parameters sorted by their index. The index is the one these parameters have in the Neo
+     * script. It might defer from the one they have in the Java bytecode.
      *
      * @return the prameters.
      */
@@ -420,8 +407,8 @@ public class NeoMethod {
     }
 
     /**
-     * Gets the address that follows this method's last instruction, i.e., the next free address.
-     * This address is only absolute in context of this method but not in the whole module.
+     * Gets the address that follows this method's last instruction, i.e., the next free address. This address is
+     * only absolute in context of this method but not in the whole module.
      *
      * @return the next instruction address.
      */
@@ -452,7 +439,7 @@ public class NeoMethod {
     /**
      * Gets the variable at the given index from this method in its JVM bytecode representation
      *
-     * @param index The variable's index in this method.
+     * @param index the variable's index in this method.
      * @return the variable.
      */
     public NeoVariable getVariableByJVMIndex(int index) {
@@ -462,7 +449,7 @@ public class NeoMethod {
     /**
      * Gets the parameter at the given index from this method in its JVM bytecode representation
      *
-     * @param index The parameter's index in this method.
+     * @param index the parameter's index in this method.
      * @return the parameter.
      */
     public NeoVariable getParameterByJVMIndex(int index) {
@@ -472,8 +459,8 @@ public class NeoMethod {
     /**
      * Converts the JVM instructions of this method to neo-vm instructions.
      *
-     * @param compUnit The compilation unit.
-     * @throws IOException If an error occurs when reading class files.
+     * @param compUnit the compilation unit.
+     * @throws IOException if an error occurs when reading class files.
      */
     public void convert(CompilationUnit compUnit) throws IOException {
         AbstractInsnNode insn = asmMethod.instructions.get(0);
@@ -500,8 +487,7 @@ public class NeoMethod {
     private void insertTryInstruction(TryCatchFinallyBlock block) {
         NeoInstruction insn = jumpTargets.get(block.tryLabelNode.getLabel());
         if (insn == null) {
-            throw new CompilerException(sourceClass, "Could not find the beginning instruction of "
-                    + "a try block.");
+            throw new CompilerException(sourceClass, "Could not find the beginning instruction of a try block.");
         }
         Label catchLabel = null;
         if (block.catchLabelNode != null) {
@@ -517,9 +503,9 @@ public class NeoMethod {
         jumpTargets.put(block.tryLabelNode.getLabel(), tryInsn);
     }
 
-    // Adds the given instruction at the given address into the sorted instructions map of this
-    // method. The address is set on the instruction as well. Shifts all instructions
-    // with an address equal or bigger than the given address by the size of the new instructions.
+    // Adds the given instruction at the given address into the sorted instructions map of this method. The address
+    // is set on the instruction as well. Shifts all instructions with an address equal or bigger than the given
+    // address by the size of the new instructions.
     private void insertInstruction(int atAddr, NeoInstruction newInsn) {
         SortedMap<Integer, NeoInstruction> head = instructions.headMap(atAddr);
         SortedMap<Integer, NeoInstruction> tail = instructions.tailMap(atAddr);
@@ -536,10 +522,10 @@ public class NeoMethod {
     }
 
     /**
-     * Adds the given instruction to this method. The corresponding source code line number and the
-     * instruction's address (relative to this method) is added to the instruction object.
+     * Adds the given instruction to this method. The corresponding source code line number and the instruction's
+     * address (relative to this method) is added to the instruction object.
      *
-     * @param neoInsn The instruction to add.
+     * @param neoInsn the instruction to add.
      */
     public void addInstruction(NeoInstruction neoInsn) {
         if (isFreshNewLine) {
@@ -547,11 +533,10 @@ public class NeoMethod {
             isFreshNewLine = false;
         }
         if (this.currentLabel != null) {
-            // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field
-            // and continues. The next instruction is the one that the label belongs. We expect
-            // that when a new instruction is added to this method and the `currentLabelNode` is
-            // set, that label belongs to that `NeoInstruction`. The label is unset as
-            // soon as it has been assigned.
+            // When the compiler sees a `LabelNode` it stores it on the `currentLabelNode` field and continues. The
+            // next instruction is the one that the label belongs. We expect that when a new instruction is added to
+            // this method and the `currentLabelNode` is set, that label belongs to that `NeoInstruction`. The label
+            // is unset as soon as it has been assigned.
             this.jumpTargets.put(this.currentLabel, neoInsn);
             this.currentLabel = null;
         }
@@ -579,8 +564,8 @@ public class NeoMethod {
     public void removeLastInstruction() {
         NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
         if (this.jumpTargets.containsValue(lastInsn)) {
-            throw new CompilerException(this, "Attempting to remove an instruction that is a jump "
-                    + "target for another instruction.");
+            throw new CompilerException(this, "Attempting to remove an instruction that is a jump target for another " +
+                    "instruction.");
         }
         removeLastInstructionInternal();
     }
@@ -592,10 +577,10 @@ public class NeoMethod {
     }
 
     /**
-     * Replaces the last instruction on this method with the given one. If the last instruction is a
-     * jump target, i.e., has a label set, the label will be transferred to the new instruction.
+     * Replaces the last instruction on this method with the given one. If the last instruction is a jump target, i.e
+     * ., has a label set, the label will be transferred to the new instruction.
      *
-     * @param newInsn The replacement instruction.
+     * @param newInsn the replacement instruction.
      */
     public void replaceLastInstruction(NeoInstruction newInsn) {
         NeoInstruction lastInsn = this.instructions.get(this.instructions.lastKey());
@@ -614,9 +599,7 @@ public class NeoMethod {
     }
 
     /**
-     * Gets the last instruction in this method.
-     *
-     * @return the last instruction.
+     * @return the last instruction in this method.
      */
     public NeoInstruction getLastInstruction() {
         if (this.instructions.size() == 0) {
@@ -626,8 +609,7 @@ public class NeoMethod {
     }
 
     /**
-     * Serializes this method to a byte array, by serializing all its instructions ordered by
-     * instruction address.
+     * Serializes this method to a byte array, by serializing all its instructions ordered by instruction address.
      *
      * @return the byte array.
      */
@@ -643,9 +625,7 @@ public class NeoMethod {
     }
 
     /**
-     * Gets this methods size in bytes (after serializing).
-     *
-     * @return the byte-size of this method.
+     * @return the method's byte-size (after serializing).
      */
     protected int byteSize() {
         return this.instructions.values().stream()
@@ -666,45 +646,38 @@ public class NeoMethod {
                 continue;
             }
             if (!this.jumpTargets.containsKey(jumpInsn.getLabel())) {
-                throw new CompilerException(format("Missing jump target for opcode %s, at source "
-                                + "code line number %d.", jumpInsn.getOpcode().name(),
-                        jumpInsn.getLineNr()));
+                throw new CompilerException(format("Missing jump target for opcode %s, at source code line number %d" +
+                        ".", jumpInsn.getOpcode().name(), jumpInsn.getLineNr()));
             }
             NeoInstruction destinationInsn = this.jumpTargets.get(jumpInsn.getLabel());
             int offset = destinationInsn.getAddress() - jumpInsn.getAddress();
-            // It is assumed that the compiler makes use only of the wide (4-byte) jump opcodes. We
-            // can therefore always use 4-byte operand.
-            jumpInsn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-                    .putInt(offset).array());
+            // It is assumed that the compiler makes use only of the wide (4-byte) jump opcodes. We can therefore
+            // always use 4-byte operand.
+            jumpInsn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset).array());
         }
     }
 
-    // Updates the try instructions (TRY_L) with the correct address offsets for the catch and
-    // finally blocks.
+    // Updates the try instructions (TRY_L) with the correct address offsets for the catch and finally blocks.
     private void setTryInstructionOffsets() {
         for (NeoTryInstruction tryInsn : this.tryInstructions) {
             byte[] catchOffset = new byte[4];
             if (tryInsn.getCatchOffsetLabel() != null) {
                 if (!this.jumpTargets.containsKey(tryInsn.getCatchOffsetLabel())) {
-                    throw new CompilerException("Missing target instruction for catch block of a "
-                            + "try block");
+                    throw new CompilerException("Missing target instruction for catch block of a try block");
                 }
                 NeoInstruction destInsn = this.jumpTargets.get(tryInsn.getCatchOffsetLabel());
                 int offset = destInsn.getAddress() - tryInsn.getAddress();
-                catchOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset)
-                        .array();
+                catchOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset).array();
             }
 
             byte[] finallyOffset = new byte[4];
             if (tryInsn.getFinallyOffsetLabel() != null) {
                 if (!this.jumpTargets.containsKey(tryInsn.getFinallyOffsetLabel())) {
-                    throw new CompilerException("Missing target instruction for finally block of a "
-                            + "try block");
+                    throw new CompilerException("Missing target instruction for finally block of a try block");
                 }
                 NeoInstruction destInsn = this.jumpTargets.get(tryInsn.getFinallyOffsetLabel());
                 int offset = destInsn.getAddress() - tryInsn.getAddress();
-                finallyOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset)
-                        .array();
+                finallyOffset = ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset).array();
             }
 
             tryInsn.setOperand(ArrayUtils.concatenate(catchOffset, finallyOffset));
@@ -712,17 +685,15 @@ public class NeoMethod {
     }
 
     public void initialize(CompilationUnit compUnit) {
-        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0
-                && (asmMethod.access & Opcodes.ACC_STATIC) > 0
-                && compUnit.getContractClass().equals(sourceClass)) {
-            // Only contract methods that are public, static and on the smart contract class are
-            // added to the ABI and are invokable.
+        if ((asmMethod.access & Opcodes.ACC_PUBLIC) > 0 &&
+                (asmMethod.access & Opcodes.ACC_STATIC) > 0 &&
+                compUnit.getContractClass().equals(sourceClass)) {
+            // Only contract methods that are public, static and on the smart contract class are added to the ABI and
+            // are invokable.
             setIsAbiMethod(true);
         } else if (AsmHelper.hasAnnotations(asmMethod, Safe.class)) {
-            throw new CompilerException(sourceClass, format("Method '%s' is not a public contract "
-                            + "method, therefore, marking it as \"safe\" is obsolete and has no "
-                            + "effect.",
-                    getSourceMethodName()));
+            throw new CompilerException(sourceClass, format("Method '%s' is not a public contract method, therefore, " +
+                    "marking it as \"safe\" is obsolete and has no effect.", getSourceMethodName()));
         }
 
         initializeLocalVariablesAndParameters();
@@ -730,16 +701,16 @@ public class NeoMethod {
 
     private void initializeLocalVariablesAndParameters() {
         checkForUnsupportedLocalVariableTypes();
-        // Look for method params and local variables and add them to the NeoMethod. Note that Java
-        // mixes method params and local variables.
+        // Look for method params and local variables and add them to the NeoMethod. Note that Java mixes method
+        // params and local variables.
         if (asmMethod.maxLocals == 0) {
             return; // There are no local variables or parameters to process.
         }
         int nextVarIdx = collectMethodParameters();
         collectLocalVariables(nextVarIdx);
 
-        // Add the INITSLOT opcode as first instruction of the method if the method has parameters
-        // and/or local variables.
+        // Add the INITSLOT opcode as first instruction of the method if the method has parameters and/or local
+        // variables.
         if (variablesByNeoIndex.size() + parametersByNeoIndex.size() > 0) {
             addInstruction(new NeoInstruction(OpCode.INITSLOT, new byte[]{
                     (byte) variablesByNeoIndex.size(),
@@ -749,10 +720,10 @@ public class NeoMethod {
 
     private void checkForUnsupportedLocalVariableTypes() {
         for (LocalVariableNode varNode : asmMethod.localVariables) {
-            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE
-                    || Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
-                throw new CompilerException(this, format("Method '%s' has unsupported parameter or "
-                        + "variable types.", asmMethod.name));
+            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE ||
+                    Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
+                throw new CompilerException(this, format("Method '%s' has unsupported parameter or variable types.",
+                        asmMethod.name));
             }
         }
     }
@@ -765,16 +736,14 @@ public class NeoMethod {
         }
         int localVarCount = asmMethod.maxLocals - paramCount;
         if (localVarCount > MAX_LOCAL_VARIABLES) {
-            throw new CompilerException(format("The method '%s' has %d local variables but only a "
-                            + "max of %d is supported.", getSourceMethodName(), localVarCount,
-                    MAX_LOCAL_VARIABLES));
+            throw new CompilerException(format("The method '%s' has %d local variables but only a max of %d is " +
+                    "supported.", getSourceMethodName(), localVarCount, MAX_LOCAL_VARIABLES));
         }
         int neoIdx = 0;
         int jvmIdx = nextVarIdx;
         while (neoIdx < localVarCount) {
-            // The variables' indices start where the parameters left off. Nonetheless, we need to
-            // look through all local variables because the ordering is not necessarily according to
-            // the indices.
+            // The variables' indices start where the parameters left off. Nonetheless, we need to look through all
+            // local variables because the ordering is not necessarily according to the indices.
             NeoVariable neoVar = null;
             for (LocalVariableNode varNode : locVars) {
                 if (varNode.index == jvmIdx) {
@@ -787,9 +756,9 @@ public class NeoMethod {
                 }
             }
             if (neoVar == null) {
-                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string
-                // switch-case, declared but unnused variables in try-catch clauses, or if the
-                // local variables debug info was not generated.
+                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string switch-case,
+                // declared but unnused variables in try-catch clauses, or if the local variables debug info was not
+                // generated.
                 neoVar = new NeoVariable(neoIdx, jvmIdx, null);
             }
             addVariable(neoVar);
@@ -807,15 +776,14 @@ public class NeoMethod {
         }
         paramCount += Type.getArgumentTypes(asmMethod.desc).length;
         if (paramCount > MAX_PARAMS_COUNT) {
-            throw new CompilerException(format("The method '%s' has %d parameters but only a max "
-                            + "of %d is supported.", getSourceMethodName(), paramCount,
-                    MAX_PARAMS_COUNT));
+            throw new CompilerException(format("The method '%s' has %d parameters but only a max of %d is supported.",
+                    getSourceMethodName(), paramCount, MAX_PARAMS_COUNT));
         }
         int jvmIdx = 0;
         int neoIdx = 0;
         while (neoIdx < paramCount) {
-            // The parameters' indices start at zero. Nonetheless, we need to look through all local
-            // variables because the ordering is not necessarily according to the indices.
+            // The parameters' indices start at zero. Nonetheless, we need to look through all local variables
+            // because the ordering is not necessarily according to the indices.
             NeoVariable neoParam = null;
             for (LocalVariableNode varNode : locVars) {
                 if (varNode.index == jvmIdx) {
@@ -828,9 +796,9 @@ public class NeoMethod {
                 }
             }
             if (neoParam == null) {
-                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string
-                // switch-case, declared but unnused variables in try-catch clauses, or if the
-                // local variables debug info was not generated.
+                // Not all local variables show up in ASM's `localVariables` list, e.g. in a string switch-case,
+                // declared but unnused variables in try-catch clauses, or if the local variables debug info was not
+                // generated.
                 neoParam = new NeoVariable(neoIdx, jvmIdx, null);
             }
             addParameter(neoParam);
@@ -852,15 +820,15 @@ public class NeoMethod {
         private final LabelNode endCatchLabelNode;
         private final LabelNode finallyLabelNode;
 
-        private TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode,
-                LabelNode catchLabelNode, LabelNode endCatchLabelNode,
-                LabelNode finallyLabelNode) {
+        private TryCatchFinallyBlock(LabelNode tryLabelNode, LabelNode endTryLabelNode, LabelNode catchLabelNode,
+                LabelNode endCatchLabelNode, LabelNode finallyLabelNode) {
             this.tryLabelNode = tryLabelNode;
             this.endTryLabelNode = endTryLabelNode;
             this.catchLabelNode = catchLabelNode;
             this.endCatchLabelNode = endCatchLabelNode;
             this.finallyLabelNode = finallyLabelNode;
         }
+
     }
 
 }

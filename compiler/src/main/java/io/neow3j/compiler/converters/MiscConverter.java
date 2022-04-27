@@ -1,21 +1,23 @@
 package io.neow3j.compiler.converters;
 
-import static java.lang.String.format;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.script.OpCode;
+
 import java.io.IOException;
+
 import org.objectweb.asm.tree.AbstractInsnNode;
+
+import static java.lang.String.format;
 
 public class MiscConverter implements Converter {
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
 
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (opcode) {
@@ -97,15 +99,14 @@ public class MiscConverter implements Converter {
             case MONITORENTER:
             case MONITOREXIT:
             case WIDE:
-                // This should never happen for variable loading or storing because the compiler
-                // restricts the number of variables to 256, meaning that all local variables can
-                // be indexed with one byte. Also, the Java compiler seems not to use the
-                // WIDE opcode for integer increments, even with numbers larger than a byte.
-                // See https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.wide
-                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.",
-                        opcode.name()));
+                // This should never happen for variable loading or storing because the compiler restricts the number
+                // of variables to 256, meaning that all local variables can be indexed with one byte. Also, the Java
+                // compiler seems not to use the WIDE opcode for integer increments, even with numbers larger than a
+                // byte. See https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.wide
+                throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
                 // endregion ### MISCELLANEOUS ###
         }
         return insn;
     }
+
 }

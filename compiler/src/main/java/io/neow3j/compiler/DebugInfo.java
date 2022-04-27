@@ -81,8 +81,7 @@ public class DebugInfo {
         for (NeoMethod neoMethod : compUnit.getNeoModule().getSortedMethods()) {
             File sourceFile = compUnit.getSourceFile(neoMethod.getOwnerClass());
             if (sourceFile == null) {
-                // If the source file was not found, we simply don't add debugging information
-                // for that method.
+                // If the source file was not found, we simply don't add debugging information for that method.
                 continue;
             }
             int docIdx = documents.indexOf(sourceFile.getAbsolutePath());
@@ -90,17 +89,16 @@ public class DebugInfo {
                 documents.add(sourceFile.getAbsolutePath());
                 docIdx = documents.size() - 1;
             }
-            String name = ClassUtils.getFullyQualifiedNameForInternalName(
-                    neoMethod.getOwnerClass().name) + "," + neoMethod.getName();
-            String range = (neoMethod.getStartAddress() + neoMethod.getInstructions().firstKey())
-                    + "-" + (neoMethod.getStartAddress() + neoMethod.getInstructions().lastKey());
+            String name = ClassUtils.getFullyQualifiedNameForInternalName(neoMethod.getOwnerClass().name) + "," +
+                    neoMethod.getName();
+            String range = (neoMethod.getStartAddress() + neoMethod.getInstructions().firstKey()) + "-" +
+                    (neoMethod.getStartAddress() + neoMethod.getInstructions().lastKey());
             List<String> params = collectVars(neoMethod.getParametersByNeoIndex().values());
             List<String> vars = collectVars(neoMethod.getVariablesByNeoIndex().values());
             String returnType = mapTypeToParameterType(
                     Type.getMethodType(neoMethod.getAsmMethod().desc).getReturnType()).jsonValue();
             List<String> sequencePoints = collectSequencePoints(neoMethod, docIdx);
-            methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars,
-                    sequencePoints));
+            methods.add(new Method(neoMethod.getId(), name, range, params, returnType, vars, sequencePoints));
         }
 
         List<Event> events = compUnit.getNeoModule().getEvents().stream()
@@ -180,8 +178,8 @@ public class DebugInfo {
         public Method() {
         }
 
-        public Method(String id, String name, String range, List<String> params,
-                String returnType, List<String> variables, List<String> sequencePoints) {
+        public Method(String id, String name, String range, List<String> params, String returnType,
+                List<String> variables, List<String> sequencePoints) {
             this.id = id;
             this.name = name;
             this.range = range;
@@ -255,4 +253,5 @@ public class DebugInfo {
             return params;
         }
     }
+
 }

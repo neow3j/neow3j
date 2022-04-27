@@ -23,15 +23,12 @@ public class StackManipulationConverter implements Converter {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
                 break;
             case DUP2:
-                // DUP2 operates differently on computational types of category 1 and 2.
-                // Category 1 types are int, short, byte, boolean, char. Category 2 types are
-                // long and double. The latter need double the space of the former on the stack.
-                // Therefore DUP2 copies the last two stack items if they are of the
-                // first type category and only copies the last stack item if it is of
-                // type category 2.
-                // TODO: At the moment we ignore that longs (type category 2) behave differently
-                //  under this opcode. Either implement special handling or remove support for longs
-                //  from the compiler.
+                // DUP2 operates differently on computational types of category 1 and 2. Category 1 types are int,
+                // short, byte, boolean, char. Category 2 types are long and double. The latter need double the space
+                // of the former on the stack. Therefore DUP2 copies the last two stack items if they are of the
+                // first type category and only copies the last stack item if it is of type category 2.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently under this opcode.
+                //  Either implement special handling or remove support for longs from the compiler.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.OVER));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.OVER));
                 break;
@@ -40,9 +37,8 @@ public class StackManipulationConverter implements Converter {
                 break;
             case POP2:
                 // See comment at DUP2 opcode.
-                // TODO: At the moment we ignore that longs (type category 2) behave differently
-                //  under this opcode. Either implement special handling or remove support for longs
-                //  from the compiler.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently under this opcode.
+                //  Either implement special handling or remove support for longs from the compiler.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.DROP));
                 break;
@@ -54,19 +50,17 @@ public class StackManipulationConverter implements Converter {
                 break;
             case DUP_X2:
                 // See comment at DUP2 opcode.
-                // TODO: At the moment we ignore that longs (type category 2) behave differently
-                //  under this opcode. Either implement special handling or remove support for longs
-                //  from the compiler.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently under this opcode.
+                //  Either implement special handling or remove support for longs from the compiler.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH2));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
                 break;
             case DUP2_X1:
-                // DUP2_X1 handles types of category 1 and 2 differently but we only handle
-                // category 1.
-                // TODO: At the moment we ignore the category 2 types here. Either implement
-                //  special handling for them or remove support for longs from the compiler.
+                // DUP2_X1 handles types of category 1 and 2 differently but we only handle category 1.
+                // TODO: At the moment we ignore the category 2 types here. Either implement special handling for
+                //  them or remove support for longs from the compiler.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH2));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
@@ -75,9 +69,8 @@ public class StackManipulationConverter implements Converter {
                 break;
             case DUP2_X2:
                 // See comment at DUP2 opcode.
-                // TODO: At the moment we ignore that longs (type category 2) behave differently
-                //  under this opcode. Either implement special handling or remove support for longs
-                //  from the compiler.
+                // TODO: At the moment we ignore that longs (type category 2) behave differently under this opcode.
+                //  Either implement special handling or remove support for longs from the compiler.
                 neoMethod.addInstruction(new NeoInstruction(OpCode.ROT));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH3));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.ROLL));
@@ -90,4 +83,5 @@ public class StackManipulationConverter implements Converter {
         }
         return insn;
     }
+
 }
