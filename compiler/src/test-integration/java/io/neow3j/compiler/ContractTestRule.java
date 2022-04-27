@@ -324,7 +324,7 @@ public class ContractTestRule implements TestRule {
             tx.addWitness(committeeMultiSigWitness);
             for (Signer s : modifiedSigners) {
                 if (!s.getScriptHash().equals(committee.getScriptHash())) {
-                    tx.addWitness(((AccountSigner)s).getAccount());
+                    tx.addWitness(((AccountSigner) s).getAccount());
                 }
             }
             response = tx.send();
@@ -345,8 +345,7 @@ public class ContractTestRule implements TestRule {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
-     * the transaction.
+     * The transaction sender is either the committee or the default account.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
@@ -360,8 +359,7 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
-     * the transaction.
+     * The transaction sender is either the committee or the default account.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
@@ -379,8 +377,7 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the given function, with the given
      * parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign the transaction. The provided
-     * additional signers are appended.
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
      *
      * @param testName the function to invoke.
      * @param params   the parameters to pass with the function call.
@@ -398,8 +395,7 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the given function, with the given
      * parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign the transaction. The provided
-     * signers are appended.
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
      *
      * @param function the function to invoke.
      * @param params   the parameters to pass with the function call.
