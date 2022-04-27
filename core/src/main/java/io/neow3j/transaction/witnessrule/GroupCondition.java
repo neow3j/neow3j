@@ -1,21 +1,14 @@
 package io.neow3j.transaction.witnessrule;
 
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.serialization.BinaryReader;
-import io.neow3j.serialization.BinaryWriter;
-import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.Signer;
-
-import java.io.IOException;
 
 /**
  * This condition allows including or excluding a contract group (with the defined public key) from using the witness.
  * This is the same as adding the group to the scope of a {@link Signer} with
  * {@link Signer#setAllowedGroups(ECKeyPair.ECPublicKey...)}.
  */
-public class GroupCondition extends WitnessCondition {
-
-    private ECKeyPair.ECPublicKey group;
+public class GroupCondition extends GroupTypeCondition {
 
     public GroupCondition() {
         type = WitnessConditionType.GROUP;
@@ -29,25 +22,6 @@ public class GroupCondition extends WitnessCondition {
     public GroupCondition(ECKeyPair.ECPublicKey group) {
         this();
         this.group = group;
-    }
-
-    @Override
-    protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
-        group = reader.readSerializable(ECKeyPair.ECPublicKey.class);
-    }
-
-    @Override
-    protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableFixed(group);
-    }
-
-    @Override
-    public int getSize() {
-        return super.getSize() + group.getSize();
-    }
-
-    public ECKeyPair.ECPublicKey getGroup() {
-        return group;
     }
 
     @Override

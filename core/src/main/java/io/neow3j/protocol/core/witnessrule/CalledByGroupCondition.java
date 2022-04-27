@@ -1,17 +1,13 @@
 package io.neow3j.protocol.core.witnessrule;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.transaction.witnessrule.WitnessConditionType;
 
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CalledByGroupCondition extends WitnessCondition {
-
-    @JsonProperty("group")
-    private ECPublicKey pubKey;
+public class CalledByGroupCondition extends GroupTypeCondition {
 
     public CalledByGroupCondition() {
         super(WitnessConditionType.CALLED_BY_GROUP);
@@ -20,11 +16,6 @@ public class CalledByGroupCondition extends WitnessCondition {
     public CalledByGroupCondition(ECPublicKey pubKey) {
         this();
         this.pubKey = pubKey;
-    }
-
-    @Override
-    public ECPublicKey getGroup() {
-        return pubKey;
     }
 
     @Override

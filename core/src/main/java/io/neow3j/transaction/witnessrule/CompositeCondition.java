@@ -1,12 +1,41 @@
 package io.neow3j.transaction.witnessrule;
 
+import io.neow3j.serialization.BinaryReader;
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.IOUtils;
+import io.neow3j.serialization.exceptions.DeserializationException;
+
+import java.io.IOException;
 import java.util.List;
 
 public abstract class CompositeCondition extends WitnessCondition {
 
-    public CompositeCondition() {
+    protected List<WitnessCondition> expressions;
+
+    public List<WitnessCondition> getExpressions() {
+        return expressions;
     }
 
-    public abstract List<WitnessCondition> getExpressions();
+    @Override
+    protected void deserializeWithoutType(BinaryReader reader) throws DeserializationException {
+        try {
+            long nrOfExpressions = reader.readVarInt();
+            for (int i = 0; i < nrOfExpressions; i++) {
+                this.expressions.add(WitnessCondition.deserializeWitnessCondition(reader));
+            }
+        } catch (IOException e) {
+            throw new DeserializationException(e);
+        }
+    }
+
+    @Override
+    protected void serializeWithoutType(BinaryWriter writer) throws IOException {
+        writer.writeSerializableVariable(expressions);
+    }
+
+    @Override
+    public int getSize() {
+        return super.getSize() + IOUtils.getVarSize(expressions);
+    }
 
 }

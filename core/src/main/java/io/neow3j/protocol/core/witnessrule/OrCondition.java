@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class OrCondition extends WitnessCondition {
-
-    @JsonProperty("expressions")
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<WitnessCondition> expressions;
+public class OrCondition extends CompositeCondition {
 
     public OrCondition() {
         super(WitnessConditionType.OR);
@@ -22,11 +18,6 @@ public class OrCondition extends WitnessCondition {
     public OrCondition(List<WitnessCondition> expressions) {
         this();
         this.expressions = expressions;
-    }
-
-    @Override
-    public List<WitnessCondition> getExpressionList() {
-        return expressions;
     }
 
     @Override

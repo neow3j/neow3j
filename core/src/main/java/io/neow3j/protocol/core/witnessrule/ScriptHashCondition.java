@@ -1,15 +1,11 @@
 package io.neow3j.protocol.core.witnessrule;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.types.Hash160;
 
 import java.util.Objects;
 
-public class ScriptHashCondition extends WitnessCondition {
-
-    @JsonProperty("hash")
-    private Hash160 scriptHash;
+public class ScriptHashCondition extends ScriptHashTypeCondition {
 
     public ScriptHashCondition() {
         super(WitnessConditionType.SCRIPT_HASH);
@@ -18,11 +14,6 @@ public class ScriptHashCondition extends WitnessCondition {
     public ScriptHashCondition(Hash160 scriptHash) {
         this();
         this.scriptHash = scriptHash;
-    }
-
-    @Override
-    public Hash160 getScriptHash() {
-        return scriptHash;
     }
 
     @Override
