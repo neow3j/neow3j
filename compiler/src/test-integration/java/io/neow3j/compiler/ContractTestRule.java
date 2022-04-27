@@ -4,7 +4,6 @@ import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
-import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
@@ -324,15 +323,9 @@ public class ContractTestRule implements TestRule {
                     committee.getVerificationScript());
             tx.addWitness(committeeMultiSigWitness);
             for (Signer s : modifiedSigners) {
-                if (s.getScriptHash().equals(committee.getScriptHash())) {
-                    continue;
+                if (!s.getScriptHash().equals(committee.getScriptHash())) {
+                    tx.addWitness(((AccountSigner)s).getAccount());
                 }
-                ECKeyPair signerAccountKeyPair = ((AccountSigner) s).getAccount().getECKeyPair();
-                if (signerAccountKeyPair == null) {
-                    throw new RuntimeException("Cannot use a signer without a private key in this method.");
-                }
-                Witness witness = Witness.create(txHashData, signerAccountKeyPair);
-                tx.addWitness(witness);
             }
             response = tx.send();
         } else {
