@@ -48,7 +48,7 @@ public class BooleanCondition extends WitnessCondition {
     }
 
     @Override
-    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO() {
         return new io.neow3j.protocol.core.witnessrule.BooleanCondition(getExpression());
     }
 

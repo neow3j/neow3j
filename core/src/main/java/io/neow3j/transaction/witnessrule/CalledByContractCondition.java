@@ -24,7 +24,7 @@ public class CalledByContractCondition extends ScriptHashTypeCondition {
     }
 
     @Override
-    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO() {
         return new io.neow3j.protocol.core.witnessrule.CalledByContractCondition(getScriptHash());
     }
 
