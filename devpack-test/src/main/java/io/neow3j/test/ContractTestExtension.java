@@ -245,6 +245,65 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
+     * Fast-forwards the blockchain state by the given number of seconds, minutes, hours, and days adding {@code
+     * blocks} number of blocks. The underlying blockchain mints the given number of blocks of which the last block's
+     * timestamp lies in the future by the specified time.
+     *
+     * @param seconds number of seconds to fast-forward.
+     * @param minutes number of minutes to fast-forward.
+     * @param hours   number of hours to fast-forward.
+     * @param days    number of days to fast-forward.
+     * @param blocks  the number of blocks to mint.
+     * @return the message emitted on minting the blocks or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to fast-forward the blockchain.
+     */
+    public String fastForward(int seconds, int minutes, int hours, int days, int blocks) throws Exception {
+        int timeDelta = seconds + ((((days * 24) + hours) * 60) + minutes) * 60;
+        return chain.fastForward(timeDelta, blocks);
+    }
+
+    /**
+     * Fast-forwards the blockchain state by the given number of seconds, minutes, hours, and days. I.e., adds one new
+     * block that lies in the future by the given time.
+     *
+     * @param seconds number of seconds to fast-forward.
+     * @param minutes number of minutes to fast-forward.
+     * @param hours   number of hours to fast-forward.
+     * @param days    number of days to fast-forward.
+     * @return the message emitted on minting the blocks or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to fast-forward the blockchain.
+     */
+    public String fastForwardOneBlock(int seconds, int minutes, int hours, int days) throws Exception {
+        return fastForward(seconds, minutes, hours, days, 1);
+    }
+
+    /**
+     * Fast-forwards the blockchain state by the given number of seconds adding {@code blocks} number of blocks.
+     * The underlying blockchain mints the given number of blocks of which the last block's timestamp lies in the
+     * future by the specified time.
+     *
+     * @param seconds number of seconds to fast-forward.
+     * @param blocks  the number of blocks to mint.
+     * @return the message emitted on minting the blocks or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to fast-forward the blockchain.
+     */
+    public String fastForward(int seconds, int blocks) throws Exception {
+        return chain.fastForward(seconds, blocks);
+    }
+
+    /**
+     * Fast-forwards the blockchain state by the given number of seconds. I.e., adds one new block that lies in the
+     * future by the given number of seconds.
+     *
+     * @param seconds number of seconds to fast-forward.
+     * @return the message emitted on minting the blocks or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to fast-forward the blockchain.
+     */
+    public String fastForwardOneBlock(int seconds) throws Exception {
+        return fastForward(seconds, 1);
+    }
+
+    /**
      * Gets the account for the given address if it exists on the blockchain.
      *
      * @param address The account's address.
