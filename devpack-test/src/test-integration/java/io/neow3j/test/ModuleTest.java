@@ -129,7 +129,7 @@ public class ModuleTest {
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
         assertThat(endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat(endTime, is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
+        assertThat(endTime, greaterThanOrEqualTo( startTime + 60 * 1000)); // milliseconds
 
         startCount = endCount;
         startTime = endTime;
@@ -137,7 +137,7 @@ public class ModuleTest {
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
         assertThat(endCount, is(startCount.add(BigInteger.TEN)));
-        assertThat(endTime, is(greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000))); // milliseconds
+        assertThat(endTime, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
 
         startCount = endCount;
         startTime = endTime;
@@ -145,7 +145,7 @@ public class ModuleTest {
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
         assertThat(endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat(endTime, is(greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000))); // milliseconds
+        assertThat(endTime, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
 
         startCount = neow3j.getBlockCount().send().getBlockCount();
         ext.fastForward(10);
