@@ -364,7 +364,7 @@ public class AsmHelper {
      */
     public static List<String> extractTypeParametersFromSignature(FieldNode fieldNode) {
         String sig = fieldNode.signature;
-        if (!sig.contains("<")) {
+        if (sig == null || !sig.contains("<")) {
             return new ArrayList<>();
         }
         int startIdx = sig.indexOf("<") + 1;
