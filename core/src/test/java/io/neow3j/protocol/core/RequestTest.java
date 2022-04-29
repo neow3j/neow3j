@@ -9,8 +9,18 @@ import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseCode;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
-import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.witnessrule.AndCondition;
+import io.neow3j.transaction.witnessrule.BooleanCondition;
+import io.neow3j.transaction.witnessrule.CalledByContractCondition;
+import io.neow3j.transaction.witnessrule.CalledByEntryCondition;
+import io.neow3j.transaction.witnessrule.CalledByGroupCondition;
+import io.neow3j.transaction.witnessrule.GroupCondition;
+import io.neow3j.transaction.witnessrule.NotCondition;
+import io.neow3j.transaction.witnessrule.OrCondition;
+import io.neow3j.transaction.witnessrule.ScriptHashCondition;
+import io.neow3j.transaction.witnessrule.WitnessRule;
+import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import org.junit.Test;
@@ -18,12 +28,14 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.Date;
 
+import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
 
 public class RequestTest extends RequestTester {
 
@@ -330,19 +342,20 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testInvokeFunction() throws Exception {
-        ECKeyPair.ECPublicKey pubKey =
-                new ECKeyPair.ECPublicKey(TestProperties.defaultAccountPublicKey());
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
 
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
                 "balanceOf",
-                singletonList(
+                asList(
                         hash160(new Hash160(
                                 "91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))
                 ),
                 AccountSigner.calledByEntry(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
-                        .setAllowedContracts(new Hash160(TestProperties.neoTokenHash()))
+                        .setAllowedContracts(new Hash160(neoTokenHash()))
                         .setAllowedGroups(pubKey)
+                        .setRules(new WitnessRule(WitnessAction.ALLOW,
+                                new CalledByContractCondition(new Hash160(neoTokenHash()))))
         ).send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
@@ -350,10 +363,110 @@ public class RequestTest extends RequestTester {
                 "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"balanceOf\"," +
                 "[{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}]," +
                 "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\"," +
-                "\"scopes\":\"CalledByEntry,CustomContracts,CustomGroups\"," +
+                "\"scopes\":\"CalledByEntry,CustomContracts,CustomGroups,WitnessRules\"," +
                 "\"allowedcontracts\":[\"ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"]," +
                 "\"allowedgroups" +
-                "\":[\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"]}]" +
+                "\":[\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"]," +
+                "\"rules\":[" +
+                "   {" +
+                "       \"action\":\"Allow\"," +
+                "       \"condition\": {" +
+                "           \"type\":\"CalledByContract\"," +
+                "           \"hash\":\"" + neoTokenHash() + "\"" +
+                "        }" +
+                "   }" +
+                "]}]" +
+                "]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testInvokeFunction_witnessRules() throws Exception {
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
+
+        neow3j.invokeFunction(
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
+                "balanceOf",
+                asList(hash160(new Hash160("91b83e96f2a7c4fdf0c1688441ec61986c7cae26"))),
+                AccountSigner.calledByEntry(new Hash160("0xcadb3dc2faa3ef14a13b619c9a43124755aa2569"))
+                        .setAllowedContracts(new Hash160(neoTokenHash()))
+                        .setAllowedGroups(pubKey)
+                        .setRules(
+                                new WitnessRule(WitnessAction.DENY,
+                                        new AndCondition(
+                                                new BooleanCondition(true),
+                                                new CalledByContractCondition(new Hash160(neoTokenHash())),
+                                                new CalledByGroupCondition(pubKey),
+                                                new GroupCondition(pubKey)
+                                        )
+                                ),
+                                new WitnessRule(WitnessAction.DENY,
+                                        new OrCondition(
+                                                new CalledByGroupCondition(pubKey),
+                                                new ScriptHashCondition(new Hash160(committeeAccountScriptHash()))
+                                        )
+                                ),
+                                new WitnessRule(WitnessAction.ALLOW, new NotCondition(new CalledByEntryCondition()))
+                        )
+        ).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"invokefunction\"," +
+                "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"balanceOf\"," +
+                "[{\"type\":\"Hash160\",\"value\":\"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"}]," +
+                "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\"," +
+                "\"scopes\":\"CalledByEntry,CustomContracts,CustomGroups,WitnessRules\"," +
+                "\"allowedcontracts\":[\"ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"]," +
+                "\"allowedgroups" +
+                "\":[\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"]," +
+                "\"rules\":[" +
+                "   {" +
+                "       \"action\":\"Deny\"," +
+                "       \"condition\": {" +
+                "           \"type\":\"And\"," +
+                "           \"expressions\":[" +
+                "               {" +
+                "                   \"type\":\"Boolean\"," +
+                "                   \"expression\":true" +
+                "               },{" +
+                "                   \"type\":\"CalledByContract\"," +
+                "                   \"hash\":\"" + neoTokenHash() + "\"" +
+                "               },{" +
+                "                   \"type\":\"CalledByGroup\"," +
+                "                   \"group\":\"" + defaultAccountPublicKey() + "\"" +
+                "               },{" +
+                "                   \"type\":\"Group\"," +
+                "                   \"group\":\"" + defaultAccountPublicKey() + "\"" +
+                "               }" +
+                "           ]" +
+                "       }" +
+                "   }," +
+                "   {" +
+                "       \"action\":\"Deny\"," +
+                "       \"condition\": {" +
+                "           \"type\":\"Or\"," +
+                "           \"expressions\":[" +
+                "               {" +
+                "                   \"type\":\"CalledByGroup\"," +
+                "                   \"group\":\"" + defaultAccountPublicKey() + "\"" +
+                "               },{" +
+                "                   \"type\":\"ScriptHash\"," +
+                "                   \"hash\":\"" + committeeAccountScriptHash() + "\"" +
+                "               }" +
+                "           ]" +
+                "       }" +
+                "   }," +
+                "   {" +
+                "       \"action\":\"Allow\"," +
+                "       \"condition\": {" +
+                "           \"type\":\"Not\"," +
+                "           \"expression\":{" +
+                "               \"type\": \"CalledByEntry\"" +
+                "           }" +
+                "       }" +
+                "   }" +
+                "]}]" +
                 "]," +
                 "\"id\":1}"
         );
@@ -395,8 +508,9 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokescript\"," +
                 "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\"," +
-                "[{\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\",\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
-                "]," +
+                "[{\"account\":\"cc45cc8987b0e35371f5685431e3c8eeea306722\"," +
+                "\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[], " +
+                "\"rules\":[]}]]," +
                 "\"id\":1}"
         );
     }
@@ -414,7 +528,9 @@ public class RequestTest extends RequestTester {
                 "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\"," +
                 "[{\"type\":\"String\",\"value\":\"a string\"}," +
                 "{\"type\":\"String\",\"value\":\"another string\"}]," +
-                "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\",\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]}]" +
+                "[{\"account\":\"cadb3dc2faa3ef14a13b619c9a43124755aa2569\"," +
+                "\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[]," +
+                "\"rules\":[]}]" +
                 "]," +
                 "\"id\":1}"
         );

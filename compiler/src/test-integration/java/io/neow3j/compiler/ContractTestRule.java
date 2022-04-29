@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
@@ -31,6 +32,8 @@ import org.testcontainers.containers.ContainerState;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
@@ -95,7 +98,7 @@ public class ContractTestRule implements TestRule {
         committee = Account.createMultiSigAccount(
                 asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         client1 = Account.fromWIF(client1AccountWIF());
-        neow3j = Neow3j.build(new HttpService(containerURL));
+        neow3j = Neow3j.build(new HttpService(containerURL, true));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
     }
 
@@ -173,8 +176,7 @@ public class ContractTestRule implements TestRule {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public NeoInvokeFunction callInvokeFunction(TestName testName, ContractParameter... params)
-            throws IOException {
+    public NeoInvokeFunction callInvokeFunction(TestName testName, ContractParameter... params) throws IOException {
         return callInvokeFunction(testName.getMethodName(), params);
     }
 
@@ -187,9 +189,7 @@ public class ContractTestRule implements TestRule {
      * @return The result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params)
-            throws IOException {
-
+    public NeoInvokeFunction callInvokeFunction(String function, ContractParameter... params) throws IOException {
         if (signAsCommittee) {
             return contract.callInvokeFunction(function, asList(params),
                     AccountSigner.global(committee.getScriptHash()));
@@ -221,7 +221,8 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the function with the
      * name of the current test method, with the given parameters.
      *
-     * @param params The parameters to pass with the function call.
+     * @param testName the function to invoke.
+     * @param params   the parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
     public Hash256 invokeFunction(TestName testName, ContractParameter... params) throws Throwable {
@@ -235,7 +236,7 @@ public class ContractTestRule implements TestRule {
      * @param to     The receiving account.
      * @param amount The amount to transfer.
      * @return the hash of the transfer transaction.
-     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * @throws Throwable if an error occurs when communicating the neo-node, or when
      *                   constructing the transaction object.
      */
     public Hash256 transferGas(Hash160 to, BigInteger amount) throws Throwable {
@@ -254,15 +255,14 @@ public class ContractTestRule implements TestRule {
      * @param to     The receiving account.
      * @param amount The amount to transfer.
      * @return the hash of the transfer transaction.
-     * @throws Throwable if an error occurs when communicating the the neo-node, or when
+     * @throws Throwable if an error occurs when communicating the neo-node, or when
      *                   constructing the transaction object.
      */
     public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
         Transaction tx = neoToken.transfer(committee, to, amount).getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                asList(signMessage(tx.getHashData(),
-                        defaultAccount.getECKeyPair())),
+                asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
                 committee.getVerificationScript());
         return tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
     }
@@ -271,23 +271,67 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters.
      *
-     * @param function The function to call.
+     * @param function The function to invoke.
      * @param params   The parameters to pass with the function call.
      * @return the hash of the sent transaction.
      */
-    public Hash256 invokeFunction(String function, ContractParameter... params)
+    public Hash256 invokeFunction(String function, ContractParameter... params) throws Throwable {
+        return invokeFunction(function, asList(params));
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
+     * parameters.
+     * <p>
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
+     *
+     * @param testName the function to invoke.
+     * @param params   the parameters to pass with the function call.
+     * @return the hash of the sent transaction.
+     */
+    public Hash256 invokeFunction(TestName testName, List<ContractParameter> params, Signer... additionalSigners)
             throws Throwable {
 
+        return invokeFunction(testName.getMethodName(), params, additionalSigners);
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
+     * parameters.
+     * <p>
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
+     *
+     * @param function          the function to call.
+     * @param params            the parameters to pass with the function call.
+     * @param additionalSigners the additional signers.
+     * @return the hash of the sent transaction.
+     */
+    public Hash256 invokeFunction(String function, List<ContractParameter> params, Signer... additionalSigners)
+            throws Throwable {
+
+        Transaction tx;
         NeoSendRawTransaction response;
-        TransactionBuilder b = contract.invokeFunction(function, params);
+        TransactionBuilder b = contract.invokeFunction(function, params.toArray(new ContractParameter[0]));
+        List<Signer> signerList = new ArrayList<>(asList(additionalSigners));
         if (signAsCommittee) {
-            Transaction tx = b.signers(AccountSigner.global(committee)).getUnsignedTransaction();
-            Witness multiSigWitness = createMultiSigWitness(
-                    asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
+            signerList.add(AccountSigner.global(committee));
+            Signer[] modifiedSigners = signerList.toArray(new Signer[0]);
+            tx = b.signers(modifiedSigners).firstSigner(committee).getUnsignedTransaction();
+            byte[] txHashData = tx.getHashData();
+            Witness committeeMultiSigWitness = createMultiSigWitness(
+                    asList(signMessage(txHashData, defaultAccount.getECKeyPair())),
                     committee.getVerificationScript());
-            response = tx.addWitness(multiSigWitness).send();
+            tx.addWitness(committeeMultiSigWitness);
+            for (Signer s : modifiedSigners) {
+                if (!s.getScriptHash().equals(committee.getScriptHash())) {
+                    tx.addWitness(((AccountSigner) s).getAccount());
+                }
+            }
+            response = tx.send();
         } else {
-            response = b.signers(AccountSigner.global(defaultAccount)).sign().send();
+            signerList.add(AccountSigner.global(defaultAccount));
+            Signer[] modifiedSigners = signerList.toArray(new Signer[0]);
+            response = b.signers(modifiedSigners).firstSigner(defaultAccount).sign().send();
         }
 
         if (response.hasError()) {
@@ -301,8 +345,7 @@ public class ContractTestRule implements TestRule {
      * name of the current test method, with the given parameters. Sleeps until the transaction is
      * included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
-     * the transaction.
+     * The transaction sender is either the committee or the default account.
      *
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
@@ -316,8 +359,7 @@ public class ContractTestRule implements TestRule {
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
-     * The multi-sig account at {@link ContractTestRule#getCommittee()} is used to sign
-     * the transaction.
+     * The transaction sender is either the committee or the default account.
      *
      * @param function The function to call.
      * @param params   The parameters to pass with the function call.
@@ -327,6 +369,42 @@ public class ContractTestRule implements TestRule {
             throws Throwable {
 
         Hash256 txHash = invokeFunction(function, params);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+        return txHash;
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
+     * parameters. Sleeps until the transaction is included in a block.
+     * <p>
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
+     *
+     * @param testName the function to invoke.
+     * @param params   the parameters to pass with the function call.
+     * @return the hash of the transaction.
+     */
+    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, List<ContractParameter> params,
+            Signer... additionalSigners) throws Throwable {
+
+        Hash256 txHash = invokeFunction(testName.getMethodName(), params, additionalSigners);
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+        return txHash;
+    }
+
+    /**
+     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
+     * parameters. Sleeps until the transaction is included in a block.
+     * <p>
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
+     *
+     * @param function the function to invoke.
+     * @param params   the parameters to pass with the function call.
+     * @return the hash of the transaction.
+     */
+    public Hash256 invokeFunctionAndAwaitExecution(String function, List<ContractParameter> params,
+            Signer... additionalSigners) throws Throwable {
+
+        Hash256 txHash = invokeFunction(function, params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }

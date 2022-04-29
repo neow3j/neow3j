@@ -31,6 +31,15 @@ public class CryptoLib extends ContractInterface {
     public static native ByteString ripemd160(ByteString value);
 
     /**
+     * Computes the hash value for the specified byte array using the murmur32 algorithm.
+     *
+     * @param data the input to compute the hash code for.
+     * @param seed the seed of the murmur32 hash function.
+     * @return the computed hash code.
+     */
+    public static native ByteString murmur32(ByteString data, int seed);
+
+    /**
      * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}.
      * The {@code curve} can be one of the curves defined in {@link NamedCurve}.
      *

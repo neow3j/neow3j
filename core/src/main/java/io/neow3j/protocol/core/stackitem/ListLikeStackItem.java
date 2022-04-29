@@ -1,9 +1,13 @@
 package io.neow3j.protocol.core.stackitem;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.StackItemType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -16,7 +20,9 @@ import java.util.Objects;
 public abstract class ListLikeStackItem extends StackItem {
 
     @JsonProperty("value")
-    private List<StackItem> value;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<StackItem> value = new ArrayList<>();
 
     protected ListLikeStackItem(StackItemType type) {
         super(type);
@@ -34,6 +40,9 @@ public abstract class ListLikeStackItem extends StackItem {
 
     @Override
     protected String valueToString() {
+        if (value.isEmpty()) {
+            return "";
+        }
         return value.stream()
                 .map(StackItem::toString)
                 .reduce("", (a, b) -> a + ", " + b)
@@ -63,4 +72,5 @@ public abstract class ListLikeStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(value);
     }
+
 }

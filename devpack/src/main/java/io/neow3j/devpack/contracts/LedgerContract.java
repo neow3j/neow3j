@@ -47,7 +47,7 @@ public class LedgerContract extends ContractInterface {
     public static native Transaction getTransaction(Hash256 hash);
 
     /**
-     * Gets the transaction at {@code index} in the block with {@code blockHash}
+     * Gets the transaction at {@code index} in the block with {@code blockHash}.
      *
      * @param blockHash The block hash.
      * @param index     The transaction index in the block.
@@ -63,6 +63,16 @@ public class LedgerContract extends ContractInterface {
      * @return the transaction or {@code null} if it doesn't exist.
      */
     public static native Transaction getTransactionFromBlock(int blockIndex, int index);
+
+    /**
+     * Gets the VM state of the transaction with the given hash.
+     * <p>
+     * Compare the state byte with the values in {@link io.neow3j.devpack.constants.VMState}.
+     *
+     * @param hash the transaction hash.
+     * @return the transaction's VM state.
+     */
+    public static native byte getTransactionVMState(Hash256 hash);
 
     /**
      * Gets the index of the block that contains the transaction with the given hash.

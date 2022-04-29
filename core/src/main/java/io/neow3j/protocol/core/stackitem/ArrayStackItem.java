@@ -27,4 +27,5 @@ public class ArrayStackItem extends ListLikeStackItem {
         return getType() == other.getType() &&
                 Objects.equals(getValue(), other.getValue());
     }
+
 }

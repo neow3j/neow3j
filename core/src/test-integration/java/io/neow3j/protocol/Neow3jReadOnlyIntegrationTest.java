@@ -1135,8 +1135,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
-        assertThat(stateRoot.getRootHash(), is(new Hash256(
-                "27c62816df41444d4c8a26f8916d4e8e4fe4b366c1fb21d3d9e4a75e84b90efb")));
+        assertThat(stateRoot.getRootHash(),
+                is(new Hash256("088395d84a18fcba6c00f2dd23e84731d5a3adf0d82d81254d92bfda63314b34")));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 

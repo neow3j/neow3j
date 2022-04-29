@@ -1,12 +1,12 @@
 package io.neow3j.crypto;
 
+import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import org.bouncycastle.crypto.digests.SHA256Digest;
 import org.bouncycastle.crypto.params.ECPrivateKeyParameters;
 import org.bouncycastle.crypto.signers.ECDSASigner;
@@ -32,6 +32,7 @@ import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -391,8 +392,9 @@ public class ECKeyPair {
          *
          * @return the encoded public key in compressed format as hexadecimal without a prefix.
          */
+        @JsonValue
         public String getEncodedCompressedHex() {
-            return Numeric.toHexStringNoPrefix(getEncoded(true));
+            return toHexStringNoPrefix(getEncoded(true));
         }
 
         /**
@@ -460,6 +462,12 @@ public class ECKeyPair {
             return this.getECPoint().getYCoord().toBigInteger()
                     .compareTo(o.getECPoint().getYCoord().toBigInteger());
         }
+
+        @Override
+        public String toString() {
+            return "ECPublicKey{" + toHexStringNoPrefix(getEncoded(true)) + "}";
+        }
+
     }
 
 }
