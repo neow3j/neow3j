@@ -48,9 +48,9 @@ public class OrCondition extends CompositeCondition {
     }
 
     @Override
-    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO() {
         return new io.neow3j.protocol.core.witnessrule.OrCondition(
-                getExpressions().stream().map(WitnessCondition::toJson).collect(Collectors.toList()));
+                getExpressions().stream().map(WitnessCondition::toDTO).collect(Collectors.toList()));
     }
 
 }

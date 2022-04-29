@@ -47,8 +47,8 @@ public class NotCondition extends WitnessCondition {
     }
 
     @Override
-    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
-        return new io.neow3j.protocol.core.witnessrule.NotCondition(getExpression().toJson());
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO() {
+        return new io.neow3j.protocol.core.witnessrule.NotCondition(getExpression().toDTO());
     }
 
 }

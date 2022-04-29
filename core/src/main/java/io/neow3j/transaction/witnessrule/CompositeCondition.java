@@ -8,6 +8,10 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Provides the variable and methods used in witness conditions that contain a list of expressions. I.e.,
+ * {@link AndCondition} and {@link OrCondition}.
+ */
 public abstract class CompositeCondition extends WitnessCondition {
 
     protected List<WitnessCondition> expressions;

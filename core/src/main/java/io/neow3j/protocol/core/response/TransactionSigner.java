@@ -66,7 +66,7 @@ public class TransactionSigner {
                 .map(s -> toHexStringNoPrefix(s.getEncoded(true)))
                 .collect(Collectors.toList());
         this.rules = signer.getRules().stream()
-                .map(r -> new WitnessRule(r.getAction(), r.getCondition().toJson()))
+                .map(r -> new WitnessRule(r.getAction(), r.getCondition().toDTO()))
                 .collect(Collectors.toList());
     }
 

@@ -238,18 +238,36 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     }
 
     /**
-     * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
+     * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks. The block
+     * timestamps are according to the current system time.
      *
-     * @param n The number of blocks to mint.
-     * @return The message emitted by neo-express on minting the blocks.
+     * @param n the number of blocks to mint.
+     * @return the message emitted by neo-express on minting the blocks.
      * @throws Exception if the execution failed.
      */
     @Override
     public String fastForward(int n) throws Exception {
         ExecResult execResult = execInContainer("neoxp", "fastfwd", Integer.toString(n));
         if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " +
-                    execResult.getStderr());
+            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
+        }
+        return execResult.getStdout();
+    }
+
+    /**
+     * Mints {@code n} blocks with the last block being {@code seconds} in the future.
+     *
+     * @param seconds the time delta in seconds from now.
+     * @param n       the number of blocks to mint.
+     * @return the message emitted by neo-express on minting the blocks.
+     * @throws Exception if the execution failed.
+     */
+    @Override
+    public String fastForward(int seconds, int n) throws Exception {
+        ExecResult execResult = execInContainer("neoxp", "fastfwd", "-t", Integer.toString(seconds),
+                Integer.toString(n));
+        if (execResult.getExitCode() != 0) {
+            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
         }
         return execResult.getStdout();
     }

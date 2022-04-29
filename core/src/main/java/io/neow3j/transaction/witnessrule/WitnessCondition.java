@@ -60,6 +60,6 @@ public abstract class WitnessCondition extends NeoSerializable {
         return 1; // type byte
     }
 
-    public abstract io.neow3j.protocol.core.witnessrule.WitnessCondition toJson();
+    public abstract io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO();
 
 }

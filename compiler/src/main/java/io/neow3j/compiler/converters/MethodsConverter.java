@@ -25,6 +25,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
+import org.objectweb.asm.tree.IntInsnNode;
 import org.objectweb.asm.tree.JumpInsnNode;
 import org.objectweb.asm.tree.LookupSwitchInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -379,10 +380,10 @@ public class MethodsConverter implements Converter {
             assert jumpInsn.getOpcode() == JVMOpcode.IFEQ.getOpcode();
             // Next, follow instructions for the equality case. We retrieve the number that points us to the correct
             // case in the TABLESWITCH instruction following later.
-            InsnNode branchNumberInsn = (InsnNode) jumpInsn.getNext();
-            int branchNr = branchNumberInsn.getOpcode() - 3;
+            insn = jumpInsn.getNext();
+            int branchNr = extractBranchNumber(insn);
             // The branch number gets stored to a local variable in the next opcode. But we can ignore that.
-            insn = branchNumberInsn.getNext();
+            insn = insn.getNext();
             assert insn.getType() == AbstractInsnNode.VAR_INSN;
             // The next instruction opcode jumps to the TABLESWITCH instruction, but we need to replace this with a
             // jump directly to the correct branch after the TABLESWITCH.
@@ -402,6 +403,14 @@ public class MethodsConverter implements Converter {
             callingNeoMethod.addInstruction(
                     new NeoJumpInstruction(OpCode.JMP_L, secondLookupSwitchInsn.dflt.getLabel()));
             return secondLookupSwitchInsn;
+        }
+    }
+
+    private static int extractBranchNumber(AbstractInsnNode insn) {
+        if (insn instanceof InsnNode) {
+            return insn.getOpcode() - 3;
+        } else {
+            return ((IntInsnNode) insn).operand;
         }
     }
 
