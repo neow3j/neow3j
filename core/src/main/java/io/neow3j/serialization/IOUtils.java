@@ -9,7 +9,7 @@ public class IOUtils {
     /**
      * Gets the byte size of the given number when Neo-serialized.
      *
-     * @param i The number.
+     * @param i the number.
      * @return the byte size.
      */
     public static int getVarSize(long i) {
@@ -27,7 +27,7 @@ public class IOUtils {
     /**
      * Gets the byte size of the given list when Neo-serialized.
      *
-     * @param serializables The list of serializables.
+     * @param serializables the list of serializables.
      * @return the byte size.
      */
     public static int getVarSize(List<? extends NeoSerializable> serializables) {
@@ -41,7 +41,7 @@ public class IOUtils {
     /**
      * Gets the byte size of the given byte array when Neo-serialized.
      *
-     * @param bytes The bytes to serialize.
+     * @param bytes the bytes to serialize.
      * @return the byte size.
      */
     public static int getVarSize(byte[] bytes) {
@@ -49,10 +49,9 @@ public class IOUtils {
     }
 
     /**
-     * Gets the byte size of the given string when Neo-serialized. The string is interpreted as
-     * UTF_8 encoded.
+     * Gets the byte size of the given string when Neo-serialized. The string is interpreted as UTF_8 encoded.
      *
-     * @param value The string to serialize.
+     * @param value the string to serialize.
      * @return the byte size.
      */
     public static int getVarSize(String value) {

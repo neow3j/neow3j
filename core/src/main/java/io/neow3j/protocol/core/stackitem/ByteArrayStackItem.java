@@ -49,8 +49,7 @@ abstract class ByteArrayStackItem extends StackItem {
      * Treats the underlying bytes as a script hash in little-endian order.
      *
      * @return the address.
-     * @throws StackItemCastException if this stack item's value is null or it is not a valid Neo
-     *                                address.
+     * @throws StackItemCastException if this stack item's value is null or it is not a valid Neo address.
      */
     @Override
     public String getAddress() {
@@ -63,8 +62,8 @@ abstract class ByteArrayStackItem extends StackItem {
     }
 
     /**
-     * Treats this item's value as a UTF-8 encoded string, i.e. reads and returns the underlying
-     * bytes as a UTF-8 string.
+     * Treats this item's value as a UTF-8 encoded string, i.e. reads and returns the underlying bytes as a UTF-8
+     * string.
      *
      * @return the string.
      * @throws StackItemCastException if this stack item's value is null.
@@ -119,9 +118,8 @@ abstract class ByteArrayStackItem extends StackItem {
 
     /**
      * Gets this item's value as a boolean.
-     * <p>
      *
-     * @return true, if the value represents an integer bigger than 0. False otherwise.
+     * @return true if the value represents an integer bigger than 0. False otherwise.
      * @throws StackItemCastException if this stack item's value is null or an empty.
      */
     @Override
@@ -139,4 +137,5 @@ abstract class ByteArrayStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(type, Arrays.hashCode(getValue()));
     }
+
 }

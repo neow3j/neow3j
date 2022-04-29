@@ -24,8 +24,7 @@ public class Async {
         ExecutorService executorService = ofNullable(executor).orElse(DEFAULT_EXECUTOR);
         CompletableFuture<T> result = new CompletableFuture<>();
         CompletableFuture.runAsync(() -> {
-            // we need to explicitly catch any exceptions,
-            // otherwise they will be silently discarded
+            // we need to explicitly catch any exceptions, otherwise they will be silently discarded.
             try {
                 result.complete(callable.call());
             } catch (Throwable e) {
@@ -40,9 +39,7 @@ public class Async {
     }
 
     /**
-     * Get the default {@link ExecutorService} used on asynchronous calls.
-     *
-     * @return the default instance of {@link ExecutorService}.
+     * @return the default instance of {@link ExecutorService} used on asynchronous calls.
      */
     public static ExecutorService getDefaultExecutor() {
         return DEFAULT_EXECUTOR;
@@ -54,17 +51,14 @@ public class Async {
 
     /**
      * Provide a new ScheduledExecutorService instance.
+     * <p>
+     * A shutdown hook is created to terminate the thread pool on application termination.
      *
-     * <p>A shutdown hook is created to terminate the thread pool on application termination.
-     *
-     * @return new ScheduledExecutorService
+     * @return the new ScheduledExecutorService.
      */
     public static ScheduledExecutorService defaultExecutorService() {
-        ScheduledExecutorService scheduledExecutorService =
-                Executors.newScheduledThreadPool(getCpuCount());
-
+        ScheduledExecutorService scheduledExecutorService = Executors.newScheduledThreadPool(getCpuCount());
         Runtime.getRuntime().addShutdownHook(new Thread(() -> shutdown(scheduledExecutorService)));
-
         return scheduledExecutorService;
     }
 
@@ -87,4 +81,5 @@ public class Async {
             Thread.currentThread().interrupt();
         }
     }
+
 }

@@ -13,4 +13,5 @@ public class ErrorResponseException extends Exception {
     public Error getError() {
         return error;
     }
+
 }

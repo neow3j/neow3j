@@ -36,6 +36,7 @@ public class NeoSendRawTransaction extends Response<NeoSendRawTransaction.RawTra
                     "hash='" + hash + '\'' +
                     '}';
         }
+
     }
 
 }

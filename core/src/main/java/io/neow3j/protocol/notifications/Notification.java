@@ -24,5 +24,6 @@ public class Notification<T> {
     public NotificationParams<T> getParams() {
         return params;
     }
+
 }
 

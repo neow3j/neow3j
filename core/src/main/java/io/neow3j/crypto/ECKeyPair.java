@@ -55,25 +55,21 @@ public class ECKeyPair {
     }
 
     /**
-     * Gets the private key of this EC key pair.
-     *
-     * @return the private key.
+     * @return the private key of this EC key pair.
      */
     public ECPrivateKey getPrivateKey() {
         return privateKey;
     }
 
     /**
-     * Gets the public key of this EC key pair.
-     *
-     * @return the public key.
+     * @return the public key of this EC key pair.
      */
     public ECPublicKey getPublicKey() {
         return publicKey;
     }
 
     /**
-     * Constructs the NEO address from this key pairs public key.
+     * Constructs the NEO address from this key pair's public key.
      * <p>
      * The address is constructed ad hoc each time this method is called.
      *
@@ -145,9 +141,7 @@ public class ECKeyPair {
         BCECPrivateKey privateKey = (BCECPrivateKey) keyPair.getPrivate();
         BCECPublicKey publicKey = (BCECPublicKey) keyPair.getPublic();
 
-        return new ECKeyPair(
-                new ECPrivateKey(privateKey.getD()),
-                new ECPublicKey(publicKey.getQ()));
+        return new ECKeyPair(new ECPrivateKey(privateKey.getD()), new ECPublicKey(publicKey.getQ()));
     }
 
     /**
@@ -173,7 +167,7 @@ public class ECKeyPair {
     /**
      * Creates a secp256r1 EC key pair from the private key.
      *
-     * @param privateKey The private key.
+     * @param privateKey the private key.
      * @return the EC key pair.
      */
     public static ECKeyPair create(byte[] privateKey) {
@@ -191,7 +185,6 @@ public class ECKeyPair {
      */
     public static ECKeyPair createEcKeyPair() throws InvalidAlgorithmParameterException, NoSuchAlgorithmException,
             NoSuchProviderException {
-
         KeyPair keyPair = createSecp256r1KeyPair();
         return create(keyPair);
     }
@@ -207,8 +200,6 @@ public class ECKeyPair {
     }
 
     /**
-     * Creates a WIF of this ECKeyPair.
-     *
      * @return the WIF of this ECKeyPair.
      */
     public String exportAsWIF() {
@@ -267,8 +258,6 @@ public class ECKeyPair {
         }
 
         /**
-         * Gets this private key as an integer.
-         *
          * @return this private key as an integer.
          */
         public BigInteger getInt() {
@@ -276,9 +265,7 @@ public class ECKeyPair {
         }
 
         /**
-         * Gets this private key as a byte array in big-endian order (not in two's complement).
-         *
-         * @return This private key as a byte array.
+         * @return this private key as a byte array in big-endian order (not in two's complement).
          */
         public byte[] getBytes() {
             return this.privateKey;
@@ -398,9 +385,7 @@ public class ECKeyPair {
         }
 
         /**
-         * Get the EC point of this public key.
-         *
-         * @return the EC point.
+         * @return the EC point of this public key.
          */
         public ECPoint getECPoint() {
             return this.ecPoint;

@@ -37,8 +37,8 @@ public class InvocationResult {
     public InvocationResult() {
     }
 
-    public InvocationResult(String script, NeoVMStateType state, String gasConsumed,
-            String exception, List<StackItem> stack, String tx, PendingSignature pendingSignature) {
+    public InvocationResult(String script, NeoVMStateType state, String gasConsumed, String exception,
+            List<StackItem> stack, String tx, PendingSignature pendingSignature) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
@@ -100,8 +100,8 @@ public class InvocationResult {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getScript(), getState(), getGasConsumed(),
-                getException(), getStack(), getTx(), getPendingSignature());
+        return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getStack(), getTx(),
+                getPendingSignature());
     }
 
     @Override
@@ -173,8 +173,7 @@ public class InvocationResult {
             public Item() {
             }
 
-            public Item(String script, List<ContractParameter> parameters,
-                    Map<String, String> signatures) {
+            public Item(String script, List<ContractParameter> parameters, Map<String, String> signatures) {
                 this.script = script;
                 this.parameters = parameters;
                 this.signatures = signatures;
@@ -192,5 +191,7 @@ public class InvocationResult {
                 return signatures;
             }
         }
+
     }
+
 }

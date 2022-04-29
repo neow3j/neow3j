@@ -15,4 +15,5 @@ public class NEP2AccountNotFound extends Exception {
     public NEP2AccountNotFound(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

@@ -131,8 +131,7 @@ public interface Neo {
 
     //region SmartContract Methods
 
-    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
-            Signer... signers);
+    Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName, Signer... signers);
 
     Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
             List<ContractParameter> params, Signer... signers);
@@ -174,8 +173,7 @@ public interface Neo {
 
     Request<?, NeoListAddress> listAddress();
 
-    Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to,
-            BigInteger amount);
+    Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to, BigInteger amount);
 
     Request<?, NeoSendFrom> sendFrom(Hash160 from, TransactionSendToken txSendToken);
 
@@ -229,17 +227,16 @@ public interface Neo {
 
     Request<?, NeoGetState> getState(Hash256 rootHash, Hash160 contractHash, String keyHex);
 
-    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
-            String keyPrefixHex, String startKeyHex, Integer countFindResultItems);
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex,
+            String startKeyHex, Integer countFindResultItems);
 
-    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
-            String keyPrefixHex, String startKeyHex);
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex,
+            String startKeyHex);
 
-    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
-            String keyPrefixHex, Integer countFindResultItems);
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex,
+            Integer countFindResultItems);
 
-    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash,
-            String keyPrefixHex);
+    Request<?, NeoFindStates> findStates(Hash256 rootHash, Hash160 contractHash, String keyPrefixHex);
 
     //endregion
 

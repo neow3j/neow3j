@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -107,9 +108,9 @@ public class ContractManifest {
      * the name specified in this manifest. It is then signed by the provided group EC key pair. The returned trusted
      * contract group instance consists of the group's public key and the signature in base64 format.
      *
-     * @param groupECKeyPair   The EC key pair of the trusted group.
-     * @param deploymentSender The sender of the deployment transaction.
-     * @param nefCheckSum      The check sum of the contract's nef.
+     * @param groupECKeyPair   the EC key pair of the trusted group.
+     * @param deploymentSender the sender of the deployment transaction.
+     * @param nefCheckSum      the check sum of the contract's nef.
      * @return the contract group.
      */
     public ContractGroup createGroup(ECKeyPair groupECKeyPair, Hash160 deploymentSender, long nefCheckSum) {
@@ -164,14 +165,8 @@ public class ContractManifest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getName(),
-                getGroups(),
-                getFeatures(),
-                getAbi(),
-                getPermissions(),
-                getTrusts(),
-                getSupportedStandards(),
-                getExtra());
+        return Objects.hash(getName(), getGroups(), getFeatures(), getAbi(), getPermissions(), getTrusts(),
+                getSupportedStandards(), getExtra());
     }
 
     @Override
@@ -189,12 +184,12 @@ public class ContractManifest {
     }
 
     /**
-     * Defines a group of trusted contracts. Contracts in a group trust each other and can be
-     * invoked by each other, without prompting the user any warnings. For example, a series of
-     * contracts that call each other for a DeFi project.
+     * Defines a group of trusted contracts. Contracts in a group trust each other and can be invoked by each other,
+     * without prompting the user any warnings. For example, a series of contracts that call each other for a DeFi
+     * project.
      * <p>
-     * A group is identified by a public key and must have a signature for the contract hash to
-     * prove that the contract is included in the group.
+     * A group is identified by a public key and must have a signature for the contract hash to prove that the
+     * contract is included in the group.
      */
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ContractGroup {
@@ -225,9 +220,8 @@ public class ContractManifest {
         }
 
         private void checkPubKey(String pubKey) {
-            if (Numeric.hexStringToByteArray(pubKey).length != NeoConstants.PUBLIC_KEY_SIZE) {
-                throw new IllegalArgumentException(format("The provided value is not a valid " +
-                        "public key: %s", pubKey));
+            if (hexStringToByteArray(pubKey).length != NeoConstants.PUBLIC_KEY_SIZE) {
+                throw new IllegalArgumentException(format("The provided value is not a valid public key: %s", pubKey));
             }
         }
 
@@ -235,8 +229,8 @@ public class ContractManifest {
             try {
                 Base64.decode(signature);
             } catch (Exception e) {
-                throw new IllegalArgumentException(format("Invalid signature: %s. Please provide " +
-                        "a valid signature in base64 format.", signature));
+                throw new IllegalArgumentException(
+                        format("Invalid signature: %s. Please provide a valid signature in base64 format.", signature));
             }
         }
 
@@ -389,8 +383,7 @@ public class ContractManifest {
 
             @Override
             public int hashCode() {
-                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(),
-                        isSafe());
+                return Objects.hash(getName(), getParameters(), getOffset(), getReturnType(), isSafe());
             }
 
             @Override
@@ -518,8 +511,8 @@ public class ContractManifest {
     private static class WildcardContainerSerializer extends JsonSerializer<List<String>> {
 
         @Override
-        public void serialize(List<String> container, JsonGenerator jgen,
-                SerializerProvider provider) throws IOException {
+        public void serialize(List<String> container, JsonGenerator jgen, SerializerProvider provider)
+                throws IOException {
 
             if (!container.isEmpty() && container.get(0).equals(WILDCARD_CHAR)) {
                 // If '*' is used, don't write an array but the '*' directly.

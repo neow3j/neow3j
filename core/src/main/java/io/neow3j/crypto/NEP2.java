@@ -1,15 +1,9 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.utils.ArrayUtils.concatenate;
-import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
-import static io.neow3j.utils.ArrayUtils.getLastNBytes;
-import static io.neow3j.utils.ArrayUtils.xor;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -19,8 +13,16 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
+
 import org.bouncycastle.crypto.generators.SCrypt;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
+
+import static io.neow3j.crypto.Hash.hash256;
+import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
+import static io.neow3j.utils.ArrayUtils.getLastNBytes;
+import static io.neow3j.utils.ArrayUtils.xor;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Provides encryption and decryption functionality according to NEP-2 specification.
@@ -39,15 +41,14 @@ public class NEP2 {
             new ScryptParams(N_STANDARD, P_STANDARD, R_STANDARD);
 
     /**
-     * Decrypts the given encrypted private key in NEP-2 format with the given password and standard
-     * scrypt parameters.
+     * Decrypts the given encrypted private key in NEP-2 format with the given password and standard scrypt parameters.
      *
-     * @param password   The passphrase used for decryption.
-     * @param nep2String The NEP-2 ecnrypted private key.
+     * @param password   the passphrase used for decryption.
+     * @param nep2String the NEP-2 ecnrypted private key.
      * @return an EC key pair constructed form the decrypted private key.
-     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       throws if failed encrypt the created wallet.
-     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase if the passphrase is not valid.
      */
     public static ECKeyPair decrypt(String password, String nep2String)
             throws CipherException, NEP2InvalidFormat, NEP2InvalidPassphrase {
@@ -55,23 +56,23 @@ public class NEP2 {
     }
 
     /**
-     * Decrypts the given encrypted private key in NEP-2 format with the given password and scrypt
-     * parameters.
+     * Decrypts the given encrypted private key in NEP-2 format with the given password and scrypt parameters.
      *
-     * @param password     The passphrase used for decryption.
-     * @param nep2String   The NEP-2 ecnrypted private key.
-     * @param scryptParams The scrypt parameters used for encryption.
+     * @param password     the passphrase used for decryption.
+     * @param nep2String   the NEP-2 ecnrypted private key.
+     * @param scryptParams the scrypt parameters used for encryption.
      * @return an EC key pair constructed form the decrypted private key.
-     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       throws if failed encrypt the created wallet.
-     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase if the passphrase is not valid.
      */
     public static ECKeyPair decrypt(String password, String nep2String, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
         byte[] nep2Data = Base58.base58CheckDecode(nep2String);
 
-        if (nep2Data.length != NEP2_PRIVATE_KEY_LENGTH || nep2Data[0] != NEP2_PREFIX_1 || nep2Data[1] != NEP2_PREFIX_2 || nep2Data[2] != NEP2_FLAGBYTE) {
+        if (nep2Data.length != NEP2_PRIVATE_KEY_LENGTH || nep2Data[0] != NEP2_PREFIX_1 ||
+                nep2Data[1] != NEP2_PREFIX_2 || nep2Data[2] != NEP2_FLAGBYTE) {
             throw new NEP2InvalidFormat("Not valid NEP2 prefix.");
         }
 
@@ -79,8 +80,7 @@ public class NEP2 {
         // copy 4 bytes related to the address hash
         System.arraycopy(nep2Data, 3, addressHash, 0, 4);
 
-        byte[] derivedKey = generateDerivedScryptKey(
-                password.getBytes(UTF_8), addressHash, scryptParams, DKLEN);
+        byte[] derivedKey = generateDerivedScryptKey(password.getBytes(UTF_8), addressHash, scryptParams, DKLEN);
 
         byte[] derivedKeyHalf1 = getFirstNBytes(derivedKey, 32);
         byte[] derivedKeyHalf2 = getLastNBytes(derivedKey, 32);
@@ -96,20 +96,20 @@ public class NEP2 {
         byte[] calculatedAddressHash = getAddressHash(ecKeyPair);
 
         if (!Arrays.equals(calculatedAddressHash, addressHash)) {
-            throw new NEP2InvalidPassphrase("Calculated address hash does not match the one in the provided encrypted address.");
+            throw new NEP2InvalidPassphrase(
+                    "Calculated address hash does not match the one in the provided encrypted address.");
         }
 
         return ecKeyPair;
     }
 
     /**
-     * Encrypts the private key of the given key pair with the given password using standard Scrypt
-     * parameters.
+     * Encrypts the private key of the given key pair with the given password using standard Scrypt parameters.
      *
-     * @param password  The passphrase used for encryption.
-     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
+     * @param password  the passphrase used for encryption.
+     * @param ecKeyPair the {@link ECKeyPair} to be encrypted.
      * @return the NEP-2 encrypted private key.
-     * @throws CipherException throws if the key pair cannot be encrypted.
+     * @throws CipherException if the key pair cannot be encrypted.
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair) throws CipherException {
         return encrypt(password, ecKeyPair, N_STANDARD, P_STANDARD, R_STANDARD);
@@ -118,36 +118,32 @@ public class NEP2 {
     /**
      * Encrypts the private key of the given EC key pair following the NEP-2 standard.
      *
-     * @param password     the passphrase to be used to encrypt
-     * @param ecKeyPair    the {@link ECKeyPair} to be encrypted
+     * @param password     the passphrase to be used to encrypt.
+     * @param ecKeyPair    the {@link ECKeyPair} to be encrypted.
      * @param scryptParams the scrypt parameters used for encryption.
      * @return the NEP-2 encrypted private key.
-     * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
+     * @throws CipherException if the AES/ECB/NoPadding cipher operation fails.
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair, ScryptParams scryptParams)
             throws CipherException {
-
         return encrypt(password, ecKeyPair, scryptParams.getN(), scryptParams.getP(), scryptParams.getR());
     }
 
     /**
      * Encrypts the private key of the given EC key pair following the NEP-2 standard.
      *
-     * @param password  the passphrase to be used to encrypt
-     * @param ecKeyPair the {@link ECKeyPair} to be encrypted
-     * @param n         the "n" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @param p         the "p" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
-     * @param r         the "r" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method
+     * @param password  the passphrase to be used to encrypt.
+     * @param ecKeyPair the {@link ECKeyPair} to be encrypted.
+     * @param n         the "n" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method.
+     * @param p         the "p" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method.
+     * @param r         the "r" parameter for {@link SCrypt#generate(byte[], byte[], int, int, int, int)} method.
      * @return the NEP-2 encrypted private key.
-     * @throws CipherException thrown when the AES/ECB/NoPadding cipher operation fails
+     * @throws CipherException if the AES/ECB/NoPadding cipher operation fails.
      */
-    public static String encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r)
-            throws CipherException {
-
+    public static String encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r) throws CipherException {
         byte[] addressHash = getAddressHash(ecKeyPair);
 
-        byte[] derivedKey = generateDerivedScryptKey(
-                password.getBytes(UTF_8), addressHash, n, r, p, DKLEN);
+        byte[] derivedKey = generateDerivedScryptKey(password.getBytes(UTF_8), addressHash, n, r, p, DKLEN);
 
         byte[] derivedHalf1 = getFirstNBytes(derivedKey, 32);
         byte[] derivedHalf2 = getLastNBytes(derivedKey, 32);
@@ -175,33 +171,28 @@ public class NEP2 {
 
     private static byte[] xorPrivateKeyAndDerivedHalf(ECKeyPair ecKeyPair, byte[] derivedHalf, int from, int to) {
         return xor(
-                Arrays.copyOfRange(ecKeyPair.getPrivateKey().getBytes() , from, to),
+                Arrays.copyOfRange(ecKeyPair.getPrivateKey().getBytes(), from, to),
                 Arrays.copyOfRange(derivedHalf, from, to)
         );
     }
 
-    private static byte[] generateDerivedScryptKey(
-            byte[] password, byte[] salt, int n, int r, int p, int dkLen) {
+    private static byte[] generateDerivedScryptKey(byte[] password, byte[] salt, int n, int r, int p, int dkLen) {
         return SCrypt.generate(password, salt, n, r, p, dkLen);
     }
 
-    private static byte[] generateDerivedScryptKey(
-            byte[] password, byte[] salt, ScryptParams scryptParams, int dkLen) {
+    private static byte[] generateDerivedScryptKey(byte[] password, byte[] salt, ScryptParams scryptParams, int dkLen) {
         return SCrypt.generate(password, salt, scryptParams.getN(), scryptParams.getR(), scryptParams.getP(), dkLen);
     }
 
-    public static byte[] performCipherOperation(
-            int mode, byte[] data, byte[] encryptKey) throws CipherException {
-
+    public static byte[] performCipherOperation(int mode, byte[] data, byte[] encryptKey) throws CipherException {
         try {
             Cipher cipher = Cipher.getInstance("AES/ECB/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
 
             SecretKeySpec secretKeySpec = new SecretKeySpec(encryptKey, "AES");
             cipher.init(mode, secretKeySpec);
             return cipher.doFinal(data);
-        } catch (NoSuchPaddingException | NoSuchAlgorithmException
-                | InvalidKeyException | NoSuchProviderException
-                | BadPaddingException | IllegalBlockSizeException e) {
+        } catch (NoSuchPaddingException | NoSuchAlgorithmException | InvalidKeyException | NoSuchProviderException |
+                 BadPaddingException | IllegalBlockSizeException e) {
             throw new CipherException("Error performing cipher operation", e);
         }
     }
@@ -211,4 +202,5 @@ public class NEP2 {
         byte[] addressHashed = hash256(address.getBytes());
         return getFirstNBytes(addressHashed, 4);
     }
+
 }

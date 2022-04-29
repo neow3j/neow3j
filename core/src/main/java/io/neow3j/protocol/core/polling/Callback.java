@@ -5,4 +5,5 @@ package io.neow3j.protocol.core.polling;
  */
 public interface Callback<T> {
     void onEvent(T value);
+
 }

@@ -17,4 +17,5 @@ public class TransactionConfigurationException extends RuntimeException {
     public TransactionConfigurationException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

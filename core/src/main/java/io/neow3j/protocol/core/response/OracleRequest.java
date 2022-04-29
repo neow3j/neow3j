@@ -38,9 +38,8 @@ public class OracleRequest {
     public OracleRequest() {
     }
 
-    public OracleRequest(BigInteger requestId, Hash256 originalTransactionHash,
-            BigInteger gasForResponse, String url, String filter, Hash160 callbackContract,
-            String callbackMethod, String userData) {
+    public OracleRequest(BigInteger requestId, Hash256 originalTransactionHash, BigInteger gasForResponse, String url,
+            String filter, Hash160 callbackContract, String callbackMethod, String userData) {
         this.requestId = requestId;
         this.originalTransactionHash = originalTransactionHash;
         this.gasForResponse = gasForResponse;
@@ -85,8 +84,8 @@ public class OracleRequest {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getRequestId(), getOriginalTransactionHash(), getGasForResponse(),
-                getUrl(), getFilter(), getCallbackContract(), getCallbackMethod(), getUserData());
+        return Objects.hash(getRequestId(), getOriginalTransactionHash(), getGasForResponse(), getUrl(), getFilter(),
+                getCallbackContract(), getCallbackMethod(), getUserData());
     }
 
     @Override

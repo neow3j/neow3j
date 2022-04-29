@@ -33,11 +33,10 @@ import java.security.Security;
  * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/crypto/LinuxSecureRandom.java">BitcoinJ implementation</a>
  * </p>
  * <br>
- * <p>A SecureRandom implementation that is able to override the standard JVM provided
- * implementation, and which simply serves random numbers by reading /dev/urandom. That is, it
- * delegates to the kernel on UNIX systems and is unusable on other platforms. Attempts to manually
- * set the seed are ignored. There is no difference between seed bytes and non-seed bytes, they are
- * all from the same source.</p>
+ * <p>A SecureRandom implementation that is able to override the standard JVM provided implementation, and which
+ * simply serves random numbers by reading /dev/urandom. That is, it delegates to the kernel on UNIX systems and is
+ * unusable on other platforms. Attempts to manually set the seed are ignored. There is no difference between seed
+ * bytes and non-seed bytes, they are all from the same source.</p>
  */
 public class LinuxSecureRandom extends SecureRandomSpi {
 
@@ -45,8 +44,7 @@ public class LinuxSecureRandom extends SecureRandomSpi {
 
     private static class LinuxSecureRandomProvider extends Provider {
         public LinuxSecureRandomProvider() {
-            super("LinuxSecureRandom", 1.0,
-                    "A Linux specific random number provider that uses /dev/urandom");
+            super("LinuxSecureRandom", 1.0, "A Linux specific random number provider that uses /dev/urandom");
             put("SecureRandom.LinuxSecureRandom", LinuxSecureRandom.class.getName());
         }
     }
@@ -106,4 +104,5 @@ public class LinuxSecureRandom extends SecureRandomSpi {
         engineNextBytes(bits);
         return bits;
     }
+
 }

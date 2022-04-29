@@ -17,4 +17,5 @@ public class WalletStateException extends RuntimeException {
     public WalletStateException(Throwable cause) {
         super(cause);
     }
+
 }

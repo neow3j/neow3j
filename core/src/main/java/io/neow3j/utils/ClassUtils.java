@@ -25,11 +25,11 @@ public class ClassUtils {
     /**
      * Gets the class name for the given internal name.
      * <p>
-     * An internal name is similar to a fully qualified name but the '.' are replaced by '/'. The
-     * returned name is only the last part of the fully qualified name. E.g. {@code
-     * io.neow3j.core.Transaction} becomes {@code Transaction}.
+     * An internal name is similar to a fully qualified name but the '.' are replaced by '/'. The returned name is
+     * only the last part of the fully qualified name. E.g. {@code io.neow3j.core.Transaction} becomes {@code
+     * Transaction}.
      *
-     * @param internalName The internal name to get the simple class name for.
+     * @param internalName the internal name to get the simple class name for.
      * @return the class name.
      */
     public static String getClassNameForInternalName(String internalName) {
@@ -37,18 +37,16 @@ public class ClassUtils {
     }
 
     /**
-     * Gets the input stream of the class with the given name. Uses the given classLoader when
-     * looking for the class file.
+     * Gets the input stream of the class with the given name. Uses the given classLoader when looking for the class
+     * file.
      *
-     * @param fullyQualifiedClassName The fully qualified name of the class to load.
-     * @param classLoader The class loader to use.
+     * @param fullyQualifiedClassName the fully qualified name of the class to load.
+     * @param classLoader             the class loader to use.
      * @return the input stream of the found class file.
      */
-    public static InputStream getClassInputStreamForClassName(String fullyQualifiedClassName,
-            ClassLoader classLoader) {
+    public static InputStream getClassInputStreamForClassName(String fullyQualifiedClassName, ClassLoader classLoader) {
 
-        return classLoader.getResourceAsStream(
-                fullyQualifiedClassName.replace('.', '/') + ".class");
+        return classLoader.getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class");
     }
 
 }

@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 /**
- * A high priority attribute can be used by committee members to prioritize a
- * transaction.
+ * A high priority attribute can be used by committee members to prioritize a transaction.
  */
 public class OracleResponseAttribute extends TransactionAttribute {
 
@@ -42,7 +41,6 @@ public class OracleResponseAttribute extends TransactionAttribute {
     }
 
     /**
-     * Gets the ID of the oracle request/response.
      * @return the ID of the oracle request/response.
      */
     public BigInteger getId() {
@@ -50,7 +48,6 @@ public class OracleResponseAttribute extends TransactionAttribute {
     }
 
     /**
-     * Gets the response code.
      * @return the response code of oracle response.
      */
     public OracleResponseCode getCode() {
@@ -58,7 +55,6 @@ public class OracleResponseAttribute extends TransactionAttribute {
     }
 
     /**
-     * Gets the result bytes.
      * @return the result bytes of the oracle response.
      */
     public byte[] getResult() {
@@ -86,4 +82,5 @@ public class OracleResponseAttribute extends TransactionAttribute {
         writer.writeByte(code.byteValue());
         writer.writeVarBytes(result);
     }
+
 }

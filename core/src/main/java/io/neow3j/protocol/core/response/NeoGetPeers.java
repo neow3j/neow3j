@@ -108,8 +108,12 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof AddressEntry)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof AddressEntry)) {
+                return false;
+            }
             AddressEntry that = (AddressEntry) o;
             return Objects.equals(getAddress(), that.getAddress()) &&
                     Objects.equals(getPort(), that.getPort());
@@ -127,6 +131,7 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
                     ", port=" + port +
                     '}';
         }
+
     }
 
 }

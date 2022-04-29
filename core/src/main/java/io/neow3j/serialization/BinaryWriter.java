@@ -106,10 +106,10 @@ public class BinaryWriter implements AutoCloseable {
     }
 
     /**
-     * Writes the given long (signed 64-bit integer) to the underlying output stream in
-     * little-endian order. The long's byte representation is its two's complement.
+     * Writes the given long (signed 64-bit integer) to the underlying output stream in little-endian order. The
+     * long's byte representation is its two's complement.
      *
-     * @param v the value
+     * @param v the value.
      * @throws IOException if an I/O exception occurs.
      */
     public void writeInt64(long v) throws IOException {
@@ -118,19 +118,17 @@ public class BinaryWriter implements AutoCloseable {
     }
 
     /**
-     * Writes the first (least-significant) 32 bits of the given long (signed 64-bit integer) to the
-     * underlying output stream in little-endian order. I.e. the byte output represents an unsigned
-     * 32-bit integer in the range [0, 2^32).
+     * Writes the first (least-significant) 32 bits of the given long (signed 64-bit integer) to the underlying
+     * output stream in little-endian order. I.e. the byte output represents an unsigned 32-bit integer in the range
+     * [0, 2^32).
      *
      * @param v the value which needs to be in the range [0, 2^32).
      * @throws IOException              if an I/O exception occurs.
-     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0,
-     *                                  2^32).
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^32).
      */
     public void writeUInt32(long v) throws IOException {
         if (v < 0 || v >= (long) Math.pow(2, 32)) {
-            throw new IllegalArgumentException("Value of 32-bit unsigned integer was not in " +
-                    "interval [0, 2^32).");
+            throw new IllegalArgumentException("Value of 32-bit unsigned integer was not in interval [0, 2^32).");
         }
         buffer.putLong(0, v);
         writer.write(array, 0, 4);
@@ -146,8 +144,7 @@ public class BinaryWriter implements AutoCloseable {
         writeSerializableFixed(v);
     }
 
-    public void writeSerializableVariableBytes(List<? extends NeoSerializable> v) throws
-            IOException {
+    public void writeSerializableVariableBytes(List<? extends NeoSerializable> v) throws IOException {
         int sumLength = 0;
         for (int i = 0; i < v.size(); i++) {
             sumLength += v.get(i).toArray().length;
@@ -167,19 +164,16 @@ public class BinaryWriter implements AutoCloseable {
     }
 
     /**
-     * Writes the first (least-significant) 16 bits of the given int (signed 32-bit integer) to the
-     * underlying output stream in little-endian order. I.e. the byte output represents an unsigned
-     * 16-bit integer in the range [0, 2^16).
+     * Writes the first (least-significant) 16 bits of the given int (signed 32-bit integer) to the underlying output
+     * stream in little-endian order. I.e. the byte output represents an unsigned 16-bit integer in the range [0, 2^16).
      *
      * @param v the value which needs to be in the range [0, 2^16).
      * @throws IOException              if an I/O exception occurs.
-     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0,
-     *                                  2^16).
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^16).
      */
     public void writeUInt16(int v) throws IOException {
         if (v < 0 || v >= (int) Math.pow(2, 16)) {
-            throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in " +
-                    "interval [0, 2^16).");
+            throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in interval [0, 2^16).");
         }
         buffer.putInt(0, v);
         writer.write(array, 0, 2);
@@ -209,13 +203,13 @@ public class BinaryWriter implements AutoCloseable {
     }
 
     /**
-     * Writes the given variable-sized string as a UTF8-encoded byte array. The array is prefixed
-     * with its size.
+     * Writes the given variable-sized string as a UTF8-encoded byte array. The array is prefixed with its size.
      *
-     * @param value The string to write.
+     * @param value the string to write.
      * @throws IOException if an I/O exception occurs.
      */
     public void writeVarString(String value) throws IOException {
         writeVarBytes(value.getBytes(UTF_8));
     }
+
 }

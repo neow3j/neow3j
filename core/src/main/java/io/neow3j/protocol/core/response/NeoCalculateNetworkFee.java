@@ -7,4 +7,5 @@ public class NeoCalculateNetworkFee extends Response<NeoNetworkFee> {
     public NeoNetworkFee getNetworkFee() {
         return getResult();
     }
+
 }

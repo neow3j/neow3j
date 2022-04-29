@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * This class is used to produce a JSON object from a transaction that is then used for signing in neo-cli.
- * The {@code ContractParametersContext} contains the script of a Neo transaction and witnesses for that transaction,
+ * This class is used to produce a JSON object from a transaction that is then used for signing in neo-cli. The
+ * {@code ContractParametersContext} contains the script of a Neo transaction and witnesses for that transaction,
  * i.e., verification scripts and the corresponding signatures.
  */
 public class ContractParametersContext {
@@ -89,7 +89,6 @@ public class ContractParametersContext {
             this.parameters = parameters;
             this.signatures = signatures == null ? new HashMap<>() : signatures;
         }
-
 
         /**
          * @return the Base64 string of the verification script.

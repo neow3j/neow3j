@@ -110,43 +110,37 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets the version of this transaction.
-     *
-     * @return the version.
+     * @return the version of this transaction.
      */
     public byte getVersion() {
         return version;
     }
 
     /**
-     * Gets the nonce of this transaction.
-     *
-     * @return the nonce.
+     * @return the nonce of this transaction.
      */
     public long getNonce() {
         return nonce;
     }
 
     /**
-     * Gets the validity period of this transaction.
-     *
-     * @return the validity period.
+     * @return the validity period of this transaction.
      */
     public long getValidUntilBlock() {
         return validUntilBlock;
     }
 
     /**
-     * Gets the signers of this transaction.
-     *
-     * @return the transaction signers.
+     * @return the signers of this transaction.
      */
     public List<Signer> getSigners() {
         return signers;
     }
 
     /**
-     * Gets the sender of this transaction. The sender is the account that pays for the transaction's fees.
+     * Gets the sender of this transaction.
+     * <p>
+     * The sender is the account that pays for the transaction's fees.
      *
      * @return the sender account's script hash.
      */
@@ -162,35 +156,27 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets the system fee of this transaction.
-     *
-     * @return the system fee in GAS fractions.
+     * @return the system fee of this transaction in GAS fractions.
      */
     public long getSystemFee() {
         return systemFee;
     }
 
     /**
-     * Gets the network fee of this transaction.
-     *
-     * @return the network fee in GAS fractions.
+     * @return the network fee of this transaction in GAS fractions.
      */
     public long getNetworkFee() {
         return networkFee;
     }
 
     /**
-     * Get the attributes of this transaction.
-     *
-     * @return the attributes.
+     * @return the attributes of this transaction.
      */
     public List<TransactionAttribute> getAttributes() {
         return attributes;
     }
 
     /**
-     * Get the script of this transaction.
-     *
      * @return the script of this transaction.
      */
     public byte[] getScript() {
@@ -198,8 +184,6 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Get the witnesses of this transaction.
-     *
      * @return the witnesses of this transaction.
      */
     public List<Witness> getWitnesses() {
@@ -224,7 +208,7 @@ public class Transaction extends NeoSerializable {
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
      *
-     * @param account The account to sign with.
+     * @param account the account to sign with.
      * @return this.
      * @throws IOException if an error occurs when fetching the network's magic number.
      */
@@ -289,9 +273,7 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's uniquely identifying ID/hash.
-     *
-     * @return the transaction ID.
+     * @return this transaction's uniquely identifying ID/hash.
      */
     public Hash256 getTxId() {
         return new Hash256(reverseArray(sha256(toArrayWithoutWitnesses())));
@@ -396,8 +378,8 @@ public class Transaction extends NeoSerializable {
         long nrOfAttributes = reader.readVarInt();
         if (nrOfAttributes + this.signers.size() > NeoConstants.MAX_TRANSACTION_ATTRIBUTES) {
             throw new DeserializationException(
-                    "A transaction can hold at most " + NeoConstants.MAX_TRANSACTION_ATTRIBUTES +
-                            " attributes (including signers). Input data had " + nrOfAttributes + " attributes.");
+                    format("A transaction can hold at most %s attributes (including signers). Input data had %s " +
+                            "attributes.", NeoConstants.MAX_TRANSACTION_ATTRIBUTES, nrOfAttributes));
         }
         for (int i = 0; i < nrOfAttributes; i++) {
             this.attributes.add(TransactionAttribute.deserializeAttribute(reader));
@@ -426,7 +408,7 @@ public class Transaction extends NeoSerializable {
      * <p>
      * In this form, the transaction byte array can be used for example to create a signature.
      *
-     * @return the serialized transaction
+     * @return the serialized transaction.
      */
     public byte[] toArrayWithoutWitnesses() {
         try (ByteArrayOutputStream ms = new ByteArrayOutputStream()) {

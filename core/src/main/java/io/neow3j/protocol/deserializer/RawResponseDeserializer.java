@@ -34,8 +34,8 @@ public class RawResponseDeserializer
         return deserializedResponse;
     }
 
-    // Must implement ResolvableDeserializer when modifying BeanDeserializer
-    // otherwise deserializing throws JsonMappingException
+    // Must implement ResolvableDeserializer when modifying BeanDeserializer. Otherwise, deserializing throws a
+    // JsonMappingException.
     @Override
     public void resolve(DeserializationContext ctxt) throws JsonMappingException {
         ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
@@ -56,4 +56,5 @@ public class RawResponseDeserializer
     private String streamToString(InputStream input) throws IOException {
         return new Scanner(input, StandardCharsets.UTF_8.name()).useDelimiter("\\Z").next();
     }
+
 }

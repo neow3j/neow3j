@@ -18,4 +18,5 @@ public class SignerConfigurationException extends RuntimeException {
     public SignerConfigurationException(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

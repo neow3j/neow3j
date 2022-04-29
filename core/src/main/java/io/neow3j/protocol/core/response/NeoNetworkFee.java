@@ -2,6 +2,7 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.math.BigInteger;
 import java.util.Objects;
 
@@ -45,4 +46,5 @@ public class NeoNetworkFee {
                 "networkFee=" + networkFee +
                 '}';
     }
+
 }

@@ -25,10 +25,9 @@ import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
 /**
- * Utility class used to wait for blockchain related events like the inclusion of a transaction in a
- * block or the deployment of a contract. The maximum time that these utility methods will wait for
- * a specific event is set in {@link Await#MAX_WAIT_TIME}. After that time, the methods will timeout
- * and throw an exception.
+ * Utility class used to wait for blockchain related events like the inclusion of a transaction in a block or the
+ * deployment of a contract. The maximum time that these utility methods will wait for a specific event is set in
+ * {@link Await#MAX_WAIT_TIME}. After that time, the methods will timeout and throw an exception.
  */
 public class Await {
 
@@ -37,9 +36,9 @@ public class Await {
     /**
      * Checks and waits until the token balance of the given script hash is greater than zero.
      *
-     * @param scriptHash The account's script hash.
-     * @param token   The script hash of the token to check the balance for.
-     * @param neow3j  The {@code Neow3j} object to use to connect to a neo-node.
+     * @param scriptHash the account's script hash.
+     * @param token      the script hash of the token to check the balance for.
+     * @param neow3j     the {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token,
             Neow3j neow3j) {
@@ -49,8 +48,8 @@ public class Await {
     /**
      * Checks and waits until the block count (height) is greater than {@code blockCount}.
      *
-     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
-     * @param blockCount The block count (height) that is waited for.
+     * @param neow3j     the {@code Neow3j} object to use to connect to a neo-node.
+     * @param blockCount the block count (height) that is waited for.
      */
     public static void waitUntilBlockCountIsGreaterThan(Neow3j neow3j, BigInteger blockCount) {
         waitUntil(callableGetBlockCount(neow3j), greaterThan(blockCount));
@@ -59,7 +58,7 @@ public class Await {
     /**
      * Checks and waits until the block count (height) is greater than zero.
      *
-     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     * @param neow3j the {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilBlockCountIsGreaterThanZero(Neow3j neow3j) {
         waitUntilBlockCountIsGreaterThan(neow3j, BigInteger.ZERO);
@@ -68,8 +67,8 @@ public class Await {
     /**
      * Checks and waits until the contract with the given script hash is seen on the blockchain.
      *
-     * @param contract The contract's script hash.
-     * @param neow3j   The {@code Neow3j} object to use to connect to a neo-node.
+     * @param contract the contract's script hash.
+     * @param neow3j   the {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilContractIsDeployed(Hash160 contract, Neow3j neow3j) {
         waitUntil(callableGetContractState(contract, neow3j), Matchers.is(true));
@@ -78,61 +77,54 @@ public class Await {
     /**
      * Checks and waits until the transaction with the given hash is seen on the blockchain.
      *
-     * @param txHash The transaction hash.
-     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     * @param txHash the transaction hash.
+     * @param neow3j the {@code Neow3j} object to use to connect to a neo-node.
      */
     public static void waitUntilTransactionIsExecuted(Hash256 txHash, Neow3j neow3j) {
         waitUntil(callableGetTxHash(txHash, neow3j), notNullValue());
     }
 
     /**
-     * Checks and waits until the wallet open on the neo-node has a {@code token}balance greater
-     * or equal to {@code amount}.
+     * Checks and waits until the wallet open on the neo-node has a {@code token}balance greater or equal to {@code
+     * amount}.
      *
-     * @param amount The amount to compare the balance to.
-     * @param token  The token's script hash.
-     * @param neow3j The {@code Neow3j} object to use to connect to a neo-node.
+     * @param amount the amount to compare the balance to.
+     * @param token  the token's script hash.
+     * @param neow3j the {@code Neow3j} object to use to connect to a neo-node.
      */
-    public static void waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(String amount,
-            Hash160 token, Neow3j neow3j) {
-
+    public static void waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(String amount, Hash160 token, Neow3j neow3j) {
         waitUntil(callableGetBalance(token, neow3j), greaterThanOrEqualTo(new BigDecimal(amount)));
     }
 
     /**
-     * Waits until the {@code callable} function returns a condition that is satisfied by the
-     * {@code matcher}. Uses the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
+     * Waits until the {@code callable} function returns a condition that is satisfied by the {@code matcher}. Uses
+     * the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
      *
-     * @param callable The function to be called.
-     * @param matcher  The condition to be evaluated.
-     * @param <T>      The type that the callable function and condition should be compatible with.
+     * @param callable the function to be called.
+     * @param matcher  the condition to be evaluated.
+     * @param <T>      the type that the callable function and condition should be compatible with.
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
         waitUntil(callable, matcher, MAX_WAIT_TIME, TimeUnit.SECONDS);
     }
 
     /**
-     * Waits until the {@code callable} function returns a condition that is satisfied by the
-     * {@code matcher}.
+     * Waits until the {@code callable} function returns a condition that is satisfied by the {@code matcher}.
      *
-     * @param callable    The function to be called.
-     * @param matcher     The condition to be evaluated.
-     * @param maxWaitTime The maximum amount of time to wait.
-     * @param unit        The time unit for the {@code maxWaitTime} param.
-     * @param <T>         The type that the callable function and condition should be
-     *                    compatible with.
+     * @param callable    the function to be called.
+     * @param matcher     the condition to be evaluated.
+     * @param maxWaitTime the maximum amount of time to wait.
+     * @param unit        the time unit for the {@code maxWaitTime} param.
+     * @param <T>         the type that the callable function and condition should be compatible with.
      */
-    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher,
-            int maxWaitTime, TimeUnit unit) {
+    public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher, int maxWaitTime, TimeUnit unit) {
         await().timeout(maxWaitTime, unit).until(callable, matcher);
     }
 
-    private static Callable<Boolean> callableGetContractState(Hash160 contractHash160,
-            Neow3j neow3j) {
+    private static Callable<Boolean> callableGetContractState(Hash160 contractHash160, Neow3j neow3j) {
         return () -> {
             try {
-                NeoGetContractState response =
-                        neow3j.getContractState(contractHash160).send();
+                NeoGetContractState response = neow3j.getContractState(contractHash160).send();
                 if (response.hasError()) {
                     return false;
                 }
@@ -154,12 +146,10 @@ public class Await {
         };
     }
 
-    private static Callable<Long> callableGetBalance(Hash160 scriptHash, Hash160 tokenHash160,
-            Neow3j neow3j) {
+    private static Callable<Long> callableGetBalance(Hash160 scriptHash, Hash160 tokenHash160, Neow3j neow3j) {
         return () -> {
             try {
-                List<Nep17Balance> balances = neow3j.getNep17Balances(scriptHash).send()
-                        .getBalances().getBalances();
+                List<Nep17Balance> balances = neow3j.getNep17Balances(scriptHash).send().getBalances().getBalances();
                 return balances.stream()
                         .filter(b -> b.getAssetHash().equals(tokenHash160))
                         .findFirst()

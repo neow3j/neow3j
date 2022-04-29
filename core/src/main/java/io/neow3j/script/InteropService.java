@@ -1,16 +1,16 @@
 package io.neow3j.script;
 
 import io.neow3j.crypto.Hash;
-import io.neow3j.script.OpCode;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
 
 import java.nio.charset.StandardCharsets;
 
+import static java.lang.String.format;
+
 /**
- * Enumerates all the interoperability services that a neo-node should provide to the neo-vm
- * execution environment. These services can be used in smart contract code via the
- * {@link OpCode#SYSCALL} instruction.
+ * Enumerates all the interoperability services that a neo-node should provide to the NeoVM execution environment.
+ * These services can be used in smart contract code via the {@link OpCode#SYSCALL} instruction.
  */
 public enum InteropService {
 
@@ -63,8 +63,8 @@ public enum InteropService {
     /**
      * Constructs a new interop service code.
      *
-     * @param name  The name of the service.
-     * @param price The execution GAS price of the code.
+     * @param name  the name of the service.
+     * @param price the execution GAS price of the code.
      */
     InteropService(String name, long price) {
         this.name = name;
@@ -72,18 +72,14 @@ public enum InteropService {
     }
 
     /**
-     * Gets the name of the interop service code.
-     *
-     * @return the name.
+     * @return the name of the interop service code.
      */
     public String getName() {
         return this.name;
     }
 
     /**
-     * Gets this {@code InteropServiceCode}'s hash (4 bytes) as a hex string.
-     *
-     * @return the hash.
+     * @return this {@code InteropServiceCode}'s hash (4 bytes) as a hex string.
      */
     public String getHash() {
         byte[] sha256 = Hash.sha256(this.getName().getBytes(StandardCharsets.US_ASCII));
@@ -91,17 +87,16 @@ public enum InteropService {
     }
 
     /**
-     * Price for executing the service. This is a relative price that is multiplied with the
-     * {@code execFeeFactor} for the definitive GAS price.
+     * Gets the price for executing the service.
+     * <p>This is a relative price that is multiplied with the {@code execFeeFactor} for the definitive GAS price.
      *
      * @return the price.
-     * @throws UnsupportedOperationException if the {@code InteropServiceCode} does not have a
-     *                                       fixed price.
+     * @throws UnsupportedOperationException if the {@code InteropServiceCode} does not have a fixed price.
      */
     public long getPrice() {
         if (price == 0) {
-            throw new UnsupportedOperationException("The price of the interop service "
-                    + this.getName() + " is not fixed.");
+            throw new UnsupportedOperationException(
+                    format("The price of the interop service %s is not fixed.", this.getName()));
         }
         return this.price;
     }
@@ -110,4 +105,5 @@ public enum InteropService {
     public String toString() {
         return getName();
     }
+
 }

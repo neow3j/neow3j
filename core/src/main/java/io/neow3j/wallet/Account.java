@@ -33,6 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+import static io.neow3j.utils.AddressUtils.isValidAddress;
+import static java.lang.String.format;
+
 /**
  * Represents a Neo account.
  * <p>
@@ -107,7 +110,9 @@ public class Account {
      * @return whether the account is default.
      */
     public Boolean isDefault() {
-        if (this.wallet == null) return false;
+        if (this.wallet == null) {
+            return false;
+        }
         return this.wallet.isDefault(this.getScriptHash());
     }
 
@@ -141,13 +146,13 @@ public class Account {
      * default Scrypt parameters.
      *
      * @param password the passphrase used to decrypt this account's private key.
-     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       throws if failed encrypt the created wallet.
-     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase if the passphrase is not valid.
      * @throws AccountStateException if
      *                               <ul>
-     *                               <li>the account doesn't hold an encrypted private key
-     *                               <li>the account does already hold a decrypted private key
+     *                               <li>the account doesn't hold an encrypted private key.
+     *                               <li>the account does already hold a decrypted private key.
      *                               <li>the public key derived from the decrypted private key is not equal to the
      *                               already set public key.
      *                               </ul>
@@ -161,19 +166,19 @@ public class Account {
      *
      * @param password     the passphrase used to decrypt this account's private key.
      * @param scryptParams the Scrypt parameters used for decryption.
-     * @throws NEP2InvalidFormat     throws if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       throws if failed encrypt the created wallet.
-     * @throws NEP2InvalidPassphrase throws if the passphrase is not valid.
+     * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
+     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws NEP2InvalidPassphrase if the passphrase is not valid.
      * @throws AccountStateException if
      *                               <ul>
-     *                               <li>the account doesn't hold an encrypted private key
-     *                               <li>the account does already hold a decrypted private key
+     *                               <li>the account doesn't hold an encrypted private key.
+     *                               <li>the account does already hold a decrypted private key.
      *                               <li>the public key derived from the decrypted private key is not equal to the
      *                               already set public key.
      *                               </ul>
      */
-    public void decryptPrivateKey(String password, ScryptParams scryptParams) throws NEP2InvalidFormat,
-            CipherException, NEP2InvalidPassphrase {
+    public void decryptPrivateKey(String password, ScryptParams scryptParams)
+            throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
 
         if (this.keyPair != null) {
             return;
@@ -188,14 +193,14 @@ public class Account {
      * Encrypts this account's private key according to the NEP-2 standard using the default Scrypt parameters.
      *
      * @param password the passphrase used to encrypt this account's private key.
-     * @throws CipherException if failed encrypt the created wallet.
+     * @throws CipherException if the encryption of the created wallet failed.
      */
     public void encryptPrivateKey(String password) throws CipherException {
         encryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
 
     /**
-     * Encrypts this account's private key according to the NEP-2 standard and
+     * Encrypts this account's private key according to the NEP-2 standard.
      *
      * @param password     the passphrase used to encrypt this account's private key.
      * @param scryptParams the Scrypt parameters used for encryption.
@@ -220,14 +225,12 @@ public class Account {
     }
 
     /**
-     * Returns the signing threshold if this is a multi-sig account
-     *
-     * @return the signing threshold.
+     * @return the signing threshold if this is a multi-sig account.
      */
     public Integer getSigningThreshold() {
         if (!isMultiSig()) {
-            throw new AccountStateException("Cannot get signing threshold from account " + this.getAddress() +
-                    ", because it is not multi-sig.");
+            throw new AccountStateException(format("Cannot get signing threshold from account %s, because it is not " +
+                    "multi-sig.", this.getAddress()));
         }
         return signingThreshold;
     }
@@ -239,8 +242,8 @@ public class Account {
      */
     public Integer getNrOfParticipants() {
         if (!isMultiSig()) {
-            throw new AccountStateException("Cannot get number of participants from account " + this.getAddress() +
-                    ", because it is not multi-sig.");
+            throw new AccountStateException(format("Cannot get number of participants from account %s, because it is " +
+                    "not multi-sig.", this.getAddress()));
         }
         return nrOfParticipants;
     }
@@ -253,9 +256,9 @@ public class Account {
      * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached locally. Every
      * time this method is called a request is send to the neo-node.
      *
-     * @param neow3j the {@link Neow3j} object used to call a neo-node.
+     * @param neow3j the {@link Neow3j} object used to call a Neo node.
      * @return the map of token script hashes to token amounts.
-     * @throws IOException if something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public Map<Hash160, BigInteger> getNep17Balances(Neow3j neow3j) throws IOException {
         NeoGetNep17Balances result = neow3j.getNep17Balances(getScriptHash()).send();
@@ -311,7 +314,7 @@ public class Account {
      * Derives the verification script from the public key, which is needed to calculate the network fee of a
      * transaction.
      *
-     * @param publicKey The public key.
+     * @param publicKey the public key.
      * @return the account with a verification script.
      */
     public static Account fromPublicKey(ECPublicKey publicKey) {
@@ -417,7 +420,7 @@ public class Account {
      * @return the account.
      */
     public static Account fromAddress(String address) {
-        if (!AddressUtils.isValidAddress(address)) {
+        if (!isValidAddress(address)) {
             throw new IllegalArgumentException("Invalid address.");
         }
         Account account = new Account();

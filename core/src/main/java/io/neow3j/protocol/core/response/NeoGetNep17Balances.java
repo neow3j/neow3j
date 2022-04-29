@@ -55,9 +55,15 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Nep17Balan
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep17Balance)) return false;
-            if (!super.equals(o)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep17Balance)) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
             Nep17Balance that = (Nep17Balance) o;
             return Objects.equals(amount, that.amount) &&
                     Objects.equals(lastUpdatedBlock, that.lastUpdatedBlock);
@@ -67,6 +73,7 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Nep17Balan
         public int hashCode() {
             return Objects.hash(super.hashCode(), amount, lastUpdatedBlock);
         }
+
     }
 
 }

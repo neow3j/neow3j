@@ -21,11 +21,11 @@ import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 /**
- * A Hash160 is a 20 bytes long hash created from some data by first applying SHA-256 and then
- * RIPEMD-160. These hashes are mostly used for obtaining the script hash of a smart contract or an
- * account.
+ * A Hash160 is a 20 bytes long hash created from some data by first applying SHA-256 and then RIPEMD-160. These
+ * hashes are mostly used for obtaining the script hash of a smart contract or an account.
  */
 public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
@@ -47,8 +47,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Constructs a new hash from the given byte array. The byte array must be in big-endian
-     * order and 160 bits long.
+     * Constructs a new hash from the given byte array. The byte array must be in big-endian order and 160 bits long.
      *
      * @param hash the hash in big-endian order.
      */
@@ -58,8 +57,8 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Constructs a new hash from the given hexadecimal string. The string must be in big-endian
-     * order and 160 bits long.
+     * Constructs a new hash from the given hexadecimal string. The string must be in big-endian order and 160 bits
+     * long.
      *
      * @param hash the hash in big-endian order.
      */
@@ -92,9 +91,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Gets the script hash as a byte array in big-endian order.
-     *
-     * @return the script hash byte array in big-endian order.
+     * @return the script hash as a byte array in big-endian order.
      */
     @Override
     public byte[] toArray() {
@@ -102,18 +99,14 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Gets the script hash as a byte array in little-endian order.
-     *
-     * @return the script hash byte array in little-endian order.
+     * @return the script hash as a byte array in little-endian order.
      */
     public byte[] toLittleEndianArray() {
         return reverseArray(hash);
     }
 
     /**
-     * Gets the script hash as a hexadecimal string in big-endian order without the '0x' prefix.
-     *
-     * @return the script hash as hex string in big-endian order.
+     * @return the script hash as a hexadecimal string in big-endian order without the '0x' prefix.
      */
     @JsonValue
     public String toString() {
@@ -121,9 +114,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
-     * Derives the address corresponding to this script hash.
-     *
-     * @return the address.
+     * @return the address corresponding to this script hash.
      */
     public String toAddress() {
         return scriptHashToAddress(hash);
@@ -153,8 +144,7 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
         return fromScript(buildVerificationScript(encodedPublicKey));
     }
 
-    public static Hash160 fromPublicKeys(List<ECKeyPair.ECPublicKey> pubKeys,
-            int signingThreshold) {
+    public static Hash160 fromPublicKeys(List<ECKeyPair.ECPublicKey> pubKeys, int signingThreshold) {
         return fromScript(buildVerificationScript(pubKeys, signingThreshold));
     }
 
@@ -170,15 +160,14 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
 
     private void checkAndThrowHashLength(byte[] hash) {
         if (hash.length != NeoConstants.HASH160_SIZE) {
-            throw new IllegalArgumentException("Hash must be " + NeoConstants.HASH160_SIZE +
-                    " bytes long but was " + hash.length + " bytes.");
+            throw new IllegalArgumentException(
+                    format("Hash must be %s bytes long but was %s bytes.", NeoConstants.HASH160_SIZE, hash.length));
         }
     }
 
     @Override
     public int compareTo(Hash160 o) {
-        return new BigInteger(1, hash)
-                .compareTo(new BigInteger(1, o.toArray()));
+        return new BigInteger(1, hash).compareTo(new BigInteger(1, o.toArray()));
     }
 
     @Override

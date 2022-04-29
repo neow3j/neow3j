@@ -38,8 +38,8 @@ public abstract class TransactionAttribute extends NeoSerializable {
     public void deserialize(BinaryReader reader) throws DeserializationException {
         try {
             if (!TransactionAttributeType.valueOf(reader.readByte()).equals(this.type)) {
-                throw new DeserializationException("The deserialized type does not match the type "
-                        + "information in the serialized data.");
+                throw new DeserializationException("The deserialized type does not match the type information in the " +
+                        "serialized data.");
             }
             deserializeWithoutType(reader);
         } catch (IOException e) {

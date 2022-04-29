@@ -49,9 +49,15 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep11Balance)) return false;
-            if (!super.equals(o)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep11Balance)) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
             Nep11Balance that = (Nep11Balance) o;
             return Objects.equals(tokens, that.tokens);
         }
@@ -95,8 +101,12 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
 
             @Override
             public boolean equals(Object o) {
-                if (this == o) return true;
-                if (!(o instanceof Nep11Token)) return false;
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof Nep11Token)) {
+                    return false;
+                }
                 Nep11Token that = (Nep11Token) o;
                 return Objects.equals(tokenId, that.tokenId) &&
                         Objects.equals(amount, that.amount) &&

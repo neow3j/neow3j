@@ -29,19 +29,14 @@ public class NeoGetNep11Transfers extends Response<NeoGetNep11Transfers.Nep11Tra
         public Nep11Transfer() {
         }
 
-        public Nep11Transfer(long timestamp, Hash160 assetHash, String transferAddress,
-                BigInteger amount, long blockIndex, long transferNotifyIndex, Hash256 txHash,
-                String tokenId) {
-
-            super(timestamp, assetHash, transferAddress, amount, blockIndex, transferNotifyIndex,
-                    txHash);
+        public Nep11Transfer(long timestamp, Hash160 assetHash, String transferAddress, BigInteger amount,
+                long blockIndex, long transferNotifyIndex, Hash256 txHash, String tokenId) {
+            super(timestamp, assetHash, transferAddress, amount, blockIndex, transferNotifyIndex, txHash);
             this.tokenId = tokenId;
         }
 
         /**
-         * Gets the ID of the token involved in this transfer.
-         *
-         * @return The ID as a hexadecimal string.
+         * @return the ID of the token involved in this transfer as a hexadecimal string.
          */
         public String getTokenId() {
             return tokenId;
@@ -49,9 +44,15 @@ public class NeoGetNep11Transfers extends Response<NeoGetNep11Transfers.Nep11Tra
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Nep11Transfer)) return false;
-            if (!super.equals(o)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Nep11Transfer)) {
+                return false;
+            }
+            if (!super.equals(o)) {
+                return false;
+            }
             Nep11Transfer that = (Nep11Transfer) o;
             return Objects.equals(tokenId, that.tokenId);
         }
@@ -60,6 +61,7 @@ public class NeoGetNep11Transfers extends Response<NeoGetNep11Transfers.Nep11Tra
         public int hashCode() {
             return Objects.hash(super.hashCode(), tokenId);
         }
+
     }
 
 }

@@ -1,8 +1,10 @@
 package io.neow3j.script;
 
-import io.neow3j.utils.Numeric;
-
 import java.lang.annotation.Annotation;
+
+import static io.neow3j.utils.Numeric.toHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 /**
  * This enum contains a <b>subset</b> of NEO VM opcodes.
@@ -13,8 +15,7 @@ public enum OpCode {
 
 //region Constants
 
-    // Push a signed integer of the given bit length in its two's complement and little-endian
-    // order.
+    // Push a signed integer of the given bit length in its two's complement and little-endian order.
     @OperandSize(size = 1)
     PUSHINT8(0x00, 1),
 
@@ -162,155 +163,141 @@ public enum OpCode {
     NOP(0x21, 1),
 
     /**
-     * Unconditionally transfers control to a target instruction. The target instruction is
-     * represented as a 1-byte signed offset from the beginning of the current instruction.
+     * Unconditionally transfers control to a target instruction. The target instruction is represented as a 1-byte
+     * signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMP(0x22, 1 << 1),
 
     /**
-     * Unconditionally transfers control to a target instruction. The target instruction is
-     * represented as a 4-bytes signed offset from the beginning of the current instruction.
+     * Unconditionally transfers control to a target instruction. The target instruction is represented as a 4-bytes
+     * signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMP_L(0x23, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the value is "true", not "null", or non-zero.
-     * The target instruction is represented as a 1-byte signed offset from the beginning of the
-     * current instruction.
+     * Transfers control to a target instruction if the value is "true", not "null", or non-zero. The target
+     * instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPIF(0x24, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the value is "true", not "null", or non-zero.
-     * The target instruction is represented as a 4-bytes signed offset from the beginning of the
-     * current instruction.
+     * Transfers control to a target instruction if the value is "true", not "null", or non-zero. The target
+     * instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPIF_L(0x25, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the value is "false", a "null" reference, or
-     * zero. The target instruction is represented as a 1-byte signed offset from the beginning of
-     * the current instruction.
+     * Transfers control to a target instruction if the value is "false", a "null" reference, or zero. The target
+     * instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPIFNOT(0x26, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the value is "false", a "null" reference, or
-     * zero. The target instruction is represented as a 4-bytes signed offset from the beginning of
-     * the current instruction.
+     * Transfers control to a target instruction if the value is "false", a "null" reference, or zero. The target
+     * instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPIFNOT_L(0x27, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if two values are equal. The target instruction is
-     * represented as a 1-byte signed offset from the beginning of the current instruction.
+     * Transfers control to a target instruction if two values are equal. The target instruction is represented as a
+     * 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPEQ(0x28, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if two values are equal. The target instruction is
-     * represented as a 4-bytes signed offset from the beginning of the current instruction.
+     * Transfers control to a target instruction if two values are equal. The target instruction is represented as a
+     * 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPEQ_L(0x29, 1 << 1),
 
     /**
-     * Transfers control to a target instruction when two values are not equal. The target
-     * instruction is represented as a 1-byte signed offset from the beginning of the current
-     * instruction.
+     * Transfers control to a target instruction when two values are not equal. The target instruction is represented
+     * as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPNE(0x2A, 1 << 1),
 
     /**
-     * Transfers control to a target instruction when two values are not equal. The target
-     * instruction is represented as a 4-bytes signed offset from the beginning of the current
-     * instruction.
+     * Transfers control to a target instruction when two values are not equal. The target instruction is represented
+     * as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPNE_L(0x2B, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is greater than the second
-     * value. The target instruction is represented as a 1-byte signed offset from the beginning of
-     * the current instruction.
+     * Transfers control to a target instruction if the first value is greater than the second value. The target
+     * instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPGT(0x2C, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is greater than the second
-     * value. The target instruction is represented as a 4-bytes signed offset from the beginning of
-     * the current instruction.
+     * Transfers control to a target instruction if the first value is greater than the second value. The target
+     * instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPGT_L(0x2D, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is greater than or equal to the
-     * second value. The target instruction is represented as a 1-byte signed offset from the
-     * beginning of the current instruction.
+     * Transfers control to a target instruction if the first value is greater than or equal to the second value. The
+     * target instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPGE(0x2E, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is greater than or equal to the
-     * second value. The target instruction is represented as a 4-bytes signed offset from the
-     * beginning of the current instruction.
+     * Transfers control to a target instruction if the first value is greater than or equal to the second value. The
+     * target instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPGE_L(0x2F, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is less than the second value.
-     * The target instruction is represented as a 1-byte signed offset from the beginning of the
-     * current instruction.
+     * Transfers control to a target instruction if the first value is less than the second value. The target
+     * instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPLT(0x30, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is less than the second value.
-     * The target instruction is represented as a 4-bytes signed offset from the beginning of the
-     * current instruction.
+     * Transfers control to a target instruction if the first value is less than the second value. The target
+     * instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPLT_L(0x31, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is less than or equal to the
-     * second value. The target instruction is represented as a 1-byte signed offset from the
-     * beginning of the current instruction.
+     * Transfers control to a target instruction if the first value is less than or equal to the second value. The
+     * target instruction is represented as a 1-byte signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 1)
     JMPLE(0x32, 1 << 1),
 
     /**
-     * Transfers control to a target instruction if the first value is less than or equal to the
-     * second value. The target instruction is represented as a 4-bytes signed offset from the
-     * beginning of the current instruction.
+     * Transfers control to a target instruction if the first value is less than or equal to the second value. The
+     * target instruction is represented as a 4-bytes signed offset from the beginning of the current instruction.
      */
     @OperandSize(size = 4)
     JMPLE_L(0x33, 1 << 1),
 
     /**
-     * Calls the function at the target address which is represented as a 1-byte signed offset from
-     * the beginning of the current instruction.
+     * Calls the function at the target address which is represented as a 1-byte signed offset from the beginning of
+     * the current instruction.
      */
     @OperandSize(size = 1)
     CALL(0x34, 1 << 9),
 
     /**
-     * Calls the function at the target address which is represented as a 4-bytes signed offset from
-     * the beginning of the current instruction.
+     * Calls the function at the target address which is represented as a 4-bytes signed offset from the beginning of
+     * the current instruction.
      */
     @OperandSize(size = 4)
     CALL_L(0x35, 1 << 9),
@@ -332,8 +319,7 @@ public enum OpCode {
     ABORT(0x38, 0),
 
     /**
-     * Pop the top value of the stack, if it's false, then exit vm execution and set vm state to
-     * FAULT.
+     * Pop the top value of the stack, if it's false, then exit vm execution and set VM state to FAULT.
      */
     ASSERT(0x39, 1),
 
@@ -343,38 +329,38 @@ public enum OpCode {
     THROW(0x3A, 1 << 9),
 
     /**
-     * TRY CatchOffset(sbyte) FinallyOffset(sbyte). If there's no catch body, set CatchOffset 0. If
-     * there's no finally body, set FinallyOffset 0.
+     * TRY CatchOffset(sbyte) FinallyOffset(sbyte). If there's no catch body, set CatchOffset 0. If there's no
+     * finally body, set FinallyOffset 0.
      */
     @OperandSize(size = 2)
     TRY(0x3B, 1 << 2),
 
     /**
-     * TRY_L CatchOffset(int) FinallyOffset(int). If there's no catch body, set CatchOffset 0. If
-     * there's no finally body, set FinallyOffset 0.
+     * TRY_L CatchOffset(int) FinallyOffset(int). If there's no catch body, set CatchOffset 0. If there's no finally
+     * body, set FinallyOffset 0.
      */
     @OperandSize(size = 8)
     TRY_L(0x3C, 1 << 2),
 
     /**
-     * Ensures that the appropriate surrounding finally blocks are executed. And then
-     * unconditionally transfers control to the specific target instruction, represented as a 1-byte
-     * signed offset from the beginning of the current instruction.
+     * Ensures that the appropriate surrounding finally blocks are executed. And then unconditionally transfers
+     * control to the specific target instruction, represented as a 1-byte signed offset from the beginning of the
+     * current instruction.
      */
     @OperandSize(size = 1)
     ENDTRY(0x3D, 1 << 2),
 
     /**
-     * Ensures that the appropriate surrounding finally blocks are executed. And then
-     * unconditionally transfers control to the specific target instruction, represented as a 4-byte
-     * signed offset from the beginning of the current instruction.
+     * Ensures that the appropriate surrounding finally blocks are executed. And then unconditionally transfers
+     * control to the specific target instruction, represented as a 4-byte signed offset from the beginning of the
+     * current instruction.
      */
     @OperandSize(size = 4)
     ENDTRY_L(0x3E, 1 << 2),
 
     /**
-     * End finally, If no exception happen or be catched, vm will jump to the target instruction of
-     * ENDTRY/ENDTRY_L. Otherwise, vm will rethrow the exception to upper layer.
+     * End finally, If no exception happen or be catched, vm will jump to the target instruction of ENDTRY/ENDTRY_L.
+     * Otherwise, the VM will rethrow the exception to upper layer.
      */
     ENDFINALLY(0x3F, 1 << 2),
 
@@ -520,8 +506,8 @@ public enum OpCode {
     LDSFLD6(0x5E, 1 << 1),
 
     /**
-     * Loads the static field at a specified index onto the evaluation stack. The index is
-     * represented as a 1-byte unsigned integer.
+     * Loads the static field at a specified index onto the evaluation stack. The index is represented as a 1-byte
+     * unsigned integer.
      */
     @OperandSize(size = 1)
     LDSFLD(0x5F, 1 << 1),
@@ -562,8 +548,8 @@ public enum OpCode {
     STSFLD6(0x66, 1 << 1),
 
     /**
-     * Stores the value on top of the evaluation stack in the static field list at a specified
-     * index. The index is represented as a 1-byte unsigned integer.
+     * Stores the value on top of the evaluation stack in the static field list at a specified index. The index is
+     * represented as a 1-byte unsigned integer.
      */
     @OperandSize(size = 1)
     STSFLD(0x67, 1 << 1),
@@ -604,8 +590,8 @@ public enum OpCode {
     LDLOC6(0x6E, 1 << 1),
 
     /**
-     * Loads the local variable at a specified index onto the evaluation stack. The index is
-     * represented as a 1-byte unsigned integer.
+     * Loads the local variable at a specified index onto the evaluation stack. The index is represented as a 1-byte
+     * unsigned integer.
      */
     @OperandSize(size = 1)
     LDLOC(0x6F, 1 << 1),
@@ -646,8 +632,8 @@ public enum OpCode {
     STLOC6(0x76, 1 << 1),
 
     /**
-     * Stores the value on top of the evaluation stack in the local variable list at a specified
-     * index. The index is represented as a 1-byte unsigned integer.
+     * Stores the value on top of the evaluation stack in the local variable list at a specified index. The index is
+     * represented as a 1-byte unsigned integer.
      */
     @OperandSize(size = 1)
     STLOC(0x77, 1 << 1),
@@ -688,8 +674,8 @@ public enum OpCode {
     LDARG6(0x7E, 1 << 1),
 
     /**
-     * Loads the argument at a specified index onto the evaluation stack. The index is represented
-     * as a 1-byte unsigned integer.
+     * Loads the argument at a specified index onto the evaluation stack. The index is represented as a 1-byte
+     * unsigned integer.
      */
     @OperandSize(size = 1)
     LDARG(0x7F, 1 << 1),
@@ -730,8 +716,8 @@ public enum OpCode {
     STARG6(0x86, 1 << 1),
 
     /**
-     * Stores the value on top of the evaluation stack in the argument slot at a specified index.
-     * The index is represented as a 1-byte unsigned integer.
+     * Stores the value on top of the evaluation stack in the argument slot at a specified index. The index is
+     * represented as a 1-byte unsigned integer.
      */
     @OperandSize(size = 1)
     STARG(0x87, 1 << 1),
@@ -809,8 +795,8 @@ public enum OpCode {
 //region Arithmetic
 
     /**
-     * Puts the sign of top stack item on top of the main stack. If value is negative, put -1; if
-     * positive, put 1; if value is zero, put 0.
+     * Puts the sign of top stack item on top of the main stack.
+     * <p>If the value is negative, put -1; if positive, put 1; if zero, put 0.
      */
     SIGN(0x99, 1 << 2),
 
@@ -949,28 +935,27 @@ public enum OpCode {
 //region Compound-type
 
     /**
-     * A value n is taken from top of main stack. The next n*2 items on main stack are removed,
-     * put inside n-sized map and this map is put on top of the main stack.
+     * A value n is taken from top of main stack. The next n*2 items on main stack are removed, put inside n-sized
+     * map and this map is put on top of the main stack.
      */
     PACKMAP(0xBE, 1 << 11),
 
     /**
-     * A value n is taken from top of main stack. The next n items on main stack are removed, put
-     * inside n-sized struct and this struct is put on top of the main stack.
+     * A value n is taken from top of main stack. The next n items on main stack are removed, put inside n-sized
+     * struct and this struct is put on top of the main stack.
      */
     PACKSTRUCT(0xBF, 1 << 11),
 
     /**
-     * A value n is taken from top of main stack. The next n items on main stack are removed, put
-     * inside n-sized array and this array is put on top of the main stack.
+     * A value n is taken from top of main stack. The next n items on main stack are removed, put inside n-sized
+     * array and this array is put on top of the main stack.
      */
     PACK(0xC0, 1 << 11),
 
     /**
-     * An array or map is removed from top of the main stack. Its elements are put on top of the
-     * main stack (in reverse order). In case of a map, the key-value pairs are flattened, i.e.,
-     * the value of the first pair is pushed, then the key of the first pair, then the value of
-     * the second item and so on.
+     * An array or map is removed from top of the main stack. Its elements are put on top of the main stack (in
+     * reverse order). In case of a map, the key-value pairs are flattened, i.e., the value of the first pair is
+     * pushed, then the key of the first pair, then the value of the second item and so on.
      */
     UNPACK(0xC1, 1 << 11),
 
@@ -986,8 +971,7 @@ public enum OpCode {
     NEWARRAY(0xC3, 1 << 9),
 
     /**
-     * A value n is taken from top of main stack. An array of type T with size n is put on top of
-     * the main stack.
+     * A value n is taken from top of main stack. An array of type T with size n is put on top of the main stack.
      */
     @OperandSize(size = 1)
     NEWARRAY_T(0xC4, 1 << 9),
@@ -998,8 +982,7 @@ public enum OpCode {
     NEWSTRUCT0(0xC5, 1 << 4),
 
     /**
-     * A value n is taken from top of main stack. A zero-filled struct with size n is put on top of
-     * the main stack.
+     * A value n is taken from top of main stack. A zero-filled struct with size n is put on top of the main stack.
      */
     NEWSTRUCT(0xC6, 1 << 9),
 
@@ -1015,37 +998,35 @@ public enum OpCode {
 
     /**
      * An input index n (or key) and an array (or map) are removed from the top of the main stack.
+     * <p>
      * Puts True on top of main stack if array[n] (or map[n]) exist, and False otherwise.
      */
     HASKEY(0xCB, 1 << 6),
 
     /**
-     * A map is taken from top of the main stack. The keys of this map are put on top of the main
-     * stack.
+     * A map is taken from top of the main stack. The keys of this map are put on top of the main stack.
      */
     KEYS(0xCC, 1 << 4),
 
     /**
-     * A map is taken from top of the main stack. The values of this map are put on top of the main
-     * stack.
+     * A map is taken from top of the main stack. The values of this map are put on top of the main stack.
      */
     VALUES(0xCD, 1 << 13),
 
     /**
-     * An input index n (or key) and an array (or map) are taken from main stack. Element array[n]
-     * (or map[n]) is put on top of the main stack.
+     * An input index n (or key) and an array (or map) are taken from main stack. Element array[n] (or map[n]) is put
+     * on top of the main stack.
      */
     PICKITEM(0xCE, 1 << 6),
 
     /**
-     * The item on top of main stack is removed and appended to the second item on top of the main
-     * stack.
+     * The item on top of main stack is removed and appended to the second item on top of the main stack.
      */
     APPEND(0xCF, 1 << 13),
 
     /**
-     * A value v, index n (or key) and an array (or map) are taken from main stack. Attribution
-     * array[n]=v (or map[n]=v) is performed.
+     * A value v, index n (or key) and an array (or map) are taken from main stack. Attribution array[n]=v (or
+     * map[n]=v) is performed.
      */
     SETITEM(0xD0, 1 << 13),
 
@@ -1055,8 +1036,8 @@ public enum OpCode {
     REVERSEITEMS(0xD1, 1 << 13),
 
     /**
-     * An input index n (or key) and an array (or map) are removed from the top of the main stack.
-     * Element array[n] (or map[n]) is removed.
+     * An input index n (or key) and an array (or map) are removed from the top of the main stack. Element array[n]
+     * (or map[n]) is removed.
      */
     REMOVE(0xD2, 1 << 4),
 
@@ -1128,12 +1109,12 @@ public enum OpCode {
                 return c;
             }
         }
-        throw new IllegalArgumentException("No Opcode found for byte value " + Numeric.toHexString(code) + ".");
+        throw new IllegalArgumentException(format("No Opcode found for byte value %s.", toHexString(code)));
     }
 
     @Override
     public String toString() {
-        return Numeric.toHexStringNoPrefix((byte) this.getCode());
+        return toHexStringNoPrefix((byte) this.getCode());
     }
 
     /**

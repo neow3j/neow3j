@@ -4,6 +4,7 @@ import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
@@ -17,8 +18,8 @@ import java.math.BigInteger;
 import java.util.Arrays;
 
 /**
- * A Hash256 is a 32 bytes long hash created from some data by applying SHA-256.
- * These hashes are mostly used for obtaining transaction or block hashes.
+ * A Hash256 is a 32 bytes long hash created from some data by applying SHA-256. These hashes are mostly used for
+ * obtaining transaction or block hashes.
  */
 public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
@@ -30,8 +31,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     /**
      * A zero address hash.
      */
-    public static final Hash256 ZERO =
-            new Hash256("0000000000000000000000000000000000000000000000000000000000000000");
+    public static final Hash256 ZERO = new Hash256("0000000000000000000000000000000000000000000000000000000000000000");
 
     /**
      * Constructs a new hash with 32 zero bytes.
@@ -41,8 +41,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Constructs a new hash from the given byte array. The byte array must be in big-endian
-     * order and 256 bits long.
+     * Constructs a new hash from the given byte array. The byte array must be in big-endian order and 256 bits long.
      *
      * @param hash the hash in big-endian order.
      */
@@ -52,8 +51,8 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Constructs a new hash from the given hexadecimal string. The string must be in big-endian
-     * order and 256 bits long.
+     * Constructs a new hash from the given hexadecimal string. The string must be in big-endian order and 256 bits
+     * long.
      *
      * @param hash the hash in big-endian order.
      */
@@ -86,9 +85,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Gets the hash as a byte array in big-endian order.
-     *
-     * @return the hash byte array in big-endian order.
+     * @return the hash as a byte array in big-endian order.
      */
     @Override
     public byte[] toArray() {
@@ -96,18 +93,14 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * Gets the hash as a byte array in little-endian order.
-     *
-     * @return the hash byte array in little-endian order.
+     * @return the hash as a byte array in little-endian order.
      */
     public byte[] toLittleEndianArray() {
         return reverseArray(hash);
     }
 
     /**
-     * Gets the hash as a hexadecimal string in big-endian order without the '0x' prefix.
-     *
-     * @return the hash as hex string in big-endian order.
+     * @return the hash as hexadecimal string in big-endian order without the '0x' prefix.
      */
     @JsonValue
     public String toString() {
@@ -116,15 +109,14 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
     private void checkAndThrowHashLength(byte[] hash) {
         if (hash.length != NeoConstants.HASH256_SIZE) {
-            throw new IllegalArgumentException("Hash must be " + NeoConstants.HASH256_SIZE +
-                    " bytes long but was " + hash.length + " bytes.");
+            throw new IllegalArgumentException(
+                    format("Hash must be %s bytes long but was %s bytes.", NeoConstants.HASH256_SIZE, hash.length));
         }
     }
 
     @Override
     public int compareTo(Hash256 o) {
-        return new BigInteger(1, hash)
-                .compareTo(new BigInteger(1, o.toArray()));
+        return new BigInteger(1, hash).compareTo(new BigInteger(1, o.toArray()));
     }
 
     @Override

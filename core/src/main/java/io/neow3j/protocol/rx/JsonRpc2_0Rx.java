@@ -39,29 +39,25 @@ public class JsonRpc2_0Rx {
         });
     }
 
-    public Observable<NeoGetBlock> replayBlocksObservable(
-            BigInteger startBlock, BigInteger endBlock,
+    public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects) {
         return replayBlocksObservable(startBlock, endBlock, fullTransactionObjects, true);
     }
 
-    public Observable<NeoGetBlock> replayBlocksObservable(
-            BigInteger startBlock, BigInteger endBlock,
+    public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending) {
-        // We use a scheduler to ensure this Observable runs asynchronously for users to be
-        // consistent with the other Observables
+        // We use a scheduler to ensure this Observable runs asynchronously for users to be consistent with the other
+        // Observables.
         return replayBlocksObservableSync(startBlock, endBlock, fullTransactionObjects, ascending)
                 .subscribeOn(scheduler);
     }
 
-    private Observable<NeoGetBlock> replayBlocksObservableSync(
-            BigInteger startBlock, BigInteger endBlock,
+    private Observable<NeoGetBlock> replayBlocksObservableSync(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects) {
         return replayBlocksObservableSync(startBlock, endBlock, fullTransactionObjects, true);
     }
 
-    private Observable<NeoGetBlock> replayBlocksObservableSync(
-            BigInteger startBlockNumber, BigInteger endBlockNumber,
+    private Observable<NeoGetBlock> replayBlocksObservableSync(BigInteger startBlockNumber, BigInteger endBlockNumber,
             boolean fullTransactionObjects, boolean ascending) {
 
         if (ascending) {
@@ -73,8 +69,7 @@ public class JsonRpc2_0Rx {
         }
     }
 
-    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BigInteger startBlock, boolean fullTransactionObjects,
+    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects,
             Observable<NeoGetBlock> onCompleteObservable) {
         // We use a scheduler to ensure this Observable runs asynchronously for users to be
         // consistent with the other Observables
@@ -83,15 +78,13 @@ public class JsonRpc2_0Rx {
                 .subscribeOn(scheduler);
     }
 
-    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BigInteger startBlock, boolean fullTransactionObjects) {
-        return catchUpToLatestBlockObservable(
-                startBlock, fullTransactionObjects, Observable.empty());
+    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock,
+            boolean fullTransactionObjects) {
+        return catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, Observable.empty());
     }
 
-    private Observable<NeoGetBlock> catchUpToLatestBlockObservableSync(
-            BigInteger startBlockNumber, boolean fullTransactionObjects,
-            Observable<NeoGetBlock> onCompleteObservable) {
+    private Observable<NeoGetBlock> catchUpToLatestBlockObservableSync(BigInteger startBlockNumber,
+            boolean fullTransactionObjects, Observable<NeoGetBlock> onCompleteObservable) {
 
         BigInteger latestBlockNumber;
         try {
@@ -104,10 +97,7 @@ public class JsonRpc2_0Rx {
             return onCompleteObservable;
         } else {
             return Observable.concat(
-                    replayBlocksObservableSync(
-                            startBlockNumber,
-                            latestBlockNumber,
-                            fullTransactionObjects),
+                    replayBlocksObservableSync(startBlockNumber, latestBlockNumber, fullTransactionObjects),
                     Observable.defer(() -> catchUpToLatestBlockObservableSync(
                             latestBlockNumber.add(BigInteger.ONE),
                             fullTransactionObjects,
@@ -116,32 +106,28 @@ public class JsonRpc2_0Rx {
     }
 
     public Observable<Transaction> catchUpToLatestTransactionObservable(BigInteger startBlock) {
-        return catchUpToLatestBlockObservable(
-                startBlock, true, Observable.empty())
+        return catchUpToLatestBlockObservable(startBlock, true, Observable.empty())
                 .flatMapIterable(JsonRpc2_0Rx::toTransactions);
     }
 
-    public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
-            BigInteger startBlock, boolean fullTransactionObjects, long pollingInterval) {
+    public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger startBlock,
+            boolean fullTransactionObjects, long pollingInterval) {
 
-        return catchUpToLatestBlockObservable(
-                startBlock, fullTransactionObjects,
+        return catchUpToLatestBlockObservable(startBlock, fullTransactionObjects,
                 blockObservable(fullTransactionObjects, pollingInterval));
     }
 
-    public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects,
-            long pollingInterval) {
-
+    public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects, long pollingInterval) {
         return neoBlockObservable(pollingInterval)
                 .flatMap(blockIndex ->
                         neow3j.getBlock(blockIndex, fullTransactionObjects).observable());
     }
 
-    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects,
-            long pollingInterval) throws IOException {
+    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects, long pollingInterval)
+            throws IOException {
 
-        return catchUpToLatestAndSubscribeToNewBlocksObservable(
-                getLatestBlockNumber(), fullTransactionObjects, pollingInterval);
+        return catchUpToLatestAndSubscribeToNewBlocksObservable(getLatestBlockNumber(), fullTransactionObjects,
+                pollingInterval);
 
     }
 

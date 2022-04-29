@@ -124,8 +124,7 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Reads a 16-bit unsigned integer in little-endian format from the underlying input stream.
      * <p>
-     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a
-     * int.
+     * Since Java does not support unsigned numeral types, the 16-bit short is represented by a int.
      *
      * @return the 16-bit unsigned integer as a normal Java int.
      * @throws IOException if an I/O exception occurs.
@@ -151,8 +150,7 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Reads a 32-bit unsigned integer in little-endian format from the underlying input stream.
      * <p>
-     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a
-     * long.
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a long.
      *
      * @return the 32-bit unsigned integer.
      * @throws IOException if an I/O exception occurs.
@@ -190,9 +188,8 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Tries to read an encoded EC point from the underlying stream.
      *
-     * @return the encoded EC point byte array
-     * @throws DeserializationException if an the stream does not contain an EC point or an
-     *                                  IOException occurs.
+     * @return the encoded EC point byte array.
+     * @throws DeserializationException if an the stream does not contain an EC point or an IOException occurs.
      */
     public byte[] readEncodedECPoint() throws DeserializationException {
         byte[] ecPoint = new byte[33];
@@ -294,10 +291,9 @@ public class BinaryReader implements AutoCloseable {
     }
 
     /**
-     * Reads bytes as a UTF8 encoded string. It is assumed that the string is prefixed with its
-     * length.
+     * Reads bytes as a UTF8 encoded string. It is assumed that the string is prefixed with its length.
      *
-     * @return The read string.
+     * @return the read string.
      * @throws IOException if an I/O exception occurs.
      */
     public String readVarString() throws IOException {
@@ -307,8 +303,8 @@ public class BinaryReader implements AutoCloseable {
     /**
      * Tries to read a PUSHDATA OpCode and the following data from the underlying byte stream.
      *
-     * @return The data read
-     * @throws DeserializationException if the sequence of data cannot be deserialized
+     * @return the data read.
+     * @throws DeserializationException if the sequence of data cannot be deserialized.
      */
     public byte[] readPushData() throws DeserializationException {
         try {
@@ -321,8 +317,7 @@ public class BinaryReader implements AutoCloseable {
             } else if (singleByte == OpCode.PUSHDATA4.getCode()) {
                 size = readInt32();
             } else {
-                throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at "
-                        + "the current position.");
+                throw new DeserializationException("Stream did not contain a PUSHDATA OpCode at the current position.");
             }
             // read the buffer based on the data's byte size
             if (size == 1) {
