@@ -32,9 +32,7 @@ public class Neow3jPluginUtilsTest {
     }
 
     @Test
-    public void writeDebugInfoZipShouldGenerateCorrectZipFileWithCorrectEntry()
-            throws IOException {
-
+    public void writeDebugInfoZipShouldGenerateCorrectZipFileWithCorrectEntry() throws IOException {
         String contractName = "contract";
         DebugInfo dbgnfo = new DebugInfo();
         Path outDir = Files.createTempDirectory("debuginfo");
@@ -50,9 +48,10 @@ public class Neow3jPluginUtilsTest {
         }
         ZipEntry entry = entries.nextElement();
         assertThat(entry.getName(), is(contractName + DEBUG_JSON_SUFFIX));
-        DebugInfo debugInfo = objectMapper.readValue(generatedZipFile.getInputStream(entry), DebugInfo.class);
+        objectMapper.readValue(generatedZipFile.getInputStream(entry), DebugInfo.class);
         if (entries.hasMoreElements()) {
             fail("Zip file contained more than one entry.");
         }
     }
+
 }

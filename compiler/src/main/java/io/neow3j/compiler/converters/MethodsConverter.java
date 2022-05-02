@@ -19,7 +19,6 @@ import io.neow3j.types.CallFlags;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.ClassUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
@@ -37,7 +36,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -244,7 +242,7 @@ public class MethodsConverter implements Converter {
     }
 
     private static boolean isStringLengthCall(MethodInsnNode methodInsn) {
-        return methodInsn.owner.equals(Type.getInternalName(String.class)) &&
+        return methodInsn.owner.equals(getInternalName(String.class)) &&
                 methodInsn.name.equals(LENGTH_METHOD_NAME);
     }
 
@@ -261,7 +259,7 @@ public class MethodsConverter implements Converter {
     }
 
     public static boolean isStringLiteralConverter(MethodNode methodNode, ClassNode owner) {
-        return owner.name.equals(Type.getInternalName(StringLiteralHelper.class)) &&
+        return owner.name.equals(getInternalName(StringLiteralHelper.class)) &&
                 (methodNode.name.equals(ADDRESS_TO_SCRIPTHASH_METHOD_NAME) ||
                         methodNode.name.equals(HEX_TO_BYTES_METHOD_NAME) ||
                         methodNode.name.equals(STRING_TO_INT_METHOD_NAME));
@@ -323,7 +321,7 @@ public class MethodsConverter implements Converter {
         if (isContractInterface && !hasContractHash) {
             throw new CompilerException(
                     format("Contract interface '%s' needs to be annotated with the '%s' annotation to be usable.",
-                            ClassUtils.getClassNameForInternalName(owner.name), ContractHash.class.getSimpleName()));
+                            getClassNameForInternalName(owner.name), ContractHash.class.getSimpleName()));
         }
         return hasContractHash;
     }

@@ -720,10 +720,10 @@ public class NeoMethod {
 
     private void checkForUnsupportedLocalVariableTypes() {
         for (LocalVariableNode varNode : asmMethod.localVariables) {
-            if (Type.getType(varNode.desc) == Type.DOUBLE_TYPE ||
-                    Type.getType(varNode.desc) == Type.FLOAT_TYPE) {
-                throw new CompilerException(this, format("Method '%s' has unsupported parameter or variable types.",
-                        asmMethod.name));
+            if (Type.getType(varNode.desc).equals(Type.DOUBLE_TYPE) ||
+                    Type.getType(varNode.desc).equals(Type.FLOAT_TYPE)) {
+                throw new CompilerException(this,
+                        format("Method '%s' has unsupported parameter or variable types.", asmMethod.name));
             }
         }
     }
@@ -736,8 +736,9 @@ public class NeoMethod {
         }
         int localVarCount = asmMethod.maxLocals - paramCount;
         if (localVarCount > MAX_LOCAL_VARIABLES) {
-            throw new CompilerException(format("The method '%s' has %d local variables but only a max of %d is " +
-                    "supported.", getSourceMethodName(), localVarCount, MAX_LOCAL_VARIABLES));
+            throw new CompilerException(
+                    format("The method '%s' has %d local variables but only a max of %d is supported.",
+                            getSourceMethodName(), localVarCount, MAX_LOCAL_VARIABLES));
         }
         int neoIdx = 0;
         int jvmIdx = nextVarIdx;
