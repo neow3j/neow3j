@@ -31,15 +31,15 @@ public class OracleContract extends ContractInterface {
     public static final int MaxUserDataLength = 1 << 9;
 
     /**
-     * Does a request to the oracle service with the given request data. The given callback function
-     * will be called with the response of the oracle as input.
+     * Does a request to the oracle service with the given request data. The given callback function will be called
+     * with the response of the oracle as input.
      *
-     * @param url            The URL to query.
-     * @param filter         The filter to filter returned data with.
-     * @param callback       The callback function. May not start with '{@code _}'.
-     * @param userData       Additional data.
-     * @param gasForResponse The GAS amount to pay for the oracle response.
+     * @param url            the URL to query.
+     * @param filter         the filter to filter returned data with.
+     * @param callback       the callback function. May not start with '{@code _}'.
+     * @param userData       additional data.
+     * @param gasForResponse the GAS amount to pay for the oracle response.
      */
-    public static native void request(String url, String filter, String callback, Object userData,
-            int gasForResponse);
+    public static native void request(String url, String filter, String callback, Object userData, int gasForResponse);
+
 }

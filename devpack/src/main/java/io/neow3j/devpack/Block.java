@@ -4,8 +4,8 @@ import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.script.OpCode;
 
 /**
- * Represents a block and provides block-related information. It is returned for example when
- * calling {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(Hash256)}.
+ * Represents a block and provides block-related information. It is returned for example when calling
+ * {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(Hash256)}.
  */
 public class Block {
 
@@ -51,8 +51,8 @@ public class Block {
     public final int primaryIndex;
 
     /**
-     * The verification script hash of the validators of the next block. I.e., the script hash of
-     * the multisig account made up of the validator's public keys.
+     * The verification script hash of the validators of the next block. I.e., the script hash of the multisig
+     * account made up of the validator's public keys.
      */
     public final Hash160 nextConsensus;
 
@@ -75,13 +75,12 @@ public class Block {
     }
 
     /**
-     * Compares this block to the given object. The comparison happens by reference only. I.e.,
-     * if you retrieve the same block twice, e.g., with
-     * {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(int)}, then comparing the two
-     * will return false.
+     * Compares this block to the given object. The comparison happens by reference only. I.e., if you retrieve the
+     * same block twice, e.g., with {@link io.neow3j.devpack.contracts.LedgerContract#getBlock(int)}, then comparing
+     * the two will return false.
      *
      * @param other the object to compare with.
-     * @return true if this and {@code other} reference the same block. False otherwise.
+     * @return true if this and {@code other} reference the same block. False, otherwise.
      */
     @Override
     @Instruction(opcode = OpCode.EQUAL)
@@ -90,20 +89,23 @@ public class Block {
     /**
      * Compares this and the given block by value.
      *
-     * @param block Other block to compare this block to.
-     * @return True if all fields of the two blocks are equal. False otherwise.
+     * @param block another block to compare this block to.
+     * @return true if all fields of the two blocks are equal. False, otherwise.
      */
     public boolean equals(Block block) {
-        if (this == block) return true;
-        return version == block.version && timestamp == block.timestamp
-                && index == block.index
-                && primaryIndex == block.primaryIndex
-                && transactionsCount == block.transactionsCount
-                && hash.equals(block.hash)
-                && prevHash.equals(block.prevHash)
-                && merkleRoot.equals(block.merkleRoot)
-                && nextConsensus.equals(block.nextConsensus)
-                && nonce == block.nonce;
+        if (this == block) {
+            return true;
+        }
+        return version == block.version &&
+                timestamp == block.timestamp &&
+                index == block.index &&
+                primaryIndex == block.primaryIndex &&
+                transactionsCount == block.transactionsCount &&
+                hash.equals(block.hash) &&
+                prevHash.equals(block.prevHash) &&
+                merkleRoot.equals(block.merkleRoot) &&
+                nextConsensus.equals(block.nextConsensus) &&
+                nonce == block.nonce;
     }
 
 }

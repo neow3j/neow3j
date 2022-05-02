@@ -1,8 +1,8 @@
 package io.neow3j.devpack.constants;
 
 /**
- * Represents the operations allowed when a contract is called. This allows you to restrict the
- * actions of a called contract.
+ * Represents the operations allowed when a contract is called. This allows you to restrict the actions of a called
+ * contract.
  */
 public class CallFlags {
 
@@ -45,4 +45,5 @@ public class CallFlags {
      * All flags are set.
      */
     public static final byte All = States | AllowCall | AllowNotify;
+
 }

@@ -5,13 +5,12 @@ import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
- * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this
- * class when working with transaction and block hashes.
+ * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this class when working
+ * with transaction and block hashes.
  * <p>
- * Note that the underlying bytes might have varying endianness. When calling a method from a
- * native contract or the devpack that returns a {@code Hash256}, the bytes will be little-endian.
- * But if you construct a {@code Hash256} by yourself the ordering is according to whatever you
- * used as input.
+ * Note that the underlying bytes might have varying endianness. When calling a method from a native contract or the
+ * devpack that returns a {@code Hash256}, the bytes will be little-endian. But if you construct a {@code Hash256} by
+ * yourself the ordering is according to whatever you used as input.
  */
 public class Hash256 {
 
@@ -20,10 +19,9 @@ public class Hash256 {
     /**
      * Creates a {@code Hash256} from the given byte array.
      * <p>
-     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to
-     * verify the correct format.
+     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to verify the correct format.
      *
-     * @param buffer The hash as a byte array.
+     * @param buffer the hash as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public Hash256(byte[] buffer) {
@@ -32,22 +30,20 @@ public class Hash256 {
     /**
      * Creates a {@code Hash256} from the given bytes.
      * <p>
-     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to
-     * verify the correct format.
+     * Does NOT check if the value is a valid hash. Use {@code Hash256.isValid()} in order to verify the correct format.
      *
-     * @param value The hash as a byte string.
+     * @param value the hash as a byte string.
      */
     @Instruction
     public Hash256(ByteString value) {
     }
 
     /**
-     * Provides a zero-valued {@code Hash256}.
-     *
      * @return the zero-valued {@code Hash256}.
      */
-    @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = LENGTH, operand = {0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0})
+    @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = LENGTH,
+                 operand = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+                         0})
     public static native Hash256 zero();
 
     /**
@@ -60,10 +56,9 @@ public class Hash256 {
     public native boolean isZero();
 
     /**
-     * Checks if the given object is a valid Hash256, i.e., if it is either a ByteString or Buffer
-     * and 32 bytes long.
+     * Checks if the given object is a valid Hash256, i.e., if it is either a ByteString or Buffer and 32 bytes long.
      *
-     * @param data The object to check.
+     * @param data the object to check.
      * @return true if the given object is a valid Hash256. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
@@ -88,8 +83,7 @@ public class Hash256 {
     public native byte[] toByteArray();
 
     /**
-     * Returns this {@code Hash256} as a {@code ByteString}. No GAS costs accrue for this
-     * conversion.
+     * Returns this {@code Hash256} as a {@code ByteString}. No GAS costs accrue for this conversion.
      *
      * @return the byte string.
      */
@@ -97,12 +91,11 @@ public class Hash256 {
     public native ByteString toByteString();
 
     /**
-     * Compares this hash to the given object. The comparison happens first by reference and then by
-     * value. I.e., two {@code Hash256} are compared byte by byte.
+     * Compares this hash to the given object. The comparison happens first by reference and then by value. I.e., two
+     * {@code Hash256} are compared byte by byte.
      *
      * @param other the object to compare with.
-     * @return true if this and {@code other} reference the same object or have the same value.
-     * False otherwise.
+     * @return true if this and {@code other} reference the same object or have the same value. False, otherwise.
      */
     @Override
     @Instruction(opcode = OpCode.EQUAL)

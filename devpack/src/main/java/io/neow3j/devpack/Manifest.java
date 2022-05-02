@@ -35,8 +35,7 @@ public class Manifest {
     public ABI abi;
 
     /**
-     * The permissions that the contract has, i.e., which contracts and methods it is allowed to
-     * call.
+     * The permissions that the contract has, i.e., which contracts and methods it is allowed to call.
      */
     public List<Permission> permissions;
 
@@ -62,10 +61,10 @@ public class Manifest {
     }
 
     /**
-     * Compares this manifest to the given object. The comparison happens by reference only. I.e.,
-     * if you retrieve the same manifest twice, e.g., from
-     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then
-     * comparing the two will return false.
+     * Compares this manifest to the given object. The comparison happens by reference only. I.e., if you retrieve
+     * the same manifest twice, e.g., from
+     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then comparing the two will
+     * return false.
      *
      * @param other the object to compare with.
      * @return true if this and {@code other} reference the same manifest. False otherwise.
@@ -77,11 +76,13 @@ public class Manifest {
     /**
      * Compares this and the given manifest by value.
      *
-     * @param m Other manifest to compare this manifest to.
-     * @return True if all fields of the two manifests are equal. False otherwise.
+     * @param m another manifest to compare this manifest to.
+     * @return true if all fields of the two manifests are equal. False, otherwise.
      */
     public boolean equals(Manifest m) {
-        if (this == m) return true;
+        if (this == m) {
+            return true;
+        }
         if (this.name != m.name || this.extra != m.extra || !this.abi.equals(m.abi)) {
             return false;
         }
@@ -155,8 +156,7 @@ public class Manifest {
         public ECPoint pubKey;
 
         /**
-         * The signature created from the contract's hash with the private key corresponding to
-         * this group's public key.
+         * The signature created from the contract's hash with the private key corresponding to this group's public key.
          */
         public ByteString signature;
 
@@ -164,7 +164,6 @@ public class Manifest {
             this.pubKey = null;
             this.signature = null;
         }
-
 
         public boolean equals(Group g) {
             if (this == g) {
@@ -378,5 +377,6 @@ public class Manifest {
             return true;
         }
     }
+
 }
 
