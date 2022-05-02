@@ -15,8 +15,7 @@ public class Neow3jPluginTest {
         Project project = ProjectBuilder.builder().build();
         project.getPluginManager().apply("io.neow3j.gradle-plugin");
 
-        assertTrue(project.getPluginManager()
-                .hasPlugin("io.neow3j.gradle-plugin"));
+        assertTrue(project.getPluginManager().hasPlugin("io.neow3j.gradle-plugin"));
 
         assertNotNull(project.getTasks().getByName(TASK_NAME));
     }
