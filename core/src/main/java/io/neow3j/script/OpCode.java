@@ -7,7 +7,7 @@ import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
 /**
- * This enum contains a <b>subset</b> of NEO VM opcodes.
+ * This enum contains a <b>subset</b> of NeoVM opcodes.
  * <p>
  * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for a complete list.
  */

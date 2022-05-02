@@ -32,7 +32,7 @@ public class ScriptReader {
     }
 
     /**
-     * Converts a Neo VM script into a string representation using OpCode names.
+     * Converts a NeoVM script into a string representation using OpCode names.
      *
      * @param script the script to convert in hexadecimal format.
      * @return the OpCode representation of the script.
@@ -42,7 +42,7 @@ public class ScriptReader {
     }
 
     /**
-     * Converts a Neo VM script into a string representation using OpCode names.
+     * Converts a NeoVM script into a string representation using OpCode names.
      *
      * @param script the script to convert.
      * @return the OpCode representation of the script.
