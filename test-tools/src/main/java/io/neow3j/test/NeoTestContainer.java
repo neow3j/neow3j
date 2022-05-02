@@ -41,8 +41,7 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         } else {
             withClasspathResourceMapping(CONFIG_FILE_SOURCE, CONFIG_FILE_DESTINATION, BindMode.READ_ONLY);
         }
-        withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777),
-                WALLET_FILE_DESTINATION);
+        withCopyFileToContainer(MountableFile.forClasspathResource(WALLET_FILE_SOURCE, 777), WALLET_FILE_DESTINATION);
         withClasspathResourceMapping(RPCCONFIG_FILE_SOURCE, RPCCONFIG_FILE_DESTINATION, BindMode.READ_ONLY);
         withClasspathResourceMapping(DBFTCONFIG_FILE_SOURCE, DBFTCONFIG_FILE_DESTINATION, BindMode.READ_ONLY);
         withClasspathResourceMapping(APPLOGSCONFIG_FILE_SOURCE, APPLOGSCONFIG_FILE_DESTINATION, BindMode.READ_ONLY);
