@@ -7,6 +7,8 @@ import org.junit.jupiter.api.extension.ExtensionConfigurationException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.String.format;
+
 /**
  * Holds information from the deployment of contracts that are under test.
  */
@@ -27,8 +29,8 @@ public class DeployContext {
         if (deployedContracts.containsKey(contractClass)) {
             return deployedContracts.get(contractClass);
         }
-        throw new ExtensionConfigurationException("The contract " + contractClass.getSimpleName() +
-                " is not (yet) deployed.");
+        throw new ExtensionConfigurationException(
+                format("The contract %s is not (yet) deployed.", contractClass.getSimpleName()));
     }
 
     protected void addDeployedContract(Class<?> contractClass, SmartContract contract) {
@@ -38,18 +40,19 @@ public class DeployContext {
     /**
      * Gets the hash of the transaction in which the given contract was deployed.
      *
-     * @param contractClass The class of the deployed contract.
+     * @param contractClass the class of the deployed contract.
      * @return the transaction hash.
      */
     public Hash256 getDeployTxHash(Class<?> contractClass) {
         if (deployTxHashes.containsKey(contractClass)) {
             return deployTxHashes.get(contractClass);
         }
-        throw new ExtensionConfigurationException("The contract " + contractClass.getSimpleName() +
-                " is not (yet) deployed.");
+        throw new ExtensionConfigurationException(
+                format("The contract %s is not (yet) deployed.", contractClass.getSimpleName()));
     }
 
     protected void addDeployTxHash(Class<?> contractClass, Hash256 tx) {
         deployTxHashes.put(contractClass, tx);
     }
+
 }
