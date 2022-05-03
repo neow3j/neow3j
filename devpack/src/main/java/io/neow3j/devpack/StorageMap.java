@@ -19,11 +19,10 @@ public class StorageMap {
     // region constructors
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
-     * StorageContext}.
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
-     * @param context The storage to look for the entries.
-     * @param prefix  The prefix.
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
@@ -32,11 +31,10 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
-     * StorageContext}.
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
-     * @param context The storage to look for the entries.
-     * @param prefix  The prefix.
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
@@ -45,11 +43,10 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
-     * StorageContext}.
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
-     * @param context The storage to look for the entries.
-     * @param prefix  The prefix.
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
@@ -58,11 +55,10 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
-     * StorageContext}.
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
-     * @param context The storage to look for the entries.
-     * @param prefix  The prefix.
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
@@ -71,11 +67,10 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link
-     * StorageContext}.
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
-     * @param context The storage to look for the entries.
-     * @param prefix  The prefix.
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
@@ -89,7 +84,7 @@ public class StorageMap {
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
      *
-     * @param key The key of the value to retrieve.
+     * @param key the key of the value to retrieve.
      * @return the value corresponding to the given key.
      */
     @Instruction(opcode = OpCode.OVER)
@@ -104,10 +99,10 @@ public class StorageMap {
     public native ByteString get(byte[] key);
 
     /**
-     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
-     * and converts it to a byte array.
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
+     * a byte array.
      *
-     * @param key The key of the value to retrieve.
+     * @param key the key of the value to retrieve.
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.OVER)
@@ -123,10 +118,9 @@ public class StorageMap {
     public native byte[] getByteArray(byte[] key);
 
     /**
-     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
-     * as a string.
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a string.
      *
-     * @param key The key of the value to retrieve.
+     * @param key the key of the value to retrieve.
      * @return the value corresponding to the given key as a string.
      */
     @Instruction(opcode = OpCode.OVER)
@@ -141,10 +135,9 @@ public class StorageMap {
     public native String getString(byte[] key);
 
     /**
-     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
-     * as a boolean.
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a boolean.
      *
-     * @param key The key of the value to retrieve.
+     * @param key the key of the value to retrieve.
      * @return the value corresponding to the given key as a boolean.
      */
     @Instruction(opcode = OpCode.OVER)

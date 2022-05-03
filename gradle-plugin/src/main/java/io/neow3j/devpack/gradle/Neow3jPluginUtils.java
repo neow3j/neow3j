@@ -2,17 +2,19 @@ package io.neow3j.devpack.gradle;
 
 import io.neow3j.compiler.DebugInfo;
 import io.neow3j.protocol.ObjectMapperFactory;
+import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaPluginConvention;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginConvention;
 
 public class Neow3jPluginUtils {
 
@@ -22,11 +24,9 @@ public class Neow3jPluginUtils {
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
     static List<File> getOutputDirs(Project project) {
-        final JavaPluginConvention pluginConv = project.getConvention()
-                .getPlugin(JavaPluginConvention.class);
+        final JavaPluginConvention pluginConv = project.getConvention().getPlugin(JavaPluginConvention.class);
         List<File> dirs = new ArrayList<>();
-        pluginConv.getSourceSets()
-                .forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
+        pluginConv.getSourceSets().forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
         return dirs;
     }
 
@@ -39,15 +39,13 @@ public class Neow3jPluginUtils {
     /**
      * Generates a ZIP file containing a JSON file with the given debug information in it.
      *
-     * @param debugInfo    The debug information to include in the ZIP file.
-     * @param contractName The name of the contract the debug info belongs to.
-     * @param outDir       The directory (absolute path) where the ZIP file should be stored.
+     * @param debugInfo    the debug information to include in the ZIP file.
+     * @param contractName the name of the contract the debug info belongs to.
+     * @param outDir       the directory (absolute path) where the ZIP file should be stored.
      * @return the absolute path of the generated zip file.
-     * @throws IOException If an error occurs when writing the file.
+     * @throws IOException if an error occurs when writing the file.
      */
-    public static String writeDebugInfoZip(DebugInfo debugInfo, String contractName, Path outDir)
-            throws IOException {
-
+    public static String writeDebugInfoZip(DebugInfo debugInfo, String contractName, Path outDir) throws IOException {
         // Write the debug JSON to a temporary file.
         File tmpFile = File.createTempFile("contract", DEBUG_JSON_SUFFIX);
         tmpFile.deleteOnExit();
@@ -58,7 +56,7 @@ public class Neow3jPluginUtils {
         String zipName = contractName + NEFDBGNFO_SUFFIX;
         String zipEntryName = contractName + DEBUG_JSON_SUFFIX;
         File zipOutputFile = Paths.get(outDir.toString(), zipName).toFile();
-        try (ZipOutputStream s = new ZipOutputStream(new FileOutputStream(zipOutputFile))) {
+        try (ZipOutputStream s = new ZipOutputStream(Files.newOutputStream(zipOutputFile.toPath()))) {
             s.putNextEntry(new ZipEntry(zipEntryName));
             byte[] bytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(debugInfo);
             s.write(bytes);

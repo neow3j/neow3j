@@ -65,8 +65,12 @@ public class NeoGetNextBlockValidators extends Response<List<NeoGetNextBlockVali
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Validator)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Validator)) {
+                return false;
+            }
             Validator validator = (Validator) o;
             return Objects.equals(getPublicKey(), validator.getPublicKey()) &&
                     Objects.equals(getVotes(), validator.getVotes()) &&
@@ -86,6 +90,7 @@ public class NeoGetNextBlockValidators extends Response<List<NeoGetNextBlockVali
                     ", active=" + active +
                     '}';
         }
+
     }
 
 }

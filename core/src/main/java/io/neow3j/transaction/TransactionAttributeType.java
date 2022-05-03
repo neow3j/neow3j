@@ -3,6 +3,8 @@ package io.neow3j.transaction;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import static java.lang.String.format;
+
 public enum TransactionAttributeType {
 
     /**
@@ -36,8 +38,8 @@ public enum TransactionAttributeType {
                 return e;
             }
         }
-        throw new IllegalArgumentException(String.format("%s value type not found.",
-                TransactionAttributeType.class.getName()));
+        throw new IllegalArgumentException(
+                format("%s value type not found.", TransactionAttributeType.class.getName()));
     }
 
     @JsonCreator
@@ -45,8 +47,8 @@ public enum TransactionAttributeType {
         if (value instanceof String) {
             return fromJsonValue((String) value);
         }
-        throw new IllegalArgumentException(String.format("%s value type not found.",
-                TransactionAttributeType.class.getName()));
+        throw new IllegalArgumentException(
+                format("%s value type not found.", TransactionAttributeType.class.getName()));
     }
 
     public static TransactionAttributeType fromJsonValue(String jsonValue) {
@@ -55,8 +57,8 @@ public enum TransactionAttributeType {
                 return e;
             }
         }
-        throw new IllegalArgumentException(String.format("%s value type not found.",
-                TransactionAttributeType.class.getName()));
+        throw new IllegalArgumentException(
+                format("%s value type not found.", TransactionAttributeType.class.getName()));
     }
 
     @JsonValue

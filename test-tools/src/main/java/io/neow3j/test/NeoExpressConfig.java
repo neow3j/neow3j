@@ -100,8 +100,7 @@ public class NeoExpressConfig {
             public Account() {
             }
 
-            public Account(String privateKey, String scriptHash, String label, boolean isDefault,
-                    Contract contract) {
+            public Account(String privateKey, String scriptHash, String label, boolean isDefault, Contract contract) {
                 this.privateKey = privateKey;
                 this.scriptHash = scriptHash;
                 this.label = label;
@@ -153,7 +152,11 @@ public class NeoExpressConfig {
                 public List<String> getParameters() {
                     return parameters;
                 }
+
             }
+
         }
+
     }
+
 }

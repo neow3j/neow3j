@@ -11,10 +11,10 @@ public class CryptoLib extends ContractInterface {
     /**
      * Calculates the SHA-256 hash of the given value.
      * <p>
-     * Note, if you use this method twice to generate a hash256 byte string, that byte string
-     * will be in big-endian ordering.
+     * Note, if you use this method twice to generate a hash256 byte string, that byte string will be in big-endian
+     * ordering.
      *
-     * @param value The bytes to hash.
+     * @param value the bytes to hash.
      * @return the 256-bit hash.
      */
     public static native ByteString sha256(ByteString value);
@@ -22,10 +22,10 @@ public class CryptoLib extends ContractInterface {
     /**
      * Calculates a 160-bit RIPE message digest (RIPEMD) of the given value.
      * <p>
-     * Note, if you use this method in combination with {@link CryptoLib#sha256(ByteString)} to
-     * generate a hash160 byte string, that byte string will be in big-endian ordering.
+     * Note, if you use this method in combination with {@link CryptoLib#sha256(ByteString)} to generate a hash160
+     * byte string, that byte string will be in big-endian ordering.
      *
-     * @param value The bytes to hash.
+     * @param value the bytes to hash.
      * @return the 160-bit hash.
      */
     public static native ByteString ripemd160(ByteString value);
@@ -40,15 +40,16 @@ public class CryptoLib extends ContractInterface {
     public static native ByteString murmur32(ByteString data, int seed);
 
     /**
-     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}.
-     * The {@code curve} can be one of the curves defined in {@link NamedCurve}.
+     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code curve}
+     * can be one of the curves defined in {@link NamedCurve}.
      *
-     * @param message   The signed message.
-     * @param publicKey The public key of the key pair used for signing.
-     * @param signature The message signature.
-     * @param curve     The curve to use in the verification.
-     * @return true if the signature is valid. False otherwise.
+     * @param message   the signed message.
+     * @param publicKey the public key of the key pair used for signing.
+     * @param signature the message signature.
+     * @param curve     the curve to use in the verification.
+     * @return true if the signature is valid. False, otherwise.
      */
-    public static native boolean verifyWithECDsa(ByteString message, ECPoint publicKey,
-            ByteString signature, byte curve);
+    public static native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature,
+            byte curve);
+
 }

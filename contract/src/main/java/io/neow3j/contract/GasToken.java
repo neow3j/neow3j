@@ -15,8 +15,7 @@ public class GasToken extends FungibleToken {
     public final static String SYMBOL = "GAS";
 
     /**
-     * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for
-     * invocations.
+     * Constructs a new {@code GasToken} that uses the given {@link Neow3j} instance for invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
@@ -25,7 +24,9 @@ public class GasToken extends FungibleToken {
     }
 
     /**
-     * Returns the name of the GasToken contract. Doesn't require a call to the Neo node.
+     * Returns the name of the GasToken contract.
+     * <p>
+     * Doesn't require a call to the Neo node.
      *
      * @return the name.
      */
@@ -35,7 +36,9 @@ public class GasToken extends FungibleToken {
     }
 
     /**
-     * Returns the symbol of the GasToken contract. Doesn't require a call to the Neo node.
+     * Returns the symbol of the GasToken contract.
+     * <p>
+     * Doesn't require a call to the Neo node.
      *
      * @return the symbol.
      */
@@ -45,7 +48,9 @@ public class GasToken extends FungibleToken {
     }
 
     /**
-     * Returns the number of decimals of the GAS token. Doesn't require a call to the Neo node.
+     * Returns the number of decimals of the GAS token.
+     * <p>
+     * Doesn't require a call to the Neo node.
      *
      * @return the number of decimals.
      */

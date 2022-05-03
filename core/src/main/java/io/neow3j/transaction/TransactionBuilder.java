@@ -31,6 +31,7 @@ import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 /**
@@ -150,9 +151,8 @@ public class TransactionBuilder {
         } else {
             Signer s = signers.stream().filter(signer -> signer.getScriptHash().equals(sender))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalStateException(
-                            "Could not find a signer with script hash " + sender.toString() +
-                                    ". Make sure to add the signer before calling this method."));
+                    .orElseThrow(() -> new IllegalStateException(format("Could not find a signer with script hash %s." +
+                            " Make sure to add the signer before calling this method.", sender.toString())));
             signers.remove(s);
             signers.add(0, s);
         }
@@ -182,8 +182,8 @@ public class TransactionBuilder {
 
     private void checkAndThrowIfMaxAttributesExceeded(int totalSigners, int totalAttributes) {
         if (totalSigners + totalAttributes > MAX_TRANSACTION_ATTRIBUTES) {
-            throw new TransactionConfigurationException("A transaction cannot have more than " +
-                    MAX_TRANSACTION_ATTRIBUTES + " attributes (including signers).");
+            throw new TransactionConfigurationException(format("A transaction cannot have more than %s attributes " +
+                    "(including signers).", MAX_TRANSACTION_ATTRIBUTES));
         }
     }
 
@@ -245,8 +245,7 @@ public class TransactionBuilder {
     /**
      * Adds the given attributes to this transaction.
      * <p>
-     * The maximum number of attributes on a transaction is given in
-     * {@link NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
+     * The maximum number of attributes on a transaction is given in {@link NeoConstants#MAX_TRANSACTION_ATTRIBUTES}.
      *
      * @param attributes the attributes.
      * @return this transaction builder.
@@ -298,13 +297,13 @@ public class TransactionBuilder {
         }
 
         if (signers.isEmpty()) {
-            throw new IllegalStateException("Cannot create a transaction without signers. At" +
-                    "least one signer with witness scope fee-only or higher is required.");
+            throw new IllegalStateException("Cannot create a transaction without signers. At least one signer with " +
+                    "witness scope fee-only or higher is required.");
         }
 
         if (isHighPriority() && !isAllowedForHighPriority()) {
-            throw new IllegalStateException("This transaction does not have a committee member as "
-                    + "signer. Only committee members can send transactions with high priority.");
+            throw new IllegalStateException("This transaction does not have a committee member as signer. Only " +
+                    "committee members can send transactions with high priority.");
         }
 
         long systemFee = getSystemFeeForScript() + additionalSystemFee;
@@ -389,14 +388,13 @@ public class TransactionBuilder {
         return new BigInteger(response.getInvocationResult().getGasConsumed()).longValue();
     }
 
-    // For each signer a witness is added to a temporary transaction object that is serialized and
-    // sent with the `getnetworkfee` RPC method. Signers that are contracts do not need a
-    // verification script. Instead, their `verify` method will be consulted by the Neo node. The
-    // static method createContractWitness is used to instantiate a witness with the parameters for
-    // the verify method in its invocation script.
+    // For each signer a witness is added to a temporary transaction object that is serialized and sent with the
+    // `getnetworkfee` RPC method. Signers that are contracts do not need a verification script. Instead, their
+    // `verify` method will be consulted by the Neo node. The static method createContractWitness is used to
+    // instantiate a witness with the parameters for the verify method in its invocation script.
     private long calcNetworkFee() throws IOException {
-        Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0, attributes,
-                script, new ArrayList<>());
+        Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0, attributes, script,
+                new ArrayList<>());
         boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
             if (signer instanceof ContractSigner) {
@@ -449,10 +447,9 @@ public class TransactionBuilder {
             throw new TransactionConfigurationException(
                     "Cannot make an 'invokescript' call without the script being configured.");
         }
-        // The list of signers is required for `invokescript` calls that will hit a
-        // CheckWitness check in the smart contract. We add the signers even if that is not the
-        // case because we cannot know if the invoked script needs it or not, and it doesn't lead
-        // to failures if we add them in any case.
+        // The list of signers is required for `invokescript` calls that will hit a CheckWitness check in the smart
+        // contract. We add the signers even if that is not the case because we cannot know if the invoked script
+        // needs it or not, and it doesn't lead to failures if we add them in any case.
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
         return neow3j.invokeScript(script, signers).send();
@@ -493,9 +490,8 @@ public class TransactionBuilder {
     private void signWithAccount(byte[] txBytes, Account acc) {
         ECKeyPair keyPair = acc.getECKeyPair();
         if (keyPair == null) {
-            throw new TransactionConfigurationException(
-                    "Cannot create transaction signature because account " + acc.getAddress() +
-                            " does not hold a private key.");
+            throw new TransactionConfigurationException(format("Cannot create transaction signature because account " +
+                    "%s does not hold a private key.", acc.getAddress()));
         }
         transaction.addWitness(Witness.create(txBytes, keyPair));
     }
@@ -510,8 +506,7 @@ public class TransactionBuilder {
      * @param consumer the consumer.
      * @return this transaction builder.
      */
-    public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger,
-            BigInteger> consumer) {
+    public TransactionBuilder doIfSenderCannotCoverFees(BiConsumer<BigInteger, BigInteger> consumer) {
         if (supplier != null) {
             throw new IllegalStateException("Cannot handle a consumer for this case, since an exception will be " +
                     "thrown if the sender cannot cover the fees.");

@@ -30,7 +30,8 @@ public enum CallFlags {
                 return e;
             }
         }
-        throw new IllegalArgumentException(format("There exists no call flag with the provided "
-                + "byte value (%d)", value));
+        throw new IllegalArgumentException(
+                format("There exists no call flag with the provided byte value (%d)", value));
     }
+
 }

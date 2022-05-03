@@ -50,4 +50,5 @@ public class Collection {
     public interface Function<R, S> {
         S apply(R r);
     }
+
 }

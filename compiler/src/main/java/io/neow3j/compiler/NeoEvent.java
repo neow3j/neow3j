@@ -1,7 +1,5 @@
 package io.neow3j.compiler;
 
-import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
-
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
@@ -14,6 +12,8 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
+
+import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
 
 public class NeoEvent {
 

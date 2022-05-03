@@ -12,8 +12,7 @@ import java.nio.file.Files;
 
 public class WireMockTestHelper {
 
-    public static void setUpWireMockForCall(String call, String responseFile, String... params)
-            throws IOException {
+    public static void setUpWireMockForCall(String call, String responseFile, String... params) throws IOException {
 
         String responseBody = loadFile("/responses/" + responseFile);
 
@@ -47,9 +46,9 @@ public class WireMockTestHelper {
 
         WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                                                  + ".*\"method\":\"invokefunction\""
-                                                  + ".*\"params\":.*\"" + contractFunction +
-                                                  "\".*"))
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":.*\"" + contractFunction +
+                        "\".*"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));
@@ -62,9 +61,9 @@ public class WireMockTestHelper {
 
         WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
                 .withRequestBody(new RegexPattern(""
-                                                  + ".*\"method\":\"invokefunction\""
-                                                  + ".*\"params\":.*\"balanceOf\".*"
-                                                  + ".*\"" + accountScriptHash + "\".*"))
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":.*\"balanceOf\".*"
+                        + ".*\"" + accountScriptHash + "\".*"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));
@@ -73,8 +72,7 @@ public class WireMockTestHelper {
     public static String loadFile(String fileName) throws IOException {
         String absFileName = WireMockTestHelper.class.getResource(fileName).getFile();
         FileInputStream inStream = new FileInputStream(new File(absFileName));
-        return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
-                .reduce((a, b) -> a + b).get();
+        return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8).reduce((a, b) -> a + b).get();
     }
 
 }

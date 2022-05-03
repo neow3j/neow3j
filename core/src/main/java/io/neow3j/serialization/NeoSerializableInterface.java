@@ -14,8 +14,7 @@ public interface NeoSerializableInterface {
     void serialize(BinaryWriter writer) throws IOException;
 
     /**
-     * Gets the byte size of this serializable in serialized form. This includes possible size
-     * prefixes.
+     * Gets the byte size of this serializable in serialized form. This includes possible size prefixes.
      *
      * @return the byte size.
      */

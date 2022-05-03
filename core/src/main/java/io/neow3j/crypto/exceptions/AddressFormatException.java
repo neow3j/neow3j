@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package io.neow3j.crypto.exceptions;
 
 import io.neow3j.crypto.Base58;
@@ -29,8 +30,8 @@ public class AddressFormatException extends IllegalArgumentException {
     }
 
     /**
-     * This exception is thrown by {@link Base58} when you try to decode data and a character
-     * isn't valid. You shouldn't allow the user to proceed in this case.
+     * This exception is thrown by {@link Base58} when you try to decode data and a character isn't valid. You
+     * shouldn't allow the user to proceed in this case.
      */
     public static class InvalidCharacter extends AddressFormatException {
         public final char character;
@@ -44,8 +45,8 @@ public class AddressFormatException extends IllegalArgumentException {
     }
 
     /**
-     * This exception is thrown by {@link Base58} when you try to decode data and a character
-     * isn't valid. You shouldn't allow the user to proceed in this case.
+     * This exception is thrown by {@link Base58} when you try to decode data and a character isn't valid. You
+     * shouldn't allow the user to proceed in this case.
      */
     public static class InvalidDataLength extends AddressFormatException {
         public InvalidDataLength() {
@@ -58,8 +59,8 @@ public class AddressFormatException extends IllegalArgumentException {
     }
 
     /**
-     * This exception is thrown by {@link Base58} when you try to decode data and a character
-     * isn't valid. You shouldn't allow the user to proceed in this case.
+     * This exception is thrown by {@link Base58} when you try to decode data and a character isn't valid. You
+     * shouldn't allow the user to proceed in this case.
      */
     public static class InvalidChecksum extends AddressFormatException {
         public InvalidChecksum() {

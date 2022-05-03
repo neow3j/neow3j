@@ -1,12 +1,14 @@
 package io.neow3j.compiler;
 
-import static java.lang.String.format;
-
 import io.neow3j.script.OpCode;
 import io.neow3j.script.OperandSize;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
+
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 /**
  * Represents a single NeoVM opcode and possible operands that belong to the opcode.
@@ -16,27 +18,26 @@ public class NeoInstruction {
     // The NeoVM opcode.
     private OpCode opcode;
 
-    // The (optional) prefix of the instructions operand usually determining the length of the
-    // operand.
+    // The (optional) prefix of the instruction's operand usually determining the length of the operand.
     private byte[] operandPrefix;
 
     // The operand of the instruction.
     private byte[] operand;
 
-    // Stores data depending on the type of this transaction. If this transaction is a method
-    // call, this object should be the called `NeoMethod`.
+    // Stores data depending on the type of this transaction. If this transaction is a method call, this object
+    // should be the called `NeoMethod`.
     private Object extra;
 
     // The corresponding line number in the source code file that this instructions originates from.
     private Integer lineNr = null;
 
-    // The NeoVM script address of this instruction in its respective method. This is not the
-    // absolute address in the script, but only relative to the method.
+    // The NeoVM script address of this instruction in its respective method. This is not the absolute address in the
+    // script, but only relative to the method.
     private int address;
 
     /**
-     * Constructs a new instruction with the given opcode and operand. The operand needs to "fit"
-     * the opcode, i.e., must have a length that is supported by the given opcode.
+     * Constructs a new instruction with the given opcode and operand. The operand needs to "fit" the opcode, i.e.,
+     * must have a length that is supported by the given opcode.
      *
      * @param opcode  the Neo opcode of this instruction.
      * @param operand the operand.
@@ -46,12 +47,12 @@ public class NeoInstruction {
     }
 
     /**
-     * Constructs a new instruction with the given opcode, operand prefix, and operand. The
-     * operand prefix states the length of the following operand.
+     * Constructs a new instruction with the given opcode, operand prefix, and operand. The operand prefix states the
+     * length of the following operand.
      *
-     * @param opcode  The Neo opcode of this instruction.
-     * @param operandPrefix The operand prefix.
-     * @param operand The operand.
+     * @param opcode        the Neo opcode of this instruction.
+     * @param operandPrefix the operand prefix.
+     * @param operand       the operand.
      */
     public NeoInstruction(OpCode opcode, byte[] operandPrefix, byte[] operand) {
         this.opcode = opcode;
@@ -81,17 +82,18 @@ public class NeoInstruction {
     }
 
     /**
-     * Gets the operand prefix of this instruction if it has one. If this instruction doesn't
-     * have an operand prefix, an empty array is returned.
+     * Gets the operand prefix of this instruction if it has one. If this instruction doesn't have an operand prefix,
+     * an empty array is returned.
      *
      * @return the operand.
      */
     public byte[] getOperandPrefix() {
         return operandPrefix;
     }
+
     /**
-     * Gets the operand of this instruction if it has one. If this instruction doesn't have an
-     * operand, an empty array is returned.
+     * Gets the operand of this instruction if it has one. If this instruction doesn't have an operand, an empty
+     * array is returned.
      *
      * @return the operand.
      */
@@ -100,9 +102,7 @@ public class NeoInstruction {
     }
 
     /**
-     * Gets the line number in the source file that this instruction corresponds to.
-     *
-     * @return the line number.
+     * @return the line number in the source file that this instruction corresponds to.
      */
     public Integer getLineNr() {
         return lineNr;
@@ -111,8 +111,7 @@ public class NeoInstruction {
     /**
      * Gets this instruction's byte address, i.e., its position in the method it belongs to.
      * <p>
-     * The address is absolute in the method that this instruction lives in but not in the whole
-     * module.
+     * The address is absolute in the method that this instruction lives in but not in the whole module.
      *
      * @return the address.
      */
@@ -121,9 +120,9 @@ public class NeoInstruction {
     }
 
     /**
-     * Gets the extra information set on this instruction.
+     * Gets the extra information set on this instruction. If no auxiliary data was set, null is returned.
      *
-     * @return the extra or null if no auxiliary data was set.
+     * @return the extra information.
      */
     public Object getExtra() {
         return extra;
@@ -132,8 +131,7 @@ public class NeoInstruction {
     /**
      * Sets the given object as extra information on this instruction.
      * <p>
-     * This is used, for example, for setting a reference to a method that this instruction jumps
-     * to.
+     * This is used, for example, for setting a reference to a method that this instruction jumps to.
      *
      * @param extra the extra information.
      * @return this.
@@ -157,9 +155,7 @@ public class NeoInstruction {
     }
 
     /**
-     * Returns the size of this instruction in bytes.
-     *
-     * @return The byte-size of this instruction.
+     * @return the byte-size of this instruction.
      */
     public int byteSize() {
         return 1 + operandPrefix.length + operand.length;
@@ -167,8 +163,7 @@ public class NeoInstruction {
 
     @Override
     public String toString() {
-        return opcode.toString() + " " + Numeric.toHexStringNoPrefix(operandPrefix)  + " "
-                + Numeric.toHexStringNoPrefix(operand);
+        return opcode.toString() + " " + toHexStringNoPrefix(operandPrefix) + " " + toHexStringNoPrefix(operand);
     }
 
     public void setOpcode(OpCode opcode) {
@@ -184,11 +179,11 @@ public class NeoInstruction {
     }
 
     /**
-     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if
-     * the operand prefix and operand's size are supported by this instruction's opcode.
+     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if the operand
+     * prefix and operand's size are supported by this instruction's opcode.
      *
-     * @param operandPrefix The operand prefix.
-     * @param operand The operand.
+     * @param operandPrefix the operand prefix.
+     * @param operand       the operand.
      */
     public void setOperand(byte[] operandPrefix, byte[] operand) {
         checkOperandSize(operandPrefix, operand);
@@ -197,10 +192,10 @@ public class NeoInstruction {
     }
 
     /**
-     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if
-     * the operand's size is supported by this instruction's opcode.
+     * Sets the given operand on this instruction. Overwrites if there was one set before. Checks if the operand's
+     * size is supported by this instruction's opcode.
      *
-     * @param operand The operand.
+     * @param operand the operand.
      */
     public void setOperand(byte[] operand) {
         setOperand(new byte[]{}, operand);
@@ -217,39 +212,35 @@ public class NeoInstruction {
 
         // Opcode does not take an operand but an operand was specified.
         if (operandSize == null && operand != null && operand.length != 0) {
-            throw new CompilerException(format("Tried to set an operand (%s) on the opcode '%s' "
-                            + "which doesn't take any operands." ,
-                    Numeric.toHexStringNoPrefix(operand), opcode.name()));
+            throw new CompilerException(format("Tried to set an operand (%s) on the opcode '%s' which doesn't take " +
+                    "any operands.", toHexStringNoPrefix(operand), opcode.name()));
         }
 
         // Opcode takes an operand but no operand was specified.
         if (operandSize != null && operand == null) {
-            throw new CompilerException(format("Opcode '%s' requires an operand but no "
-                            + "operand was specified.", opcode.name()));
+            throw new CompilerException(format("Opcode '%s' requires an operand but no operand was specified.",
+                    opcode.name()));
         }
 
-        // Opcode takes an operand and no operand prefix but the specified operand has the wrong
-        // size.
+        // Opcode takes an operand and no operand prefix but the specified operand has the wrong size.
         if (operandSize.prefixSize() == 0 && operand.length != operandSize.size()) {
-            throw new CompilerException(format("Tried to set an operand (%s) with size %d on "
-                            + "opcode '%s' which only takes operands of size %d.",
-                    Numeric.toHexStringNoPrefix(operand), operand.length, this.opcode.name(),
-                    operandSize.size()));
+            throw new CompilerException(format("Tried to set an operand (%s) with size %d on opcode '%s' which only " +
+                            "takes operands of size %d.", toHexStringNoPrefix(operand), operand.length,
+                    this.opcode.name(), operandSize.size()));
         }
 
         if (operandSize.prefixSize() > 0) {
-            // Opcode takes a operand prefix but the prefix size is not of one of the allowed
-            // values.
+            // Opcode takes an operand prefix but the prefix size is not of one of the allowed values.
             if (operandSize.prefixSize() != 1 && operandSize.prefixSize() != 2 && operandSize.prefixSize() != 4) {
-                throw new CompilerException(format("Unexpected operand prefix size. Size was %d "
-                        + "but only 1, 2, or 4 are allowed.", operandSize.prefixSize()));
+                throw new CompilerException(format("Unexpected operand prefix size. Size was %d but only 1, 2, or 4 " +
+                        "are allowed.", operandSize.prefixSize()));
             }
 
             // Opcode takes an operand prefix but the given prefix is not of the required length.
             if (operandPrefix.length != operandSize.prefixSize()) {
-                throw new CompilerException(format("Opcode '%s' needs an operand prefix of size "
-                        + "%d but the given operand prefix is of size %d.", opcode.name(),
-                        operandSize.prefixSize(), operandPrefix.length));
+                throw new CompilerException(format("Opcode '%s' needs an operand prefix of size %d but the given " +
+                                "operand prefix is of size %d.", opcode.name(), operandSize.prefixSize(),
+                        operandPrefix.length));
             }
 
             // Check if operand has correct length according to specified operand prefix.
@@ -265,10 +256,11 @@ public class NeoInstruction {
                 }
             } catch (IOException ignore) {
             }
-            if (operand.length != specifiedOperandSize)
-                throw new CompilerException(format("Operand prefix specified an operand size of "
-                        + "%d but the operand was %d bytes long.", specifiedOperandSize,
-                        operand.length));
+            if (operand.length != specifiedOperandSize) {
+                throw new CompilerException(format("Operand prefix specified an operand size of %d but the operand " +
+                                "was %d bytes long.", specifiedOperandSize, operand.length));
+            }
         }
     }
+
 }

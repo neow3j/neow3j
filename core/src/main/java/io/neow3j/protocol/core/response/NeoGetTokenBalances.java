@@ -41,8 +41,12 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof TokenBalances)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof TokenBalances)) {
+                return false;
+            }
             TokenBalances<?> that = (TokenBalances<?>) o;
             return Objects.equals(balances, that.balances) &&
                     Objects.equals(address, that.address);
@@ -52,6 +56,7 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
         public int hashCode() {
             return Objects.hash(balances, address);
         }
+
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -73,8 +78,12 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof TokenBalance)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof TokenBalance)) {
+                return false;
+            }
             TokenBalance that = (TokenBalance) o;
             return Objects.equals(assetHash, that.assetHash);
         }
@@ -83,6 +92,7 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
         public int hashCode() {
             return Objects.hash(assetHash);
         }
+
     }
 
 }

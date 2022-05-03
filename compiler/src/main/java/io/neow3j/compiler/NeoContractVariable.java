@@ -33,7 +33,8 @@ public class NeoContractVariable {
     }
 
     /**
-     * Gets this variables in the format required in the debug info for the Neo Debugger.
+     * Gets this' variables in the format required in the debug info for the Neo Debugger.
+     *
      * @return the string for the debug info.
      */
     public String getAsDebugInfoVariable() {
@@ -52,4 +53,5 @@ public class NeoContractVariable {
     public static String getVariableId(ClassNode owner, FieldNode variable) {
         return owner.name + variable.name + variable.desc;
     }
+
 }

@@ -32,7 +32,7 @@ public class InteropInterfaceStackItem extends StackItem {
     protected String valueToString() {
         return iterator.stream()
                 .map(StackItem::toString)
-                .reduce("", (a, b) ->  a + ", " + b)
+                .reduce("", (a, b) -> a + ", " + b)
                 .substring(2); // remove the first comma and space
     }
 
@@ -45,8 +45,7 @@ public class InteropInterfaceStackItem extends StackItem {
     @Override
     public List<StackItem> getIterator() {
         if (iterator == null) {
-            throw new StackItemCastException(format("Cannot cast stack item %s to an iterator.",
-                    toString()));
+            throw new StackItemCastException(format("Cannot cast stack item %s to an iterator.", toString()));
         }
         return iterator;
     }
@@ -57,8 +56,12 @@ public class InteropInterfaceStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof InteropInterfaceStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof InteropInterfaceStackItem)) {
+            return false;
+        }
         InteropInterfaceStackItem other = (InteropInterfaceStackItem) o;
         return getType() == other.getType() &&
                 getValue().equals(other.getValue());
@@ -68,4 +71,5 @@ public class InteropInterfaceStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(getValue());
     }
+
 }

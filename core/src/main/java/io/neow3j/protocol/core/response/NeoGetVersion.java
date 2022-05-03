@@ -183,25 +183,19 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return Objects.equals(getNetwork(), that.getNetwork()) &&
                         Objects.equals(getValidatorsCount(), that.getValidatorsCount()) &&
                         Objects.equals(getMilliSecondsPerBlock(), that.getMilliSecondsPerBlock()) &&
-                        Objects.equals(getMaxValidUntilBlockIncrement(),
-                                that.getMaxValidUntilBlockIncrement()) &&
+                        Objects.equals(getMaxValidUntilBlockIncrement(), that.getMaxValidUntilBlockIncrement()) &&
                         Objects.equals(getMaxTraceableBlocks(), that.getMaxTraceableBlocks()) &&
                         Objects.equals(getAddressVersion(), that.getAddressVersion()) &&
-                        Objects.equals(getMaxTransactionsPerBlock(),
-                                that.getMaxTransactionsPerBlock()) &&
-                        Objects.equals(getMemoryPoolMaxTransactions(),
-                                that.getMemoryPoolMaxTransactions()) &&
-                        Objects.equals(getInitialGasDistribution(),
-                                that.getInitialGasDistribution());
+                        Objects.equals(getMaxTransactionsPerBlock(), that.getMaxTransactionsPerBlock()) &&
+                        Objects.equals(getMemoryPoolMaxTransactions(), that.getMemoryPoolMaxTransactions()) &&
+                        Objects.equals(getInitialGasDistribution(), that.getInitialGasDistribution());
             }
 
             @Override
             public int hashCode() {
                 return Objects.hash(getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
-                        getMaxValidUntilBlockIncrement(), getMaxTraceableBlocks(),
-                        getAddressVersion(), getMaxTransactionsPerBlock(),
-                        getMemoryPoolMaxTransactions(),
-                        getInitialGasDistribution());
+                        getMaxValidUntilBlockIncrement(), getMaxTraceableBlocks(), getAddressVersion(),
+                        getMaxTransactionsPerBlock(), getMemoryPoolMaxTransactions(), getInitialGasDistribution());
             }
 
             @Override
@@ -219,6 +213,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         '}';
             }
         }
+
     }
 
 }

@@ -39,8 +39,12 @@ public class NeoGetUnclaimedGas extends Response<NeoGetUnclaimedGas.GetUnclaimed
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof GetUnclaimedGas)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof GetUnclaimedGas)) {
+                return false;
+            }
             GetUnclaimedGas that = (GetUnclaimedGas) o;
             return Objects.equals(getUnclaimed(), that.getUnclaimed()) &&
                     Objects.equals(getAddress(), that.getAddress());
@@ -55,6 +59,7 @@ public class NeoGetUnclaimedGas extends Response<NeoGetUnclaimedGas.GetUnclaimed
         public String toString() {
             return "GetUnclaimedGas{" + "unclaimed=" + unclaimed + ", address=" + address + "}";
         }
+
     }
 
 }

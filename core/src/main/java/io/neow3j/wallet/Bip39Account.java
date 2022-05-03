@@ -34,14 +34,16 @@ public class Bip39Account extends Account {
     }
 
     /**
-     * Generates a BIP-39 compatible NEO account. The private key for the wallet can
-     * be calculated using following algorithm:
+     * Generates a BIP-39 compatible NEO account. The private key for the wallet can be calculated using following
+     * algorithm:
      * <pre>
      *     Key = SHA-256(BIP_39_SEED(mnemonic, password))
      * </pre>
+     * <p>
+     * The password will *only* be used as passphrase for BIP-39 seed (i.e., used to recover the account).
      *
-     * @param password Will be *only* used as passphrase for BIP-39 seed (i.e., used to recover the account).
-     * @return A BIP-39 compatible NEO account.
+     * @param password the passphrase with which to encrypt the private key.
+     * @return a BIP-39 compatible Neo account.
      */
     public static Bip39Account create(final String password) {
         byte[] initialEntropy = SecureRandomUtils.generateRandomBytes(16);
@@ -50,14 +52,13 @@ public class Bip39Account extends Account {
         byte[] seed = MnemonicUtils.generateSeed(mnemonic, password);
         ECKeyPair keyPair = ECKeyPair.create(sha256(seed));
 
-        return new Bip39Account(keyPair)
-                .mnemonic(mnemonic);
+        return new Bip39Account(keyPair).mnemonic(mnemonic);
     }
 
     /**
      * Recovers a key pair based on BIP-39 mnemonic and password.
      *
-     * @param password passphrase given when the BIP-39 account was generated.
+     * @param password the passphrase given when the BIP-39 account was generated.
      * @param mnemonic the generated mnemonic with the given passphrase.
      * @return a Bip39Account builder.
      */
@@ -70,4 +71,5 @@ public class Bip39Account extends Account {
     public String getMnemonic() {
         return mnemonic;
     }
+
 }

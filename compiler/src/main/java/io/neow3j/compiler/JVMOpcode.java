@@ -3,9 +3,9 @@ package io.neow3j.compiler;
 // Taken from com.sun.tools.classfile.Opcode
 
 /**
- * Contains all opcodes from the JVM instruction set as documented in the Java Virtual Machine
- * Specification Java SE 8 Edition, which can be found
- * <a href="https://docs.oracle.com/javase/specs/jvms/se8/jvms8.pdf">here</a> in chapter 6.
+ * Contains all opcodes from the JVM instruction set as documented in the Java Virtual Machine Specification Java SE
+ * 8 Edition, which can be found <a href="https://docs.oracle.com/javase/specs/jvms/se8/jvms8.pdf">here</a>
+ * in chapter 6.
  */
 public enum JVMOpcode {
 
@@ -267,4 +267,5 @@ public enum JVMOpcode {
             this.length = kindLenght;
         }
     }
+
 }

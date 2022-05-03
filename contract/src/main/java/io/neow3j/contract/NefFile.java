@@ -89,7 +89,7 @@ public class NefFile extends NeoSerializable {
         this.methodTokens = methodTokens == null ? new ArrayList<>() : methodTokens;
         if (this.sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
             throw new IllegalArgumentException(
-                    "The source URL must not be longer than " + MAX_SOURCE_URL_SIZE + " bytes");
+                    format("The source URL must not be longer than %s bytes.", MAX_SOURCE_URL_SIZE));
         }
         this.script = script;
         // Need to initialize the check sum because it is required for calculating the check sum.
@@ -109,9 +109,7 @@ public class NefFile extends NeoSerializable {
     }
 
     /**
-     * Gets the compiler (and version) with which this NEF file has been generated.
-     *
-     * @return the compiler name and version.
+     * @return the compiler name and version with which this NEF file has been generated.
      */
     public String getCompiler() {
         return compiler;
@@ -212,7 +210,7 @@ public class NefFile extends NeoSerializable {
             sourceUrl = reader.readVarString();
             if (sourceUrl != null && sourceUrl.getBytes(UTF_8).length >= MAX_SOURCE_URL_SIZE) {
                 throw new DeserializationException(
-                        "Source URL must not be longer than " + MAX_SOURCE_URL_SIZE + " bytes.");
+                        format("Source URL must not be longer than %s bytes.", MAX_SOURCE_URL_SIZE));
             }
             // Reserved bytes
             if (reader.readByte() != 0) {
@@ -331,7 +329,6 @@ public class NefFile extends NeoSerializable {
 
         public MethodToken(Hash160 hash, String method, int parametersCount, boolean hasReturnValue,
                 CallFlags callFlags) {
-
             this.hash = hash;
             this.method = method;
             this.parametersCount = parametersCount;
@@ -419,6 +416,7 @@ public class NefFile extends NeoSerializable {
             result = 31 * result + (callFlags != null ? callFlags.hashCode() : 0);
             return result;
         }
+
     }
 
 }

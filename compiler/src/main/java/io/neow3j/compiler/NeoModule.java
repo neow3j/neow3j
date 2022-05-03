@@ -24,24 +24,24 @@ import static java.lang.String.format;
 
 public class NeoModule {
 
-    // Holds this module's methods, mapping from method ID to {@link NeoMethod}; Used by the
-    // compiler to quickly search for a method.
+    // Holds this module's methods, mapping from method ID to {@link NeoMethod}; Used by the compiler to quickly
+    // search for a method.
     private final Map<String, NeoMethod> methods = new HashMap<>();
 
-    // Holds the same references to the methods as {@link NeoModule#methods} but in the order they
-    // have been added to this module.
+    // Holds the same references to the methods as {@link NeoModule#methods} but in the order they have been added to
+    // this module.
     private final List<NeoMethod> sortedMethods = new ArrayList<>();
 
-    // Holds this module's events. The keys are the variable names used when defining the events
-    // in the smart contract class.
+    // Holds this module's events. The keys are the variable names used when defining the events in the smart
+    // contract class.
     private final Map<String, NeoEvent> events = new HashMap<>();
 
-    // An ordered list of static method calls that are referenced by their index in this list. Used
-    // in CALLT instructions.
+    // An ordered list of static method calls that are referenced by their index in this list. Used in CALLT
+    // instructions.
     private List<MethodToken> methodTokens = new ArrayList<>();
 
-    // Holds this module's static field variables. Includes static variables on the contract
-    // class and auxiliary classes.
+    // Holds this module's static field variables. Includes static variables on the contract class and auxiliary
+    // classes.
     private Map<String, NeoContractVariable> contractVariables = new HashMap<>();
 
     public List<NeoEvent> getEvents() {
@@ -49,9 +49,7 @@ public class NeoModule {
     }
 
     /**
-     * Gets the contract (static) variables of this module.
-     *
-     * @return the
+     * @return the contract (static) variables of this module.
      */
     public List<NeoContractVariable> getContractVariables() {
         return new ArrayList<>(contractVariables.values());
@@ -61,21 +59,19 @@ public class NeoModule {
     /**
      * Gets the corresponding contract variable for the variable found in the given instruction.
      * <p>
-     * Creates a new contract variable, if the variable from the instruction is used for the
-     * first time in the compilation.
+     * Creates a new contract variable, if the variable from the instruction is used for the first time in the
+     * compilation.
      *
-     * @param insn     The instruction using the variable.
-     * @param compUnit The compilation unit needed for the classloader.
+     * @param insn     the instruction using the variable.
+     * @param compUnit the compilation unit needed for the classloader.
      * @return the contract variable.
      * @throws IOException if there was a problem loading classes from disk.
      */
-    public NeoContractVariable getContractVariable(FieldInsnNode insn, CompilationUnit compUnit)
-           throws IOException {
-
+    public NeoContractVariable getContractVariable(FieldInsnNode insn, CompilationUnit compUnit) throws IOException {
         ClassNode owner = getAsmClassForInternalName(insn.owner, compUnit.getClassLoader());
         if (!owner.name.equals(compUnit.getContractClass().name)) {
-            throw new CompilerException(owner, "Static variables are not allowed outside the main" +
-                    " contract class if they are not final or final but not of constant value. ");
+            throw new CompilerException(owner, "Static variables are not allowed outside the main contract class if " +
+                    "they are not final or final but not of constant value. ");
         }
         FieldNode variable = owner.fields.stream()
                 .filter(f -> f.name.equals(insn.name) && f.desc.equals(insn.desc))
@@ -91,9 +87,7 @@ public class NeoModule {
     }
 
     /**
-     * Gets this module's methods in the order they were added.
-     *
-     * @return the methods.
+     * @return the module's methods in the order they were added.
      */
     public List<NeoMethod> getSortedMethods() {
         return sortedMethods;
@@ -104,7 +98,7 @@ public class NeoModule {
      * <p>
      * The index is also the ID to be used in combination with the CALLT opcode.
      *
-     * @param token The token to search for.
+     * @param token the token to search for.
      * @return the index of the token or -1 if it doesn't exist.
      */
     public int getIndexOfMethodToken(MethodToken token) {
@@ -119,10 +113,10 @@ public class NeoModule {
     }
 
     /**
-     * Adds the given method token to this module's tokens and returns the tokens ID. If the token
-     * is already present, it's current ID is returned.
+     * Adds the given method token to this module's tokens and returns the tokens ID. If the token is already
+     * present, it's current ID is returned.
      *
-     * @param token The method token to add.
+     * @param token the method token to add.
      * @return the ID of the added method token.
      */
     public int addMethodToken(MethodToken token) {
@@ -153,8 +147,8 @@ public class NeoModule {
 
     public void addEvent(NeoEvent event) {
         if (events.containsKey(event.getDisplayName())) {
-            throw new CompilerException(format("Two events with the name '%s' are defined. Make "
-                    + "sure that every event has a different name.", event.getDisplayName()));
+            throw new CompilerException(format("Two events with the name '%s' are defined. Make sure that every event" +
+                    " has a different name.", event.getDisplayName()));
         }
         events.put(event.getDisplayName(), event);
     }
@@ -166,28 +160,24 @@ public class NeoModule {
         for (NeoMethod method : this.sortedMethods) {
             method.finalizeMethod();
             method.setStartAddress(startAddress);
-            // At this point, the `nextAddress` should be set to one byte after the last
-            // instruction byte of a method. So we can simply add this number to the current
-            // start address and get the start address of the next method.
+            // At this point, the `nextAddress` should be set to one byte after the last instruction byte of a method.
+            // So we can simply add this number to the current start address and get the start address of the next
+            // method.
             startAddress += method.getLastAddress();
         }
         for (NeoMethod method : sortedMethods) {
             for (Entry<Integer, NeoInstruction> entry : method.getInstructions().entrySet()) {
                 NeoInstruction insn = entry.getValue();
-                // Currently we're only using OpCode.CALL_L. Using CALL instead of CALL_L might
-                // lead to some savings in script size but will also require shifting
-                // addresses of all following instructions.
+                // Currently, we're only using OpCode.CALL_L. Using CALL instead of CALL_L might lead to some savings
+                // in script size but will also require shifting addresses of all following instructions.
                 if (insn.getOpcode().equals(OpCode.CALL_L)) {
                     if (!(insn.getExtra() instanceof NeoMethod)) {
-                        throw new CompilerException(format("Instruction with %s opcode is "
-                                + "missing the reference to the called method. The jump address "
-                                + "cannot be resolved.", OpCode.CALL_L.name()));
+                        throw new CompilerException(format("Instruction with %s opcode is missing the reference to " +
+                                "the called method. The jump address cannot be resolved.", OpCode.CALL_L.name()));
                     }
                     NeoMethod calledMethod = (NeoMethod) insn.getExtra();
-                    int offset = calledMethod.getStartAddress()
-                            - (method.getStartAddress() + entry.getKey());
-                    insn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN)
-                            .putInt(offset).array());
+                    int offset = calledMethod.getStartAddress() - (method.getStartAddress() + entry.getKey());
+                    insn.setOperand(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(offset).array());
                 }
             }
         }
@@ -195,9 +185,8 @@ public class NeoModule {
 
     private void checkForMaxNumberOfStaticFields() {
         if (contractVariables.size() > Compiler.MAX_STATIC_FIELDS) {
-            throw new CompilerException(format("The contract has more than the maximally " +
-                            "supported number of static field variables (%d).",
-                    Compiler.MAX_STATIC_FIELDS));
+            throw new CompilerException(format("The contract has more than the maximally supported number of static " +
+                            "field variables (%d).", Compiler.MAX_STATIC_FIELDS));
         }
     }
 
@@ -207,9 +196,8 @@ public class NeoModule {
                 .filter(Objects::nonNull)
                 .forEach(sig -> {
                     if (methodSigs.contains(sig)) {
-                        throw new CompilerException(format("There are multiple methods that are "
-                                + "annotated as candidates for the '%s' method but only one is "
-                                + "allowed.", sig.name()));
+                        throw new CompilerException(format("There are multiple methods that are annotated as " +
+                                "candidates for the '%s' method but only one is allowed.", sig.name()));
                     }
                     methodSigs.add(sig);
                 });
@@ -220,9 +208,8 @@ public class NeoModule {
     }
 
     /**
-     * Concatenates all of this module's methods together into one script. Should only be called
-     * after {@link NeoModule#finalizeModule()} becuase otherwise the {@link
-     * NeoModule#sortedMethods} is not yet initialized.
+     * Concatenates all of this module's methods together into one script. Should only be called after
+     * {@link NeoModule#finalizeModule()} becuase otherwise the {@link NeoModule#sortedMethods} is not yet initialized.
      */
     byte[] toByteArray() {
         ByteBuffer b = ByteBuffer.allocate(byteSize());

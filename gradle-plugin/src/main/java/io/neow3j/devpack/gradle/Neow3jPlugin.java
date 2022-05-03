@@ -20,12 +20,10 @@ public class Neow3jPlugin implements Plugin<Project> {
     public void apply(Project project) {
 
         if (GradleVersion.current().compareTo(GradleVersion.version(GRADLE_MIN_VERSION)) < 0) {
-            throw new UnsupportedOperationException(PLUGIN_ID +
-                    " requires at least Gradle " + GRADLE_MIN_VERSION);
+            throw new UnsupportedOperationException(PLUGIN_ID + " requires at least Gradle " + GRADLE_MIN_VERSION);
         }
 
-        Neow3jPluginExtension extension = project.getExtensions()
-                .create(EXTENSION_NAME, Neow3jPluginExtension.class);
+        Neow3jPluginExtension extension = project.getExtensions().create(EXTENSION_NAME, Neow3jPluginExtension.class);
         // Set default values that will be overwritten by the values set in dev's build.gradle.
         extension.getDebug().set(true);
         extension.getOutputDir().set(new File(project.getBuildDir(), DEFAULT_OUTPUT_DIR));

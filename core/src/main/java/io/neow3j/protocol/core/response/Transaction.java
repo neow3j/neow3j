@@ -78,9 +78,9 @@ public class Transaction {
     public Transaction() {
     }
 
-    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender,
-            String sysFee, String netFee, Long validUntilBlock, List<TransactionSigner> signers,
-            List<TransactionAttribute> attributes, String script, List<NeoWitness> witnesses) {
+    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender, String sysFee, String netFee,
+            Long validUntilBlock, List<TransactionSigner> signers, List<TransactionAttribute> attributes, String script,
+            List<NeoWitness> witnesses) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -95,10 +95,9 @@ public class Transaction {
         this.witnesses = witnesses;
     }
 
-    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender,
-            String sysFee, String netFee, Long validUntilBlock, List<TransactionSigner> signers,
-            List<TransactionAttribute> attributes, String script, List<NeoWitness> witnesses,
-            Hash256 blockHash, int confirmations, long blockTime, NeoVMStateType vmState) {
+    public Transaction(Hash256 hash, long size, int version, Long nonce, String sender, String sysFee, String netFee,
+            Long validUntilBlock, List<TransactionSigner> signers, List<TransactionAttribute> attributes, String script,
+            List<NeoWitness> witnesses, Hash256 blockHash, int confirmations, long blockTime, NeoVMStateType vmState) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -228,10 +227,9 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHash(), getSize(), getVersion(), getNonce(), getSender(),
-                getSysFee(), getNetFee(), getValidUntilBlock(), getSigners(), getAttributes(),
-                getScript(), getWitnesses(), getBlockHash(), getConfirmations(), getBlockTime(),
-                getVMState());
+        return Objects.hash(getHash(), getSize(), getVersion(), getNonce(), getSender(), getSysFee(), getNetFee(),
+                getValidUntilBlock(), getSigners(), getAttributes(), getScript(), getWitnesses(), getBlockHash(),
+                getConfirmations(), getBlockTime(), getVMState());
     }
 
     @Override

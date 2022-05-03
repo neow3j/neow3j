@@ -15,4 +15,5 @@ public class NEP2InvalidPassphrase extends Exception {
     public NEP2InvalidPassphrase(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

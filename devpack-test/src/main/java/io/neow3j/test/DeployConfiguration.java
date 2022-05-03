@@ -8,9 +8,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Used for configuring the deployment of a contract under test. Instantiate and return this
- * class in a method annotated with {@link DeployConfig} to configure the deployment of a
- * specific contract under test.
+ * Used for configuring the deployment of a contract under test. Instantiate and return this class in a method
+ * annotated with {@link DeployConfig} to configure the deployment of a specific contract under test.
  */
 public class DeployConfiguration {
 
@@ -29,30 +28,21 @@ public class DeployConfiguration {
         return deployParam;
     }
 
-    protected Map<String, String> getSubstitutions() {
-        return substitutions;
-    }
-
-    protected AccountSigner getSigner() {
-        return signer;
-    }
-
-    protected Account[] getSigningAccounts() {
-        return signingAccounts;
-    }
-
     /**
      * Sets the parameter used on deployment of the contract.
      *
-     * @param deployParam The parameter passed tot the contracts deploy method.
+     * @param deployParam the parameter passed tot the contracts deploy method.
      */
     public void setDeployParam(ContractParameter deployParam) {
         this.deployParam = deployParam;
     }
 
+    protected Map<String, String> getSubstitutions() {
+        return substitutions;
+    }
+
     /**
-     * Sets the mapping from placeholder to substitution strings that will be used before the
-     * contract is compiled.
+     * Sets the mapping from placeholder to substitution strings that will be used before the contract is compiled.
      *
      * @param substitutions the substitutions.
      */
@@ -60,35 +50,44 @@ public class DeployConfiguration {
         this.substitutions = substitutions;
     }
 
-    /**
-     * Sets a single mapping from placeholder to substitution that will be used before the contract
-     * is compiled.
-     *
-     * @param placeholder  The placeholder string.
-     * @param substitution The substitution.
-     */
-    public void setSubstitution(String placeholder, String substitution) {
-        substitutions.put(placeholder, substitution);
+    protected AccountSigner getSigner() {
+        return signer;
     }
 
     /**
      * Sets the signer that will be used on the deploy transaction.
      * <p>
      * If no signer is set, a default account will be used by the test framework.
-     * @param signer The signer.
+     *
+     * @param signer the signer.
      */
     public void setSigner(AccountSigner signer) {
         this.signer = signer;
     }
 
+    protected Account[] getSigningAccounts() {
+        return signingAccounts;
+    }
+
     /**
-     * Sets the accounts that are used for signing the deploy transaction, if the signer account
-     * set in {@link DeployConfiguration#setSigner(AccountSigner)} is a multi-sig account. I.e.,
-     * don't use this when the signer is a single-sig account.
+     * Sets the accounts that are used for signing the deploy transaction, if the signer account set in
+     * {@link DeployConfiguration#setSigner(AccountSigner)} is a multi-sig account. I.e., don't use this when the
+     * signer is a single-sig account.
      *
-     * @param accounts The signing accounts.
+     * @param accounts the signing accounts.
      */
     public void setSigningAccounts(Account... accounts) {
         signingAccounts = accounts;
     }
+
+    /**
+     * Sets a single mapping from placeholder to substitution that will be used before the contract is compiled.
+     *
+     * @param placeholder  the placeholder string.
+     * @param substitution the substitution.
+     */
+    public void setSubstitution(String placeholder, String substitution) {
+        substitutions.put(placeholder, substitution);
+    }
+
 }

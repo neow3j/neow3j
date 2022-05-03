@@ -8,8 +8,7 @@ import java.lang.annotation.Repeatable;
 import java.lang.annotation.Target;
 
 /**
- * Used to define features of a smart contract. The attributes will be written to the contract's
- * manifest file.
+ * Used to define features of a smart contract. The attributes will be written to the contract's manifest file.
  * <p>
  * The {@code neoStandard} and {@code customStandard} fields must not be used conjointly.
  */

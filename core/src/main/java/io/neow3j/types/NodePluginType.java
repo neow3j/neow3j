@@ -34,4 +34,5 @@ public enum NodePluginType {
         }
         throw new IllegalArgumentException();
     }
+
 }

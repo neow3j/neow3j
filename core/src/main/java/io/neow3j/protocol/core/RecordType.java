@@ -3,6 +3,8 @@ package io.neow3j.protocol.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import static java.lang.String.format;
+
 public enum RecordType {
 
     /* region [RFC 1035](https://tools.ietf.org/html/rfc1035) */
@@ -50,8 +52,7 @@ public enum RecordType {
         if (value instanceof Integer) {
             return valueOf(((Integer) value).byteValue());
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", RecordType.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", RecordType.class.getName()));
     }
 
     public static RecordType valueOf(byte byteValue) {
@@ -60,8 +61,7 @@ public enum RecordType {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", RecordType.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", RecordType.class.getName()));
     }
 
     public static RecordType fromJsonValue(String jsonValue) {
@@ -70,8 +70,7 @@ public enum RecordType {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", RecordType.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", RecordType.class.getName()));
     }
 
     public byte byteValue() {
@@ -82,4 +81,5 @@ public enum RecordType {
     public String jsonValue() {
         return this.jsonValue;
     }
+
 }

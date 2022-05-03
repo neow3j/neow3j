@@ -2,19 +2,22 @@ package io.neow3j.script;
 
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.utils.Numeric;
+
 import java.io.IOException;
 import java.util.HashMap;
 
+import static java.lang.String.format;
+
 /**
- * Reads Neo VM scripts and converts them to a more human-readable representation.
+ * Reads NeoVM scripts and converts them to a more human-readable representation.
  */
 public class ScriptReader {
 
     /**
      * Gets the InteropService that creates the provided hash.
      *
-     * @param hash The hash of the InteropServiceCode.
-     * @return The InteropServiceCode matching the hash.
+     * @param hash the hash of the InteropServiceCode.
+     * @return the InteropServiceCode matching the hash.
      */
     public static InteropService getInteropServiceCode(String hash) {
         HashMap<String, InteropService> interopServiceCodeMap = new HashMap<>();
@@ -29,9 +32,9 @@ public class ScriptReader {
     }
 
     /**
-     * Converts a Neo VM script into a string representation using OpCode names.
+     * Converts a NeoVM script into a string representation using OpCode names.
      *
-     * @param script The script to convert in hexadecimal format.
+     * @param script the script to convert in hexadecimal format.
      * @return the OpCode representation of the script.
      */
     public static String convertToOpCodeString(String script) {
@@ -39,9 +42,9 @@ public class ScriptReader {
     }
 
     /**
-     * Converts a Neo VM script into a string representation using OpCode names.
+     * Converts a NeoVM script into a string representation using OpCode names.
      *
-     * @param script The script to convert.
+     * @param script the script to convert.
      * @return the OpCode representation of the script.
      */
     public static String convertToOpCodeString(byte[] script) {
@@ -82,8 +85,9 @@ public class ScriptReader {
         } else if (operandSize.prefixSize() == 4) {
             return r.readInt32();
         } else {
-            throw new UnsupportedOperationException("Only operand prefix sizes 1, 2, and 4 are "
-                    + "supported, but got " + operandSize.prefixSize());
+            throw new UnsupportedOperationException(
+                    format("Only operand prefix sizes 1, 2, and 4 are supported, but got %s.",
+                            operandSize.prefixSize()));
         }
     }
 

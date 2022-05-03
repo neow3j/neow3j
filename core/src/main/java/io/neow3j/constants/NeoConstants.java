@@ -33,7 +33,7 @@ public class NeoConstants {
     /**
      * The maximum number of public keys that can take part in a multi-signature address. Taken from
      * Neo.SmartContract.Contract.CreateMultiSigRedeemScript(...) in the C# neo repo at
-     * https://github.com/neo-project/neo.
+     * <a href="https://github.com/neo-project/neo">https://github.com/neo-project/neo</a>.
      */
     public static final int MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT = 1024;
 
@@ -65,8 +65,8 @@ public class NeoConstants {
     /**
      * Size of a single signature verification script in bytes.
      * <p>
-     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (SYSCALL Opcode)
-     * + 4 (InteropServiceCode) = 41
+     * 1 (PUSHDATA OpCode) + 1 (byte for data length) + 33 (public key) + 1 (SYSCALL Opcode) + 4 (InteropServiceCode)
+     * = 41
      */
     public static final int VERIFICATION_SCRIPT_SIZE = 40;
 

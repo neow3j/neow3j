@@ -32,9 +32,8 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     @Override
     public void execute(Neow3jCompileTask neow3jPluginCompile) {
         if (!neow3jPluginCompile.getClassName().isPresent()) {
-            throw new IllegalArgumentException(format("The parameter '%s' needs to be set in the " +
-                            "'%s' declaration in your build.gradle file.",
-                    CLASSNAME_NAME, EXTENSION_NAME));
+            throw new IllegalArgumentException(format("The parameter '%s' needs to be set in the '%s' declaration in " +
+                    "your build.gradle file.", CLASSNAME_NAME, EXTENSION_NAME));
         }
         String canonicalClassName = neow3jPluginCompile.getClassName().get();
         File projectBuildDir = neow3jPluginCompile.getProject().getBuildDir();
@@ -42,20 +41,17 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         File outputDir = neow3jPluginCompile.getOutputDir().getAsFile().get();
 
         URLClassLoader classLoader = constructClassLoader(neow3jPluginCompile, projectBuildDir);
-        CompilationUnit compilationUnit = compile(neow3jPluginCompile, canonicalClassName,
-                debugSymbols, classLoader);
+        CompilationUnit compilationUnit = compile(neow3jPluginCompile, canonicalClassName, debugSymbols, classLoader);
 
         try {
             Path outDir = createDirectories(outputDir.toPath());
             String contractName = compilationUnit.getManifest().getName();
             if (contractName == null || contractName.length() == 0) {
-                throw new IllegalStateException("No contract name is set in the contract's "
-                        + "manifest.");
+                throw new IllegalStateException("No contract name is set in the contract's manifest.");
             }
 
             String nefFileName = writeNefFile(compilationUnit.getNefFile(), contractName, outDir);
-            String manifestFileName = writeContractManifestFile(compilationUnit.getManifest(),
-                    outDir);
+            String manifestFileName = writeContractManifestFile(compilationUnit.getManifest(), outDir);
 
             // if everything goes fine, print info
             System.out.println("Compilation succeeded!");
@@ -64,15 +60,15 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
 
             if (debugSymbols) {
                 // Pack the debug info into a ZIP archive.
-                String debugInfoZipFileName = Neow3jPluginUtils.writeDebugInfoZip(
-                        compilationUnit.getDebugInfo(), contractName, outDir);
+                String debugInfoZipFileName =
+                        Neow3jPluginUtils.writeDebugInfoZip(compilationUnit.getDebugInfo(), contractName, outDir);
                 System.out.println("Debug info zip file: " + debugInfoZipFileName);
             }
 
         } catch (Exception e) {
             System.out.println("Smart contract compilation failed.");
-            ShowStacktrace showStacktrace = neow3jPluginCompile.getProject().getGradle()
-                    .getStartParameter().getShowStacktrace();
+            ShowStacktrace showStacktrace =
+                    neow3jPluginCompile.getProject().getGradle().getStartParameter().getShowStacktrace();
             if (showStacktrace.equals(ShowStacktrace.ALWAYS)) {
                 throw new RuntimeException(e);
             } else {
@@ -81,8 +77,9 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         }
     }
 
-    private CompilationUnit compile(Neow3jCompileTask neow3jPluginCompile,
-            String canonicalClassName, Boolean debugSymbols, URLClassLoader classLoader) {
+    private CompilationUnit compile(Neow3jCompileTask neow3jPluginCompile, String canonicalClassName,
+            Boolean debugSymbols, URLClassLoader classLoader) {
+
         Compiler n = new Compiler(classLoader);
         CompilationUnit compilationUnit;
         try {
@@ -94,8 +91,8 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
             }
         } catch (Exception e) {
             System.out.println("Smart contract compilation failed.");
-            ShowStacktrace showStacktrace = neow3jPluginCompile.getProject().getGradle()
-                    .getStartParameter().getShowStacktrace();
+            ShowStacktrace showStacktrace =
+                    neow3jPluginCompile.getProject().getGradle().getStartParameter().getShowStacktrace();
             if (showStacktrace.equals(ShowStacktrace.ALWAYS)) {
                 throw new RuntimeException(e);
             } else {
@@ -106,8 +103,8 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     }
 
     private List<ISourceContainer> constructSourceContainers(Neow3jCompileTask neow3jPluginCompile) {
-        SourceSetContainer sourceSets = neow3jPluginCompile.getProject().getConvention()
-                .getPlugin(JavaPluginConvention.class).getSourceSets();
+        SourceSetContainer sourceSets =
+                neow3jPluginCompile.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets();
         Set<File> sourceDirs = new HashSet<>();
         sourceSets.forEach(sc -> sourceDirs.addAll(sc.getAllJava().getSrcDirs()));
         return sourceDirs.stream()
@@ -115,8 +112,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                 .collect(Collectors.toList());
     }
 
-    private URLClassLoader constructClassLoader(Neow3jCompileTask neow3jPluginCompile,
-            File projectBuildDir) {
+    private URLClassLoader constructClassLoader(Neow3jCompileTask neow3jPluginCompile, File projectBuildDir) {
         List<File> classDirs = getOutputDirs(neow3jPluginCompile.getProject());
         classDirs.add(projectBuildDir);
         URL[] classDirURLs = classDirs.stream().map(f -> {

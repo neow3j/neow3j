@@ -242,7 +242,6 @@ public class SmartContract {
      */
     public NeoInvokeFunction callInvokeFunction(String function, List<ContractParameter> params, Signer... signers)
             throws IOException {
-
         // Remark: The list of signers may be required for `invokefunction` calls that will hit a CheckWitness check
         // in the smart contract.
         if (Strings.isEmpty(function)) {

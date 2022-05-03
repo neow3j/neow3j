@@ -23,24 +23,23 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
 
 /**
- * <p>Transaction signing logic.</p>
- * <br>
- * <p>Originally adapted from the
- * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/ECKey.java">
- * BitcoinJ ECKey</a> implementation.
- * <br>
- * <p>Class from web3j project, and adapted to neow3j project (with NEO requirements).</p>
+ * Transaction signing logic.
+ * <p>
+ * Originally adapted from the
+ * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/core/ECKey.java">BitcoinJ ECKey</a> implementation.
+ * <p>
+ * Class from web3j project, and adapted to neow3j project (with NEO requirements).
  */
 public class Sign {
 
     private static final int LOWER_REAL_V = 27;
 
     /**
-     * Signs the hash ({@code SHA256}) of the hexadecimal message with the private key of the
-     * provided {@link ECKeyPair}.
+     * Signs the hash ({@code SHA256}) of the hexadecimal message with the private key of the provided
+     * {@link ECKeyPair}.
      *
-     * @param messageHex The message to sign in hexadecimal format.
-     * @param keyPair    The key pair that holds the private key that is used to sign the message.
+     * @param messageHex the message to sign in hexadecimal format.
+     * @param keyPair    the key pair that holds the private key that is used to sign the message.
      * @return the signature data.
      */
     public static SignatureData signHexMessage(String messageHex, ECKeyPair keyPair) {
@@ -48,11 +47,11 @@ public class Sign {
     }
 
     /**
-     * Signs the hash ({@code SHA256}) of the message's UTF-8 bytes with the private key of the
-     * provided {@link ECKeyPair}.
+     * Signs the hash ({@code SHA256}) of the message's UTF-8 bytes with the private key of the provided
+     * {@link ECKeyPair}.
      *
-     * @param message The message to sign.
-     * @param keyPair The key pair that holds the private key that is used to sign message.
+     * @param message the message to sign.
+     * @param keyPair the key pair that holds the private key that is used to sign message.
      * @return the signature data.
      */
     public static SignatureData signMessage(String message, ECKeyPair keyPair) {
@@ -60,11 +59,10 @@ public class Sign {
     }
 
     /**
-     * Signs the hash ({@code SHA256}) of the message with the private key of the provided
-     * {@link ECKeyPair}.
+     * Signs the hash ({@code SHA256}) of the message with the private key of the provided {@link ECKeyPair}.
      *
-     * @param message The message to sign.
-     * @param keyPair The key pair that holds the private key that is used to sign the message.
+     * @param message the message to sign.
+     * @param keyPair the key pair that holds the private key that is used to sign the message.
      * @return the signature data.
      */
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
@@ -74,9 +72,9 @@ public class Sign {
     /**
      * Signs the message with the private key of the provided {@link ECKeyPair}.
      *
-     * @param message    The message to sign.
-     * @param keyPair    The key pair that holds the private key that is used to sign the message.
-     * @param needToHash Whether the message should be hashed ({@code SHA256}) before signing.
+     * @param message    the message to sign.
+     * @param keyPair    the key pair that holds the private key that is used to sign the message.
+     * @param needToHash whether the message should be hashed ({@code SHA256}) before signing.
      * @return the signature data.
      */
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair, boolean needToHash) {
@@ -98,8 +96,7 @@ public class Sign {
             }
         }
         if (recId == -1) {
-            throw new RuntimeException(
-                    "Could not construct a recoverable key. This should never happen.");
+            throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
         }
 
         int headerByte = recId + 27;
@@ -113,24 +110,22 @@ public class Sign {
     }
 
     /**
-     * <p>Given the components of a signature and a selector value, recover and return the public
-     * key that generated the signature according to the algorithm in SEC1v2 section 4.1.6.</p>
-     * <br>
-     * <p>The recId is an index from 0 to 3 which indicates which of the 4 possible keys is the
-     * correct one. Because the key recovery operation yields multiple potential keys, the correct
-     * key must either be stored alongside the signature, or you must be willing to try each recId
-     * in turn until you find one that outputs the key you are expecting.</p>
-     * <br>
-     * <p>If this method returns null it means recovery was not possible and recId should be
-     * iterated.</p>
-     * <br>
-     * <p>Given the above two points, a correct usage of this method is inside a for loop from
-     * 0 to 3, and if the output is null OR a key that is not the one you expect, you try again with
-     * the next recId.</p>
+     * Given the components of a signature and a selector value, recover and return the public key that generated the
+     * signature according to the algorithm in SEC1v2 section 4.1.6.
+     * <p>
+     * The recId is an index from 0 to 3 which indicates which of the 4 possible keys is the correct one. Because the
+     * key recovery operation yields multiple potential keys, the correct key must either be stored alongside the
+     * signature, or you must be willing to try each recId in turn until you find one that outputs the key you are
+     * expecting.
+     * <p>
+     * If this method returns null it means recovery was not possible and recId should be iterated.
+     * <p>
+     * Given the above two points, a correct usage of this method is inside a for loop from 0 to 3, and if the output
+     * is null OR a key that is not the one you expect, you try again with the next recId.
      *
-     * @param recId   Which possible key to recover.
-     * @param sig     The R and S components of the signature, wrapped.
-     * @param message Hash of the data that was signed.
+     * @param recId   which possible key to recover.
+     * @param sig     the R and S components of the signature, wrapped.
+     * @param message the hash of the data that was signed.
      * @return an ECKey containing only the public part, or null if recovery wasn't possible.
      */
     public static ECPublicKey recoverFromSignature(int recId, ECDSASignature sig, byte[] message) {
@@ -144,11 +139,11 @@ public class Sign {
         BigInteger n = secp256r1DomainParams().getN();  // Curve order.
         BigInteger i = BigInteger.valueOf((long) recId / 2);
         BigInteger x = sig.r.add(i.multiply(n));
-        //   1.2. Convert the integer x to an octet string X of length mlen using the conversion
-        //        routine specified in Section 2.3.7, where mlen = ⌈(log2 p)/8⌉ or mlen = ⌈m/8⌉.
-        //   1.3. Convert the octet string (16 set binary digits)||X to an elliptic curve point R
-        //        using the conversion routine specified in Section 2.3.4. If this conversion
-        //        routine outputs "invalid", then do another iteration of Step 1.
+        //   1.2. Convert the integer x to an octet string X of length mlen using the conversion routine specified in
+        //        Section 2.3.7, where mlen = ⌈(log2 p)/8⌉ or mlen = ⌈m/8⌉.
+        //   1.3. Convert the octet string (16 set binary digits)||X to an elliptic curve point R using the
+        //        conversion routine specified in Section 2.3.4. If this conversion routine outputs "invalid", then do
+        //        another iteration of Step 1.
         //
         // More concisely, what these points mean is to use X as a compressed public key.
         BigInteger prime = SecP256R1Curve.q;
@@ -166,20 +161,17 @@ public class Sign {
         }
         //   1.5. Compute e from M using Steps 2 and 3 of ECDSA signature verification.
         BigInteger e = new BigInteger(1, message);
-        //   1.6. For k from 1 to 2 do the following.   (loop is outside this function via
-        //        iterating recId)
+        //   1.6. For k from 1 to 2 do the following.   (loop is outside this function via iterating recId)
         //   1.6.1. Compute a candidate public key as:
         //               Q = mi(r) * (sR - eG)
         //
         // Where mi(x) is the modular multiplicative inverse. We transform this into the following:
         //               Q = (mi(r) * s ** R) + (mi(r) * -e ** G)
         // Where -e is the modular additive inverse of e, that is z such that z + e = 0 (mod n).
-        // In the above equation ** is point multiplication and + is point addition (the EC group
-        // operator).
+        // In the above equation ** is point multiplication and + is point addition (the EC group operator).
         //
-        // We can find the additive inverse by subtracting e from zero then taking the mod. For
-        // example the additive inverse of 3 modulo 11 is 8 because 3 + 8 mod 11 = 0, and
-        // -3 mod 11 = 8.
+        // We can find the additive inverse by subtracting e from zero then taking the mod. For example the additive
+        // inverse of 3 modulo 11 is 8 because 3 + 8 mod 11 = 0, and -3 mod 11 = 8.
         BigInteger eInv = BigInteger.ZERO.subtract(e).mod(n);
         BigInteger rInv = sig.r.modInverse(n);
         BigInteger srInv = rInv.multiply(sig.s).mod(n);
@@ -190,31 +182,29 @@ public class Sign {
     }
 
     /**
-     * <p>Decompress a compressed public key (x co-ord and low-bit of y-coord).</p>
-     * <br>
-     * <p>Based on: https://tools.ietf.org/html/rfc5480#section-2.2</p>
+     * Decompress a compressed public key (x co-ord and low-bit of y-coord).
+     * <p>
+     * Based on: <a href="https://tools.ietf.org/html/rfc5480#section-2.2">RFC5480</a>
      */
     private static ECPoint decompressKey(BigInteger xBN, boolean yBit) {
         X9IntegerConverter x9 = new X9IntegerConverter();
-        byte[] compEnc = x9.integerToBytes(xBN,
-                1 + x9.getByteLength(secp256r1DomainParams().getCurve()));
+        byte[] compEnc = x9.integerToBytes(xBN, 1 + x9.getByteLength(secp256r1DomainParams().getCurve()));
         compEnc[0] = (byte) (yBit ? 0x03 : 0x02);
         return secp256r1DomainParams().getCurve().decodePoint(compEnc);
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the
-     * public key that was used to sign it. This can then be compared to the expected public key to
-     * determine if the signature was correct.
+     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the public key that
+     * was used to sign it. This can then be compared to the expected public key to determine if the signature was
+     * correct.
      *
-     * @param message       The encoded message.
-     * @param signatureData The message signature components
-     * @return the public key used to sign the message
-     * @throws SignatureException if the public key could not be recovered or if there was a
-     *                            signature format error.
+     * @param message       the encoded message.
+     * @param signatureData the message signature components.
+     * @return the public key used to sign the message.
+     * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
      */
-    public static ECPublicKey signedMessageToKey(
-            byte[] message, SignatureData signatureData) throws SignatureException {
+    public static ECPublicKey signedMessageToKey(byte[] message, SignatureData signatureData)
+            throws SignatureException {
 
         byte[] r = signatureData.getR();
         byte[] s = signatureData.getS();
@@ -245,8 +235,8 @@ public class Sign {
     /**
      * Returns public key from the given private key.
      *
-     * @param privKey The private key to derive the public key from.
-     * @return BigInteger encoded public key.
+     * @param privKey the private key to derive the public key from.
+     * @return the BigInteger-encoded public key.
      */
     public static ECPublicKey publicKeyFromPrivate(ECPrivateKey privKey) {
         return new ECPublicKey(publicPointFromPrivateKey(privKey));
@@ -255,30 +245,29 @@ public class Sign {
     /**
      * Returns public key point from the given private key.
      *
-     * @param privKey The private key as BigInteger.
+     * @param privKey the private key as BigInteger.
      * @return the ECPoint object representation of the public key based on the given private key.
      */
     public static ECPoint publicPointFromPrivateKey(ECPrivateKey privKey) {
         BigInteger key = privKey.getInt();
         /*
-         * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
-         * order, but that could change in future versions.
+         * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group order, but that
+         *  could change in future versions.
          */
         if (key.bitLength() > secp256r1DomainParams().getN().bitLength()) {
             key = key.mod(secp256r1DomainParams().getN());
         }
-        return new FixedPointCombMultiplier().multiply(secp256r1DomainParams().getG(), key)
-                .normalize();
+        return new FixedPointCombMultiplier().multiply(secp256r1DomainParams().getG(), key).normalize();
     }
 
     /**
      * Recovers the signer's script hash that created the given signature on the given message.
      * <p>
-     * If the message is a Neo transaction, then make sure that it was serialized without the
-     * verification and invocation script attached (i.e. without the signature).
+     * If the message is a Neo transaction, then make sure that it was serialized without the verification and
+     * invocation script attached (i.e. without the signature).
      *
-     * @param signatureData The signature.
-     * @param message       The message for which the signature was created.
+     * @param signatureData the signature.
+     * @param message       the message for which the signature was created.
      * @return the signer's script hash that produced the signature data from the transaction.
      * @throws SignatureException if the signature is invalid.
      */
@@ -308,15 +297,13 @@ public class Sign {
     /**
      * Verifies the that the signature is appropriate for the given message and public key.
      *
-     * @param message     The message
-     * @param sig         The signature to verify
-     * @param pubKey      The public key.
-     * @param hashMessage If the message should be hashed before verification.
-     * @return true, if the verification was successful. False otherwise.
+     * @param message     the message.
+     * @param sig         the signature to verify.
+     * @param pubKey      the public key.
+     * @param hashMessage if the message should be hashed before verification.
+     * @return true if the verification was successful. False otherwise.
      */
-    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey,
-            boolean hashMessage) {
-
+    public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey, boolean hashMessage) {
         byte[] messageHash;
         if (hashMessage) {
             messageHash = Hash.sha256(message);
@@ -325,8 +312,7 @@ public class Sign {
         }
 
         ECDSASigner verifier = new ECDSASigner();
-        verifier.init(false, new ECPublicKeyParameters(
-                pubKey.getECPoint(), secp256r1DomainParams()));
+        verifier.init(false, new ECPublicKeyParameters(pubKey.getECPoint(), secp256r1DomainParams()));
         return verifier.verifySignature(messageHash,
                 new BigInteger(1, sig.getR()),
                 new BigInteger(1, sig.getS()));
@@ -337,10 +323,10 @@ public class Sign {
      * <p>
      * Beware that the message is hashed before verification.
      *
-     * @param message The message
-     * @param sig     The signature to verify
-     * @param pubKey  The public key.
-     * @return true, if the verification was successful. False otherwise.
+     * @param message the message.
+     * @param sig     the signature to verify.
+     * @param pubKey  the public key.
+     * @return true if the verification was successful. False otherwise.
      */
     public static boolean verifySignature(byte[] message, SignatureData sig, ECPublicKey pubKey) {
         return verifySignature(message, sig, pubKey, true);
@@ -421,6 +407,7 @@ public class Sign {
                     ", s=" + Arrays.toString(s) +
                     '}';
         }
+
     }
 
 }

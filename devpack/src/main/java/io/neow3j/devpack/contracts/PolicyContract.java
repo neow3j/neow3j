@@ -17,53 +17,51 @@ public class PolicyContract extends ContractInterface {
     public static final int MaxStoragePrice = 10000000;
 
     /**
-     * Gets the GAS cost per transaction byte, i.e. the fee per byte.
-     *
-     * @return the fee per byte.
+     * @return the GAS cost per transaction byte, i.e., the fee per byte.
      */
     public static native int getFeePerByte();
 
     /**
      * Sets the maximum block size to the given value.
      *
-     * @param size The desired block size.
+     * @param size the desired block size.
      */
     public static native void setMaxBlockSize(int size);
 
     /**
      * Sets the maximum number of transactions per block.
      *
-     * @param size The desired number of transactions.
+     * @param size the desired number of transactions.
      */
     public static native void setMaxTransactionsPerBlock(int size);
 
     /**
      * Sets the maximum allowed system fee of all transactions in a block.
      *
-     * @param fee The desired maximum fee.
+     * @param fee the desired maximum fee.
      */
     public static native void setMaxBlockSystemFee(int fee);
 
     /**
      * Sets the fee to be paid per transaction byte.
      *
-     * @param fee The desired fee per byte
+     * @param fee the desired fee per byte.
      */
     public static native void setFeePerByte(int fee);
 
     /**
      * Blocks the account with the given script hash.
      *
-     * @param scriptHash The account to block.
-     * @return true, if successful. False, otherwise.
+     * @param scriptHash the account to block.
+     * @return true if successful. False, otherwise.
      */
     public static native boolean blockAccount(Hash160 scriptHash);
 
     /**
      * Unblocks the account with the given script hash.
      *
-     * @param scriptHash The account to unblock.
-     * @return true, if successful. False, otherwise.
+     * @param scriptHash the account to unblock.
+     * @return true if successful. False, otherwise.
      */
     public static native boolean unblockAccount(Hash160 scriptHash);
 
@@ -78,8 +76,8 @@ public class PolicyContract extends ContractInterface {
     /**
      * Gets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
-     * in the actual GAS cost.
+     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result in the actual
+     * GAS cost.
      *
      * @return the execution fee factor.
      */
@@ -88,24 +86,22 @@ public class PolicyContract extends ContractInterface {
     /**
      * Sets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result
-     * in the actual GAS cost.
+     * Each NeoVM instruction has a relative cost that is multiplied with this fee factor to result in the actual
+     * GAS cost.
      *
-     * @param factor The desired factor.
+     * @param factor the desired factor.
      */
     public static native void setExecFeeFactor(int factor);
 
     /**
-     * Gets the GAS price per byte of contract storage.
-     *
-     * @return the price for one byte of storage.
+     * @return the GAS price for one byte of contract storage.
      */
     public static native int getStoragePrice();
 
     /**
      * Sets the GAS price per byte of contract storage.
      *
-     * @param price The desired price for one byte of storage.
+     * @param price the desired price for one byte of storage.
      */
     public static native void setStoragePrice(int price);
 

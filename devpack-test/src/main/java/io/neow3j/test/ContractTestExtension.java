@@ -54,8 +54,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     public void beforeAll(ExtensionContext context) throws Exception {
         ContractTest annotation = context.getTestClass().get().getAnnotation(ContractTest.class);
         if (annotation == null) {
-            throw new ExtensionConfigurationException("Using the " + this.getClass().getSimpleName()
-                    + " without the @" + ContractTest.class.getSimpleName() + " annotation.");
+            throw new ExtensionConfigurationException(format("Using the %s without the @%s annotation.",
+                    this.getClass().getSimpleName(), ContractTest.class.getSimpleName()));
         }
         if (annotation.blockTime() != 0) {
             chain.withSecondsPerBlock(annotation.blockTime());
@@ -105,26 +105,24 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
             return null;
         }
         if (methods.size() > 1) {
-            throw new ExtensionConfigurationException("Specified more than one deployment " +
-                    "configuration method for contract class " + contract.getCanonicalName());
+            throw new ExtensionConfigurationException("Specified more than one deployment configuration method for " +
+                    "contract class " + contract.getCanonicalName());
         }
         Method method = methods.get(0);
         if (!method.getReturnType().equals(DeployConfiguration.class)) {
-            throw new ExtensionConfigurationException("Methods annotated with '" +
-                    DeployConfig.class.getSimpleName() + "' must return 'DeployConfiguration'.");
+            throw new ExtensionConfigurationException(format("Methods annotated with '%s' must return " +
+                    "'DeployConfiguration'.", DeployConfig.class.getSimpleName()));
         }
 
-        if (method.getParameterCount() != 0
-                && !method.getParameterTypes()[0].equals(DeployContext.class)) {
-            throw new ExtensionConfigurationException(format("Methods annotated with '%s' must " +
-                            "have either no parameter of an optional '%s' parameter.",
-                    DeployConfig.class.getSimpleName(), DeployContext.class.getSimpleName()));
+        if (method.getParameterCount() != 0 && !method.getParameterTypes()[0].equals(DeployContext.class)) {
+            throw new ExtensionConfigurationException(
+                    format("Methods annotated with '%s' must have either no parameter of an optional '%s' parameter.",
+                            DeployConfig.class.getSimpleName(), DeployContext.class.getSimpleName()));
         }
         return method;
     }
 
-    private Hash256 compileAndDeploy(Class<?> contractClass, DeployConfiguration conf,
-            Neow3j neow3j) throws Throwable {
+    private Hash256 compileAndDeploy(Class<?> contractClass, DeployConfiguration conf, Neow3j neow3j) throws Throwable {
 
         CompilationUnit res;
         if (conf.getSubstitutions().isEmpty()) {
@@ -159,8 +157,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
 
         NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         if (log.getExecutions().get(0).getState().equals(NeoVMStateType.FAULT)) {
-            throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM " +
-                    "error message: " + log.getExecutions().get(0).getException());
+            throw new ExtensionConfigurationException("Failed to deploy smart contract. NeoVM error message: " +
+                    log.getExecutions().get(0).getException());
         }
         Hash160 contractHash = SmartContract.calcContractHash(signer.getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
@@ -175,10 +173,10 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Gets an instance of {@code SmartContract} for the given contract under test. It can be
-     * used as a handle to interact with the contract.
+     * Gets an instance of {@code SmartContract} for the given contract under test. It can be used as a handle to
+     * interact with the contract.
      *
-     * @param contractClass The contract to get the {@code SmartContract} instance for.
+     * @param contractClass the contract to get the {@code SmartContract} instance for.
      * @return the {@code SmartContract} instance.
      */
     public SmartContract getDeployedContract(Class<?> contractClass) {
@@ -188,7 +186,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     /**
      * Gets the hash of the transaction in which the given contract was deployed.
      *
-     * @param contractClass The class of the deployed contract.
+     * @param contractClass the class of the deployed contract.
      * @return the transaction hash.
      */
     public Hash256 getDeployTxHash(Class<?> contractClass) {
@@ -225,19 +223,19 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     /**
      * Creates a new account and returns it.
      *
-     * @return The account.
+     * @return the account.
      * @throws Exception if creating the account failed.
      */
     public Account createAccount() throws Exception {
-        return new Account(ECKeyPair.create(
-                hexStringToByteArray(chain.getAccount(chain.createAccount()))));
+        return new Account(ECKeyPair.create(hexStringToByteArray(chain.getAccount(chain.createAccount()))));
     }
 
     /**
      * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
+     * <p>
      * Can be used on a running or stopped node.
      *
-     * @param n The number of blocks to mint.
+     * @param n the number of blocks to mint.
      * @throws Exception if minting new blocks failed.
      */
     public void fastForward(int n) throws Exception {
@@ -249,10 +247,10 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * blocks} number of blocks. The underlying blockchain mints the given number of blocks of which the last block's
      * timestamp lies in the future by the specified time.
      *
-     * @param seconds number of seconds to fast-forward.
-     * @param minutes number of minutes to fast-forward.
-     * @param hours   number of hours to fast-forward.
-     * @param days    number of days to fast-forward.
+     * @param seconds the number of seconds to fast-forward.
+     * @param minutes the number of minutes to fast-forward.
+     * @param hours   the number of hours to fast-forward.
+     * @param days    the number of days to fast-forward.
      * @param blocks  the number of blocks to mint.
      * @return the message emitted on minting the blocks or null if no message is emitted.
      * @throws Exception if an error occurred when trying to fast-forward the blockchain.
@@ -266,10 +264,10 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * Fast-forwards the blockchain state by the given number of seconds, minutes, hours, and days. I.e., adds one new
      * block that lies in the future by the given time.
      *
-     * @param seconds number of seconds to fast-forward.
-     * @param minutes number of minutes to fast-forward.
-     * @param hours   number of hours to fast-forward.
-     * @param days    number of days to fast-forward.
+     * @param seconds the number of seconds to fast-forward.
+     * @param minutes the number of minutes to fast-forward.
+     * @param hours   the number of hours to fast-forward.
+     * @param days    the number of days to fast-forward.
      * @return the message emitted on minting the blocks or null if no message is emitted.
      * @throws Exception if an error occurred when trying to fast-forward the blockchain.
      */
@@ -278,11 +276,11 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Fast-forwards the blockchain state by the given number of seconds adding {@code blocks} number of blocks.
-     * The underlying blockchain mints the given number of blocks of which the last block's timestamp lies in the
-     * future by the specified time.
+     * Fast-forwards the blockchain state by the given number of seconds adding {@code blocks} number of blocks. The
+     * underlying blockchain mints the given number of blocks of which the last block's timestamp lies in the future
+     * by the specified time.
      *
-     * @param seconds number of seconds to fast-forward.
+     * @param seconds the number of seconds to fast-forward.
      * @param blocks  the number of blocks to mint.
      * @return the message emitted on minting the blocks or null if no message is emitted.
      * @throws Exception if an error occurred when trying to fast-forward the blockchain.
@@ -295,7 +293,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      * Fast-forwards the blockchain state by the given number of seconds. I.e., adds one new block that lies in the
      * future by the given number of seconds.
      *
-     * @param seconds number of seconds to fast-forward.
+     * @param seconds the number of seconds to fast-forward.
      * @return the message emitted on minting the blocks or null if no message is emitted.
      * @throws Exception if an error occurred when trying to fast-forward the blockchain.
      */
@@ -306,21 +304,19 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     /**
      * Gets the account for the given address if it exists on the blockchain.
      *
-     * @param address The account's address.
-     * @return The account.
-     * @throws Exception if an error occurs when tyring to fetch the account from the
-     *                   underlying blockchain/node.
+     * @param address the account's address.
+     * @return the account.
+     * @throws Exception if an error occurs when tyring to fetch the account from the underlying blockchain/node.
      */
     public Account getAccount(String address) throws Exception {
-        return new Account(ECKeyPair.create(hexStringToByteArray(
-                chain.getAccount(address))));
+        return new Account(ECKeyPair.create(hexStringToByteArray(chain.getAccount(address))));
     }
 
     /**
-     * If the underlying test blockchain implementation has control over the genesis account, it
-     * will be returned with all signer accounts.
+     * If the underlying test blockchain implementation has control over the genesis account, it will be returned
+     * with all signer accounts.
      *
-     * @return The genesis account's verification script and private keys.
+     * @return the genesis account's verification script and private keys.
      */
     public GenesisAccount getGenesisAccount() {
         try {
@@ -337,9 +333,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     }
 
     /**
-     * Contains all necessary information to make transactions with the genesis account of a
-     * blockchain. The genesis account is the account that holds all native assets at the
-     * beginning of a new chain.
+     * Contains all necessary information to make transactions with the genesis account of a blockchain. The genesis
+     * account is the account that holds all native assets at the beginning of a new chain.
      */
     public static class GenesisAccount {
 
@@ -361,8 +356,7 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
         }
 
         /**
-         * Gets the accounts, including their private keys, that are part of the genesis
-         * multi-sig account.
+         * Gets the accounts, including their private keys, that are part of the genesis multi-sig account.
          *
          * @return the participating accounts.
          */

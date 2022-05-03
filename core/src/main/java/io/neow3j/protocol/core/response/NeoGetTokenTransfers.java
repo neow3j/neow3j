@@ -52,8 +52,12 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof TokenTransfers)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof TokenTransfers)) {
+                return false;
+            }
             TokenTransfers<?> that = (TokenTransfers<?>) o;
             return Objects.equals(sent, that.sent) &&
                     Objects.equals(received, that.received) &&
@@ -64,6 +68,7 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
         public int hashCode() {
             return Objects.hash(sent, received, transferAddress);
         }
+
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -93,8 +98,8 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
         public TokenTransfer() {
         }
 
-        public TokenTransfer(long timestamp, Hash160 assetHash, String transferAddress,
-                BigInteger amount, long blockIndex, long transferNotifyIndex, Hash256 txHash) {
+        public TokenTransfer(long timestamp, Hash160 assetHash, String transferAddress, BigInteger amount,
+                long blockIndex, long transferNotifyIndex, Hash256 txHash) {
             this.timestamp = timestamp;
             this.assetHash = assetHash;
             this.transferAddress = transferAddress;
@@ -134,10 +139,15 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof TokenTransfer)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof TokenTransfer)) {
+                return false;
+            }
             TokenTransfer that = (TokenTransfer) o;
-            return timestamp == that.timestamp && blockIndex == that.blockIndex &&
+            return timestamp == that.timestamp &&
+                    blockIndex == that.blockIndex &&
                     transferNotifyIndex == that.transferNotifyIndex &&
                     Objects.equals(assetHash, that.assetHash) &&
                     Objects.equals(transferAddress, that.transferAddress) &&
@@ -149,6 +159,7 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
         public int hashCode() {
             return Objects.hash(timestamp, assetHash, transferAddress, amount, blockIndex, transferNotifyIndex, txHash);
         }
+
     }
 
 }

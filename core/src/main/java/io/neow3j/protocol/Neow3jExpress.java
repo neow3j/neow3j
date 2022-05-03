@@ -29,8 +29,8 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     /**
      * Constructs a new Neow3jExpress instance with the default configuration.
      *
-     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
-     * @return new Neow3jExpress instance
+     * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
+     * @return the new Neow3jExpress instance
      */
     public static Neow3jExpress build(Neow3jService neow3jService) {
         return new Neow3jExpress(neow3jService, new Neow3jConfig()) {
@@ -40,9 +40,9 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
     /**
      * Constructs a new Neow3jExpress instance using the given configuration.
      *
-     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
-     * @param config        The configuration to use.
-     * @return new Neow3jExpress instance.
+     * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
+     * @param config        the configuration to use.
+     * @return the new Neow3jExpress instance.
      */
     public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) {
         return new Neow3jExpress(neow3jService, config);
@@ -78,7 +78,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      * <p>
      * Can only be used on a Neo-express node.
      *
-     * @param contractHash The contract hash.
+     * @param contractHash the contract hash.
      * @return the request object.
      */
     @Override

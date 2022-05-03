@@ -37,7 +37,6 @@ public class ContractNef {
 
     public ContractNef(Long magic, String compiler, String source, List<ContractMethodToken> tokens, String script,
             Long checksum) {
-
         this.magic = magic;
         this.compiler = compiler;
         this.source = source;

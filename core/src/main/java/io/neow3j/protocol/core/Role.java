@@ -3,6 +3,8 @@ package io.neow3j.protocol.core;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 
+import static java.lang.String.format;
+
 public enum Role {
 
     STATE_VALIDATOR("StateValidator", 0x04),
@@ -26,8 +28,7 @@ public enum Role {
         if (value instanceof Integer) {
             return valueOf(((Integer) value).byteValue());
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", Role.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", Role.class.getName()));
     }
 
     public static Role valueOf(byte byteValue) {
@@ -36,8 +37,7 @@ public enum Role {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", Role.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", Role.class.getName()));
     }
 
     public static Role fromJsonValue(String jsonValue) {
@@ -46,8 +46,7 @@ public enum Role {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", Role.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", Role.class.getName()));
     }
 
     public byte byteValue() {

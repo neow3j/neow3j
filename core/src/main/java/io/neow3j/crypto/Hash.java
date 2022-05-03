@@ -11,6 +11,8 @@ import org.bouncycastle.crypto.macs.HMac;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 
+import static io.neow3j.utils.Numeric.toHexString;
+
 /**
  * Cryptographic hash functions.
  */
@@ -26,8 +28,8 @@ public class Hash {
     /**
      * Performs a SHA256 followed by a RIPEMD160.
      *
-     * @param input byte array with the input to be hashed
-     * @return hash value as byte array
+     * @param input the byte array with the input to be hashed.
+     * @return the hash value as byte array.
      */
     public static byte[] sha256AndThenRipemd160(byte[] input) {
         byte[] sha256 = sha256(input);
@@ -37,21 +39,21 @@ public class Hash {
     /**
      * RipeMD-160 hash function.
      *
-     * @param hexInput hex encoded input data with optional 0x prefix
-     * @return hash value as hex encoded string
+     * @param hexInput hex-encoded input data with optional 0x prefix.
+     * @return hash value as hex-encoded string.
      */
     public static String ripemd160(String hexInput) {
         byte[] bytes = Numeric.hexStringToByteArray(hexInput);
         byte[] result = ripemd160(bytes);
-        return Numeric.toHexString(result);
+        return toHexString(result);
     }
 
     /**
      * Generates RipeMD-160 digest for the given {@code input}.
      *
-     * @param input The input to digest
-     * @return The hash value for the given input
-     * @throws RuntimeException If we couldn't find any RipeMD160 provider
+     * @param input the input to digest.
+     * @return the hash value for the given input.
+     * @throws RuntimeException if no RipeMD160 provider was found.
      */
     public static byte[] ripemd160(byte[] input) {
         try {
@@ -65,22 +67,22 @@ public class Hash {
     /**
      * Keccak-256 hash function.
      *
-     * @param hexInput hex encoded input data with optional 0x prefix
-     * @return hash value as hex encoded string
+     * @param hexInput hex-encoded input data with optional 0x prefix.
+     * @return hash value as hex-encoded string.
      */
     public static String sha3(String hexInput) {
         byte[] bytes = Numeric.hexStringToByteArray(hexInput);
         byte[] result = sha3(bytes);
-        return Numeric.toHexString(result);
+        return toHexString(result);
     }
 
     /**
      * Keccak-256 hash function.
      *
-     * @param input  binary encoded input data
-     * @param offset of start of data
-     * @param length of data
-     * @return hash value
+     * @param input  the binary encoded input data.
+     * @param offset the offset of the data's start.
+     * @param length the length of the data.
+     * @return the hash value.
      */
     public static byte[] sha3(byte[] input, int offset, int length) {
         Keccak.DigestKeccak kecc = new Keccak.Digest256();
@@ -91,8 +93,8 @@ public class Hash {
     /**
      * Keccak-256 hash function.
      *
-     * @param input binary encoded input data
-     * @return hash value
+     * @param input the binary encoded input data.
+     * @return the hash value.
      */
     public static byte[] sha3(byte[] input) {
         return sha3(input, 0, input.length);
@@ -101,19 +103,19 @@ public class Hash {
     /**
      * Keccak-256 hash function that operates on a UTF-8 encoded String.
      *
-     * @param utf8String UTF-8 encoded string
-     * @return hash value as hex encoded string
+     * @param utf8String a UTF-8 encoded string.
+     * @return the hash value as hex-encoded string.
      */
     public static String sha3String(String utf8String) {
-        return Numeric.toHexString(sha3(utf8String.getBytes(StandardCharsets.UTF_8)));
+        return toHexString(sha3(utf8String.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**
-     * Generates HMAC SHA-512 digest for the given {@code input} with the given {@code key}.
+     * Generates the HMAC SHA-512 digest for the given {@code input} with the given {@code key}.
      *
-     * @param key   The key parameter
-     * @param input The input to digest
-     * @return The hash value for the given input
+     * @param key   the key parameter.
+     * @param input the input to digest.
+     * @return the hash value for the given input.
      */
     public static byte[] hmacSha512(byte[] key, byte[] input) {
         HMac hMac = new HMac(new SHA512Digest());
@@ -125,11 +127,11 @@ public class Hash {
     }
 
     /**
-     * Generates SHA-256 digest for the given {@code input}.
+     * Generates the SHA-256 digest for the given {@code input}.
      *
-     * @param input The input to digest
-     * @return The hash value for the given input
-     * @throws RuntimeException If we couldn't find any SHA-256 provider
+     * @param input the input to digest.
+     * @return the hash value for the given input.
+     * @throws RuntimeException if no SHA-256 provider was found.
      */
     public static byte[] sha256(byte[] input) {
         try {
@@ -143,11 +145,11 @@ public class Hash {
     /**
      * Generates SHA-256 digest for the given {@code input}.
      *
-     * @param input  binary encoded input data
-     * @param offset of start of data
-     * @param length of data
-     * @return The hash value for the given input
-     * @throws RuntimeException If we couldn't find any SHA-256 provider
+     * @param input  the binary encoded input data.
+     * @param offset the offset of the data's start.
+     * @param length the length of the data.
+     * @return the hash value for the given input.
+     * @throws RuntimeException if no SHA-256 provider was found.
      */
     public static byte[] sha256(byte[] input, int offset, int length) {
         if (offset != 0 || length != input.length) {
@@ -163,7 +165,7 @@ public class Hash {
      * <p>
      * Neo uses the name {@code hash256} for hashes created in this way.
      *
-     * @param input The input to hash.
+     * @param input the input to hash.
      * @return the hash value for the given input.
      */
     public static byte[] hash256(byte[] input) {
@@ -171,17 +173,17 @@ public class Hash {
     }
 
     /**
-     * Applies SHA-256 twice to the slice of the given length of the input, starting at the given
-     * offset.
+     * Applies SHA-256 twice to the slice of the given length of the input, starting at the given offset.
      * <p>
      * Neo uses the name {@code hash256} for hashes created in this way.
      *
-     * @param input  The input to hash.
-     * @param offset The offset at which the slice starts.
-     * @param length The length of the slice to hash.
+     * @param input  the input to hash.
+     * @param offset the offset at which the slice starts.
+     * @param length the length of the slice to hash.
      * @return the hash value.
      */
     public static byte[] hash256(byte[] input, int offset, int length) {
         return sha256(sha256(input, offset, length));
     }
+
 }

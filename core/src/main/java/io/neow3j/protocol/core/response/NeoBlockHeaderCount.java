@@ -9,4 +9,5 @@ public class NeoBlockHeaderCount extends Response<BigInteger> {
     public BigInteger getCount() {
         return getResult();
     }
+
 }

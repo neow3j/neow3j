@@ -5,8 +5,8 @@ import java.util.List;
 /**
  * A source container consisting of multiple other containers.
  * <p>
- * Subclasses need to implement {@link CompositeSourceContainer#createSourceContainers()} where
- * they create the containers that this composite container is made up of.
+ * Subclasses need to implement {@link CompositeSourceContainer#createSourceContainers()} where they create the
+ * containers that this composite container is made up of.
  */
 public abstract class CompositeSourceContainer implements ISourceContainer {
 

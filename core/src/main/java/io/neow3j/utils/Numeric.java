@@ -9,11 +9,13 @@ import java.util.Arrays;
 import java.util.regex.Pattern;
 
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static java.lang.String.format;
 
 /**
- * <p>Message codec functions.</p>
- * <br>
- * <p>Implementation as per https://github.com/ethereum/wiki/wiki/JSON-RPC#hex-value-encoding</p>
+ * Message codec functions.
+ * <p>
+ * Implementation as per
+ * <a href="https://github.com/ethereum/wiki/wiki/JSON-RPC#hex-value-encoding">hex-value-encoding</a>
  */
 public final class Numeric {
 
@@ -67,7 +69,7 @@ public final class Numeric {
      * <p>
      * If the input has no prefix, it is returned unchanged.
      *
-     * @param input The hex string.
+     * @param input the hex string.
      * @return the hex string without a prefix.
      */
     public static String cleanHexPrefix(String input) {
@@ -83,7 +85,7 @@ public final class Numeric {
      * <p>
      * If the input already has a prefix, the input is returned unchanged.
      *
-     * @param input The hex string.
+     * @param input the hex string.
      * @return the hex string with a prefix.
      */
     public static String prependHexPrefix(String input) {
@@ -97,8 +99,8 @@ public final class Numeric {
     /**
      * Checks if the input contains a prefix.
      *
-     * @param input The hex string.
-     * @return true, if the input contains a prefix. False, otherwise.
+     * @param input the hex string.
+     * @return true if the input contains a prefix. False, otherwise.
      */
     public static boolean containsHexPrefix(String input) {
         return !Strings.isEmpty(input) && input.length() > 1
@@ -106,11 +108,11 @@ public final class Numeric {
     }
 
     /**
-     * Checks if the given string is a valid hexadecimal string. Next to the character constraint
-     * (0-f) the string also needs to have a even number of character to pass as valid.
+     * Checks if the given string is a valid hexadecimal string. Next to the character constraint (0-f) the string
+     * also needs to have a even number of character to pass as valid.
      *
-     * @param string The string to check.
-     * @return true, if the string is hexadecimal or empty. False, otherwise.
+     * @param string the string to check.
+     * @return true if the string is hexadecimal or empty. False, otherwise.
      */
     public static boolean isValidHexString(String string) {
         string = cleanHexPrefix(string);
@@ -163,11 +165,11 @@ public final class Numeric {
     }
 
     /**
-     * Converts the given integer to a hexadecimal string with an even number of characters by
-     * padding in the front with a zero if the string is not already even.
+     * Converts the given integer to a hexadecimal string with an even number of characters by padding in the front
+     * with a zero if the string is not already even.
      *
-     * @param value The integer to convert.
-     * @return The hex string with even length.
+     * @param value the integer to convert.
+     * @return the hex string with even length.
      */
     public static String toHexStringNoPrefixZeroPadded(BigInteger value) {
         String result = toHexStringNoPrefix(value);
@@ -187,10 +189,9 @@ public final class Numeric {
 
         int length = result.length();
         if (length > size) {
-            throw new UnsupportedOperationException(
-                    "Value " + result + " is larger then length " + size);
+            throw new UnsupportedOperationException(format("Value %s is larger then length %s.", result, size));
         } else if (value.signum() < 0) {
-            throw new UnsupportedOperationException("Value cannot be negative");
+            throw new UnsupportedOperationException("Value cannot be negative.");
         }
 
         if (length < size) {
@@ -260,7 +261,7 @@ public final class Numeric {
             stringBuilder.append("0x");
         }
         for (int i = offset; i < offset + length; i++) {
-            stringBuilder.append(String.format("%02x", input[i] & 0xFF));
+            stringBuilder.append(format("%02x", input[i] & 0xFF));
         }
 
         return stringBuilder.toString();
@@ -294,9 +295,9 @@ public final class Numeric {
     }
 
     public static boolean isIntegerValue(BigDecimal value) {
-        return value.signum() == 0
-                || value.scale() <= 0
-                || value.stripTrailingZeros().scale() <= 0;
+        return value.signum() == 0 ||
+                value.scale() <= 0 ||
+                value.stripTrailingZeros().scale() <= 0;
     }
 
     private static void checkAndThrowIsValidHexString(String value) {

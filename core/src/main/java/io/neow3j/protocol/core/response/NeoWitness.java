@@ -39,8 +39,12 @@ public class NeoWitness {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof NeoWitness)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof NeoWitness)) {
+            return false;
+        }
         NeoWitness script = (NeoWitness) o;
         return Objects.equals(getInvocation(), script.getInvocation()) &&
                 Objects.equals(getVerification(), script.getVerification());
@@ -58,4 +62,5 @@ public class NeoWitness {
                 ", verification='" + verification + '\'' +
                 '}';
     }
+
 }

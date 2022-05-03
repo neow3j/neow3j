@@ -24,8 +24,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     /**
      * Constructs a new Neow3j instance with the default configuration.
      *
-     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
-     * @return new Neow3j instance
+     * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
+     * @return the new Neow3j instance.
      */
     public static Neow3j build(Neow3jService neow3jService) {
         return new JsonRpc2_0Neow3j(neow3jService, new Neow3jConfig());
@@ -34,9 +34,9 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     /**
      * Constructs a new Neow3j instance using the given configuration.
      *
-     * @param neow3jService neow3j service instance - i.e. HTTP or IPC
-     * @param config        The configuration to use.
-     * @return new Neow3j instance.
+     * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
+     * @param config        the configuration to use.
+     * @return the new Neow3j instance.
      */
     public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
         return new JsonRpc2_0Neow3j(neow3jService, config);
@@ -52,10 +52,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * <p>
      * The magic number is an ingredient, e.g., when generating the hash of a transaction.
      * <p>
-     * The default value is null. Only once this method is called for the first time the value is
-     * fetched from the connected Neo node.
+     * The default value is null. Only once this method is called for the first time the value is fetched from the
+     * connected Neo node.
      *
-     * @return The network's magic number.
+     * @return the network's magic number.
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public byte[] getNetworkMagicNumberBytes() throws IOException {
@@ -74,10 +74,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * <p>
      * The magic number is an ingredient, e.g., when generating the hash of a transaction.
      * <p>
-     * The default value is null. Only once this method is called for the first time the value is
-     * fetched from the connected Neo node.
+     * The default value is null. Only once this method is called for the first time the value is fetched from the
+     * connected Neo node.
      *
-     * @return The network's magic number.
+     * @return the network's magic number.
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
     public long getNetworkMagicNumber() throws IOException {
@@ -90,8 +90,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     /**
      * Gets the executor service used for polling new blocks from the Neo node.
      * <p>
-     * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads
-     * as CPUs available to the JVM.
+     * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads as CPUs available
+     * to the JVM.
      *
      * @return the configured executor service.
      */
@@ -111,8 +111,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new
-     * block information when observing the blockchain.
+     * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new block information
+     * when observing the blockchain.
      * <p>
      * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
      *
@@ -123,12 +123,10 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the maximum time in milliseconds that can pass form the construction of a transaction
-     * until it gets included in a block. A transaction becomes invalid after this time increment
-     * is surpassed. @return the
+     * Gets the maximum time in milliseconds that can pass form the construction of a transaction until it gets
+     * included in a block. A transaction becomes invalid after this time increment is surpassed. @return the
      * <p>
-     * Defaults to {@link Neow3jConfig#MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE} divided by the
-     * configured block interval.
+     * Defaults to {@link Neow3jConfig#MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE} divided by the configured block interval.
      *
      * @return the maximum valid until block time increment.
      */

@@ -52,8 +52,12 @@ public class BooleanStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BooleanStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BooleanStackItem)) {
+            return false;
+        }
         BooleanStackItem other = (BooleanStackItem) o;
         return getType() == other.getType() &&
                 getValue() == other.getValue();
@@ -63,4 +67,5 @@ public class BooleanStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(getType(), getValue());
     }
+
 }
