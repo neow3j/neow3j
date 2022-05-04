@@ -8,6 +8,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoGetBlock;
@@ -40,6 +41,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForGetBlockCount;
@@ -57,6 +59,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -64,6 +67,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -1034,6 +1038,61 @@ public class TransactionBuilderTest {
         tx.send();
 
         assertNull(tx.getApplicationLog());
+    }
+
+    @Test
+    public void testTransmissionOnFault() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+
+        neow.allowTransmissionOnFault();
+        assertTrue(neow.transmissionOnFaultIsAllowed());
+
+        String failingScript = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
+                .toArray());
+
+        setUpWireMockForCall("invokescript", "invokescript_fault.json", Base64.encode(failingScript));
+
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(failingScript))
+                .signers(none(a));
+
+        InvocationResult result = b.callInvokeScript().getInvocationResult();
+        assertTrue(result.hasStateFault());
+        long gasConsumed = new BigInteger(result.getGasConsumed()).longValue();
+
+        Transaction tx = b.getUnsignedTransaction();
+        assertThat(tx.getSystemFee(), is(gasConsumed));
+
+        neow.preventTransmissionOnFault();
+        assertFalse(neow.transmissionOnFaultIsAllowed());
+    }
+
+    @Test
+    public void testPreventTransmissionOnFault() throws Throwable {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+
+        assertFalse(neow.transmissionOnFaultIsAllowed());
+
+        String failingScript = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
+                .toArray());
+
+        setUpWireMockForCall("invokescript", "invokescript_fault.json", Base64.encode(failingScript));
+
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(hexStringToByteArray(failingScript))
+                .signers(AccountSigner.none(a));
+
+        InvocationResult result = b.callInvokeScript().getInvocationResult();
+        assertTrue(result.hasStateFault());
+
+        TransactionConfigurationException thrown =
+                assertThrows(TransactionConfigurationException.class, b::getUnsignedTransaction);
+        assertThat(thrown.getMessage(), containsString("The vm exited due to the following exception: "));
     }
 
 }

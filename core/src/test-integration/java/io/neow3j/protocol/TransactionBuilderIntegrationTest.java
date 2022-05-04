@@ -1,6 +1,7 @@
 package io.neow3j.protocol;
 
 import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
@@ -11,6 +12,7 @@ import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.transaction.witnessrule.AndCondition;
 import io.neow3j.transaction.witnessrule.BooleanCondition;
 import io.neow3j.transaction.witnessrule.CalledByEntryCondition;
@@ -27,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 
 import static io.neow3j.test.TestProperties.gasTokenHash;
@@ -37,8 +40,10 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class TransactionBuilderIntegrationTest {
@@ -159,6 +164,45 @@ public class TransactionBuilderIntegrationTest {
         log = neow3jExpress.getApplicationLog(txHash).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
         assertFalse(log.getExecutions().get(0).getStack().get(0).getBoolean()); // The transfer should fail.
+    }
+
+    @Test
+    public void testTransmissionOnFault() throws Throwable {
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        neow3jExpress.allowTransmissionOnFault();
+        String failingScript = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
+                .toArray());
+        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+                .script(hexStringToByteArray(failingScript))
+                .signers(AccountSigner.none(a));
+
+        InvocationResult result = b.callInvokeScript().getInvocationResult();
+        assertTrue(result.hasStateFault());
+        long gasConsumed = new BigInteger(result.getGasConsumed()).longValue();
+
+        Transaction tx = b.getUnsignedTransaction();
+        assertThat(tx.getSystemFee(), is(gasConsumed));
+        neow3jExpress.preventTransmissionOnFault();
+    }
+
+    @Test
+    public void testPreventTransmissionOnFault() throws Throwable {
+        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        assertFalse(neow3jExpress.transmissionOnFaultIsAllowed());
+        String failingScript = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
+                .toArray());
+        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+                .script(hexStringToByteArray(failingScript))
+                .signers(AccountSigner.none(a));
+
+        InvocationResult result = b.callInvokeScript().getInvocationResult();
+        assertTrue(result.hasStateFault());
+
+        TransactionConfigurationException thrown =
+                assertThrows(TransactionConfigurationException.class, b::getUnsignedTransaction);
+        assertThat(thrown.getMessage(), containsString("The vm exited due to the following exception: "));
     }
 
 }

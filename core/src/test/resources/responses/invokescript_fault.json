@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "wh8MCWJhbGFuY2VPZgwU9WPqQLwoPU0OBcSOowWz8qBzQO9BYn1bUg==",
+    "state": "FAULT",
+    "gasconsumed": "984030",
+    "exception": "Method \"balanceOf\" with 0 parameter(s) doesn't exist in the contract 0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5.",
+    "notifications": [],
+    "stack": []
+  }
+}
