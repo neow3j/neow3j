@@ -1057,7 +1057,7 @@ public class TransactionBuilderTest {
 
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(failingScript))
-                .signers(AccountSigner.none(a));
+                .signers(none(a));
 
         InvocationResult result = b.callInvokeScript().getInvocationResult();
         assertTrue(result.hasStateFault());
