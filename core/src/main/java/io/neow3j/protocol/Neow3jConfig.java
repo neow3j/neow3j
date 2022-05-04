@@ -181,7 +181,7 @@ public class Neow3jConfig {
      * This should match the configuration of the neo-node you connect to.
      *
      * @param maxValidUntilBlockIncrement the maximum valid until block time increment.
-     * @return this
+     * @return this.
      */
     public Neow3jConfig setMaxValidUntilBlockIncrement(long maxValidUntilBlockIncrement) {
         this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
@@ -198,6 +198,8 @@ public class Neow3jConfig {
 
     /**
      * Allow the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
+     *
+     * @return this.
      */
     public Neow3jConfig allowTransmissionOnFault() {
         this.allowTransmissionOnFault = true;
@@ -208,6 +210,8 @@ public class Neow3jConfig {
      * Prevent the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
      * <p>
      * This is set by default.
+     *
+     * @return this.
      */
     public Neow3jConfig preventTransmissionOnFault() {
         this.allowTransmissionOnFault = false;
