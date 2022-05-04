@@ -48,6 +48,30 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     public abstract void shutdown();
 
     /**
+     * @return true if transmission is allowed when the provided script leads to a
+     * {@link io.neow3j.types.NeoVMStateType#FAULT}. False, otherwise.
+     */
+    public boolean transmissionOnFaultIsAllowed() {
+        return config.transmissionOnFaultIsAllowed();
+    }
+
+    /**
+     * Allow the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
+     */
+    public void allowTransmissionOnFault() {
+        config.allowTransmissionOnFault();
+    }
+
+    /**
+     * Prevent the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
+     * <p>
+     * This is set by default.
+     */
+    public void preventTransmissionOnFault() {
+        config.preventTransmissionOnFault();
+    }
+
+    /**
      * Gets the configured network magic number.
      * <p>
      * The magic number is an ingredient, e.g., when generating the hash of a transaction.

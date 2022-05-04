@@ -61,8 +61,8 @@ public class TransactionBuilder {
 
     public TransactionBuilder(Neow3j neow3j) {
         this.neow3j = neow3j;
-        // The random value used to initialize the nonce does not need cryptographic security,
-        // therefore, we can use ThreadLocalRandom to generate it.
+        // The random value used to initialize the nonce does not need cryptographic security, therefore, we can use
+        // ThreadLocalRandom to generate it.
         this.nonce = ThreadLocalRandom.current().nextLong((long) Math.pow(2, 32));
         this.version = NeoConstants.CURRENT_TX_VERSION;
         this.script = new byte[]{};
@@ -381,7 +381,7 @@ public class TransactionBuilder {
         Signer[] signers = this.signers.toArray(new Signer[0]);
         String script = toHexStringNoPrefix(this.script);
         NeoInvokeScript response = neow3j.invokeScript(script, signers).send();
-        if (response.getResult().hasStateFault()) {
+        if (response.getResult().hasStateFault() && !neow3j.transmissionOnFaultIsAllowed()) {
             throw new TransactionConfigurationException(
                     "The vm exited due to the following exception: " + response.getResult().getException());
         }

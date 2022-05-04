@@ -20,6 +20,7 @@ public class Neow3jConfig {
     private long maxValidUntilBlockIncrement = MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / blockInterval;
     private int pollingInterval = DEFAULT_BLOCK_TIME;
     private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
+    private boolean allowTransmissionOnFault = false;
 
     /**
      * Constructs a configuration instance with default values.
@@ -184,6 +185,32 @@ public class Neow3jConfig {
      */
     public Neow3jConfig setMaxValidUntilBlockIncrement(long maxValidUntilBlockIncrement) {
         this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
+        return this;
+    }
+
+    /**
+     * @return true if transmission is allowed when the provided script leads to a
+     * {@link io.neow3j.types.NeoVMStateType#FAULT}. False, otherwise.
+     */
+    public boolean transmissionOnFaultIsAllowed() {
+        return this.allowTransmissionOnFault;
+    }
+
+    /**
+     * Allow the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
+     */
+    public Neow3jConfig allowTransmissionOnFault() {
+        this.allowTransmissionOnFault = true;
+        return this;
+    }
+
+    /**
+     * Prevent the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
+     * <p>
+     * This is set by default.
+     */
+    public Neow3jConfig preventTransmissionOnFault() {
+        this.allowTransmissionOnFault = false;
         return this;
     }
 
