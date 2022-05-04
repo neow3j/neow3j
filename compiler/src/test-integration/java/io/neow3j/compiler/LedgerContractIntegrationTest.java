@@ -46,6 +46,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class LedgerContractIntegrationTest {
@@ -73,8 +74,6 @@ public class LedgerContractIntegrationTest {
                 ));
         WitnessRule rule2 = new WitnessRule(WitnessAction.ALLOW, new NotCondition(new BooleanCondition(false)));
         io.neow3j.transaction.Signer signer = AccountSigner.none(ct.getClient1()).setRules(rule1, rule2);
-//        io.neow3j.transaction.Signer signer2 = AccountSigner.none(ct.getClient2())
-//                .setAllowedContracts(ct.getContract().getScriptHash()).setRules(rule1, rule2);
         return ct.invokeFunctionAndAwaitExecution("setup", asList(), signer);
     }
 
@@ -201,54 +200,64 @@ public class LedgerContractIntegrationTest {
 
     @Test
     public void getTransactionSignerValues() throws Throwable {
-//        preparedTx = ct.getDeployTxHash();
-//        ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction("getTransactionSigners", hash256(preparedTx));
         List<StackItem> stack = response.getInvocationResult().getStack();
-        String exception = response.getInvocationResult().getException();
+        assertThat(stack, hasSize(1));
+        List<StackItem> signerList = stack.get(0).getList();
+        assertThat(signerList, hasSize(2));
+        assertThat(signerList.get(1).getList().get(2).getInteger().byteValue(),
+                is(WitnessScope.WITNESS_RULES.byteValue()));
+        assertThat(signerList.get(1).getList().get(5).getList(), hasSize(2)); // 2 rules
 
         response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(0));
-        // when witness rules present, this works
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        List<StackItem> signer = stack.get(0).getList();
+        assertThat(signer, hasSize(6));
+        assertThat(signer.get(1).getAddress(), is(ct.getDefaultAccount().getAddress()));
+        assertThat(signer.get(2).getInteger().byteValue(), is(WitnessScope.GLOBAL.byteValue()));
 
         response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(1));
-        // when witness rules present, this works
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        signer = stack.get(0).getList();
+        assertThat(signer, hasSize(6));
+        assertThat(signer.get(1).getAddress(), is(ct.getClient1().getAddress()));
+        assertThat(signer.get(2).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
+        assertThat(signer.get(5).getList(), hasSize(2));
 
-        response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(2));
-        // when witness rules present, this works
+        response = ct.callInvokeFunction("getTransactionSignerSerialized", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        assertNotNull(stack.get(0).getString());
 
-        response = ct.callInvokeFunction("getTransactionSignerSerialized", hash256(preparedTx), integer(0));
-        // all fault
+        response = ct.callInvokeFunction("getTransactionSignerAccount", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        assertThat(stack.get(0).getAddress(), is(ct.getClient1().getAddress()));
 
-        response = ct.callInvokeFunction("getTransactionSignerAccount", hash256(preparedTx), integer(0));
-        // all fault
+        response = ct.callInvokeFunction("getTransactionSignerWitnessScope", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        assertThat(stack.get(0).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
 
-        response = ct.callInvokeFunction("getTransactionSignerWitnessScope", hash256(preparedTx), integer(0));
+        response = ct.callInvokeFunction("getTransactionSignerAllowedContracts", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        assertThat(stack.get(0).getList(), hasSize(0));
 
-        response = ct.callInvokeFunction("getTransactionSignerAllowedContracts", hash256(preparedTx), integer(0));
+        response = ct.callInvokeFunction("getTransactionSignerAllowedGroups", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
+        assertThat(stack.get(0).getList(), hasSize(0));
 
-        response = ct.callInvokeFunction("getTransactionSignerAllowedGroups", hash256(preparedTx), integer(0));
+        response = ct.callInvokeFunction("getTransactionSignerWitnessRules", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
-
-        response = ct.callInvokeFunction("getTransactionSignerWitnessRules", hash256(preparedTx), integer(0));
-        stack = response.getInvocationResult().getStack();
-        exception = response.getInvocationResult().getException();
-        fail();
+        List<StackItem> rules = stack.get(0).getList();
+        assertThat(rules, hasSize(2));
+        assertThat(rules.get(0).getList().get(0).getInteger(), is(BigInteger.ZERO)); // Deny
+        assertThat(rules.get(0).getList().get(1).getList().get(0).getInteger().byteValue(),
+                is(WitnessConditionType.OR.byteValue()));
+        assertThat(rules.get(0).getList().get(1).getList().get(1).getList(), hasSize(2)); // 2 expressions
+        assertThat(rules.get(1).getList().get(0).getInteger(), is(BigInteger.ONE)); // Allow
+        assertThat(rules.get(1).getList().get(1).getList().get(0).getInteger().byteValue(),
+                is(WitnessConditionType.NOT.byteValue()));
+        assertThat(rules.get(1).getList().get(1).getList().get(1).getList().get(0).getInteger().byteValue(),
+                is(WitnessConditionType.BOOLEAN.byteValue()));
+        assertFalse(rules.get(1).getList().get(1).getList().get(1).getList().get(1).getBoolean());
     }
 
     @Test
