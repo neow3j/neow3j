@@ -3,7 +3,7 @@
 This file describes the required steps to release neow3j. Before releasing make sure that the external documentation
 at [neow3j.io](https://neow3j.io) is up-to-date.
 
-## Release the Source Code
+## Prepare for Source Code Release
 
 1. Create a branch `release` from `main`.
 2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
@@ -21,11 +21,9 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
    release.
 6. Merge the Pull Request, and then, delete the `release` branch.
 7. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
-8. Right after merging, bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch. Thus, also
-   update the NFT integration tests accordingly to make them pass again, (i.e., `NNSIntegrationTest`,
-   `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and `NonDivisibleNFTIntegrationTest`).
 
-## Credentials
+## Publish the Release Artifacts
+### Credentials
 
 Make sure you have a `gradle.properties` file with the following:
 
@@ -46,7 +44,7 @@ Where:
 - `gradle.publish.key`: is the API key for the [Gradle Plugin](https://plugins.gradle.org) repository
 - `gradle.publish.secret`: is the API secret for the [Gradle Plugin](https://plugins.gradle.org) repository
 
-## Publishing the Release Artifacts
+### Publishing Steps
 
 1. Check if you're in the main branch (i.e., `main` or `master-2.x`).
 2. Is the current commit tagged with the release version, i.e., the one to be released?
@@ -62,38 +60,43 @@ Where:
 9. Finally, run `./gradlew :gradle-plugin:publishPlugin` to publish the compiler Gradle plugin to the Gradle Plugins
    Repository.
 
-## neow3j-examples and Smoke Tests
+## Finish Source Code Release Process
+1. Go to the `main` branch and bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch. 
+   Thus, also update the NFT integration tests accordingly to make them pass again, (i.e., `NNSIntegrationTest`, 
+   `NFTIntegrationTest`, `DivisibleNFTIntegrationTest`, and `NonDivisibleNFTIntegrationTest`).
+
+## Update `neow3j-examples` Repositories and Run Smoke Tests
 
 1. Update the neow3j-examples repository to use the new neow3j version.
 2. Run some examples as smoke tests. Compile example smart contracts with the Gradle plugin and programmatically.
 3. Correct broken examples according to the changes in neow3j.
 4. Add examples that cover new features.
 
-## neow3j-docs
+## Update `neow3j-docs`
 
 1. Update the version number in the documentation where necessary.
 2. Update the documentation to reflect the changes and features of the release.
 3. Merge the changes into the master branch of the neow3j-docs repository. That will automatically update the neow3j.io
    website.
 
-## neo-dev-portal
+## Update `neo-dev-portal` Repository
 
 Update the forked [neo-dev-portal](https://github.com/AxLabs/neo-dev-portal) repository and open a Pull Request to its
 origin [repository](https://github.com/neo-project/neo-dev-portal). Make sure to target the `dev` branch on both
 repositories.
 
-## neow3j-boilerplate
+## Update `neow3j-boilerplate` Repositories
 
 Update the boilerplate repos (i.e., [sdk template](https://github.com/neow3j/neow3j-boilerplate-sdk) and
 [contracts template](https://github.com/neow3j/neow3j-boilerplate-sdk)) gradle.build file and possibly the example
 contract if major changes happened.
 
-## GitHub release
+## Publish GitHub Release
 
 1. Update the README.md in all neow3j repositories if necessary.
 2. Create a release draft on GitHub
     - Title format: "neow3j: 3.x.x"
-    - The body should contain the sections "Changes", "New Features", and "Fixes" in that order. If one section doesn't
-      have content it can be omitted.
+    - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If 
+      one section doesn't have content it can be omitted.
 3. Let the team review the draft.
 4. Publish the release.
