@@ -3,13 +3,12 @@ package io.neow3j.protocol.core.stackitem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.types.StackItemType;
-import io.neow3j.utils.BigIntegers;
-import io.neow3j.utils.Numeric;
 
 import java.math.BigInteger;
 import java.util.Objects;
 
-import static java.lang.String.format;
+import static io.neow3j.utils.BigIntegers.toLittleEndianByteArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IntegerStackItem extends StackItem {
@@ -33,7 +32,7 @@ public class IntegerStackItem extends StackItem {
 
     @Override
     protected String valueToString() {
-       return value.toString();
+        return value.toString();
     }
 
     @Override
@@ -61,27 +60,31 @@ public class IntegerStackItem extends StackItem {
     }
 
     /**
-     * Gets this integer stack item as a hex string. I.e., the integer's bytes (in little-endian
-     * ordering) are converted to a hex string.
+     * Gets this integer stack item as a hex string. I.e., the integer's bytes (in little-endian ordering) are
+     * converted to a hex string.
      *
      * @return the hex string.
      */
     @Override
     public String getHexString() {
         nullCheck();
-        return Numeric.toHexStringNoPrefix(getByteArray());
+        return toHexStringNoPrefix(getByteArray());
     }
 
     @Override
-    public byte[] getByteArray(){
+    public byte[] getByteArray() {
         nullCheck();
-        return BigIntegers.toLittleEndianByteArray(value);
+        return toLittleEndianByteArray(value);
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof IntegerStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof IntegerStackItem)) {
+            return false;
+        }
         IntegerStackItem other = (IntegerStackItem) o;
         return getType() == other.getType() &&
                 getValue().equals(other.getValue());
@@ -91,4 +94,5 @@ public class IntegerStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(getType(), getValue());
     }
+
 }

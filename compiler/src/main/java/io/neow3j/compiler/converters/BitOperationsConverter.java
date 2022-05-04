@@ -11,9 +11,7 @@ import org.objectweb.asm.tree.AbstractInsnNode;
 public class BitOperationsConverter implements Converter {
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
-
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit) {
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (opcode) {
             case ISHL:
@@ -42,4 +40,5 @@ public class BitOperationsConverter implements Converter {
         }
         return insn;
     }
+
 }

@@ -166,31 +166,29 @@ public class Compiler {
      */
     public static StackItemType mapTypeToStackItemType(Type type) {
         String typeName = type.getClassName();
-        if (typeName.equals(String.class.getTypeName())
-                || typeName.equals(Hash160.class.getTypeName())
-                || typeName.equals(Hash256.class.getTypeName())
-                || typeName.equals(ECPoint.class.getTypeName())
-                || typeName.equals(ByteString.class.getTypeName())) {
+        if (typeName.equals(String.class.getTypeName()) ||
+                typeName.equals(Hash160.class.getTypeName()) ||
+                typeName.equals(Hash256.class.getTypeName()) ||
+                typeName.equals(ECPoint.class.getTypeName()) ||
+                typeName.equals(ByteString.class.getTypeName())) {
             return StackItemType.BYTE_STRING;
         }
-        if (typeName.equals(Integer.class.getTypeName())
-                || typeName.equals(int.class.getTypeName())
-                || typeName.equals(Long.class.getTypeName())
-                || typeName.equals(long.class.getTypeName())
-                || typeName.equals(Byte.class.getTypeName())
-                || typeName.equals(byte.class.getTypeName())
-                || typeName.equals(Short.class.getTypeName())
-                || typeName.equals(short.class.getTypeName())
-                || typeName.equals(Character.class.getTypeName())
-                || typeName.equals(char.class.getTypeName())) {
+        if (typeName.equals(Integer.class.getTypeName()) ||
+                typeName.equals(int.class.getTypeName()) ||
+                typeName.equals(Long.class.getTypeName()) ||
+                typeName.equals(long.class.getTypeName()) ||
+                typeName.equals(Byte.class.getTypeName()) ||
+                typeName.equals(byte.class.getTypeName()) ||
+                typeName.equals(Short.class.getTypeName()) ||
+                typeName.equals(short.class.getTypeName()) ||
+                typeName.equals(Character.class.getTypeName()) ||
+                typeName.equals(char.class.getTypeName())) {
             return StackItemType.INTEGER;
         }
-        if (typeName.equals(Boolean.class.getTypeName())
-                || typeName.equals(boolean.class.getTypeName())) {
+        if (typeName.equals(Boolean.class.getTypeName()) || typeName.equals(boolean.class.getTypeName())) {
             return StackItemType.BOOLEAN;
         }
-        if (typeName.equals(Byte[].class.getTypeName())
-                || typeName.equals(byte[].class.getTypeName())) {
+        if (typeName.equals(Byte[].class.getTypeName()) || typeName.equals(byte[].class.getTypeName())) {
             return StackItemType.BUFFER;
         }
         if (typeName.equals(Map.class.getTypeName())) {
@@ -231,9 +229,7 @@ public class Compiler {
      * @return the compilation results.
      * @throws IOException if an error occurs when trying to read class files.
      */
-    public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers)
-            throws IOException {
-
+    public CompilationUnit compile(String contractClass, List<ISourceContainer> sourceContainers) throws IOException {
         compUnit.addSourceContainers(sourceContainers);
         return compile(contractClass);
     }
@@ -245,9 +241,9 @@ public class Compiler {
      * Make sure that the {@code Classloader} used to initialize this {@code Compiler} includes the paths to the
      * given class files.
      *
-     * @param contractClass    The fully qualified name of the contract class.
-     * @param sourceContainers A list of source containers used for generating debugging information.
-     * @param replaceMap       The {@link java.util.Map} mapping placeholder strings to the desired values.
+     * @param contractClass    the fully qualified name of the contract class.
+     * @param sourceContainers a list of source containers used for generating debugging information.
+     * @param replaceMap       the {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation results.
      * @throws IOException if an error occurs when trying to read class files.
      */
@@ -273,7 +269,7 @@ public class Compiler {
      * to neo-vm code.
      *
      * @param contractClass the fully qualified name of the contract class.
-     * @param replaceMap    The {@link java.util.Map} mapping placeholder strings to the desired values.
+     * @param replaceMap    the {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException if an error occurs when trying to read class files.
      */
@@ -297,13 +293,12 @@ public class Compiler {
      * to neo-vm code.
      *
      * @param classStream the {@link InputStream} pointing to a contract class file.
-     * @param replaceMap  The {@link java.util.Map} mapping placeholder strings to the desired values.
+     * @param replaceMap  the {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException if an error occurs when trying to read class files.
      */
     public CompilationUnit compile(InputStream classStream, java.util.Map<String, String> replaceMap)
             throws IOException {
-
         return compile(getAsmClass(classStream), replaceMap);
     }
 
@@ -312,13 +307,12 @@ public class Compiler {
      * to neo-vm code.
      *
      * @param classNode  the {@link ClassNode} representing a contract class.
-     * @param replaceMap The {@link java.util.Map} mapping placeholder strings to the desired values.
+     * @param replaceMap the {@link java.util.Map} mapping placeholder strings to the desired values.
      * @return the compilation unit holding the NEF and contract manifest.
      * @throws IOException if an error occurs when trying to read class files.
      */
     protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap)
             throws IOException {
-
         substitutePlaceholdersInMethodBodies(classNode, replaceMap);
         substitutePlaceholdersInAnnotations(classNode, replaceMap);
         return compile(classNode);
@@ -365,7 +359,9 @@ public class Compiler {
         for (int i = 0; i < annotationNode.values.size(); i += 2) {
             // The value might be different types
             Object value = annotationNode.values.get(i + 1);
-            if (value == null) continue;
+            if (value == null) {
+                continue;
+            }
 
             // We only focused on String, AnnotationNode, List<String> and List<AnnotationNode>
             if (value instanceof String) {
@@ -495,7 +491,7 @@ public class Compiler {
      * <p>
      * If instructions are found, an exception is thrown because the compiler does not support instance constructors.
      *
-     * @param asmClass The asm class.
+     * @param asmClass the asm class.
      */
     private void checkForUsageOfInstanceConstructor(ClassNode asmClass) {
         Optional<MethodNode> instanceCtor = asmClass.methods.stream()
@@ -520,7 +516,7 @@ public class Compiler {
     /**
      * Checks the minimum version of class compatibility. Currently, only 'target compatibility' for 1.8 is supported.
      *
-     * @param asmClass The asm class.
+     * @param asmClass the asm class.
      */
     private void checkForClassCompatibility(ClassNode asmClass) {
         if (asmClass.version != CLASS_VERSION_SUPPORTED) {
@@ -537,7 +533,7 @@ public class Compiler {
     /**
      * Collects all static method and initializes them, e.e.g, sets the parameters and local variables.
      *
-     * @param asmClass The asm class.
+     * @param asmClass the asm class.
      * @return a list of all initialized Neo methods.
      */
     private List<NeoMethod> initializeContractMethods(ClassNode asmClass) {
@@ -564,9 +560,9 @@ public class Compiler {
      * Handles and/or converts the given instructions. The provided {@code NeoMethod} is the method that the
      * instruction belongs to and the converted instruction will be added to that method.
      *
-     * @param insn      The instruction to start from.
-     * @param neoMethod The Neo method.
-     * @param compUnit  The compilation unit.
+     * @param insn      the instruction to start from.
+     * @param neoMethod the Neo method.
+     * @param compUnit  the compilation unit.
      * @return the last instruction node that was processed, i.e., the returned instruction can be used to obtain the
      * next instruction that should be processed.
      * @throws IOException if an error occurs when trying to read class files.
@@ -609,8 +605,8 @@ public class Compiler {
      * Checks if the {@code callee} has the {@link Instruction} or {@link Instructions} annotation and, if yes,
      * processes it.
      *
-     * @param callee The method being called by {@code caller}.
-     * @param caller The calling method.
+     * @param callee the method being called by {@code caller}.
+     * @param caller the calling method.
      */
     public static void processInstructionAnnotations(MethodNode callee, NeoMethod caller) {
         List<AnnotationNode> nodes = getAnnotations(callee, Instruction.class, Instructions.class);
@@ -632,8 +628,8 @@ public class Compiler {
      * Checks if the list of annotations only contains one annotation that represents a {@link OpCode#SYSCALL}
      * instruction.
      *
-     * @param annotations The list to check.
-     * @return return true if the annotations only contain one syscall instruction.
+     * @param annotations the list to check.
+     * @return true if the annotations only contain one syscall instruction. False, otherwise.
      */
     private static boolean isSingleSyscallInstruction(List<AnnotationNode> annotations) {
         if (annotations.size() != 1) {
@@ -647,8 +643,8 @@ public class Compiler {
      * Adds an instruction that reverses the ordering of the parameters on the evaluation stack according to the
      * number of parameters the called method takes.
      *
-     * @param calledAsmMethod  The method that is being called.
-     * @param callingNeoMethod The calling method that will be extended with the instruction.
+     * @param calledAsmMethod  the method that is being called.
+     * @param callingNeoMethod the calling method that will be extended with the instruction.
      */
     public static void addReverseArguments(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
         int paramsCount = Type.getMethodType(calledAsmMethod.desc).getArgumentTypes().length;
@@ -663,8 +659,8 @@ public class Compiler {
      * Adds an instruction that reverses the ordering of the parameters on the evaluation stack according to the
      * given number of parameters.
      *
-     * @param callingNeoMethod The calling method that will be extended with the instruction.
-     * @param paramsCount      The number of parameters passed to the called method.
+     * @param callingNeoMethod the calling method that will be extended with the instruction.
+     * @param paramsCount      the number of parameters passed to the called method.
      */
     public static void addReverseArguments(NeoMethod callingNeoMethod, int paramsCount) {
         if (paramsCount == 2) {
@@ -680,8 +676,8 @@ public class Compiler {
     }
 
     private static void addInstruction(AnnotationNode annotation, NeoMethod neoMethod) {
-        // If the Instruction annotation was used without setting any of its properties the
-        // annotations values will be null. This can be treated as no operation.
+        // If the Instruction annotation was used without setting any of its properties the annotations values will
+        // be null. This can be treated as no operation.
         if (annotation.values == null) {
             return;
         }
@@ -753,8 +749,8 @@ public class Compiler {
      * <p>
      * There should always be a super call even if it was not explicitly specified by the developer.
      *
-     * @param constructor The constructor method.
-     * @param owner       The class of the constructor method.
+     * @param constructor the constructor method.
+     * @param owner       the class of the constructor method.
      * @return the instruction that calls the super constructor.
      */
     public static MethodInsnNode skipToSuperCtorCall(MethodNode constructor, ClassNode owner) {
@@ -774,8 +770,8 @@ public class Compiler {
     /**
      * Skips instructions, starting at the given one, until the constructor call to the given class is reached.
      *
-     * @param insn  The instruction from which to start looking for the constructor.
-     * @param owner The class that owns the constructor.
+     * @param insn  the instruction from which to start looking for the constructor.
+     * @param owner the class that owns the constructor.
      * @return the instruction that calls the constructor.
      */
     public static MethodInsnNode skipToCtorCall(AbstractInsnNode insn, ClassNode owner) {
@@ -793,21 +789,21 @@ public class Compiler {
     /**
      * Checks if the given instruction is a call to the given class' constructor (i.e., {@code <init>}).
      *
-     * @param insn              The instruction.
-     * @param ownerInternalName The owner's internal name.
-     * @return true, if the given instruction is a call to the given class' constructor. False, otherwise.
+     * @param insn              the instruction.
+     * @param ownerInternalName the owner's internal name.
+     * @return true if the given instruction is a call to the given class' constructor. False, otherwise.
      */
     public static boolean isCallToCtor(AbstractInsnNode insn, String ownerInternalName) {
-        return insn.getType() == AbstractInsnNode.METHOD_INSN
-                && ((MethodInsnNode) insn).owner.equals(ownerInternalName)
-                && ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
+        return insn.getType() == AbstractInsnNode.METHOD_INSN &&
+                ((MethodInsnNode) insn).owner.equals(ownerInternalName) &&
+                ((MethodInsnNode) insn).name.equals(INSTANCE_CTOR);
     }
 
     /**
      * Adds an instruction to push the given number on the stack.
      *
-     * @param number    The number to push on the stack.
-     * @param neoMethod The Neo method to add the instruction to.
+     * @param number    the number to push on the stack.
+     * @param neoMethod the Neo method to add the instruction to.
      */
     public static void addPushNumber(long number, NeoMethod neoMethod) {
         neoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(number)));
@@ -816,7 +812,7 @@ public class Compiler {
     /**
      * Builds an instruction that pushes the given number on the stack.
      *
-     * @param number The number to push on the stack.
+     * @param number the number to push on the stack.
      * @return the {@link NeoInstruction} that pushes the given number on the stack.
      */
     public static NeoInstruction buildPushNumberInstruction(BigInteger number) {
@@ -828,8 +824,8 @@ public class Compiler {
     /**
      * Checks if the given class descriptor belongs to an event class.
      *
-     * @param classDesc The descriptor.
-     * @param compUnit  The compilation unit required for the classloader.
+     * @param classDesc the descriptor.
+     * @param compUnit  the compilation unit required for the classloader.
      * @return true if the class descriptor is from an event class. False otherwise.
      */
     public static boolean isEvent(String classDesc, CompilationUnit compUnit) {

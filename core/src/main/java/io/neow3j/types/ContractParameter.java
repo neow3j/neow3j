@@ -36,6 +36,7 @@ import static io.neow3j.types.ContractParameterType.SIGNATURE;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -99,8 +100,8 @@ public class ContractParameter {
     /**
      * Creates an array parameter from the given values.
      * <p>
-     * The method will try to map the given objects to the correct {@link ContractParameterType}s.
-     * You can pass in objects of type {@link ContractParameter} to fix the parameter type of an element.
+     * The method will try to map the given objects to the correct {@link ContractParameterType}s. You can pass in
+     * objects of type {@link ContractParameter} to fix the parameter type of an element.
      * <p>
      * Use {@code array()} without a parameter if you need an empty array.
      *
@@ -139,17 +140,17 @@ public class ContractParameter {
      * The first example below uses regular Java types that can automatically be wrapped into a
      * {@code ContractParameter}.
      * <pre>
-     * Map map = new HashMap{@literal <>}();
-     * map.put("one", "first");
-     * map.put("two", 2);
-     * ContractParameter param = map(map);
+     *     Map map = new HashMap{@literal <>}();
+     *     map.put("one", "first");
+     *     map.put("two", 2);
+     *     ContractParameter param = map(map);
      * </pre>
      * The second example leads to the same result but uses {@code ContractParameter} before adding elements.
      * <pre>
-     * Map map = new HashMap{@literal <>}();
-     * map.put(ContractParameter.string("one"), ContractParameter.string("first"));
-     * map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
-     * ContractParameter param = map(map);
+     *     Map map = new HashMap{@literal <>}();
+     *     map.put(ContractParameter.string("one"), ContractParameter.string("first"));
+     *     map.put(ContractParameter.integer("two"), ContractParameter.integer(2));
+     *     ContractParameter param = map(map);
      * </pre>
      *
      * @param map the map entries.
@@ -287,8 +288,8 @@ public class ContractParameter {
      */
     public static ContractParameter signature(byte[] signature) {
         if (signature.length != NeoConstants.SIGNATURE_SIZE) {
-            throw new IllegalArgumentException("Signature is expected to have a length of "
-                    + NeoConstants.SIGNATURE_SIZE + " bytes, but had " + signature.length + ".");
+            throw new IllegalArgumentException(format("Signature is expected to have a length of %s bytes, but had %s.",
+                    NeoConstants.SIGNATURE_SIZE, signature.length));
         }
         return new ContractParameter(SIGNATURE, signature);
     }
@@ -388,7 +389,7 @@ public class ContractParameter {
     public static ContractParameter hash256(byte[] hash) {
         if (hash.length != 32) {
             throw new IllegalArgumentException(
-                    "A Hash256 parameter must be 32 bytes but was " + hash.length + " bytes.");
+                    format("A Hash256 parameter must be 32 bytes but was %s bytes.", hash.length));
         }
         return hash256(new Hash256(hash));
     }
@@ -491,7 +492,6 @@ public class ContractParameter {
         @Override
         public void serialize(ContractParameter value, JsonGenerator gen, SerializerProvider provider)
                 throws IOException {
-
             gen.writeStartObject();
             serializeParameter(value, gen);
             gen.writeEndObject();
@@ -566,7 +566,7 @@ public class ContractParameter {
                     break;
                 default:
                     throw new UnsupportedOperationException(
-                            "Parameter type '" + p.getType().toString() + "' not supported.");
+                            format("Parameter type '%s' not supported.", p.getType().toString()));
             }
         }
 

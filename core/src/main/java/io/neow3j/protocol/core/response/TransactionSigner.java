@@ -66,12 +66,12 @@ public class TransactionSigner {
                 .map(s -> toHexStringNoPrefix(s.getEncoded(true)))
                 .collect(Collectors.toList());
         this.rules = signer.getRules().stream()
-                .map(r -> new WitnessRule(r.getAction(), r.getCondition().toJson()))
+                .map(r -> new WitnessRule(r.getAction(), r.getCondition().toDTO()))
                 .collect(Collectors.toList());
     }
 
-    public TransactionSigner(Hash160 account, List<WitnessScope> scopes,
-            List<String> allowedContracts, List<String> allowedGroups, List<WitnessRule> rules) {
+    public TransactionSigner(Hash160 account, List<WitnessScope> scopes, List<String> allowedContracts,
+            List<String> allowedGroups, List<WitnessRule> rules) {
         this.account = account;
         this.scopes = scopes;
         this.allowedContracts = allowedContracts;
@@ -163,9 +163,7 @@ public class TransactionSigner {
         }
 
         @Override
-        public List<WitnessScope> deserialize(JsonParser p, DeserializationContext ctx)
-                throws IOException {
-
+        public List<WitnessScope> deserialize(JsonParser p, DeserializationContext ctx) throws IOException {
             String scopesAsString = p.getCodec().readValue(p, String.class);
             return Arrays.stream(scopesAsString.replaceAll(" ", "").split(","))
                     .map(WitnessScope::fromJsonValue)

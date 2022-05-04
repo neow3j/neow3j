@@ -7,6 +7,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.SecureRandomUtils;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.wallet.nep6.NEP6Wallet;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -16,6 +17,8 @@ import java.security.SecureRandom;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+
+import static java.lang.String.format;
 
 /**
  * Utility functions for working with Wallet files.
@@ -30,17 +33,15 @@ public class WalletUtils {
         objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
-    public static String generateWalletFile(
-            String password, File destinationDirectory)
-            throws CipherException, IOException, InvalidAlgorithmParameterException,
-            NoSuchAlgorithmException, NoSuchProviderException {
+    public static String generateWalletFile(String password, File destinationDirectory)
+            throws CipherException, IOException, InvalidAlgorithmParameterException, NoSuchAlgorithmException,
+            NoSuchProviderException {
 
         ECKeyPair ecKeyPair = ECKeyPair.createEcKeyPair();
         return generateWalletFile(password, ecKeyPair, destinationDirectory);
     }
 
-    public static String generateWalletFile(
-            String password, ECKeyPair ecKeyPair, File destinationDirectory)
+    public static String generateWalletFile(String password, ECKeyPair ecKeyPair, File destinationDirectory)
             throws CipherException, IOException {
 
         Account a = new Account(ecKeyPair);
@@ -49,22 +50,16 @@ public class WalletUtils {
         return generateWalletFile(w.toNEP6Wallet(), destinationDirectory);
     }
 
-    public static String generateWalletFile(NEP6Wallet nep6Wallet, File destinationDirectory)
-            throws IOException {
-
+    public static String generateWalletFile(NEP6Wallet nep6Wallet, File destinationDirectory) throws IOException {
         String fileName = getWalletFileName(nep6Wallet);
         File destination = new File(destinationDirectory, fileName);
-
         objectMapper.writeValue(destination, nep6Wallet);
-
         return fileName;
     }
 
     public static String getWalletFileName(NEP6Wallet nep6Wallet) {
-        DateTimeFormatter format = DateTimeFormatter.ofPattern(
-                "'UTC--'yyyy-MM-dd'T'HH-mm-ss.nVV'--'");
+        DateTimeFormatter format = DateTimeFormatter.ofPattern("'UTC--'yyyy-MM-dd'T'HH-mm-ss.nVV'--'");
         ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC);
-
         return now.format(format) + nep6Wallet.getName() + ".json";
     }
 
@@ -76,13 +71,11 @@ public class WalletUtils {
         String osNameLowerCase = osName.toLowerCase();
 
         if (osNameLowerCase.startsWith("mac")) {
-            return String.format(
-                    "%s%sLibrary%sneow3j", System.getProperty("user.home"), File.separator,
-                    File.separator);
+            return format("%s%sLibrary%sneow3j", System.getProperty("user.home"), File.separator, File.separator);
         } else if (osNameLowerCase.startsWith("win")) {
-            return String.format("%s%sneow3j", System.getenv("APPDATA"), File.separator);
+            return format("%s%sneow3j", System.getenv("APPDATA"), File.separator);
         } else {
-            return String.format("%s%s.neow3j", System.getProperty("user.home"), File.separator);
+            return format("%s%s.neow3j", System.getProperty("user.home"), File.separator);
         }
     }
 

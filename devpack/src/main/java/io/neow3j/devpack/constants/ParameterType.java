@@ -15,4 +15,5 @@ public class ParameterType {
     public static final byte MapType = 0x22;
     public static final byte InteropInterfaceType = 0x30;
     public static final byte VoidType = (byte) 0xff;
+
 }

@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @SuppressWarnings("unchecked")
@@ -170,7 +171,7 @@ public class ScriptBuilder {
                     }
                     break;
                 default:
-                    throw new IllegalArgumentException("Parameter type '" + param.getType() + "' not supported.");
+                    throw new IllegalArgumentException(format("Parameter type '%s' not supported.", param.getType()));
             }
         }
         return this;

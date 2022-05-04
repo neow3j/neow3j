@@ -26,4 +26,5 @@ public class DeserializationException extends Exception {
             boolean writableStackTrace) {
         super(message, cause, enableSuppression, writableStackTrace);
     }
+
 }

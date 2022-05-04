@@ -75,9 +75,9 @@ public class NeoApplicationLog {
         }
 
         /**
-         * Gets the trigger type with which the invocation was made. For normal contract
-         * invocations the trigger type is "Application" but a contract can also be invoked for
-         * verification in which case the trigger type is "Verification".
+         * Gets the trigger type with which the invocation was made. For normal contract invocations the trigger type
+         * is "Application" but a contract can also be invoked for verification in which case the trigger type is
+         * "Verification".
          *
          * @return the trigger.
          */
@@ -93,38 +93,29 @@ public class NeoApplicationLog {
         }
 
         /**
-         * Gets the exception thrown by the invocation if any.
-         *
-         * @return The exception or null if no exception was thrown.
+         * @return the exception or null if no exception was thrown.
          */
         public String getException() {
             return exception;
         }
 
         /**
-         * Gets the amount of GAS consumed by the execution.
-         *
-         * @return the amount of GAS.
+         * @return the amount of GAS consumed by the execution.
          */
         public String getGasConsumed() {
             return gasConsumed;
         }
 
         /**
-         * Gets the return stack of the invocation, i.e., the values that were returned by the
-         * NeoVM at the end of the invocation. Usually this stack contains one single stack item
-         * at index 0;
-         *
-         * @return the return stack.
+         * @return the return stack of the invocation, i.e., the values that were returned by the NeoVM at the end of
+         * the invocation. Usually, this stack contains one single stack item at index 0.
          */
         public List<StackItem> getStack() {
             return stack;
         }
 
         /**
-         * Gets the notifications fired by this invocation.
-         *
-         * @return the notifications.
+         * @return the notifications fired by this invocation.
          */
         public List<Notification> getNotifications() {
             return notifications;
@@ -152,30 +143,28 @@ public class NeoApplicationLog {
             }
 
             /**
-             * Gets the script hash of the contract that fired this notification.
-             *
-             * @return the script hash.
+             * @return the script hash of the contract that fired this notification.
              */
             public Hash160 getContract() {
                 return contract;
             }
 
             /**
-             * Gets the event name as described in the manifest of the contract that
-             * fired the notification.
+             * Gets the event name as described in the manifest of the contract that fired the notification.
              * <p>
              * The words event and notification can be used synonymously here.
              *
-             * @return The event name.
+             * @return the event name.
              */
             public String getEventName() {
                 return eventName;
             }
 
             /**
-             * Gets the state attached to this notification. It is up to the developer to know
-             * what to in the state and it needs knowledge about the contract that triggered the
-             * notification.
+             * Gets the state attached to this notification.
+             * <p>
+             * It is up to the developer to know what to in the state and it needs knowledge about the contract that
+             * triggered the notification.
              *
              * @return the notification's state as a NeoVM stack item.
              */
@@ -231,8 +220,8 @@ public class NeoApplicationLog {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTrigger(), getState(), getException(), getGasConsumed(),
-                    getStack(), getNotifications());
+            return Objects.hash(getTrigger(), getState(), getException(), getGasConsumed(), getStack(),
+                    getNotifications());
         }
 
         @Override
@@ -262,8 +251,7 @@ public class NeoApplicationLog {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getTransactionId(), getExecutions());
+        return Objects.hash(getTransactionId(), getExecutions());
     }
 
     @Override

@@ -19,4 +19,5 @@ public class NotificationParams<T> {
     public String getSubscription() {
         return subscription;
     }
+
 }

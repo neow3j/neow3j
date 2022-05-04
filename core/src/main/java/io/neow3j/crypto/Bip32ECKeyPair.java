@@ -12,14 +12,12 @@ import static io.neow3j.crypto.Hash.hmacSha512;
 
 /**
  * BIP-32 key pair.
- *
- * <p>Adapted from:
- * https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/crypto/DeterministicKey.java
- * </p>
- *
- * <p>Implementation based and adapted from:
- * </p>
- * https://github.com/web3j/web3j/blob/116539fff875a083c896b2d569d17416dfeb8a6f/crypto/src/main/java/org/web3j/crypto/Bip32ECKeyPair.java
+ * <p>
+ * Adapted from:
+ * <a href="https://github.com/bitcoinj/bitcoinj/blob/master/core/src/main/java/org/bitcoinj/crypto/DeterministicKey.java">DeterministicKey.java</a>
+ * <p>
+ * Implementation based and adapted from:
+ * <a href="https://github.com/web3j/web3j/blob/116539fff875a083c896b2d569d17416dfeb8a6f/crypto/src/main/java/org/web3j/crypto/Bip32ECKeyPair.java">Bip32ECKeyPair.java</a>
  */
 public class Bip32ECKeyPair extends ECKeyPair {
 
@@ -33,11 +31,7 @@ public class Bip32ECKeyPair extends ECKeyPair {
 
     private ECPoint publicKeyPoint;
 
-    public Bip32ECKeyPair(
-            ECPrivateKey privateKey,
-            ECPublicKey publicKey,
-            int childNumber,
-            byte[] chainCode,
+    public Bip32ECKeyPair(ECPrivateKey privateKey, ECPublicKey publicKey, int childNumber, byte[] chainCode,
             Bip32ECKeyPair parent) {
         super(privateKey, publicKey);
         this.parentHasPrivate = parent != null && parent.hasPrivateKey();
@@ -53,8 +47,7 @@ public class Bip32ECKeyPair extends ECKeyPair {
 
     public static Bip32ECKeyPair create(BigInteger privateKey, byte[] chainCode) {
         ECPrivateKey ecPrivateKey = new ECPrivateKey(privateKey);
-        return new Bip32ECKeyPair(
-                ecPrivateKey, Sign.publicKeyFromPrivate(ecPrivateKey), 0, chainCode, null);
+        return new Bip32ECKeyPair(ecPrivateKey, Sign.publicKeyFromPrivate(ecPrivateKey), 0, chainCode, null);
     }
 
     public static Bip32ECKeyPair create(byte[] privateKey, byte[] chainCode) {
@@ -116,13 +109,9 @@ public class Bip32ECKeyPair extends ECKeyPair {
             ECPoint ki = Sign.publicPointFromPrivateKey(new ECPrivateKey(ilInt)).add(getPublicKeyPoint());
 
             final byte[] bytesPrivKeyEncoded = ki.getEncoded(true);
-            ECPublicKey ecPublicKey = Sign
-                    .publicKeyFromPrivate(new ECPrivateKey(bytesPrivKeyEncoded));
+            ECPublicKey ecPublicKey = Sign.publicKeyFromPrivate(new ECPrivateKey(bytesPrivKeyEncoded));
 
-            return new Bip32ECKeyPair(
-                    null,
-                    ecPublicKey,
-                    childNumber, chainCode, this);
+            return new Bip32ECKeyPair(null, ecPublicKey, childNumber, chainCode, this);
         } else {
             ByteBuffer data = ByteBuffer.allocate(37);
             if (isHardened(childNumber)) {
@@ -138,16 +127,12 @@ public class Bip32ECKeyPair extends ECKeyPair {
             Arrays.fill(i, (byte) 0);
             BigInteger ilInt = new BigInteger(1, il);
             Arrays.fill(il, (byte) 0);
-            BigInteger privateKey = getPrivateKey().getInt().add(ilInt).mod(NeoConstants.secp256r1DomainParams().getN());
+            BigInteger privateKey =
+                    getPrivateKey().getInt().add(ilInt).mod(NeoConstants.secp256r1DomainParams().getN());
             ECPrivateKey ecPrivateKey = new ECPrivateKey(privateKey);
             ECPublicKey ecPublicKey = Sign.publicKeyFromPrivate(ecPrivateKey);
 
-            return new Bip32ECKeyPair(
-                    ecPrivateKey,
-                    ecPublicKey,
-                    childNumber,
-                    chainCode,
-                    this);
+            return new Bip32ECKeyPair(ecPrivateKey, ecPublicKey, childNumber, chainCode, this);
         }
     }
 
@@ -195,4 +180,5 @@ public class Bip32ECKeyPair extends ECKeyPair {
     private boolean hasPrivateKey() {
         return this.getPrivateKey() != null || parentHasPrivate;
     }
+
 }

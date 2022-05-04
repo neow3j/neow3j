@@ -29,17 +29,18 @@ import java.util.stream.Stream;
 import static io.neow3j.utils.ClassUtils.getClassInputStreamForClassName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 public class AsmHelper {
 
-    protected static final List<Character> PRIMITIVE_TYPE_NAMES = new ArrayList<>(
-            Arrays.asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
+    protected static final List<Character> PRIMITIVE_TYPE_NAMES =
+            new ArrayList<>(asList('V', 'Z', 'C', 'B', 'S', 'I', 'F', 'J', 'D'));
 
     /**
      * Gets the {@code MethodNode} corresponding to the method called in the given instruction.
      *
-     * @param methodInsn The method instruction.
-     * @param owner      The class that contains the method to be searched.
+     * @param methodInsn the method instruction.
+     * @param owner      the class that contains the method to be searched.
      * @return the method.
      */
     public static Optional<MethodNode> getMethodNode(MethodInsnNode methodInsn, ClassNode owner) {
@@ -51,58 +52,50 @@ public class AsmHelper {
     /**
      * Gets the {@code ClassNode} for the given class name using the given classloader.
      *
-     * @param internalName The class name in internal name representation as provided by ASM, e.g.,
-     *                     in {@link Type#getInternalName()}.
-     * @param classLoader  The classloader to use.
-     * @return The class node.
-     * @throws IOException If an error occurs when reading class files.
+     * @param internalName the class name in internal name representation as provided by ASM, e.g., in
+     *                     {@link Type#getInternalName()}.
+     * @param classLoader  the classloader to use.
+     * @return the class node.
+     * @throws IOException if an error occurs when reading class files.
      */
-    public static ClassNode getAsmClassForInternalName(String internalName,
-            ClassLoader classLoader) throws IOException {
-
+    public static ClassNode getAsmClassForInternalName(String internalName, ClassLoader classLoader)
+            throws IOException {
         return getAsmClass(Type.getObjectType(internalName).getClassName(), classLoader);
     }
 
     /**
      * Gets the {@code ClassNode} for the given class descriptor using the given classloader.
      *
-     * @param descriptor  The class' descriptor as provided by ASM, e.g., in {@link
-     *                    Type#getDescriptor()}.
-     * @param classLoader The classloader to use.
-     * @return The class node.
-     * @throws IOException If an error occurs when reading class files.
+     * @param descriptor  the class' descriptor as provided by ASM, e.g., in {@link Type#getDescriptor()}.
+     * @param classLoader the classloader to use.
+     * @return the class node.
+     * @throws IOException if an error occurs when reading class files.
      */
-    public static ClassNode getAsmClassForDescriptor(String descriptor,
-            ClassLoader classLoader) throws IOException {
-
+    public static ClassNode getAsmClassForDescriptor(String descriptor, ClassLoader classLoader) throws IOException {
         return getAsmClass(Type.getType(descriptor).getClassName(), classLoader);
     }
 
     /**
      * Gets the {@code ClassNode} for the given fully qualified class name.
      *
-     * @param fullyQualifiedClassName The name of the class to fetch.
-     * @param classLoader             The classloader to use.
-     * @return The class node.
-     * @throws IOException If an error occurs when reading class files.
+     * @param fullyQualifiedClassName the name of the class to fetch.
+     * @param classLoader             the classloader to use.
+     * @return the class node.
+     * @throws IOException if an error occurs when reading class files.
      */
-    public static ClassNode getAsmClass(String fullyQualifiedClassName, ClassLoader classLoader)
-            throws IOException {
-
+    public static ClassNode getAsmClass(String fullyQualifiedClassName, ClassLoader classLoader) throws IOException {
         if (classLoader != null) {
-            return getAsmClass(getClassInputStreamForClassName(
-                    fullyQualifiedClassName, classLoader));
+            return getAsmClass(getClassInputStreamForClassName(fullyQualifiedClassName, classLoader));
         }
-        return getAsmClass(getClassInputStreamForClassName(
-                fullyQualifiedClassName, AsmHelper.class.getClassLoader()));
+        return getAsmClass(getClassInputStreamForClassName(fullyQualifiedClassName, AsmHelper.class.getClassLoader()));
     }
 
     /**
      * Gets the {@code ClassNode} from the given input stream.
      *
-     * @param classStream The stream containing the byte code of a Java class.
-     * @return The class node.
-     * @throws IOException If an error occurs when reading the stream.
+     * @param classStream the stream containing the byte code of a Java class.
+     * @return the class node.
+     * @throws IOException if an error occurs when reading the stream.
      */
     public static ClassNode getAsmClass(InputStream classStream) throws IOException {
         ClassReader classReader = new ClassReader(classStream);
@@ -114,9 +107,9 @@ public class AsmHelper {
     /**
      * Checks if the given method has one or more of the given annotations.
      *
-     * @param asmMethod   The method to check.
-     * @param annotations The annotations.
-     * @return True if the method has one or more of the given annotations. False, otherwise.
+     * @param asmMethod   the method to check.
+     * @param annotations the annotations.
+     * @return true if the method has one or more of the given annotations. False, otherwise.
      */
     public static boolean hasAnnotations(MethodNode asmMethod, Class<?>... annotations) {
         return hasAnnotation(asmMethod.invisibleAnnotations, annotations);
@@ -125,41 +118,33 @@ public class AsmHelper {
     /**
      * Checks if the given {@code ClassNode} has any of the given annotations.
      *
-     * @param asmClass    The class to check.
-     * @param annotations The annotations to check for.
+     * @param asmClass    the class to check.
+     * @param annotations the annotations to check for.
      * @return true if the class has one of the given annotations. False, otherwise.
      */
     public static boolean hasAnnotations(ClassNode asmClass, Class<?>... annotations) {
         return hasAnnotation(asmClass.invisibleAnnotations, annotations);
     }
 
-    private static boolean hasAnnotation(List<AnnotationNode> annotations,
-            Class<?>... annotationTypes) {
-
+    private static boolean hasAnnotation(List<AnnotationNode> annotations, Class<?>... annotationTypes) {
         if (annotationTypes.length == 0) {
             throw new IllegalArgumentException("Provide at least one annotation class.");
         }
-        List<String> descriptors = Stream.of(annotationTypes)
-                .map(Type::getDescriptor)
-                .collect(Collectors.toList());
+        List<String> descriptors = Stream.of(annotationTypes).map(Type::getDescriptor).collect(Collectors.toList());
 
         return annotations != null && annotations.stream()
-                .anyMatch(annotation -> descriptors.stream()
-                        .anyMatch(desc -> annotation.desc.equals(desc)));
+                .anyMatch(annotation -> descriptors.stream().anyMatch(desc -> annotation.desc.equals(desc)));
     }
 
-    public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode,
-            Class<?> annotation) {
+    public static Optional<AnnotationNode> getAnnotationNode(FieldNode fieldNode, Class<?> annotation) {
         return getAnnotationNode(fieldNode.invisibleAnnotations, annotation);
     }
 
-    public static Optional<AnnotationNode> getAnnotationNode(MethodNode methodNode,
-            Class<?> annotation) {
+    public static Optional<AnnotationNode> getAnnotationNode(MethodNode methodNode, Class<?> annotation) {
         return getAnnotationNode(methodNode.invisibleAnnotations, annotation);
     }
 
-    public static Optional<AnnotationNode> getAnnotationNode(ClassNode fieldNode,
-            Class<?> annotation) {
+    public static Optional<AnnotationNode> getAnnotationNode(ClassNode fieldNode, Class<?> annotation) {
         return getAnnotationNode(fieldNode.invisibleAnnotations, annotation);
     }
 
@@ -168,33 +153,28 @@ public class AsmHelper {
         if (annotationNodes == null) {
             return Optional.empty();
         }
-        return annotationNodes.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(annotation)))
-                .findFirst();
+        return annotationNodes.stream().filter(a -> a.desc.equals(Type.getDescriptor(annotation))).findFirst();
     }
 
     /**
-     * Gets the annotations specified by {@code singleClass} and {@code multiClass} from the
-     * given method. This only works for annotations that have a single instance and
-     * multi-instance version, e.g., {@link io.neow3j.devpack.annotations.Instruction} and
+     * Gets the annotations specified by {@code singleClass} and {@code multiClass} from the given method. This only
+     * works for annotations that have a single instance and multi-instance version, e.g.,
+     * {@link io.neow3j.devpack.annotations.Instruction} and
      * {@link io.neow3j.devpack.annotations.Instruction.Instructions}.
      *
-     * @param method      The method to get the annotations from.
-     * @param singleClass The single instance annotation class.
-     * @param multiClass  The multi instance annotation class.
-     * @return The matching annotations found on the method.
+     * @param method      the method to get the annotations from.
+     * @param singleClass the single instance annotation class.
+     * @param multiClass  the multi instance annotation class.
+     * @return the matching annotations found on the method.
      */
     @SuppressWarnings("unchecked")
-    public static List<AnnotationNode> getAnnotations(MethodNode method, Class<?> singleClass,
-            Class<?> multiClass) {
-
+    public static List<AnnotationNode> getAnnotations(MethodNode method, Class<?> singleClass, Class<?> multiClass) {
         AnnotationNode node = method.invisibleAnnotations.stream()
-                .filter(a -> a.desc.equals(Type.getDescriptor(multiClass))
-                        || a.desc.equals(Type.getDescriptor(singleClass)))
-                .findFirst().get();
+                .filter(a -> a.desc.equals(Type.getDescriptor(multiClass)) ||
+                        a.desc.equals(Type.getDescriptor(singleClass))).findFirst().get();
 
         if (node.desc.equals(Type.getDescriptor(singleClass))) {
-            return Arrays.asList(node);
+            return asList(node);
         }
         return (List<AnnotationNode>) node.values.get(1);
     }
@@ -202,8 +182,8 @@ public class AsmHelper {
     /**
      * Gets the property's value on the given annotation.
      *
-     * @param annotation   The annotation to look for the property on.
-     * @param propertyName The property's name.
+     * @param annotation   the annotation to look for the property on.
+     * @param propertyName the property's name.
      * @return the property value or null if the property was not found on the annotation.
      */
     public static Object getAnnotationProperty(AnnotationNode annotation, String propertyName) {
@@ -219,14 +199,14 @@ public class AsmHelper {
 
     /**
      * Gets the byte array property with {@code propertyName} from the given annotation.
+     * <p>
      * Expects the property to be a byte array or a list of bytes.
      *
-     * @param annotation   The annotation to get the property from.
-     * @param propertyName The property's name.
+     * @param annotation   the annotation to get the property from.
+     * @param propertyName the property's name.
      * @return the property's value.
      */
-    public static byte[] getByteArrayAnnotationProperty(AnnotationNode annotation,
-            String propertyName) {
+    public static byte[] getByteArrayAnnotationProperty(AnnotationNode annotation, String propertyName) {
         Object property = getAnnotationProperty(annotation, propertyName);
         byte[] bytes = new byte[]{};
         if (property instanceof byte[]) {
@@ -245,13 +225,11 @@ public class AsmHelper {
     /**
      * Gets the value of a string property with {@code propertyName} on the given annotation.
      *
-     * @param annotation   The annotation to get the property from.
-     * @param propertyName The name of the string property.
-     * @return The property value;
+     * @param annotation   the annotation to get the property from.
+     * @param propertyName the name of the string property.
+     * @return the property value;
      */
-    public static String getStringAnnotationProperty(AnnotationNode annotation,
-            String propertyName) {
-
+    public static String getStringAnnotationProperty(AnnotationNode annotation, String propertyName) {
         Object property = getAnnotationProperty(annotation, propertyName);
         if (property == null) {
             return null;
@@ -262,16 +240,14 @@ public class AsmHelper {
     /**
      * Prints the JVM instructions for the given class.
      *
-     * @param fullyQualifiedClassName The fully qualified name of the class to print the
-     *                                instructions for.
-     * @throws IOException If there are problems reading the class file.
+     * @param fullyQualifiedClassName the fully qualified name of the class to print the instructions for.
+     * @throws IOException if there are problems reading the class file.
      */
     public static void printJVMInstructions(String fullyQualifiedClassName) throws IOException {
-        InputStream in = AsmHelper.class.getClassLoader().getResourceAsStream(
-                fullyQualifiedClassName.replace('.', '/') + ".class");
+        InputStream in = AsmHelper.class.getClassLoader()
+                .getResourceAsStream(fullyQualifiedClassName.replace('.', '/') + ".class");
         if (in == null) {
-            throw new IllegalArgumentException(
-                    format("Couldn't find .class file for %s.", fullyQualifiedClassName));
+            throw new IllegalArgumentException(format("Couldn't find .class file for %s.", fullyQualifiedClassName));
         }
         try (InputStream bufferedInputStream = new BufferedInputStream(in)) {
             bufferedInputStream.mark(0);
@@ -283,16 +259,15 @@ public class AsmHelper {
     /**
      * Prints the instructions of the given class input stream.
      *
-     * @param in The input stream of the class.
-     * @throws IOException If there are problems reading the class file.
+     * @param in the input stream of the class.
+     * @throws IOException if there are problems reading the class file.
      */
     public static void printJVMInstructions(InputStream in) throws IOException {
         ClassReader reader = new ClassReader(in);
         ClassNode classNode = new ClassNode();
         Printer printer = new Textifier();
         TraceMethodVisitor methodVisitor = new TraceMethodVisitor(printer);
-        // change the "parsing options" if you would like to
-        // see debug symbols from the JVM bytecode
+        // change the "parsing options" if you would like to see debug symbols from the JVM bytecode
         reader.accept(classNode, 2);
         final List<MethodNode> methods = classNode.methods;
         for (MethodNode m : methods) {
@@ -305,9 +280,7 @@ public class AsmHelper {
         }
     }
 
-    private static String insnToString(AbstractInsnNode insn, TraceMethodVisitor methodVisitor,
-            Printer printer) {
-
+    private static String insnToString(AbstractInsnNode insn, TraceMethodVisitor methodVisitor, Printer printer) {
         insn.accept(methodVisitor);
         StringWriter sw = new StringWriter();
         printer.print(new PrintWriter(sw));
@@ -321,7 +294,7 @@ public class AsmHelper {
      * inherited fields.
      *
      * @param fieldInsn the field instruction node.
-     * @param compUnit the compilation unit.
+     * @param compUnit  the compilation unit.
      * @return the field index.
      * @throws IOException if an error occurs when reading class files.
      */
@@ -346,8 +319,8 @@ public class AsmHelper {
             owner = getAsmClass(owner.superName, compUnit.getClassLoader());
         }
         if (!fieldFound) {
-            throw new CompilerException(owner, format("Tried to access a field variable with name '%s', but " +
-                    "such a field does not exist on this class.", fieldInsn.name));
+            throw new CompilerException(owner, format("Tried to access a field variable with name '%s', but such a " +
+                    "field does not exist on this class.", fieldInsn.name));
         }
         return idx;
     }
@@ -355,16 +328,15 @@ public class AsmHelper {
     /**
      * Extracts generic type parameters from the given field, if it has any.
      * <p>
-     * E.g., {@code Event<Integer, String>} will return the list containing {@code
-     * Ljava/lang/Integer;} and {@code Ljava/lang/String;}. The returned strings are ASM internal
-     * names.
+     * E.g., {@code Event<Integer, String>} will return the list containing {@code Ljava/lang/Integer;} and {@code
+     * Ljava/lang/String;}. The returned strings are ASM internal names.
      *
-     * @param fieldNode The field.
+     * @param fieldNode the field.
      * @return the list of type paramters.
      */
     public static List<String> extractTypeParametersFromSignature(FieldNode fieldNode) {
         String sig = fieldNode.signature;
-        if (!sig.contains("<")) {
+        if (sig == null || !sig.contains("<")) {
             return new ArrayList<>();
         }
         int startIdx = sig.indexOf("<") + 1;
@@ -391,11 +363,11 @@ public class AsmHelper {
     }
 
     /**
-     * Strips the given object descriptor of the starting 'L' and ending ';' characters if they are
-     * present. Sometimes object descriptors come with those characters but not always. If those
-     * characters are not present, the unchanged string is returned.
+     * Strips the given object descriptor of the starting 'L' and ending ';' characters if they are present.
+     * Sometimes object descriptors come with those characters but not always. If those characters are not present,
+     * the unchanged string is returned.
      *
-     * @param desc The object descriptor to strip.
+     * @param desc the object descriptor to strip.
      * @return the stripped object descriptor.
      */
     public static String stripObjectDescriptor(String desc) {

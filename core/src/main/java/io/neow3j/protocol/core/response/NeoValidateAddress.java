@@ -70,6 +70,7 @@ public class NeoValidateAddress extends Response<NeoValidateAddress.Result> {
                     ", isValid=" + isValid +
                     '}';
         }
+
     }
 
 }

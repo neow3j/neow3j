@@ -5,7 +5,6 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -221,4 +220,5 @@ public class WitnessConditionTest {
                 + defaultAccountPublicKey());
         assertArrayEquals(expected, outStream.toByteArray());
     }
+
 }

@@ -105,6 +105,21 @@ public class SwitchCaseIntegrationTest {
         assertThat(retVal.get(1).getString(), is("isDefault"));
     }
 
+    @Test
+    public void largeSwitchCase() throws IOException {
+        InvocationResult r = ct.callInvokeFunction(testName, string("hello")).getInvocationResult();
+        assertThat(r.getStack().get(0).getInteger().intValue(), is(1));
+
+        r = ct.callInvokeFunction(testName, string("concept")).getInvocationResult();
+        assertThat(r.getStack().get(0).getInteger().intValue(), is(6));
+
+        r = ct.callInvokeFunction(testName, string("giraffe")).getInvocationResult();
+        assertThat(r.getStack().get(0).getInteger().intValue(), is(14));
+
+        r = ct.callInvokeFunction(testName, string("unknown")).getInvocationResult();
+        assertThat(r.getStack().get(0).getInteger().intValue(), is(15));
+    }
+
     static class SwitchCaseIntegrationTestContract {
 
         public static Object[] switchWithString(String s) {
@@ -252,6 +267,57 @@ public class SwitchCaseIntegrationTest {
                     localString = "isDefault";
             }
             return new Object[]{localInt, localString};
+        }
+
+        public static int largeSwitchCase(String s) {
+            int i;
+            switch (s) {
+                case "hello":
+                    i = 1;
+                    break;
+                case "some":
+                    i = 2;
+                    break;
+                case "other":
+                    i = 3;
+                    break;
+                case "each":
+                    i = 4;
+                    break;
+                case "structure":
+                    i = 5;
+                    break;
+                case "concept":
+                    i = 6;
+                    break;
+                case "abstract":
+                    i = 7;
+                    break;
+                case "what":
+                    i = 8;
+                    break;
+                case "not":
+                    i = 9;
+                    break;
+                case "icarus":
+                    i = 10;
+                    break;
+                case "flamingo":
+                    i = 11;
+                    break;
+                case "pelican":
+                    i = 12;
+                    break;
+                case "rhinoceros":
+                    i = 13;
+                    break;
+                case "giraffe":
+                    i = 14;
+                    break;
+                default:
+                    i = 15;
+            }
+            return i;
         }
 
     }

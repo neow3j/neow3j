@@ -19,8 +19,7 @@ public class NeoGetNep17Transfers extends NeoGetTokenTransfers<NeoGetNep17Transf
         public Nep17Transfers() {
         }
 
-        public Nep17Transfers(List<Nep17Transfer> sent, List<Nep17Transfer> received,
-                String transferAddress) {
+        public Nep17Transfers(List<Nep17Transfer> sent, List<Nep17Transfer> received, String transferAddress) {
             super(sent, received, transferAddress);
         }
     }
@@ -31,12 +30,11 @@ public class NeoGetNep17Transfers extends NeoGetTokenTransfers<NeoGetNep17Transf
         public Nep17Transfer() {
         }
 
-        public Nep17Transfer(long timestamp, Hash160 assetHash, String transferAddress,
-                BigInteger amount, long blockIndex, long transferNotifyIndex, Hash256 txHash) {
-
-            super(timestamp, assetHash, transferAddress, amount, blockIndex, transferNotifyIndex,
-                    txHash);
+        public Nep17Transfer(long timestamp, Hash160 assetHash, String transferAddress, BigInteger amount,
+                long blockIndex, long transferNotifyIndex, Hash256 txHash) {
+            super(timestamp, assetHash, transferAddress, amount, blockIndex, transferNotifyIndex, txHash);
         }
+
     }
 
 }

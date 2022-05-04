@@ -23,9 +23,9 @@ public class InitsslotNeoMethod extends NeoMethod {
     /**
      * Constructs a new INITSSLOT method.
      *
-     * @param asmMethod   The Java method this Neo method is converted from.
-     * @param sourceClass The Java class from which this method originates.
-     * @param compUnit    The compilation unit object of the ongoing compilation, required for its classloader.
+     * @param asmMethod   the Java method this Neo method is converted from.
+     * @param sourceClass the Java class from which this method originates.
+     * @param compUnit    the compilation unit object of the ongoing compilation, required for its classloader.
      */
     public InitsslotNeoMethod(MethodNode asmMethod, ClassNode sourceClass, CompilationUnit compUnit) {
         super(asmMethod, sourceClass);
@@ -36,10 +36,9 @@ public class InitsslotNeoMethod extends NeoMethod {
     }
 
     private int calcNumberOfContractVariables(List<FieldNode> fields, CompilationUnit compUnit) {
-        // Events are not counted as contract variables. They are only definitions and don't
-        // appear as actual variables in the NeoVM script. We don't check for a maximum amount of
-        // contract variables here, that is done in
-        // Compiler.collectContractVariables(ClassNode asmClass).
+        // Events are not counted as contract variables. They are only definitions and don't appear as actual
+        // variables in the NeoVM script. We don't check for a maximum amount of contract variables here, that is
+        // done in Compiler.collectContractVariables(ClassNode asmClass).
         return (int) fields.stream()
                 .filter(f -> !isEvent(f.desc, compUnit))
                 .count();
@@ -67,8 +66,7 @@ public class InitsslotNeoMethod extends NeoMethod {
         while (insn != null) {
             if (insn.getOpcode() >= JVMOpcode.ISTORE.getOpcode() &&
                     insn.getOpcode() <= JVMOpcode.SASTORE.getOpcode()) {
-                throw new CompilerException(this, "Local variables are not supported in the " +
-                        "static constructor");
+                throw new CompilerException(this, "Local variables are not supported in the static constructor");
             }
             // Events must not be initialized, i.e., their constructor's must not be called.
             // Event variable are not actually variables in the NeoVM script code, just definitions.
@@ -84,16 +82,15 @@ public class InitsslotNeoMethod extends NeoMethod {
             TypeInsnNode typeInsn = (TypeInsnNode) insn;
             String desc = Type.getObjectType(typeInsn.desc).getDescriptor();
             if (isEvent(desc, compUnit)) {
-                throw new CompilerException(this, "Events must not be initialized by calling " +
-                        "their constructor.");
+                throw new CompilerException(this, "Events must not be initialized by calling their constructor.");
             }
         }
     }
 
     @Override
     public void initialize(CompilationUnit compUnit) {
-        throw new UnsupportedOperationException("The INITSSLOT method cannotneed to be " +
-                "initialized with local variable and parameter slots.");
+        throw new UnsupportedOperationException("The INITSSLOT method cannotneed to be initialized with local " +
+                "variable and parameter slots.");
     }
 
 }

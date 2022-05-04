@@ -35,8 +35,12 @@ public class NeoGetWalletBalance extends Response<NeoGetWalletBalance.Balance> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Balance)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Balance)) {
+                return false;
+            }
             Balance balance1 = (Balance) o;
             return Objects.equals(getBalance(), balance1.getBalance());
         }
@@ -52,6 +56,7 @@ public class NeoGetWalletBalance extends Response<NeoGetWalletBalance.Balance> {
                     "balance='" + balance + '\'' +
                     '}';
         }
+
     }
 
 }

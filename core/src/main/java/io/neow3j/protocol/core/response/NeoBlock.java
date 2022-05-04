@@ -59,10 +59,9 @@ public class NeoBlock {
     public NeoBlock() {
     }
 
-    public NeoBlock(Hash256 hash, long size, int version, Hash256 prevBlockHash,
-            Hash256 merkleRootHash, long time, long index, int primary, String nextConsensus,
-            List<NeoWitness> witnesses, List<Transaction> transactions, int confirmations,
-            Hash256 nextBlockHash) {
+    public NeoBlock(Hash256 hash, long size, int version, Hash256 prevBlockHash, Hash256 merkleRootHash, long time,
+            long index, int primary, String nextConsensus, List<NeoWitness> witnesses, List<Transaction> transactions,
+            int confirmations, Hash256 nextBlockHash) {
         this.hash = hash;
         this.size = size;
         this.version = version;
@@ -156,9 +155,8 @@ public class NeoBlock {
 
     @Override
     public int hashCode() {
-        return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(),
-                getMerkleRootHash(), getTime(), getIndex(), getPrimary(), getNextConsensus(),
-                getWitnesses(), getTransactions(), getConfirmations(),
+        return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(), getMerkleRootHash(), getTime(),
+                getIndex(), getPrimary(), getNextConsensus(), getWitnesses(), getTransactions(), getConfirmations(),
                 getNextBlockHash());
     }
 

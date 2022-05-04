@@ -9,8 +9,8 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * Represents a token wrapper class that contains shared methods for the fungible Nep17 and
- * non-fungible Nep11 token standards.
+ * Represents a token wrapper class that contains shared methods for the fungible Nep17 and non-fungible Nep11 token
+ * standards.
  */
 public class Token extends SmartContract {
 
@@ -18,9 +18,8 @@ public class Token extends SmartContract {
     private static final String SYMBOL = "symbol";
     private static final String DECIMALS = "decimals";
 
-    // It is expected that token contracts return the total supply in fractions
-    // of their token. Therefore, an integer is used here instead of a decimal
-    // number.
+    // It is expected that token contracts return the total supply in fractions of their token. Therefore, an integer
+    // is used here instead of a decimal number.
     private BigInteger totalSupply;
     private Integer decimals;
     private String symbol;
@@ -35,13 +34,11 @@ public class Token extends SmartContract {
      * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the symbol.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a string.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something interpretable as a
+     *                                       string.
      */
-    public String getSymbol() throws IOException,
-            UnexpectedReturnTypeException {
+    public String getSymbol() throws IOException, UnexpectedReturnTypeException {
         if (symbol == null) {
             symbol = callFuncReturningString(SYMBOL);
         }
@@ -54,10 +51,9 @@ public class Token extends SmartContract {
      * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the total supply.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something interpretable as a
+     *                                       number.
      */
     public BigInteger getTotalSupply() throws IOException, UnexpectedReturnTypeException {
         if (totalSupply == null) {
@@ -72,10 +68,9 @@ public class Token extends SmartContract {
      * The return value is retrieved form the neo-node only once and then cached.
      *
      * @return the number of fractions.
-     * @throws IOException                   if there was a problem fetching information from the
-     *                                       Neo node.
-     * @throws UnexpectedReturnTypeException if the contract invocation did not return something
-     *                                       interpretable as a number.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the contract invocation did not return something interpretable as a
+     *                                       number.
      */
     public int getDecimals() throws IOException, UnexpectedReturnTypeException {
         if (decimals == null) {
@@ -85,8 +80,8 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts the token amount from a decimal point number to the amount in token fractions
-     * according to this token's number of decimals.
+     * Converts the token amount from a decimal point number to the amount in token fractions according to this
+     * token's number of decimals.
      * <p>
      * Use this method to convert e.g. 1.5 GAS to its fraction value 150_000_000.
      *
@@ -100,21 +95,19 @@ public class Token extends SmartContract {
 
 
     /**
-     * Converts the token amount from a decimal point number to its amount in token fractions
-     * according to the specified number of decimals.
+     * Converts the token amount from a decimal point number to its amount in token fractions according to the
+     * specified number of decimals.
      * <p>
-     * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to
-     * 255_000.
+     * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to 255_000.
      *
-     * @param amount the token amount.
+     * @param amount   the token amount.
      * @param decimals the token decimal points.
      * @return the token amount in fractions.
      */
     public static BigInteger toFractions(BigDecimal amount, int decimals) {
         if (amount.stripTrailingZeros().scale() > decimals) {
-            throw new IllegalArgumentException("The provided amount has too many decimal points. " +
-                    "Make sure the decimals of the provided amount do not exceed the supported " +
-                    "token decimals.");
+            throw new IllegalArgumentException("The provided amount has too many decimal points. Make sure the " +
+                    "decimals of the provided amount do not exceed the supported token decimals.");
         }
 
         BigInteger factor = BigInteger.TEN.pow(decimals);
@@ -124,8 +117,8 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts the token amount from token fractions to its decimal point value according to
-     * this token's number of decimals.
+     * Converts the token amount from token fractions to its decimal point value according to this token's number of
+     * decimals.
      * <p>
      * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
@@ -138,12 +131,12 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts the token amount from token fractions to its decimal point value according to the
-     * specified number of decimals.
+     * Converts the token amount from token fractions to its decimal point value according to the specified number of
+     * decimals.
      * <p>
      * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
      *
-     * @param amount the token amount in fractions.
+     * @param amount   the token amount in fractions.
      * @param decimals the token decimal points.
      * @return the token amount in decimals.
      */

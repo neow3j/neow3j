@@ -27,4 +27,5 @@ public class BufferStackItem extends ByteArrayStackItem {
         BufferStackItem other = (BufferStackItem) o;
         return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
     }
+
 }

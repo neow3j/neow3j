@@ -34,9 +34,7 @@ public class ContractUtils {
      * @return the absolute path of the written file.
      * @throws IOException if an error occurs when writting to file.
      */
-    public static String writeNefFile(NefFile nef, String contractName, Path outDir)
-            throws IOException {
-
+    public static String writeNefFile(NefFile nef, String contractName, Path outDir) throws IOException {
         File nefFile = outDir.resolve(contractName + NEF_SUFFIX).toFile();
         try (FileOutputStream outputStream = new FileOutputStream(nefFile)) {
             outputStream.write(nef.toArray());
@@ -44,15 +42,13 @@ public class ContractUtils {
         return nefFile.getAbsolutePath();
     }
 
-    public static String writeContractManifestFile(ContractManifest manifest, Path outDir)
-            throws IOException {
-
+    public static String writeContractManifestFile(ContractManifest manifest, Path outDir) throws IOException {
         String fileName = getContractManifestFilename(manifest);
         return writeContractManifestFile(manifest, fileName, outDir);
     }
 
-    public static String writeContractManifestFile(ContractManifest manifest, String fileName,
-            Path outDir) throws IOException {
+    public static String writeContractManifestFile(ContractManifest manifest, String fileName, Path outDir)
+            throws IOException {
 
         File destination = new File(outDir.toString(), fileName);
         objectMapper.writeValue(destination, manifest);
@@ -60,10 +56,8 @@ public class ContractUtils {
         return destination.getAbsolutePath();
     }
 
-    public static ContractManifest loadContractManifestFile(String absoluteFilePath)
-            throws IOException {
-        return objectMapper.readValue(new FileInputStream(absoluteFilePath),
-                ContractManifest.class);
+    public static ContractManifest loadContractManifestFile(String absoluteFilePath) throws IOException {
+        return objectMapper.readValue(new FileInputStream(absoluteFilePath), ContractManifest.class);
     }
 
     public static String getContractManifestFilename(ContractManifest manifest) {

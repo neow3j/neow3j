@@ -1,20 +1,22 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoMethod;
+
 import java.io.IOException;
+
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.VarInsnNode;
+
+import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
 
 public class LocalVariablesConverter implements Converter {
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
 
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (opcode) {
@@ -50,13 +52,13 @@ public class LocalVariablesConverter implements Converter {
             case LLOAD_1:
             case LLOAD_2:
             case LLOAD_3:
-                // Load a variable from the local variable pool. Such a variable can be a
-                // method parameter or a normal variable in the method body. The index of the
-                // variable in the pool is given in the instruction and not on the operand
-                // stack.
+                // Load a variable from the local variable pool. Such a variable can be a method parameter or a
+                // normal variable in the method body. The index of the variable in the pool is given in the
+                // instruction and not on the operand stack.
                 addLoadLocalVariable(((VarInsnNode) insn).var, neoMethod);
                 break;
         }
         return insn;
     }
+
 }

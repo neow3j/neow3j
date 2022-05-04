@@ -1,8 +1,8 @@
 package io.neow3j.wallet.exceptions;
 
 /**
- * Is thrown if an account is in an invalid state for the situation it is used in. E.g. when trying
- * to sign a transaction with an account that does not hold an decrypted private key.
+ * Is thrown if an account is in an invalid state for the situation it is used in. E.g. when trying to sign a
+ * transaction with an account that does not hold an decrypted private key.
  */
 public class AccountStateException extends RuntimeException {
 
@@ -21,4 +21,5 @@ public class AccountStateException extends RuntimeException {
     public AccountStateException(Throwable cause) {
         super(cause);
     }
+
 }

@@ -1,13 +1,10 @@
 package io.neow3j.transaction.witnessrule;
 
 import io.neow3j.serialization.BinaryReader;
-import io.neow3j.serialization.BinaryWriter;
-import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.exceptions.DeserializationException;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import static java.lang.String.format;
@@ -17,8 +14,6 @@ import static java.util.Arrays.asList;
  * Represents a witness condition where at least one of its contained expressions must be met.
  */
 public class OrCondition extends CompositeCondition {
-
-    private List<WitnessCondition> expressions;
 
     public OrCondition() {
         type = WitnessConditionType.OR;
@@ -53,24 +48,9 @@ public class OrCondition extends CompositeCondition {
     }
 
     @Override
-    protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.writeSerializableVariable(expressions);
-    }
-
-    @Override
-    public int getSize() {
-        return super.getSize() + IOUtils.getVarSize(expressions);
-    }
-
-    @Override
-    public List<WitnessCondition> getExpressions() {
-        return expressions;
-    }
-
-    @Override
-    public io.neow3j.protocol.core.witnessrule.WitnessCondition toJson() {
+    public io.neow3j.protocol.core.witnessrule.WitnessCondition toDTO() {
         return new io.neow3j.protocol.core.witnessrule.OrCondition(
-                getExpressions().stream().map(WitnessCondition::toJson).collect(Collectors.toList()));
+                getExpressions().stream().map(WitnessCondition::toDTO).collect(Collectors.toList()));
     }
 
 }

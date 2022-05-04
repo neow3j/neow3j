@@ -4,9 +4,9 @@ import java.security.SecureRandom;
 
 /**
  * Utility class for working with SecureRandom implementation.
- *
- * <p>This is to address issues with SecureRandom on Android. For more information, refer to the
- * following <a href="https://github.com/web3j/web3j/issues/146">issue</a>.
+ * <p>
+ * This is to address issues with SecureRandom on Android. For more information, refer to the following
+ * <a href="https://github.com/web3j/web3j/issues/146">issue</a>.
  */
 final public class SecureRandomUtils {
 
@@ -41,5 +41,7 @@ final public class SecureRandomUtils {
         return bytes;
     }
 
-    private SecureRandomUtils() { }
+    private SecureRandomUtils() {
+    }
+
 }

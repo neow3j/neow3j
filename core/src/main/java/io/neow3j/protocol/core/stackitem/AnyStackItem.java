@@ -7,8 +7,7 @@ import io.neow3j.types.StackItemType;
 import java.util.Objects;
 
 /**
- * This stack item can represent any of the other stack items and can also appear if the
- * item's value is null.
+ * This stack item can represent any of the other stack items and can also appear if the item's value is null.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class AnyStackItem extends StackItem {
@@ -37,8 +36,12 @@ public class AnyStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof AnyStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof AnyStackItem)) {
+            return false;
+        }
         AnyStackItem other = (AnyStackItem) o;
         return getType() == other.getType() &&
                 (getValue() == other.getValue() || getValue().equals(other.getValue()));
@@ -48,4 +51,5 @@ public class AnyStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(getValue());
     }
+
 }

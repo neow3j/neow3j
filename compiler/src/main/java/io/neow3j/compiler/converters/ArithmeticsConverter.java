@@ -1,9 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import static io.neow3j.compiler.Compiler.addPushNumber;
-import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
-
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.JVMOpcode;
 import io.neow3j.compiler.NeoInstruction;
@@ -12,11 +8,14 @@ import io.neow3j.script.OpCode;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.IincInsnNode;
 
+import static io.neow3j.compiler.Compiler.addPushNumber;
+import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
+import static io.neow3j.compiler.LocalVariableHelper.addStoreLocalVariable;
+
 public class ArithmeticsConverter implements Converter {
 
     @Override
-    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod,
-            CompilationUnit compUnit) {
+    public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit) {
 
         JVMOpcode opcode = JVMOpcode.get(insn.getOpcode());
         switch (opcode) {

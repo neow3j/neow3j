@@ -8,8 +8,7 @@ import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
 
 /**
- * Represents a Neo smart contract and provides several contract-related methods for use in smart
- * contracts.
+ * Represents a Neo smart contract and provides several contract-related methods for use in smart contracts.
  */
 public class Contract {
 
@@ -47,30 +46,27 @@ public class Contract {
     }
 
     /**
-     * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing the
-     * {@code arguments}.
+     * Makes a call to the {@code method} of the contract with the {@code scriptHash} passing the {@code arguments}.
      * <p>
-     * Make sure to pass the script hash in little-endian format, e.g., when you hardcode the
-     * hash in your contract code as shown in the following example.
+     * Make sure to pass the script hash in little-endian format, e.g., when you hardcode the hash in your contract
+     * code as shown in the following example.
      * <p>
-     * {@code Hash160 scriptHash =
-     * new Hash160(hexToBytes("cf76e28bd0062c4a478ee35561011319f3cfa4d2"))}
+     * {@code Hash160 scriptHash = new Hash160(hexToBytes("cf76e28bd0062c4a478ee35561011319f3cfa4d2"))}
      *
-     * @param scriptHash The script hash of the contract to invoke in little-endian format.
-     * @param method     The method to call.
-     * @param callFlags  The {@link CallFlags} to use for the call.
-     * @param arguments  The arguments to hand to the method. If the called method doesn't take
-     *                   any arguments pass an empty object array, i.e., {@code new Object[]{}}.
-     *                   Passing null will make the contract fail at runtime.
+     * @param scriptHash the script hash of the contract to invoke in little-endian format.
+     * @param method     the method to call.
+     * @param callFlags  the {@link CallFlags} to use for the call.
+     * @param arguments  the arguments to hand to the method. If the called method doesn't take any arguments pass an
+     *                   empty object array, i.e., {@code new Object[]{}}. Passing null will make the contract fail at
+     *                   runtime.
      * @return the value returned by the contract method call.
      */
     @Instruction(interopService = SYSTEM_CONTRACT_CALL)
-    public static native Object call(Hash160 scriptHash, String method, byte callFlags,
-            Object[] arguments);
+    public static native Object call(Hash160 scriptHash, String method, byte callFlags, Object[] arguments);
 
     /**
-     * Gets the call flags with which the contract has been called. I.e., use this to know with
-     * which call flags your contract is being called.
+     * Gets the call flags with which the contract has been called. I.e., use this to know with which call flags your
+     * contract is being called.
      *
      * @return the call flags encoded in one byte.
      */
@@ -78,13 +74,13 @@ public class Contract {
     public static native byte getCallFlags();
 
     /**
-     * Compares this contract to the given object. The comparison happens by reference only. I.e.,
-     * if you retrieve the same contract twice, e.g., with
-     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then
-     * comparing the two will return false.
+     * Compares this contract to the given object. The comparison happens by reference only. I.e., if you retrieve
+     * the same contract twice, e.g., with
+     * {@link io.neow3j.devpack.contracts.ContractManagement#getContract(Hash160)}, then comparing the two will
+     * return false.
      *
      * @param other the object to compare with.
-     * @return true if this and {@code other} reference the same contract. False otherwise.
+     * @return true if this and {@code other} reference the same contract. False, otherwise.
      */
     @Override
     @Instruction(opcode = OpCode.EQUAL)
@@ -93,16 +89,18 @@ public class Contract {
     /**
      * Compares this and the given contract by value.
      *
-     * @param contract Other contract to compare this contract to.
-     * @return True if all fields of the two contracts are equal. False otherwise.
+     * @param contract another contract to compare this contract to.
+     * @return true if all fields of the two contracts are equal. False, otherwise.
      */
     public boolean equals(Contract contract) {
-        if (this == contract) return true;
-        return id == contract.id
-                && updateCounter == contract.updateCounter
-                && hash.equals(contract.hash)
-                && nef.equals(contract.nef)
-                && manifest.equals(contract.manifest);
+        if (this == contract) {
+            return true;
+        }
+        return id == contract.id &&
+                updateCounter == contract.updateCounter &&
+                hash.equals(contract.hash) &&
+                nef.equals(contract.nef) &&
+                manifest.equals(contract.manifest);
     }
 
 }

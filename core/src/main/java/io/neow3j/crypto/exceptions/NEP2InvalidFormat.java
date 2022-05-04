@@ -15,4 +15,5 @@ public class NEP2InvalidFormat extends Exception {
     public NEP2InvalidFormat(String message, Throwable cause) {
         super(message, cause);
     }
+
 }

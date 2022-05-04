@@ -46,8 +46,12 @@ public class PointerStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof PointerStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof PointerStackItem)) {
+            return false;
+        }
         PointerStackItem other = (PointerStackItem) o;
         return getType() == other.getType() &&
                 getValue().equals(other.getValue());
@@ -57,4 +61,5 @@ public class PointerStackItem extends StackItem {
     public int hashCode() {
         return Objects.hash(getType(), getValue());
     }
+
 }

@@ -30,6 +30,8 @@ public class ByteStringStackItem extends ByteArrayStackItem {
             return false;
         }
         ByteStringStackItem other = (ByteStringStackItem) o;
-        return getType() == other.getType() && Arrays.equals(this.getValue(), other.getValue());
+        return getType() == other.getType() &&
+                Arrays.equals(this.getValue(), other.getValue());
     }
+
 }

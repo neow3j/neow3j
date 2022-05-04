@@ -35,8 +35,7 @@ public class ArrayUtils {
     }
 
     public static byte[] concatenate(byte[] a, byte[] b) {
-        // create an empty array with the combined
-        // size of array a and array b
+        // create an empty array with the combined size of array a and array b
         byte[] n = new byte[a.length + b.length];
         // copy the array a into n
         System.arraycopy(a, 0, n, 0, a.length);
@@ -110,7 +109,8 @@ public class ArrayUtils {
 
     /**
      * Gets the given int as a byte array of length 4 in big-endian format.
-     * @param v The integer.
+     *
+     * @param v the integer.
      * @return byte array of length 4.
      */
     public static byte[] toByteArray(int v) {
@@ -119,7 +119,8 @@ public class ArrayUtils {
 
     /**
      * Gets the given long as a byte array of length 8 in big-endian format.
-     * @param v The long.
+     *
+     * @param v the long.
      * @return byte array of length 8.
      */
     public static byte[] toByteArray(long v) {

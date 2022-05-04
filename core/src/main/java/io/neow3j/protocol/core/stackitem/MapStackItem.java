@@ -40,7 +40,7 @@ public class MapStackItem extends StackItem {
     protected String valueToString() {
         return value.entrySet().stream()
                 .map(e -> e.getKey().toString() + " -> " + e.getValue().toString())
-                .reduce("", (a, b) ->  a + ", " + b)
+                .reduce("", (a, b) -> a + ", " + b)
                 .substring(2); // remove the first comma and space.
     }
 
@@ -52,8 +52,12 @@ public class MapStackItem extends StackItem {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof MapStackItem)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof MapStackItem)) {
+            return false;
+        }
         MapStackItem other = (MapStackItem) o;
         return getType() == other.getType() &&
                 Objects.equals(getValue(), other.getValue());
@@ -79,9 +83,7 @@ public class MapStackItem extends StackItem {
             objectMapper = new ObjectMapper();
         }
 
-        public MapStackItem deserialize(JsonParser jp, DeserializationContext ctxt)
-            throws IOException {
-
+        public MapStackItem deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {
             JsonNode node = jp.getCodec().readTree(jp);
             return deserializeMapStackItem(node);
         }
@@ -100,5 +102,7 @@ public class MapStackItem extends StackItem {
             }
             return new MapStackItem(map);
         }
+
     }
+
 }

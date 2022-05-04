@@ -5,57 +5,54 @@ public interface TestBlockchain {
     /**
      * Sets the given block time to be used by the blockchain.
      *
-     * @param secondsPerBlock The block time.
+     * @param secondsPerBlock the block time.
      * @return this.
      */
     TestBlockchain withSecondsPerBlock(int secondsPerBlock);
 
     /**
-     * Adds the given batch file to the blockchain. A batch file specifies commands (e.g., token
-     * transfers or other contract invocations) that set up the blockchain state for tests.
+     * Adds the given batch file to the blockchain. A batch file specifies commands (e.g., token transfers or other
+     * contract invocations) that set up the blockchain state for tests.
      * <p>
      * The batch file must be located in the resources directory.
      *
-     * @param batchFile The batch file name.
+     * @param batchFile the batch file name.
      * @return this.
      */
     TestBlockchain withBatchFile(String batchFile);
 
     /**
-     * Adds the given checkpoint file to the blockchain. A checkpoint specifies a pre-generated
-     * blockchain state that is used to set up the blockchain to that state before tests.
+     * Adds the given checkpoint file to the blockchain. A checkpoint specifies a pre-generated blockchain state that
+     * is used to set up the blockchain to that state before tests.
      * <p>
      * The checkpoint file must be located in the resources directory.
      * <p>
      * If both a batch and a checkpoint file are added, the checkpoint is first applied.
      *
-     * @param checkpointFile The checkpoint file name.
+     * @param checkpointFile the checkpoint file name.
      * @return this.
      */
     TestBlockchain withCheckpoint(String checkpointFile);
 
     /**
-     * Adds the given config file to the blockchain. It will be used to configure the blockchain
-     * instance.
+     * Adds the given config file to the blockchain. It will be used to configure the blockchain instance.
      * <p>
      * The file must be located in the resources directory.
      *
-     * @param configFile The config file name.
+     * @param configFile the config file name.
      * @return this.
      */
     TestBlockchain withConfigFile(String configFile);
 
     /**
-     * Gets the URL of the test blockchain node.
-     *
-     * @return the node URL.
+     * @return the URL of the test blockchain node.
      */
     String getNodeUrl();
 
     /**
      * Resumes the blockchain if it was stopped before.
      *
-     * @return The message emitted by the chain on startup or null if no message is emitted.
+     * @return the message emitted by the chain on startup or null if no message is emitted.
      * @throws Exception if an error occurred when trying to resume the blockchain.
      */
     String resume() throws Exception;
@@ -63,7 +60,7 @@ public interface TestBlockchain {
     /**
      * Halts the blockchain, i.e., stops block production.
      *
-     * @return The message emitted by the chain on stopping or null if no message is emitted.
+     * @return the message emitted by the chain on stopping or null if no message is emitted.
      * @throws Exception if an error occurred when trying to halt the blockchain.
      */
     String halt() throws Exception;
@@ -71,7 +68,7 @@ public interface TestBlockchain {
     /**
      * Creates a new account.
      *
-     * @return The new account's address.
+     * @return the new account's address.
      * @throws Exception if an error occurred when trying to create an account.
      */
     String createAccount() throws Exception;
@@ -79,7 +76,7 @@ public interface TestBlockchain {
     /**
      * Enables the oracle service.
      *
-     * @return The hash of the oracle designate transaction.
+     * @return the hash of the oracle designate transaction.
      * @throws Exception if an error occurred when trying to enable the oracle service.
      */
     String enableOracle() throws Exception;
@@ -87,17 +84,27 @@ public interface TestBlockchain {
     /**
      * Fast-forwards the blockchain state by {@code n} blocks. I.e., mints {@code n} empty blocks.
      *
-     * @param n The number of blocks to mint.
-     * @return The message emitted on minting the blocks or null if no message is emitted.
+     * @param n the number of blocks to mint.
+     * @return the message emitted on minting the blocks or null if no message is emitted.
      * @throws Exception if an error occurred when trying to fast-forward the blockchain.
      */
     String fastForward(int n) throws Exception;
 
     /**
+     * Mints {@code n} blocks with the last block being {@code seconds} in the future.
+     *
+     * @param seconds the time delta in seconds from now.
+     * @param n       the number of blocks to mint.
+     * @return the message emitted on minting the blocks.
+     * @throws Exception if an error occurred when minting the blocks.
+     */
+    String fastForward(int seconds, int n) throws Exception;
+
+    /**
      * Executes the given command.
      *
-     * @param commandParts The command separated into its parts.
-     * @return The message emitted on executing the command or null if no message is emitted.
+     * @param commandParts the command separated into its parts.
+     * @return the message emitted on executing the command or null if no message is emitted.
      * @throws Exception if an error occurred when trying to execute the command on the blockchain.
      */
     String execCommand(String... commandParts) throws Exception;
@@ -115,8 +122,8 @@ public interface TestBlockchain {
     /**
      * Gets the genesis account this blockchain is based on.
      * <p>
-     * This is for test blockchains that provide control over the genesis account. The genesis
-     * account owns all NEO and GAS tokens starting from the first block.
+     * This is for test blockchains that provide control over the genesis account. The genesis account owns all NEO
+     * and GAS tokens starting from the first block.
      *
      * @return the genesis account.
      * @throws Exception if an error occurred when trying to fetch the genesis account.
@@ -128,7 +135,7 @@ public interface TestBlockchain {
      * <p>
      * This is not meant to be used for multi-sig accounts.
      *
-     * @param address The account's address.
+     * @param address the account's address.
      * @return the private key as a hexadecimal string.
      * @throws Exception if an error occurred when trying to fetch the account.
      */
@@ -146,21 +153,18 @@ public interface TestBlockchain {
         }
 
         /**
-         * Gets the verification script of the genesis account.
-         *
-         * @return the script.
+         * @return the verification script of the genesis account.
          */
         public String getVerificationScript() {
             return verificationScript;
         }
 
         /**
-         * Gets the hexadecimal private keys involved in the genesis account.
-         *
-         * @return the private keys.
+         * @return the hexadecimal private keys involved in the genesis account.
          */
         public String[] getPrivateKeys() {
             return privateKeys;
         }
     }
+
 }

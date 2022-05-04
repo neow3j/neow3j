@@ -582,8 +582,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         List<?> params;
         String scriptBase64 = Base64.encode(scriptHex);
         if (signers.length > 0) {
-            params = asList(scriptBase64,
-                    stream(signers).map(TransactionSigner::new).collect(Collectors.toList()));
+            params = asList(scriptBase64, stream(signers).map(TransactionSigner::new).collect(Collectors.toList()));
         } else {
             params = asList(scriptBase64);
         }

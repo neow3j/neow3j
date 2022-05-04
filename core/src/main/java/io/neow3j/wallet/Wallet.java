@@ -27,6 +27,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
+import static java.lang.String.format;
 
 /**
  * The wallet manages a collection of accounts.
@@ -71,7 +72,7 @@ public class Wallet {
     /**
      * Sets the account with the given script hash to the default account of this wallet.
      *
-     * @param accountHash160 The new default account.
+     * @param accountHash160 the new default account.
      * @return the wallet.
      * @throws IllegalArgumentException if the given account is not in this wallet.
      */
@@ -80,9 +81,8 @@ public class Wallet {
             throw new IllegalArgumentException("No account provided to set default.");
         }
         if (!this.accounts.containsKey(accountHash160)) {
-            throw new IllegalArgumentException("Cannot set default account on wallet. Wallet does "
-                    + "not contain the account with script hash "
-                    + accountHash160.toString() + ".");
+            throw new IllegalArgumentException(format("Cannot set default account on wallet. Wallet does not contain " +
+                    "the account with script hash %s.", accountHash160.toString()));
         }
         this.defaultAccount = accountHash160;
         return this;
@@ -137,11 +137,10 @@ public class Wallet {
     }
 
     /**
-     * Adds the given accounts to this wallet, if it doesn't contain an account with the same
-     * script hash (address).
+     * Adds the given accounts to this wallet, if it doesn't contain an account with the same script hash (address).
      *
-     * @param accounts The accounts to add.
-     * @return This wallet instance.
+     * @param accounts the accounts to add.
+     * @return this wallet instance.
      */
     public Wallet addAccounts(Account... accounts) {
         for (Account acct : accounts) {
@@ -149,10 +148,11 @@ public class Wallet {
                 continue;
             }
             // An account is only allowed to be in one wallet at a time.
-            if (acct.getWallet() != null)
-                throw new IllegalArgumentException("The account " + acct.getAddress() +
-                        " is already contained in a wallet. Please remove this account from its " +
-                        "containing wallet before adding it to another wallet.");
+            if (acct.getWallet() != null) {
+                throw new IllegalArgumentException(
+                        format("The account %s is already contained in a wallet. Please remove this account from its " +
+                                "containing wallet before adding it to another wallet.", acct.getAddress()));
+            }
             this.accounts.put(acct.getScriptHash(), acct);
             // Create a link for the account
             acct.setWallet(this);
@@ -162,6 +162,7 @@ public class Wallet {
 
     /**
      * Removes the account from this wallet.
+     * <p>
      * If there is only one account in the wallet left, this account can not be removed.
      *
      * @param account the account to be removed.
@@ -173,9 +174,10 @@ public class Wallet {
 
     /**
      * Removes the account with the given script hash (address) from this wallet.
+     * <p>
      * If there is only one account in the wallet left, this account can not be removed.
      *
-     * @param hash160 The {@link Hash160} of the account to be removed.
+     * @param hash160 the {@link Hash160} of the account to be removed.
      * @return true if an account was removed, false if no account with the given address was found.
      */
     public boolean removeAccount(Hash160 hash160) {
@@ -184,8 +186,8 @@ public class Wallet {
         }
         // The wallet must have at least one account at all times.
         if (this.accounts.size() == 1) {
-            throw new IllegalStateException("The account " + hash160.toAddress() +
-                    " is the only account in the wallet. It cannot be removed.");
+            throw new IllegalStateException(format("The account %s is the only account in the wallet. It cannot be " +
+                    "removed.", hash160.toAddress()));
         }
         // Remove the link to this wallet in the account instance.
         this.accounts.get(hash160).setWallet(null);
@@ -222,8 +224,7 @@ public class Wallet {
     }
 
     public static Wallet fromNEP6Wallet(String nep6WalletFileName) throws IOException {
-        return fromNEP6Wallet(
-                Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
+        return fromNEP6Wallet(Wallet.class.getClassLoader().getResourceAsStream(nep6WalletFileName));
     }
 
     public static Wallet fromNEP6Wallet(URI nep6WalletFileUri) throws IOException {
@@ -235,8 +236,7 @@ public class Wallet {
     }
 
     public static Wallet fromNEP6Wallet(InputStream nep6WalletFileInputStream) throws IOException {
-        NEP6Wallet nep6Wallet = OBJECT_MAPPER
-                .readValue(nep6WalletFileInputStream, NEP6Wallet.class);
+        NEP6Wallet nep6Wallet = OBJECT_MAPPER.readValue(nep6WalletFileInputStream, NEP6Wallet.class);
         return fromNEP6Wallet(nep6Wallet);
     }
 
@@ -250,8 +250,7 @@ public class Wallet {
                 .findFirst();
 
         if (defaultAccount.isPresent()) {
-            Hash160 defaultAccountHash160 =
-                    Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
+            Hash160 defaultAccountHash160 = Account.fromNEP6Account(defaultAccount.get()).getScriptHash();
             return new Wallet()
                     .name(nep6Wallet.getName())
                     .version(nep6Wallet.getVersion())
@@ -259,8 +258,7 @@ public class Wallet {
                     .addAccounts(accs)
                     .defaultAccount(defaultAccountHash160);
         } else {
-            throw new IllegalArgumentException("The Nep-6 wallet does not contain any default " +
-                    "account.");
+            throw new IllegalArgumentException("The Nep-6 wallet does not contain any default account.");
         }
     }
 
@@ -269,7 +267,7 @@ public class Wallet {
      *
      * @param destination the file that the wallet file should be saved.
      * @return the new wallet.
-     * @throws IOException throws if failed to create the wallet on disk.
+     * @throws IOException if the creation of the wallet on disk failed.
      */
     public Wallet saveNEP6Wallet(File destination) throws IOException {
         if (destination == null) {
@@ -287,16 +285,14 @@ public class Wallet {
     /**
      * Gets the balances of all NEP-17 tokens that this wallet owns.
      * <p>
-     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as
-     * 1*10^8 GAS fractions.
+     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
      * <p>
-     * Requires on a neo-node with the RpcNep17Tracker plugin installed. The balances are not cached
-     * locally. Every time this method is called requests are send to the neo-node for all contained
-     * accounts.
+     * Requires on a Neo node with the RpcNep17Tracker plugin installed. The balances are not cached locally. Every
+     * time this method is called requests are send to the neo-node for all contained accounts.
      *
-     * @param neow3j The {@link Neow3j} object used to call a neo-node.
+     * @param neow3j the {@link Neow3j} object used to call a Neo node.
      * @return the map of token script hashes to token amounts.
-     * @throws IOException If something goes wrong when communicating with the neo-node.
+     * @throws IOException if something goes wrong when communicating with the neo-node.
      */
     public Map<Hash160, BigInteger> getNep17TokenBalances(Neow3j neow3j) throws IOException {
         Map<Hash160, BigInteger> balances = new HashMap<>();
@@ -319,12 +315,12 @@ public class Wallet {
     }
 
     /**
-     * Creates a new wallet with one account that is set as the default account. Encrypts such
-     * account with the password.
+     * Creates a new wallet with one account that is set as the default account. Encrypts such account with the
+     * password.
      *
-     * @param password password used to encrypt the account.
+     * @param password the passphrase used to encrypt the account.
      * @return the new wallet.
-     * @throws CipherException throws if failed encrypt the created wallet.
+     * @throws CipherException if the encryption of the created wallet failed.
      */
     public static Wallet create(final String password)
             throws CipherException {
@@ -373,7 +369,7 @@ public class Wallet {
     /**
      * Gets the account with the given script hash if it is in this wallet.
      *
-     * @param hash160 The script hash of the account.
+     * @param hash160 the script hash of the account.
      * @return the account if it is in this wallet. Null, otherwise.
      */
     public Account getAccount(Hash160 hash160) {

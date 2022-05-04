@@ -19,12 +19,15 @@ import java.util.List;
 import java.util.Objects;
 
 import static io.neow3j.constants.NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT;
+import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 /**
- * A verification script is part of a witness and is simply a sequence of neo-vm instructions.
- * The verification script is the part of a witness that describes what has to be verified such
- * that the witness is valid. E.g., for a regular signature witness the verification script is
- * made up of a check-signature call and it expects a signature as input.
+ * A verification script is part of a witness and is simply a sequence of neo-vm instructions. The verification
+ * script is the part of a witness that describes what has to be verified such that the witness is valid. E.g., for a
+ * regular signature witness the verification script is made up of a check-signature call and it expects a signature
+ * as input.
  */
 public class VerificationScript extends NeoSerializable {
 
@@ -40,56 +43,52 @@ public class VerificationScript extends NeoSerializable {
     /**
      * Creates a verification script from the given byte array.
      *
-     * @param script The script.
+     * @param script the script.
      */
     public VerificationScript(byte[] script) {
         this.script = script;
     }
 
     /**
-     * Creates a verification script for the given public key. The resulting verification
-     * script contains a signature check with the given public key as the expected signer.
+     * Creates a verification script for the given public key. The resulting verification script contains a signature
+     * check with the given public key as the expected signer.
      *
-     * @param publicKey Key to create the script for.
+     * @param publicKey the public key to create the script for.
      */
     public VerificationScript(ECPublicKey publicKey) {
-        this.script = ScriptBuilder.buildVerificationScript(publicKey.getEncoded(true));
+        this.script = buildVerificationScript(publicKey.getEncoded(true));
     }
 
     /**
-     * Creates a multi-sig verification script for the given keys and signing threshold.
-     * The resulting verification script contains a multi-signature check with the given public
-     * keys as the expected signer.
+     * Creates a multi-sig verification script for the given keys and signing threshold. The resulting verification
+     * script contains a multi-signature check with the given public keys as the expected signer.
      *
-     * @param publicKeys       The public keys to create the script for.
-     * @param signingThreshold The minimum number of public keys needed to sign transactions from
-     *                         the given public keys.
+     * @param publicKeys       the public keys to create the script for.
+     * @param signingThreshold the minimum number of public keys needed to sign transactions from the given public keys.
      */
     public VerificationScript(List<ECPublicKey> publicKeys, int signingThreshold) {
         if (signingThreshold < 1 || signingThreshold > publicKeys.size()) {
-            throw new IllegalArgumentException("Signing threshold must be at least 1 and not " +
-                    "higher than the number of public keys.");
+            throw new IllegalArgumentException(
+                    "Signing threshold must be at least 1 and not higher than the number of public keys.");
         }
         if (publicKeys.size() > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
-            throw new IllegalArgumentException("At max " + MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT +
-                    " public keys can take part in a multi-sig account");
+            throw new IllegalArgumentException(format("At max %s public keys can take part in a multi-sig account",
+                    MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT));
         }
-        this.script = ScriptBuilder.buildVerificationScript(publicKeys, signingThreshold);
+        this.script = buildVerificationScript(publicKeys, signingThreshold);
     }
 
     /**
-     * Gets this verification script as a byte array.
-     *
-     * @return the script as a byte array.
+     * @return the verification script as a byte array.
      */
     public byte[] getScript() {
         return script;
     }
 
     /**
-     * Serializes this script to a byte array. This is only meant to be used in transaction
-     * serialization because it adds the size of the script as a prefix. Use {@link
-     * VerificationScript#getScript()} instead to get this scripts byte array.
+     * Serializes this script to a byte array. This is only meant to be used in transaction serialization because it
+     * adds the size of the script as a prefix. Use {@link VerificationScript#getScript()} instead to get this
+     * scripts byte array.
      *
      * @return the serialized script for usage in a transaction array.
      */
@@ -100,9 +99,7 @@ public class VerificationScript extends NeoSerializable {
     }
 
     /**
-     * Gets the script hash of this verification script.
-     *
-     * @return the script hash.
+     * @return the script hash of this verification script.
      */
     public Hash160 getScriptHash() {
         if (this.script.length == 0) {
@@ -120,9 +117,9 @@ public class VerificationScript extends NeoSerializable {
     /**
      * Extracts the number of signatures required for signing this verification script.
      *
-     * @return The signing threshold.
-     * @throws ScriptFormatException if this verification script is not an ordinary address script
-     *                               or multi-address script.
+     * @return the signing threshold.
+     * @throws ScriptFormatException if this verification script is not an ordinary address script or multi-address
+     *                               script.
      */
     public int getSigningThreshold() {
         if (isSingleSigScript()) {
@@ -134,16 +131,16 @@ public class VerificationScript extends NeoSerializable {
                 throw new RuntimeException(e);
             }
         }
-        throw new ScriptFormatException("The signing threshold cannot be determined because this "
-                + "script does not apply to the format of a signature verification script.");
+        throw new ScriptFormatException("The signing threshold cannot be determined because this script does not " +
+                "apply to the format of a signature verification script.");
     }
 
     /**
      * Gets the number of accounts taking part in this verification script.
      *
-     * @return The number of accounts.
-     * @throws ScriptFormatException if this verification script is not an ordinary address script
-     *                               or multi-address script.
+     * @return the number of accounts.
+     * @throws ScriptFormatException if this verification script is not an ordinary address script or multi-address
+     *                               script.
      */
     public int getNrOfAccounts() {
         return getPublicKeys().size();
@@ -158,11 +155,11 @@ public class VerificationScript extends NeoSerializable {
         if (script.length != 40) {
             return false;
         }
-        String interopService = Numeric.toHexStringNoPrefix(ArrayUtils.getLastNBytes(script, 4));
-        return script[0] == OpCode.PUSHDATA1.getCode()
-                && script[1] == 33 // 33 bytes of public key
-                && script[35] == OpCode.SYSCALL.getCode()
-                && interopService.equals(InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
+        String interopService = toHexStringNoPrefix(ArrayUtils.getLastNBytes(script, 4));
+        return script[0] == OpCode.PUSHDATA1.getCode() &&
+                script[1] == 33 && // 33 bytes of public key
+                script[35] == OpCode.SYSCALL.getCode() &&
+                interopService.equals(InteropService.SYSTEM_CRYPTO_CHECKSIG.getHash());
     }
 
     /**
@@ -183,8 +180,8 @@ public class VerificationScript extends NeoSerializable {
 
             int m = 0; // Number of participating keys
             while (reader.readByte() == OpCode.PUSHDATA1.getCode()) {
-                // Position at PUSHDATA1 + (1 byte data size + 33 bytes + 1 byte to make sure
-                // script does not end after the key.
+                // Position at PUSHDATA1 + (1 byte data size + 33 bytes + 1 byte to make sure script does not end
+                // after the key.
                 if (script.length <= reader.getPosition() + 35) {
                     return false;
                 }
@@ -194,8 +191,7 @@ public class VerificationScript extends NeoSerializable {
                 }
                 reader.readEncodedECPoint();
                 m++;
-                // Mark the current position to be able to reset the last readBytes() which is not a
-                // PUSHDATA1 anymore.
+                // Mark the current position to be able to reset the last readBytes() which is not a PUSHDATA1 anymore.
                 reader.mark(0);
             }
             if (n > m || m > MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
@@ -212,8 +208,7 @@ public class VerificationScript extends NeoSerializable {
             }
             byte[] interopServiceCode = new byte[4];
             reader.read(interopServiceCode, 0, 4);
-            if (!Numeric.toHexStringNoPrefix(interopServiceCode)
-                    .equals(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash())) {
+            if (!toHexStringNoPrefix(interopServiceCode).equals(InteropService.SYSTEM_CRYPTO_CHECKMULTISIG.getHash())) {
                 return false;
             }
         } catch (DeserializationException | IOException e) {
@@ -223,8 +218,8 @@ public class VerificationScript extends NeoSerializable {
     }
 
     /**
-     * Gets the public keys that are encoded in this verification script. If this script is from a
-     * single signature account the resulting list will only contain one key.
+     * Gets the public keys that are encoded in this verification script. If this script is from a single signature
+     * account the resulting list will only contain one key.
      * <p>
      * In case of a multi-sig script, the public keys are returned in their natural ordering (public key value). This
      * is also the order in which they appear in the script.
@@ -252,8 +247,8 @@ public class VerificationScript extends NeoSerializable {
             // Shouldn't happen because the underlying stream is a ByteArrayInputStream.
             throw new RuntimeException(e);
         }
-        throw new ScriptFormatException("The verification script is in an incorrect format. No "
-                + "public keys can be read from it.");
+        throw new ScriptFormatException("The verification script is in an incorrect format. No public keys can be " +
+                "read from it.");
     }
 
     @Override
@@ -290,7 +285,7 @@ public class VerificationScript extends NeoSerializable {
     @Override
     public String toString() {
         return "VerificationScript{" +
-                "script=" + Numeric.toHexStringNoPrefix(script) + '}';
+                "script=" + toHexStringNoPrefix(script) + '}';
     }
 
 }

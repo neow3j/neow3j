@@ -32,6 +32,7 @@
       <option name="WRAP_LONG_LINES" value="true" />
       <option name="PARAMETER_ANNOTATION_WRAP" value="2" />
       <option name="VARIABLE_ANNOTATION_WRAP" value="2" />
+      <option name="WRAP_ON_TYPING" value="1" />
       <option name="SOFT_MARGINS" value="120" />
     </codeStyleSettings>
     <codeStyleSettings language="kotlin">

@@ -37,8 +37,8 @@ public class Witness extends NeoSerializable {
     /**
      * Creates a new witness from the given invocation and verification script.
      *
-     * @param invocationScript   the invocation script
-     * @param verificationScript the verification script
+     * @param invocationScript   the invocation script.
+     * @param verificationScript the verification script.
      * @see Witness#Witness(InvocationScript, VerificationScript)
      */
     public Witness(byte[] invocationScript, byte[] verificationScript) {
@@ -48,8 +48,8 @@ public class Witness extends NeoSerializable {
     /**
      * Creates a new script from the given invocation and verification script.
      *
-     * @param invocationScript   the invocation script
-     * @param verificationScript the verification script
+     * @param invocationScript   the invocation script.
+     * @param verificationScript the verification script.
      */
     public Witness(InvocationScript invocationScript, VerificationScript verificationScript) {
         this.invocationScript = invocationScript;
@@ -87,7 +87,6 @@ public class Witness extends NeoSerializable {
      */
     public static Witness createMultiSigWitness(int signingThreshold, List<SignatureData> signatures,
             List<ECPublicKey> publicKeys) {
-
         VerificationScript v = new VerificationScript(publicKeys, signingThreshold);
         return createMultiSigWitness(signatures, v);
     }

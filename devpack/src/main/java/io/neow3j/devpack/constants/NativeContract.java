@@ -37,8 +37,8 @@ public enum NativeContract {
                 return nativeContract;
             }
         }
-        throw new IllegalArgumentException(format("There exists no native contract with the " +
-                "provided hash (%s)", contractHash));
+        throw new IllegalArgumentException(
+                format("There exists no native contract with the provided hash (%s)", contractHash));
     }
 
 }

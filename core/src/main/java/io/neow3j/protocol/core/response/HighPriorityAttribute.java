@@ -28,4 +28,5 @@ public class HighPriorityAttribute extends TransactionAttribute {
     public int hashCode() {
         return Objects.hash(type);
     }
+
 }

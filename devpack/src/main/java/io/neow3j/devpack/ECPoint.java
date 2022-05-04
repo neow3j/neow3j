@@ -1,12 +1,12 @@
 package io.neow3j.devpack;
 
-import io.neow3j.script.OpCode;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 
 /**
- * Represents a public key elliptic curve point. Use this class instead of plain byte arrays and
- * strings to validate that a value is actually a 33 byte EC point.
+ * Represents a public key elliptic curve point. Use this class instead of plain byte arrays and strings to validate
+ * that a value is actually a 33 byte EC point.
  */
 public class ECPoint {
 
@@ -15,10 +15,10 @@ public class ECPoint {
     /**
      * Constructs an {@code ECPoint} from the given byte array.
      * <p>
-     * Does NOT check if the value has the appropriate size for an EC Point. Use {@code ECPoint
-     * .isValid()} in order to verify the correct format.
+     * Does NOT check if the value has the appropriate size for an EC Point. Use {@code ECPoint.isValid()} in order
+     * to verify the correct format.
      *
-     * @param buffer The EC point as a byte array.
+     * @param buffer the EC point as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public ECPoint(byte[] buffer) {
@@ -28,20 +28,19 @@ public class ECPoint {
     /**
      * Constructs an {@code ECPoint} from the given byte string.
      * <p>
-     * Does NOT check if the value is a valid EC point. Use {@code ECPoint.isValid()} in order to
-     * verify the correct format.
+     * Does NOT check if the value is a valid EC point. Use {@code ECPoint.isValid()} in order to verify the correct
+     * format.
      *
-     * @param value The EC point as a hex string.
+     * @param value the EC point as a hex string.
      */
     @Instruction
     public ECPoint(ByteString value) {
     }
 
     /**
-     * Checks if the given object is a valid EC point, i.e., if it is either a ByteString or Buffer
-     * and 33 bytes long.
+     * Checks if the given object is a valid EC point, i.e., if it is either a ByteString or Buffer and 33 bytes long.
      *
-     * @param data The object to check.
+     * @param data the object to check.
      * @return true if the given object is a valid EC point. False, otherwise.
      */
     @Instruction(opcode = OpCode.DUP)
@@ -58,15 +57,15 @@ public class ECPoint {
     public static native boolean isValid(Object data);
 
     /**
-     * Returns this {@code ECPoint} as a byte array.
-     *
-     * @return the byte array.
+     * @return this {@code ECPoint} as a byte array.
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
     public native byte[] toByteArray();
 
     /**
-     * Returns this {@code ECPoint} as a byte string. No GAS costs accrue for this conversion.
+     * Returns this {@code ECPoint} as a byte string.
+     * <p>
+     * This does not incur any extra GAS costs.
      *
      * @return the byte string.
      */
@@ -74,12 +73,12 @@ public class ECPoint {
     public native ByteString toByteString();
 
     /**
-     * Compares this EC point to the given object. The comparison happens first by reference and
-     * then by value. I.e., two {@code ECPoint}s are compared byte by byte.
+     * Compares this EC point to the given object. The comparison happens first by reference and then by value. I.e.,
+     * two {@code ECPoint}s are compared byte by byte.
      *
      * @param other the object to compare with.
-     * @return true if this and {@code other} reference the same object or have the same EC point
-     * value. False otherwise.
+     * @return true if this and {@code other} reference the same object or have the same EC point value. False,
+     * otherwise.
      */
     @Override
     @Instruction(opcode = OpCode.EQUAL)

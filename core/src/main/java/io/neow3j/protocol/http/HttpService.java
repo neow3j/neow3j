@@ -46,9 +46,8 @@ public class HttpService extends Service {
      * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
      * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
      */
-    public HttpService(String url, OkHttpClient httpClient,
-                       ExecutorService executorService,
-                       boolean includeRawResponses) {
+    public HttpService(String url, OkHttpClient httpClient, ExecutorService executorService,
+            boolean includeRawResponses) {
         super(executorService, includeRawResponses);
         this.url = url;
         this.httpClient = httpClient;
@@ -56,10 +55,10 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
      *
      * @param url                 the URL to the HTTP service (JSON-RPC).
      * @param httpClient          the HTTP client instance.
@@ -70,9 +69,9 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
      *
      * @param httpClient          the HTTP client instance.
      * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
@@ -83,12 +82,12 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
      *
      * @param httpClient          the HTTP client instance.
      * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
@@ -98,9 +97,9 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param url             the URL to the HTTP service (JSON-RPC).
      * @param httpClient      the HTTP client instance.
@@ -111,12 +110,12 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param url        the URL to the HTTP service (JSON-RPC).
      * @param httpClient the HTTP client instance.
@@ -126,11 +125,11 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param url             the URL to the HTTP service (JSON-RPC).
      * @param executorService an external ExecutorService where asynchronous {@link Request} calls should run.
@@ -140,14 +139,14 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param url the URL to the HTTP service (JSON-RPC).
      */
@@ -156,9 +155,9 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
      *
      * @param url                 the URL to the HTTP service (JSON-RPC).
      * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
@@ -169,12 +168,12 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
      *
      * @param url                 the URL to the HTTP service (JSON-RPC).
      * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
@@ -184,11 +183,11 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param httpClient      the HTTP client instance.
      * @param executorService an external ExecutorService where asynchronous {@link Request} calls should run.
@@ -198,14 +197,14 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
-     * <br>
-     * <p>The {@link #includeRawResponses} is set to false.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
+     * <p>
+     * The {@link #includeRawResponses} is set to false.
      *
      * @param httpClient the HTTP client instance.
      */
@@ -214,11 +213,11 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
      *
      * @param executorService     an external ExecutorService where asynchronous {@link Request} calls should run.
      * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
@@ -228,14 +227,14 @@ public class HttpService extends Service {
     }
 
     /**
-     * <p>Create an {@link HttpService} instance.</p>
-     * <br>
-     * <p>An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls,
-     * defined by {@link Async#defaultExecutorService()}.</p>
-     * <br>
-     * <p>The HTTP client used is set by default by {@link #createOkHttpClient()}.</p>
-     * <br>
-     * <p>The URL is set to {@link HttpService#DEFAULT_URL}.</p>
+     * Create an {@link HttpService} instance.
+     * <p>
+     * An internal {@link ExecutorService} is used to run asynchronous {@link Request} calls, defined by
+     * {@link Async#defaultExecutorService()}.
+     * <p>
+     * The HTTP client used is set by default by {@link #createOkHttpClient()}.
+     * <p>
+     * The URL is set to {@link HttpService#DEFAULT_URL}.
      *
      * @param includeRawResponses option to include or not raw responses on the {@link Response} object.
      */
@@ -321,8 +320,7 @@ public class HttpService extends Service {
     }
 
     /**
-     * Adds an HTTP header to all {@link Request}
-     * calls used by this service.
+     * Adds an HTTP header to all {@link Request} calls used by this service.
      *
      * @param key   the header name (e.g., "Authorization").
      * @param value the header value (e.g., "Bearer secretBearer").
@@ -332,20 +330,17 @@ public class HttpService extends Service {
     }
 
     /**
-     * Adds multiple HTTP headers to all {@link Request}
-     * calls used by this service.
+     * Adds multiple HTTP headers to all {@link Request} calls used by this service.
      *
-     * @param headersToAdd a key-value map containing keys (e.g., "Authorization")
-     *                     and values (e.g., "Bearer secretBearer").
+     * @param headersToAdd a key-value map containing keys (e.g., "Authorization") and values (e.g., "Bearer
+     *                     secretBearer").
      */
     public void addHeaders(Map<String, String> headersToAdd) {
         headers.putAll(headersToAdd);
     }
 
     /**
-     * Get all custom headers set to this service.
-     *
-     * @return the map containing custom headers set.
+     * @return a map containing all custom headers set to this service.
      */
     public HashMap<String, String> getHeaders() {
         return headers;
@@ -355,4 +350,5 @@ public class HttpService extends Service {
     public void close() {
 
     }
+
 }

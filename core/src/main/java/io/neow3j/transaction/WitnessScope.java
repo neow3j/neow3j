@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static java.lang.String.format;
+
 public enum WitnessScope {
 
     /**
@@ -15,14 +17,13 @@ public enum WitnessScope {
     NONE("None", 0x00),
 
     /**
-     * This scope limits the use of a witness to the level of the contract called in the
-     * transaction. I.e. it only allows the invoked contract to use the witness.
+     * This scope limits the use of a witness to the level of the contract called in the transaction. I.e. it only
+     * allows the invoked contract to use the witness.
      */
     CALLED_BY_ENTRY("CalledByEntry", 0x01),
 
     /**
-     * This scope allows the specification of additional contracts in which the witness can be
-     * used.
+     * This scope allows the specification of additional contracts in which the witness can be used.
      */
     CUSTOM_CONTRACTS("CustomContracts", 0x10),
 
@@ -37,8 +38,7 @@ public enum WitnessScope {
     WITNESS_RULES("WitnessRules", 0x40),
 
     /**
-     * The global scope allows to use a witness in all contexts. It cannot be combined with other
-     * scopes.
+     * The global scope allows to use a witness in all contexts. It cannot be combined with other scopes.
      */
     GLOBAL("Global", 0x80);
 
@@ -54,7 +54,7 @@ public enum WitnessScope {
     /**
      * Extracts the scopes encoded in the given byte.
      *
-     * @param combinedScopes The byte representation of the scopes.
+     * @param combinedScopes the byte representation of the scopes.
      * @return the list of scopes encoded by the given byte.
      */
     public static List<WitnessScope> extractCombinedScopes(byte combinedScopes) {
@@ -83,7 +83,7 @@ public enum WitnessScope {
     /**
      * Encodes the given scopes in one byte.
      *
-     * @param scopes The scopes to encode.
+     * @param scopes the scopes to encode.
      * @return the scope encoding byte.
      */
     public static byte combineScopes(List<WitnessScope> scopes) {
@@ -102,8 +102,7 @@ public enum WitnessScope {
         if (value instanceof Integer) {
             return valueOf(((Integer) value).byteValue());
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", WitnessScope.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", WitnessScope.class.getName()));
     }
 
     public static WitnessScope valueOf(byte byteValue) {
@@ -112,8 +111,7 @@ public enum WitnessScope {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", WitnessScope.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", WitnessScope.class.getName()));
     }
 
     public static WitnessScope fromJsonValue(String jsonValue) {
@@ -122,8 +120,7 @@ public enum WitnessScope {
                 return e;
             }
         }
-        throw new IllegalArgumentException(
-                String.format("%s value type not found.", WitnessScope.class.getName()));
+        throw new IllegalArgumentException(format("%s value type not found.", WitnessScope.class.getName()));
     }
 
     public byte byteValue() {

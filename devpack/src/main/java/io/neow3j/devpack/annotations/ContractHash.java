@@ -6,13 +6,12 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
 /**
- * Used to set the contract hash on a {@link io.neow3j.devpack.contracts.ContractInterface},
- * which is then usable as a gateway to the actual contract on the blockchain.
+ * Used to set the contract hash on a {@link io.neow3j.devpack.contracts.ContractInterface}, which is then usable as
+ * a gateway to the actual contract on the blockchain.
  * <p>
  * The script hash has to be set in big-endian order.
  * <p>
- * Examples of how to use this annotation can be found in {@link NeoToken} and other native
- * contract interfaces.
+ * Examples of how to use this annotation can be found in {@link NeoToken} and other native contract interfaces.
  */
 @Target(ElementType.TYPE)
 public @interface ContractHash {

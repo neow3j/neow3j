@@ -7,10 +7,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 
 /**
- * NEP-2 defines the attributes "n", "r", and
- * "p". However, some wallets use different attribute
- * names. Thus, this class includes aliases for
- * compatibility purposes.
+ * NEP-2 defines the attributes "n", "r", and "p". However, some wallets use different attribute names. Thus, this
+ * class includes aliases for compatibility purposes.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ScryptParams {
@@ -50,8 +48,12 @@ public class ScryptParams {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof ScryptParams)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ScryptParams)) {
+            return false;
+        }
         ScryptParams that = (ScryptParams) o;
         return getN() == that.getN() &&
                 getR() == that.getR() &&
@@ -71,4 +73,5 @@ public class ScryptParams {
                 ", p=" + p +
                 '}';
     }
+
 }

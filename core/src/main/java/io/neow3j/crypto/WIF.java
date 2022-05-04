@@ -1,10 +1,12 @@
 package io.neow3j.crypto;
 
-import static io.neow3j.crypto.Hash.hash256;
-
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.utils.ArrayUtils;
+
 import java.util.Arrays;
+
+import static io.neow3j.crypto.Hash.hash256;
+import static java.lang.String.format;
 
 /**
  * Based on the <a href="https://en.bitcoin.it/wiki/Wallet_import_format">Bitcoin documentation</a>.
@@ -38,14 +40,14 @@ public class WIF {
 
     public static String getWIFFromPrivateKey(byte[] key) {
         if (key.length != NeoConstants.PRIVATE_KEY_SIZE) {
-            throw new IllegalArgumentException("Given key is not of expected length ("
-                    + NeoConstants.PRIVATE_KEY_SIZE + " bytes).");
+            throw new IllegalArgumentException(
+                    format("Given key is not of expected length (%s bytes).", NeoConstants.PRIVATE_KEY_SIZE));
         }
 
-        byte[] extendenKey = ArrayUtils.concatenate(
-                ArrayUtils.concatenate((byte) 0x80, key), (byte) 0x01);
+        byte[] extendenKey = ArrayUtils.concatenate(ArrayUtils.concatenate((byte) 0x80, key), (byte) 0x01);
         byte[] hash = hash256(extendenKey);
         byte[] checksum = ArrayUtils.getFirstNBytes(hash, 4);
         return Base58.encode(ArrayUtils.concatenate(extendenKey, checksum));
     }
+
 }

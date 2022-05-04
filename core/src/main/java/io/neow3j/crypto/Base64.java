@@ -11,7 +11,7 @@ public class Base64 {
     /**
      * Base64 encodes the given hexadecimal string according to RFC4648.
      *
-     * @param input The hexadecimal string to encode.
+     * @param input the hexadecimal string to encode.
      * @return the base64-encoded string.
      */
     public static String encode(String input) {
@@ -21,7 +21,7 @@ public class Base64 {
     /**
      * Base64 encodes the given byte array according to RFC4648.
      *
-     * @param input The byte array to encode.
+     * @param input the byte array to encode.
      * @return the base64-encoded string.
      */
     public static String encode(byte[] input) {
@@ -35,7 +35,7 @@ public class Base64 {
     /**
      * Decodes the given base64-encoded string into its original byte representation.
      *
-     * @param input The base64-encoded string in hexadecimal format.
+     * @param input the base64-encoded string in hexadecimal format.
      * @return the decoded byte array.
      */
     public static byte[] decode(String input) {
@@ -44,4 +44,5 @@ public class Base64 {
         }
         return java.util.Base64.getDecoder().decode(input);
     }
+
 }

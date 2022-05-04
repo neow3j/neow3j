@@ -1,9 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.types.ContractParameter.byteArray;
-import static io.neow3j.types.ContractParameter.integer;
-import static java.lang.String.format;
-
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.protocol.Neow3j;
@@ -15,6 +11,10 @@ import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;
+
+import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.integer;
+import static java.lang.String.format;
 
 /**
  * Represents a Management contract and provides methods to invoke it.
@@ -29,8 +29,7 @@ public class ContractManagement extends SmartContract {
     private static final String DEPLOY = "deploy";
 
     /**
-     * Constructs a new {@link ContractManagement} that uses the given {@link Neow3j} instance for
-     * invocations.
+     * Constructs a new {@link ContractManagement} that uses the given {@link Neow3j} instance for invocations.
      *
      * @param neow the {@link Neow3j} instance to use for invocations.
      */
@@ -49,11 +48,11 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the minimum deployment fee and initializes a {@link
-     * TransactionBuilder} based on this script.
+     * Creates a transaction script to set the minimum deployment fee and initializes a {@link TransactionBuilder}
+     * based on this script.
      * <p>
-     * This method can only be successfully invoked by the committee, i.e., the transaction has
-     * to be signed by the committee members.
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
      *
      * @param minimumFee the minimum deployment fee.
      * @return a transaction builder.
@@ -63,32 +62,31 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
-     * Creates a script and a containing transaction builder for a transaction that deploys the
-     * contract with the given NEF and manifest.
+     * Creates a script and a containing transaction builder for a transaction that deploys the contract with the
+     * given NEF and manifest.
      *
-     * @param nef      The NEF file.
-     * @param manifest The manifest.
+     * @param nef      the NEF file.
+     * @param manifest the manifest.
      * @return a transaction builder containing the deployment script.
-     * @throws JsonProcessingException If there is a problem serializing the manifest.
+     * @throws JsonProcessingException if there is a problem serializing the manifest.
      */
-    public TransactionBuilder deploy(NefFile nef, ContractManifest manifest)
-            throws JsonProcessingException {
-
+    public TransactionBuilder deploy(NefFile nef, ContractManifest manifest) throws JsonProcessingException {
         return deploy(nef, manifest, null);
     }
 
     /**
-     * Creates a script and a containing transaction builder for a transaction that deploys the
-     * contract with the given NEF and manifest.
+     * Creates a script and a containing transaction builder for a transaction that deploys the contract with the
+     * given NEF and manifest.
      *
-     * @param nef      The NEF file.
-     * @param manifest The manifest.
-     * @param data     Data to pass to the deployed contract's {@code _deploy} method.
+     * @param nef      the NEF file.
+     * @param manifest the manifest.
+     * @param data     data to pass to the deployed contract's {@code _deploy} method.
      * @return a transaction builder containing the deployment script.
-     * @throws JsonProcessingException If there is a problem serializing the manifest.
+     * @throws JsonProcessingException if there is a problem serializing the manifest.
      */
     public TransactionBuilder deploy(NefFile nef, ContractManifest manifest, ContractParameter data)
             throws JsonProcessingException {
+
         if (nef == null) {
             throw new IllegalArgumentException("The NEF file cannot be null.");
         }
@@ -97,9 +95,8 @@ public class ContractManagement extends SmartContract {
         }
         byte[] manifestBytes = ObjectMapperFactory.getObjectMapper().writeValueAsBytes(manifest);
         if (manifestBytes.length > NeoConstants.MAX_MANIFEST_SIZE) {
-            throw new IllegalArgumentException(format("The given contract manifest is too long. " +
-                            "Manifest was %d bytes big, but a max of %d bytes is allowed.",
-                    manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
+            throw new IllegalArgumentException(format("The given contract manifest is too long. Manifest was %d bytes" +
+                    " big, but a max of %d bytes is allowed.", manifestBytes.length, NeoConstants.MAX_MANIFEST_SIZE));
         }
         if (data == null) {
             return invokeFunction(DEPLOY, byteArray(nef.toArray()), byteArray(manifestBytes));

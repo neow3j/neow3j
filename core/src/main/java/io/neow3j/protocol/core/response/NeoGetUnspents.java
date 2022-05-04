@@ -44,8 +44,12 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Unspents)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Unspents)) {
+                return false;
+            }
             Unspents unspents = (Unspents) o;
             return Objects.equals(getBalances(), unspents.getBalances()) &&
                     Objects.equals(getAddress(), unspents.getAddress());
@@ -87,7 +91,8 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
         public Balance() {
         }
 
-        public Balance(List<UnspentTransaction> unspentTransactions, String assetHash, String assetName, String assetSymbol, BigDecimal amount) {
+        public Balance(List<UnspentTransaction> unspentTransactions, String assetHash, String assetName,
+                String assetSymbol, BigDecimal amount) {
             this.unspentTransactions = unspentTransactions;
             this.assetHash = assetHash;
             this.assetName = assetName;
@@ -117,8 +122,12 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Balance)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Balance)) {
+                return false;
+            }
             Balance balance = (Balance) o;
             return Objects.equals(getUnspentTransactions(), balance.getUnspentTransactions()) &&
                     Objects.equals(getAssetHash(), balance.getAssetHash()) &&
@@ -129,7 +138,8 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getUnspentTransactions(), getAssetHash(), getAssetName(), getAssetSymbol(), getAmount());
+            return Objects.hash(getUnspentTransactions(), getAssetHash(), getAssetName(), getAssetSymbol(),
+                    getAmount());
         }
 
         @Override
@@ -179,8 +189,12 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof UnspentTransaction)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof UnspentTransaction)) {
+                return false;
+            }
             UnspentTransaction that = (UnspentTransaction) o;
             return Objects.equals(getTxId(), that.getTxId()) &&
                     Objects.equals(getIndex(), that.getIndex()) &&
@@ -200,6 +214,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
                     ", value=" + value +
                     '}';
         }
+
     }
 
 }

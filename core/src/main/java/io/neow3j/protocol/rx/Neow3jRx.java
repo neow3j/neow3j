@@ -16,97 +16,85 @@ public interface Neow3jRx {
     /**
      * Create an Observable that emits newly created blocks on the blockchain.
      *
-     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise
-     *                               transaction hashes
-     * @return Observable that emits all new blocks as they are added to the blockchain
+     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise transaction hashes.
+     * @return an Observable that emits all new blocks as they are added to the blockchain.
      */
     Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects);
 
     /**
-     * Create an Observable that emits all blocks from the blockchain contained within the
-     * requested range.
+     * Create an Observable that emits all blocks from the blockchain contained within the requested range.
      *
-     * @param startBlock             block number to commence with
-     * @param endBlock               block number to finish with
-     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise
-     *                               transaction hashes
-     * @return Observable to emit these blocks
+     * @param startBlock             the block number to commence with.
+     * @param endBlock               the block number to finish with.
+     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise transaction hashes.
+     * @return an Observable to emit these blocks.
      */
-    Observable<NeoGetBlock> replayBlocksObservable(
-            BigInteger startBlock, BigInteger endBlock,
+    Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects);
 
     /**
-     * Create an Observable that emits all blocks from the blockchain contained within the
-     * requested range.
+     * Create an Observable that emits all blocks from the blockchain contained within the requested range.
      *
-     * @param startBlock             block number to commence with
-     * @param endBlock               block number to finish with
-     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise
-     *                               transaction hashes
-     * @param ascending              if true, emits blocks in ascending order between range,
-     *                               otherwise
-     *                               in descending order
-     * @return Observable to emit these blocks
+     * @param startBlock             the block number to commence with.
+     * @param endBlock               the block number to finish with.
+     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise transaction hashes.
+     * @param ascending              if true, emits blocks in ascending order between range, otherwise, in descending
+     *                               order.
+     * @return an Observable to emit these blocks.
      */
-    Observable<NeoGetBlock> replayBlocksObservable(
-            BigInteger startBlock, BigInteger endBlock,
+    Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending);
 
     /**
-     * <p>Create an Observable that emits all transactions from the blockchain starting with a
-     * provided block number. Once it has replayed up to the most current block, the provided
-     * Observable is invoked.</p>
-     * <br>
-     * <p>To automatically subscribe to new blocks, use
-     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger, boolean)}.</p>
+     * Create an Observable that emits all transactions from the blockchain starting with a provided block number.
+     * Once it has replayed up to the most current block, the provided Observable is invoked.
+     * <p>
+     * To automatically subscribe to new blocks, use
+     * {@link #catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger, boolean)}.
      *
-     * @param startBlock             the block number we wish to request from
-     * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
-     *                               in the {@link NeoBlock} responses
-     * @param onCompleteObservable   a subsequent Observable that we wish to run once we are caught
-     *                               up with the latest block
-     * @return Observable to emit all requested blocks
+     * @param startBlock             the block number we wish to request from.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @param onCompleteObservable   a subsequent Observable that should be run once the latest block was caught up
+     *                               with.
+     * @return an Observable to emit all requested blocks.
      */
-    Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BigInteger startBlock, boolean fullTransactionObjects,
+    Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects,
             Observable<NeoGetBlock> onCompleteObservable);
 
     /**
-     * Creates an Observable that emits all blocks from the requested block number to the most
-     * current. Once it has emitted the most current block, onComplete is called.
+     * Creates an Observable that emits all blocks from the requested block number to the most current. Once it has
+     * emitted the most current block, onComplete is called.
      *
-     * @param startBlock             the block number we wish to request from
-     * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
-     *                               in the {@link NeoBlock} responses
-     * @return Observable to emit all requested blocks
+     * @param startBlock             the block number we wish to request from.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return an Observable to emit all requested blocks.
      */
-    Observable<NeoGetBlock> catchUpToLatestBlockObservable(
-            BigInteger startBlock, boolean fullTransactionObjects);
+    Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects);
 
     /**
-     * Creates an Observable that emits all blocks from the requested block number to the most
-     * current. Once it has emitted the most current block, it starts emitting new blocks as they
-     * are created.
+     * Creates an Observable that emits all blocks from the requested block number to the most current. Once it has
+     * emitted the most current block, it starts emitting new blocks as they are created.
      *
-     * @param startBlock             the block number we wish to request from
-     * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
-     *                               in the {@link NeoBlock} responses
-     * @return Observable to emit all requested blocks and future
+     * @param startBlock             the block number we wish to request from.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return an Observable to emit all requested blocks and future.
      */
-    Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(
-            BigInteger startBlock, boolean fullTransactionObjects);
+    Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger startBlock,
+            boolean fullTransactionObjects);
 
 
     /**
-     * Creates an Observable that emits new blocks as they are created on the blockchain
-     * (starting from the latest block).
+     * Creates an Observable that emits new blocks as they are created on the blockchain (starting from the latest
+     * block).
      *
-     * @param fullTransactionObjects if we require full {@link Transaction} objects to be provided
-     *                               in the {@link NeoBlock} responses
-     * @return Observable to emit all requested blocks and future
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses
+     * @return an Observable to emit all requested blocks and future.
      * @throws IOException if the latest block number cannot be fetched.
      */
-    Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects)
-            throws IOException;
+    Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects) throws IOException;
+
 }

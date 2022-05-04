@@ -4,8 +4,7 @@ import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 
 /**
- * A high priority attribute can be used by committee members to prioritize a
- * transaction.
+ * A high priority attribute can be used by committee members to prioritize a transaction.
  */
 public class HighPriorityAttribute extends TransactionAttribute {
 
@@ -25,4 +24,5 @@ public class HighPriorityAttribute extends TransactionAttribute {
     @Override
     protected void serializeWithoutType(BinaryWriter writer) {
     }
+
 }

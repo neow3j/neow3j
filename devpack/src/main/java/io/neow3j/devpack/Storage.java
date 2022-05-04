@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
+import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.script.OpCode;
-import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.types.StackItemType;
 
 import static io.neow3j.script.InteropService.SYSTEM_STORAGE_DELETE;
@@ -13,8 +13,7 @@ import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GETREADONLYCONTEXT;
 import static io.neow3j.script.InteropService.SYSTEM_STORAGE_PUT;
 
 /**
- * Provides a set of methods to insert, query, and delete data in the persistent storage of smart
- * contracts.
+ * Provides a set of methods to insert, query, and delete data in the persistent storage of smart contracts.
  * <p>
  * Note that the size limit for storage keys and values is 64 bytes and 65535 bytes, respectively.
  */
@@ -23,17 +22,13 @@ public class Storage {
     // region get context
 
     /**
-     * Returns the storage context of the contract.
-     *
-     * @return the storage context.
+     * @return the storage context of the contract.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
     public static native StorageContext getStorageContext();
 
     /**
-     * Returns the storage context of the contract in read-only mode.
-     *
-     * @return the read-only storage context.
+     * @return the storage context of the contract in read-only mode.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GETREADONLYCONTEXT)
     public static native StorageContext getReadOnlyContext();
@@ -44,8 +39,8 @@ public class Storage {
     /**
      * Returns the value corresponding to the given key.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -56,8 +51,8 @@ public class Storage {
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -70,8 +65,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a string.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -82,8 +77,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a boolean.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -92,14 +87,13 @@ public class Storage {
     public static native Boolean getBoolean(StorageContext context, byte[] key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -108,16 +102,15 @@ public class Storage {
     public static native Integer getInt(StorageContext context, byte[] key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * Returns 0, if no value is found for the provided key.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -137,8 +130,8 @@ public class Storage {
     /**
      * Returns the value corresponding to the given key.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -149,8 +142,8 @@ public class Storage {
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -163,8 +156,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a string.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -175,8 +168,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a boolean.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -185,14 +178,13 @@ public class Storage {
     public static native Boolean getBoolean(StorageContext context, String key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -201,16 +193,15 @@ public class Storage {
     public static native Integer getInt(StorageContext context, String key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * Returns 0, if no value is found for the provided key.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -230,8 +221,8 @@ public class Storage {
     /**
      * Returns the value corresponding to the given key.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -242,8 +233,8 @@ public class Storage {
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -256,8 +247,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a string.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -268,8 +259,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a boolean.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -278,14 +269,13 @@ public class Storage {
     public static native Boolean getBoolean(StorageContext context, ByteString key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -294,16 +284,15 @@ public class Storage {
     public static native Integer getInt(StorageContext context, ByteString key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * Returns 0, if no value is found for the provided key.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -323,8 +312,8 @@ public class Storage {
     /**
      * Returns the value corresponding to the given key.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -335,8 +324,8 @@ public class Storage {
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to a byte array.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -349,8 +338,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a string.
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
@@ -361,8 +350,8 @@ public class Storage {
      * <p>
      * This does not incur any extra GAS costs.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key as a boolean.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -371,14 +360,13 @@ public class Storage {
     public static native Boolean getBoolean(StorageContext context, int key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -387,16 +375,15 @@ public class Storage {
     public static native Integer getInt(StorageContext context, int key);
 
     /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes
-     * are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
-     * representation) is converted to 513.
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
      * <p>
      * Returns 0, if no value is found for the provided key.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
      *
-     * @param context The storage context to search in.
-     * @param key     The key to search for.
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
      * @return the value corresponding to the given key converted to an integer.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -416,9 +403,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, byte[] value);
@@ -426,9 +413,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, int value);
@@ -436,9 +423,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, ByteString value);
@@ -446,9 +433,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, String value);
@@ -456,9 +443,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, Hash160 value);
@@ -466,9 +453,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, Hash256 value);
@@ -479,9 +466,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, byte[] value);
@@ -489,9 +476,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, int value);
@@ -499,9 +486,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, String value);
@@ -509,9 +496,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, ByteString value);
@@ -519,9 +506,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, Hash160 value);
@@ -529,9 +516,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, Hash256 value);
@@ -542,9 +529,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, byte[] value);
@@ -552,9 +539,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, int value);
@@ -562,9 +549,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, String value);
@@ -572,9 +559,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, ByteString value);
@@ -582,9 +569,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, Hash160 value);
@@ -592,9 +579,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, Hash256 value);
@@ -605,9 +592,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, byte[] value);
@@ -615,9 +602,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, int value);
@@ -625,9 +612,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, ByteString value);
@@ -635,9 +622,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, String value);
@@ -645,9 +632,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, Hash160 value);
@@ -655,9 +642,9 @@ public class Storage {
     /**
      * Stores the given key-value pair.
      *
-     * @param context The storage context to store the value in.
-     * @param key     The key.
-     * @param value   The value to store.
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, Hash256 value);
@@ -668,8 +655,8 @@ public class Storage {
     /**
      * Deletes the value corresponding to the given key from the storage.
      *
-     * @param context The storage context to delete from.
-     * @param key     The key to delete.
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, byte[] key);
@@ -677,8 +664,8 @@ public class Storage {
     /**
      * Deletes the value corresponding to the given key from the storage.
      *
-     * @param context The storage context to delete from.
-     * @param key     The key to delete.
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, ByteString key);
@@ -686,8 +673,8 @@ public class Storage {
     /**
      * Deletes the value corresponding to the given key from the storage.
      *
-     * @param context The storage context to delete from.
-     * @param key     The key to delete.
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, String key);
@@ -695,8 +682,8 @@ public class Storage {
     /**
      * Deletes the value corresponding to the given key from the storage.
      *
-     * @param context The storage context to delete from.
-     * @param key     The key to delete.
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, int key);
@@ -710,32 +697,28 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
-     *         will be returned, where each {@code Struct} is a key-value pair found under the
-     *         given prefix. The prefix is part of the key.
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>} will be returned,
+     *         where each {@code Struct} is a key-value pair found under the given prefix. The prefix is part of the
+     *         key.
      *     </li>
      *     <li>
-     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
-     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
-     *         part of the key.
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>} where each
+     *         {@code ByteString} is a key found under the given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
-     *          is a key-value pair found under the given prefix but the prefix is removed from
-     *          the key.
+     *          With {@link FindOptions#RemovePrefix} the results will be an {@code Iterator<Struct<ByteString,
+     *          ByteString>>}, where each {@code Struct} is a key-value pair found under the given prefix but the
+     *          prefix is removed from the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#ValuesOnly} the results will be an
-     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
-     *          under the given prefix.
+     *          With {@link FindOptions#ValuesOnly} the results will be an {@code Iterator<ByteString>}, where each
+     *          {@code ByteString} is a value found under the given prefix.
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to use.
-     * @param prefix      The key prefix.
-     * @param findOptions Controls the kind of iterator to return. Use the values of
-     *                    {@link FindOptions}.
+     * @param context     the storage context to use.
+     * @param prefix      the key prefix.
+     * @param findOptions the find options to control the kind of iterator to return.
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
@@ -747,32 +730,28 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
-     *         will be returned, where each {@code Struct} is a key-value pair found under the
-     *         given prefix. The prefix is part of the key.
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>} will be returned,
+     *         where each {@code Struct} is a key-value pair found under the given prefix. The prefix is part of the
+     *         key.
      *     </li>
      *     <li>
-     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
-     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
-     *         part of the key.
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>} where each
+     *         {@code ByteString} is a key found under the given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
-     *          is a key-value pair found under the given prefix but the prefix is removed from
-     *          the key.
+     *          With {@link FindOptions#RemovePrefix} the results will be an {@code Iterator<Struct<ByteString,
+     *          ByteString>>}, where each {@code Struct} is a key-value pair found under the given prefix but the
+     *          prefix is removed from the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#ValuesOnly} the results will be an
-     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
-     *          under the given prefix.
+     *          With {@link FindOptions#ValuesOnly} the results will be an {@code Iterator<ByteString>}, where each
+     *          {@code ByteString} is a value found under the given prefix.
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to use.
-     * @param prefix      The key prefix.
-     * @param findOptions Controls the kind of iterator to return. Use the values of
-     *                    {@link FindOptions}.
+     * @param context     the storage context to use.
+     * @param prefix      the key prefix.
+     * @param findOptions the find options to control the kind of iterator to return.
      * @return an iterator over key, values, or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
@@ -784,32 +763,28 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
-     *         will be returned, where each {@code Struct} is a key-value pair found under the
-     *         given prefix. The prefix is part of the key.
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>} will be returned,
+     *         where each {@code Struct} is a key-value pair found under the given prefix. The prefix is part of the
+     *         key.
      *     </li>
      *     <li>
-     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
-     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
-     *         part of the key.
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>} where each
+     *         {@code ByteString} is a key found under the given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
-     *          is a key-value pair found under the given prefix but the prefix is removed from
-     *          the key.
+     *          With {@link FindOptions#RemovePrefix} the results will be an {@code Iterator<Struct<ByteString,
+     *          ByteString>>}, where each {@code Struct} is a key-value pair found under the given prefix but the
+     *          prefix is removed from the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#ValuesOnly} the results will be an
-     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
-     *          under the given prefix.
+     *          With {@link FindOptions#ValuesOnly} the results will be an {@code Iterator<ByteString>}, where each
+     *          {@code ByteString} is a value found under the given prefix.
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to use.
-     * @param prefix      The key prefix.
-     * @param findOptions Controls the kind of iterator to return. Use the values of
-     *                    {@link FindOptions}.
+     * @param context     the storage context to use.
+     * @param prefix      the key prefix.
+     * @param findOptions the find options to control the kind of iterator to return.
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
@@ -821,32 +796,28 @@ public class Storage {
      * The types that the {@code Iterator} contains are dependent on the find options used.
      * <ul>
      *     <li>
-     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>}
-     *         will be returned, where each {@code Struct} is a key-value pair found under the
-     *         given prefix. The prefix is part of the key.
+     *         With {@link FindOptions#None} an {@code Iterator<Struct<ByteString, ByteString>>} will be returned,
+     *         where each {@code Struct} is a key-value pair found under the given prefix. The prefix is part of the
+     *         key.
      *     </li>
      *     <li>
-     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>}
-     *         where each {@code ByteString} is a key found under the given prefix. The prefix is
-     *         part of the key.
+     *         With {@link FindOptions#KeysOnly} the results will be an {@code Iterator<ByteString>} where each
+     *         {@code ByteString} is a key found under the given prefix. The prefix is part of the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#RemovePrefix} the results will be an
-     *          {@code Iterator<Struct<ByteString, ByteString>>}, where each {@code Struct}
-     *          is a key-value pair found under the given prefix but the prefix is removed from
-     *          the key.
+     *          With {@link FindOptions#RemovePrefix} the results will be an {@code Iterator<Struct<ByteString,
+     *          ByteString>>}, where each {@code Struct} is a key-value pair found under the given prefix but the
+     *          prefix is removed from the key.
      *     </li>
      *     <li>
-     *          With {@link FindOptions#ValuesOnly} the results will be an
-     *          {@code Iterator<ByteString>}, where each {@code ByteString} is a value found
-     *          under the given prefix.
+     *          With {@link FindOptions#ValuesOnly} the results will be an {@code Iterator<ByteString>}, where each
+     *          {@code ByteString} is a value found under the given prefix.
      *     </li>
      * </ul>
      *
-     * @param context     The storage context to use.
-     * @param prefix      The key prefix.
-     * @param findOptions Controls the kind of iterator to return. Use the values of
-     *                    {@link FindOptions}.
+     * @param context     the storage context to use.
+     * @param prefix      the key prefix.
+     * @param findOptions the find options to control the kind of iterator to return.
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)

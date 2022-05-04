@@ -24,15 +24,13 @@ public class List<T> {
      * <p>
      * This does not incur any GAS costs because this list will use the given array to operate on.
      *
-     * @param array The array.
+     * @param array the array.
      */
     @Instruction()
     public List(T[] array) {
     }
 
     /**
-     * Gets the size of this list.
-     *
      * @return the size of this list.
      */
     @Instruction(opcode = OpCode.SIZE)
@@ -41,10 +39,10 @@ public class List<T> {
     /**
      * Gets the item at the given index.
      * <p>
-     * If the index is out of the range of this list the NeoVM will throw an exception that needs
-     * to be catched. Otherwise, the NeoVM will FAULT.
+     * If the index is out of the range of this list the NeoVM will throw an exception that needs to be catched.
+     * Otherwise, the NeoVM will FAULT.
      *
-     * @param index The index.
+     * @param index the index.
      * @return the element;
      */
     @Instruction(opcode = OpCode.PICKITEM)
@@ -53,11 +51,11 @@ public class List<T> {
     /**
      * Sets the item at the given index.
      * <p>
-     * If the index is out of the range of this list the NeoVM will throw an exception that needs
-     * to be catched. Otherwise, the NeoVM will FAULT.
+     * If the index is out of the range of this list the NeoVM will throw an exception that needs to be catched.
+     * Otherwise, the NeoVM will FAULT.
      *
-     * @param index The index.
-     * @param item  The item.
+     * @param index the index.
+     * @param item  the item.
      */
     @Instruction(opcode = OpCode.SETITEM)
     public native void set(int index, int item);
@@ -65,7 +63,7 @@ public class List<T> {
     /**
      * Appends the given item at the end of this list.
      *
-     * @param item The item to append.
+     * @param item the item to append.
      */
     @Instruction(opcode = OpCode.APPEND)
     public native void add(T item);
@@ -73,10 +71,10 @@ public class List<T> {
     /**
      * Removes the item at the given index, thereby reducing the size of this list by one.
      * <p>
-     * If the index is out of the range of this list the NeoVM will FAULT immediately without the
-     * possibility to handle the error.
+     * If the index is out of the range of this list the NeoVM will FAULT immediately without the possibility to
+     * handle the error.
      *
-     * @param index The index.
+     * @param index the index.
      */
     @Instruction(opcode = OpCode.REMOVE)
     public native void remove(int index);
@@ -99,8 +97,8 @@ public class List<T> {
     /**
      * Returns this list as an array.
      * <p>
-     * This does not incur any GAS costs because the underlying data structure of this list is an
-     * array of the same type.
+     * This does not incur any GAS costs because the underlying data structure of this list is an array of the same
+     * type.
      *
      * @return this list as an array.
      */
@@ -111,7 +109,7 @@ public class List<T> {
      * Compares this list to the given object. The comparison happens by reference only.
      *
      * @param other the object to compare with.
-     * @return true if this and {@code other} reference the same list. False otherwise.
+     * @return true if this and {@code other} reference the same list. False, otherwise.
      */
     @Override
     @Instruction(opcode = OpCode.EQUAL)

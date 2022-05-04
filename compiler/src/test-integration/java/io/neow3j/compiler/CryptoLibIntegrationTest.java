@@ -7,7 +7,6 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.constants.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import org.junit.ClassRule;
 import org.junit.Rule;
