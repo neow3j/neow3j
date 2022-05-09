@@ -41,10 +41,8 @@ public class StackItemTest extends ResponseTester {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class,
-                rawItem::getMap);
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getMap);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
     @Test
@@ -52,43 +50,32 @@ public class StackItemTest extends ResponseTester {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
                 StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class,
-                rawItem::getList);
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getList);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
     @Test
     public void throwOnCastingToPointerFromIllegalType() throws IOException {
-        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
-                StackItem.class);
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class,
-                rawItem::getPointer);
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getPointer);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
     @Test
     public void throwOnCastingToInteropInterfaceFromIllegalType() throws IOException {
-        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
-                StackItem.class);
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class,
-                rawItem::getIterator);
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getIterator);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
     @Test
     public void throwOnCastingToAddressFromIllegalType() throws IOException {
-        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}",
-                StackItem.class);
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class,
-                rawItem::getAddress);
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(StackItemType.INTEGER.getValue(), "1124")));
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getAddress);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
     @Test
