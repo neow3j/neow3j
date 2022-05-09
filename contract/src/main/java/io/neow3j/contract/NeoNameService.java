@@ -172,7 +172,7 @@ public class NeoNameService extends NonFungibleToken {
             throw new IllegalArgumentException(format("The domain name '%s' is already taken.", name));
         }
         if (!shouldBeAvailable && isAvailable) {
-            throw new IllegalArgumentException(format("The domain name '%s' is not registered", name));
+            throw new IllegalArgumentException(format("The domain name '%s' is not registered.", name));
         }
     }
 
@@ -268,7 +268,7 @@ public class NeoNameService extends NonFungibleToken {
         try {
             return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
         } catch (InvocationFaultStateException e) {
-            throw new InvocationFaultStateException(format("Could not get any record of type '%s' for the domain name" +
+            throw new InvocationFaultStateException(format("Could not get any record of type %s for the domain name" +
                     " '%s'.", type.jsonValue(), name), e.getMessage());
         }
     }

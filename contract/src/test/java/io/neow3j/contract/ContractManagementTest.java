@@ -37,6 +37,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -166,38 +167,31 @@ public class ContractManagementTest {
 
     @Test
     public void deploy_NefNull() {
-        assertThrows("The NEF file cannot be null.", IllegalArgumentException.class,
-                () -> new ContractManagement(neow3j).deploy(null, null, null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(null, null, null));
+        assertThat(thrown.getMessage(), is("The NEF file cannot be null."));
     }
 
     @Test
-    public void deploy_manifestNull() throws IOException, DeserializationException,
-            URISyntaxException {
-
-        File nefFile = new File(this.getClass().getClassLoader()
-                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+    public void deploy_manifestNull() throws IOException, DeserializationException, URISyntaxException {
+        File nefFile = new File(this.getClass().getClassLoader().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
-        assertThrows("The manifest cannot be null.", IllegalArgumentException.class,
-                () -> new ContractManagement(neow3j).deploy(nef, null, null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(nef, null, null));
+        assertThat(thrown.getMessage(), is("The manifest cannot be null."));
     }
 
     @Test
-    public void deploy_manifestTooLong() throws IOException, URISyntaxException,
-            DeserializationException {
-
-        File nefFile = new File(this.getClass().getClassLoader()
-                .getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
+    public void deploy_manifestTooLong() throws IOException, URISyntaxException, DeserializationException {
+        File nefFile = new File(this.getClass().getClassLoader().getResource(TESTCONTRACT_NEF_FILE.toString()).toURI());
         NefFile nef = NefFile.readFromFile(nefFile);
 
         ContractManifest tooBigManifest = getTooBigManifest();
 
-        assertThrows("The given contract manifest is too long.",
-                IllegalArgumentException.class,
-                () -> new ContractManagement(neow3j).deploy(nef, tooBigManifest)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).deploy(nef, tooBigManifest));
+        assertThat(thrown.getMessage(), containsString("The given contract manifest is too long."));
     }
 
     // Creates a ContractManifest that is one byte to long for deployment

@@ -78,9 +78,10 @@ public class NefFileTest {
 
     @Test
     public void failConstructorWithToLongCompilerName() {
-        assertThrows(IllegalArgumentException.class, () -> new NefFile(
-                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 65 bytes
-                null, hexStringToByteArray(TESTCONTRACT_SCRIPT)));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new NefFile("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", // 65 bytes
+                        null, hexStringToByteArray(TESTCONTRACT_SCRIPT)));
+        assertThat(thrown.getMessage(), containsString("The compiler name and version string can be max"));
     }
 
     @Test
@@ -100,7 +101,9 @@ public class NefFileTest {
         File file = new File(Objects.requireNonNull(NefFileTest.class.getClassLoader()
                 .getResource("contracts/too_large.nef")).toURI());
 
-        assertThrows(IllegalArgumentException.class, () -> NefFile.readFromFile(file));
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> NefFile.readFromFile(file));
+        assertThat(thrown.getMessage(), containsString("The given NEF file is too large."));
     }
 
     @Test
@@ -153,8 +156,9 @@ public class NefFileTest {
                 + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
 
-        assertThrows("magic", DeserializationException.class,
+        DeserializationException thrown = assertThrows(DeserializationException.class,
                 () -> NeoSerializableInterface.from(nefBytes, NefFile.class));
+        assertThat(thrown.getMessage(), is("Wrong magic number in NEF file."));
     }
 
     @Test
@@ -168,8 +172,9 @@ public class NefFileTest {
                 + "00000000";
         byte[] nefBytes = hexStringToByteArray(nef);
 
-        assertThrows("checksum", DeserializationException.class,
+        DeserializationException thrown = assertThrows(DeserializationException.class,
                 () -> NeoSerializableInterface.from(nefBytes, NefFile.class));
+        assertThat(thrown.getMessage(), is("The checksums did not match."));
     }
 
     @Test
@@ -183,8 +188,9 @@ public class NefFileTest {
                 + TESTCONTRACT_CHECKSUM;
         byte[] nefBytes = hexStringToByteArray(nef);
 
-        assertThrows("Script cannot be empty", DeserializationException.class,
+        DeserializationException thrown = assertThrows(DeserializationException.class,
                 () -> NeoSerializableInterface.from(nefBytes, NefFile.class));
+        assertThat(thrown.getMessage(), is("Script cannot be empty in NEF file."));
     }
 
     @Test
@@ -246,9 +252,9 @@ public class NefFileTest {
                         "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111" +
                         "186769746875622e636f6d2f6e656f77336a2f6e656f77336a000000000700fd411af77b679cc8d824";
 
-        assertThrows("must not be longer than", DeserializationException.class,
-                () -> NeoSerializableInterface.from(hexStringToByteArray(nefHex), NefFile.class)
-        );
+        DeserializationException thrown = assertThrows(DeserializationException.class,
+                () -> NeoSerializableInterface.from(hexStringToByteArray(nefHex), NefFile.class));
+        assertThat(thrown.getMessage(), containsString("Source URL must not be longer than"));
     }
 
     @Test
@@ -260,8 +266,9 @@ public class NefFileTest {
                         "/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j/neow3j" +
                         "/neow3j/neow3j/neow3j/neow3j/neow3j/";
 
-        assertThrows("must not be longer than", IllegalArgumentException.class,
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new NefFile("neo-core-v3.0", url, null, hexStringToByteArray("00fd411af77b67")));
+        assertThat(thrown.getMessage(), containsString("The source URL must not be longer than"));
     }
 
 }
