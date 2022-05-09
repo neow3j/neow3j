@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 
 public class SupportedStandardsTest {
@@ -38,11 +39,11 @@ public class SupportedStandardsTest {
 
     @Test
     public void IllegalUsageOfAnnotation() {
-        assertThrows("A @SupportedStandard annotation must only have one of the attributes " +
-                        "'neoStandard' or 'customStandard' set.",
-                CompilerException.class,
-                () -> new Compiler()
-                        .compile(InvalidUsageOfSupportedStandardAnnotation.class.getName()));
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(InvalidUsageOfSupportedStandardAnnotation.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("A @SupportedStandard annotation must only have one of the attributes 'neoStandard' or " +
+                        "'customStandard' set."));
     }
 
     @SupportedStandard(neoStandard = NeoStandard.NEP_17)

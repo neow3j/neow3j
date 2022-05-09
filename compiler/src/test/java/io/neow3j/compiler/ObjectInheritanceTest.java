@@ -2,96 +2,87 @@ package io.neow3j.compiler;
 
 import org.junit.Test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThrows;
 
 public class ObjectInheritanceTest {
 
     @Test
     public void testHashCode() {
-        assertThrows("are not supported. Implement the method 'hashCode'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectHashCode.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectHashCode.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'hashCode'"));
     }
 
     @Test
     public void testEquals() {
-        assertThrows("are not supported. Implement the method 'equals'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectEquals.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectEquals.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'equals'"));
     }
 
     @Test
     public void testToString() {
-        assertThrows("are not supported. Implement the method 'toString'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectToString.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectToString.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'toString'"));
     }
 
     @Test
     public void testNotify() {
-        assertThrows("are not supported. Implement the method 'notify'",
-                CompilerException.class,
-                () ->new Compiler().compile(ObjectNotify.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectNotify.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'notify'"));
     }
 
     @Test
     public void testNotifyAll() {
-        assertThrows("are not supported. Implement the method 'notifyAll'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectNotifyAll.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectNotifyAll.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'notifyAll'"));
     }
 
     @Test
     public void testWaitLong() {
-        assertThrows("are not supported. Implement the method 'wait'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectWaitLong.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectWaitLong.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'wait'"));
     }
 
     @Test
     public void testWaitLongInt() {
-        assertThrows("are not supported. Implement the method 'wait'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectWaitLongInt.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectWaitLongInt.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'wait'"));
     }
 
     @Test
     public void testWaitNoParams() {
-        assertThrows("are not supported. Implement the method 'wait'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectWaitNoParams.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectWaitNoParams.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'wait'"));
     }
 
     @Test
     public void testGetClass() {
-        assertThrows("are not supported. Implement the method 'getClass'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectGetClass.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectGetClass.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'getClass'"));
     }
 
     @Test
     public void testClone() {
-        assertThrows("are not supported. Implement the method 'clone'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectClone.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectClone.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'clone'"));
     }
 
     @Test
     public void testFinalize() {
-        assertThrows("are not supported. Implement the method 'finalize'",
-                CompilerException.class,
-                () -> new Compiler().compile(ObjectFinalize.class.getName())
-        );
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> new Compiler().compile(ObjectFinalize.class.getName()));
+        assertThat(thrown.getMessage(), containsString("are not supported. Implement the method 'finalize'"));
     }
 
     public static class TestClass {
