@@ -71,9 +71,9 @@ public class ArrayUtilsTest {
 
     @Test
     public void testXor_Different_Sizes() {
-        assertThrows("Arrays do not have the same length to perform the XOR operation.",
-                IllegalArgumentException.class,
-                () -> xor(new byte[]{0x01, 0x02}, new byte[]{0x01}));
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> xor(new byte[]{0x01, 0x02}, new byte[]{0x01}));
+        assertThat(thrown.getMessage(), is("Arrays do not have the same length to perform the XOR operation."));
     }
 
     @Test

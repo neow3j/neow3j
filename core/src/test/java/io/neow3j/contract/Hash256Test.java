@@ -1,5 +1,14 @@
 package io.neow3j.contract;
 
+import io.neow3j.serialization.BinaryWriter;
+import io.neow3j.serialization.NeoSerializableInterface;
+import io.neow3j.serialization.exceptions.DeserializationException;
+import io.neow3j.types.Hash256;
+import org.junit.Test;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -8,16 +17,6 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertThrows;
-
-import io.neow3j.serialization.BinaryWriter;
-import io.neow3j.serialization.NeoSerializableInterface;
-import io.neow3j.serialization.exceptions.DeserializationException;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-
-import io.neow3j.types.Hash256;
-import org.junit.Test;
 
 public class Hash256Test {
 
@@ -35,34 +34,30 @@ public class Hash256Test {
 
     @Test
     public void createFromInvalidHexhWithOddLength() {
-        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
-                () -> new Hash256(
-                        "b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21ae")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21ae"));
+        assertThat(thrown.getMessage(), is("String argument is not hexadecimal."));
     }
 
     @Test
     public void createFromMalformedHash() {
-        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
-                () -> new Hash256(
-                        "g804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash256("g804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+        assertThat(thrown.getMessage(), is("String argument is not hexadecimal."));
     }
 
     @Test
     public void createFromHashLessThan256Bits() {
-        assertThrows("Hash must be 32 bytes long but was 31 bytes.", IllegalArgumentException.class,
-                () -> new Hash256(
-                        "0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a2")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a2"));
+        assertThat(thrown.getMessage(), is("Hash must be 32 bytes long but was 31 bytes."));
     }
 
     @Test
     public void createFromHashMoreThan256Bits() {
-        assertThrows("Hash must be 32 bytes long but was 33 bytes.", IllegalArgumentException.class,
-                () -> new Hash256(
-                        "0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a12")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a12"));
+        assertThat(thrown.getMessage(), is("Hash must be 32 bytes long but was 33 bytes."));
     }
 
     @Test

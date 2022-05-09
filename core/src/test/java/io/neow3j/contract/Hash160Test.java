@@ -40,30 +40,30 @@ public class Hash160Test {
 
     @Test
     public void createFromHashWithOddLength() {
-        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
-                () -> new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee"));
+        assertThat(thrown.getMessage(), is("String argument is not hexadecimal."));
     }
 
     @Test
     public void createFromMalformedHash() {
-        assertThrows("String argument is not hexadecimal.", IllegalArgumentException.class,
-                () -> new Hash160("g3ba2703c53263e8d6e522dc32203339dcd8eee9")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash160("g3ba2703c53263e8d6e522dc32203339dcd8eee9"));
+        assertThat(thrown.getMessage(), is("String argument is not hexadecimal."));
     }
 
     @Test
     public void createFromTooShortHash() {
-        assertThrows("Hash must be 20 bytes long but was 19 bytes.", IllegalArgumentException.class,
-                () -> new Hash160("23ba2703c53263e8d6e522dc32203339dcd8ee")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash160("23ba2703c53263e8d6e522dc32203339dcd8ee"));
+        assertThat(thrown.getMessage(), is("Hash must be 20 bytes long but was 19 bytes."));
     }
 
     @Test
     public void createFromTooLongHash() {
-        assertThrows("Hash must be 20 bytes long but was 32 bytes.", IllegalArgumentException.class,
-                () -> new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new Hash160("c56f33fc6ecfcd0c225c4ab356fee59390af8560be0e930faebe74a6daff7c9b"));
+        assertThat(thrown.getMessage(), is("Hash must be 20 bytes long but was 32 bytes."));
     }
 
     @Test
@@ -120,9 +120,9 @@ public class Hash160Test {
 
     @Test
     public void fromInvalidAddress() {
-        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
-                () -> Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8keas")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8keas"));
+        assertThat(thrown.getMessage(), is("Not a valid NEO address."));
     }
 
     @Test
@@ -149,7 +149,8 @@ public class Hash160Test {
 
     @Test
     public void fromContractScript() {
-        String verificationScript = "110c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d110b41138defaf";
+        String verificationScript =
+                "110c21026aa8fe6b4360a67a530e23c08c6a72525afde34719c5436f9d3ced759f939a3d110b41138defaf";
         Hash160 hash = Hash160.fromScript(verificationScript);
 
         String bigEndian = hash.toString();

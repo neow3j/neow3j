@@ -36,6 +36,7 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -292,9 +293,9 @@ public class TransactionTest {
         // additional bytes are not needed for this test
         byte[] txBytes = hexStringToByteArray(txString.toString());
 
-        assertThrows("A transaction can hold at most ", DeserializationException.class,
-                () -> NeoSerializableInterface.from(txBytes, Transaction.class)
-        );
+        DeserializationException thrown = assertThrows(DeserializationException.class,
+                () -> NeoSerializableInterface.from(txBytes, Transaction.class));
+        assertThat(thrown.getMessage(), containsString("A transaction can hold at most "));
     }
 
     @Test
@@ -387,9 +388,8 @@ public class TransactionTest {
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE + 1));
 
-        assertThrows("The transaction exceeds the maximum transaction size.",
-                TransactionConfigurationException.class, tx::send
-        );
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class, tx::send);
+        assertThat(thrown.getMessage(), containsString("The transaction exceeds the maximum transaction size."));
     }
 
     @Test
@@ -582,8 +582,9 @@ public class TransactionTest {
         Witness acc1witness = Witness.create(tx.getHashData(), singleSigAccount1.getECKeyPair());
         tx.addWitness(acc1witness);
 
-        assertThrows("Cannot handle contract signers", UnsupportedOperationException.class,
-                tx::toContractParametersContext);
+        UnsupportedOperationException thrown =
+                assertThrows(UnsupportedOperationException.class, tx::toContractParametersContext);
+        assertThat(thrown.getMessage(), is("Cannot handle contract signers"));
     }
 
 }

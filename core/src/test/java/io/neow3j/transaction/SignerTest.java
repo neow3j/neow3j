@@ -11,10 +11,10 @@ import io.neow3j.transaction.witnessrule.BooleanCondition;
 import io.neow3j.transaction.witnessrule.CalledByContractCondition;
 import io.neow3j.transaction.witnessrule.NotCondition;
 import io.neow3j.transaction.witnessrule.ScriptHashCondition;
+import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.transaction.witnessrule.WitnessCondition;
 import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessRule;
-import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 import org.junit.Before;
@@ -27,9 +27,11 @@ import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -123,19 +125,16 @@ public class SignerTest {
 
     @Test
     public void failBuildingSignerWithGlobalScopeAndCustomContracts() {
-        assertThrows("Trying to set allowed contracts on a Signer with global scope.",
-                SignerConfigurationException.class,
-                () -> AccountSigner.global(accScriptHash).setAllowedContracts(contract1, contract2)
-        );
+        SignerConfigurationException thrown = assertThrows(SignerConfigurationException.class,
+                () -> AccountSigner.global(accScriptHash).setAllowedContracts(contract1, contract2));
+        assertThat(thrown.getMessage(), is("Trying to set allowed contracts on a Signer with global scope."));
     }
 
     @Test
     public void failBuildingSignerWithGlobalScopeAndCustomGroups() {
-        assertThrows("Trying to set allowed contract groups on a Signer with global scope.",
-                SignerConfigurationException.class,
-                () -> AccountSigner.global(accScriptHash).setAllowedGroups(groupPubKey1,
-                        groupPubKey2)
-        );
+        SignerConfigurationException thrown = assertThrows(SignerConfigurationException.class,
+                () -> AccountSigner.global(accScriptHash).setAllowedGroups(groupPubKey1, groupPubKey2));
+        assertThat(thrown.getMessage(), is("Trying to set allowed contract groups on a Signer with global scope."));
     }
 
     @Test
@@ -144,10 +143,10 @@ public class SignerTest {
         for (int i = 0; i <= 16; i++) {
             contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
-        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS +
-                        " allowed contracts on a signer.", SignerConfigurationException.class,
-                () -> AccountSigner.calledByEntry(accScriptHash).setAllowedContracts(contracts)
-        );
+        SignerConfigurationException thrown = assertThrows(SignerConfigurationException.class,
+                () -> AccountSigner.calledByEntry(accScriptHash).setAllowedContracts(contracts));
+        assertThat(thrown.getMessage(),
+                is(format("Trying to set more than %s allowed contracts on a signer.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
@@ -159,43 +158,41 @@ public class SignerTest {
             contracts[i] = new Hash160("3ab0be8672e25cf475219d018ded961ec684ca88");
         }
 
-        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS
-                        + " allowed contracts on a signer.", SignerConfigurationException.class,
-                () -> signer.setAllowedContracts(contracts)
-        );
+        SignerConfigurationException thrown =
+                assertThrows(SignerConfigurationException.class, () -> signer.setAllowedContracts(contracts));
+        assertThat(thrown.getMessage(),
+                is(format("Trying to set more than %s allowed contracts on a signer.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
     public void failBuildingSignerWithTooManyGroups() {
-        ECPublicKey publicKey = new ECPublicKey(hexStringToByteArray(
-                "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
+        ECPublicKey publicKey = new ECPublicKey(
+                hexStringToByteArray("0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
         ECPublicKey[] groups = new ECPublicKey[17];
         for (int i = 0; i <= 16; i++) {
             groups[i] = publicKey;
         }
 
-        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS
-                        + " allowed contract groups on a signer.",
-                SignerConfigurationException.class,
-                () -> AccountSigner.calledByEntry(accScriptHash).setAllowedGroups(groups)
-        );
+        SignerConfigurationException thrown = assertThrows(SignerConfigurationException.class,
+                () -> AccountSigner.calledByEntry(accScriptHash).setAllowedGroups(groups));
+        assertThat(thrown.getMessage(),
+                is(format("Trying to set more than %s allowed contract groups on a signer.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
     public void failBuildingSignerWithTooManyGroupsAddedSeparately() {
-        ECPublicKey publicKey = new ECPublicKey(hexStringToByteArray(
-                "0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
+        ECPublicKey publicKey = new ECPublicKey(
+                hexStringToByteArray("0306d3e7f18e6dd477d34ce3cfeca172a877f3c907cc6c2b66c295d1fcc76ff8f7"));
         Signer signer = AccountSigner.none(accScriptHash).setAllowedGroups(publicKey);
         ECPublicKey[] groups = new ECPublicKey[16];
         for (int i = 0; i <= 15; i++) {
             groups[i] = publicKey;
         }
 
-        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS
-                        + " allowed contract groups on a signer.",
-                SignerConfigurationException.class,
-                () -> signer.setAllowedGroups(groups)
-        );
+        SignerConfigurationException thrown =
+                assertThrows(SignerConfigurationException.class, () -> signer.setAllowedGroups(groups));
+        assertThat(thrown.getMessage(),
+                is(format("Trying to set more than %s allowed contract groups on a signer.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
@@ -314,10 +311,10 @@ public class SignerTest {
         }
         byte[] serializedBytes = hexStringToByteArray(serialized.toString());
 
-        assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS +
-                        " allowed contracts.", DeserializationException.class,
-                () -> NeoSerializableInterface.from(serializedBytes, Signer.class)
-        );
+        DeserializationException thrown = assertThrows(DeserializationException.class,
+                () -> NeoSerializableInterface.from(serializedBytes, Signer.class));
+        assertThat(thrown.getMessage(),
+                containsString(format("A signer's scope can only contain %s allowed contracts.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
@@ -332,10 +329,10 @@ public class SignerTest {
         }
         byte[] serializedBytes = hexStringToByteArray(serialized.toString());
 
-        assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS +
-                        " allowed contract groups.", DeserializationException.class,
-                () -> NeoSerializableInterface.from(serializedBytes, Signer.class)
-        );
+        DeserializationException thrown = assertThrows(DeserializationException.class,
+                () -> NeoSerializableInterface.from(serializedBytes, Signer.class));
+        assertThat(thrown.getMessage(), containsString(
+                format("A signer's scope can only contain %s allowed contract groups.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
@@ -353,9 +350,10 @@ public class SignerTest {
         byte[] serializedBytes = hexStringToByteArray(serialized.toString());
 
 
-        assertThrows("A signer's scope can only contain " + MAX_SIGNER_SUBITEMS + " rules.",
-                DeserializationException.class,
+        DeserializationException thrown = assertThrows(DeserializationException.class,
                 () -> NeoSerializableInterface.from(serializedBytes, Signer.class));
+        assertThat(thrown.getMessage(),
+                containsString(format("A signer's scope can only contain %s rules.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test
@@ -424,10 +422,10 @@ public class SignerTest {
 
         WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, and);
 
-        assertThrows("A maximum nesting depth of " + WitnessCondition.MAX_NESTING_DEPTH + " is allowed for witness " +
-                        "conditions.",
-                SignerConfigurationException.class,
-                () -> AccountSigner.none(acc).setRules(rule));
+        SignerConfigurationException thrown =
+                assertThrows(SignerConfigurationException.class, () -> AccountSigner.none(acc).setRules(rule));
+        assertThat(thrown.getMessage(), is(format("A maximum nesting depth of %s is allowed for witness conditions.",
+                WitnessCondition.MAX_NESTING_DEPTH)));
     }
 
     @Test
@@ -448,9 +446,10 @@ public class SignerTest {
             signer.setRules(rule);
         }
 
-        assertThrows("Tyring to set more than " + MAX_SIGNER_SUBITEMS + " allowed witness rules on a signer.",
-                SignerConfigurationException.class,
-                () -> signer.setRules(rule));
+        SignerConfigurationException thrown =
+                assertThrows(SignerConfigurationException.class, () -> signer.setRules(rule));
+        assertThat(thrown.getMessage(),
+                is(format("Trying to set more than %s allowed witness rules on a signer.", MAX_SIGNER_SUBITEMS)));
     }
 
     @Test

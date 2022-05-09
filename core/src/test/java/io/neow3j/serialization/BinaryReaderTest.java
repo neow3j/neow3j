@@ -30,8 +30,8 @@ public class BinaryReaderTest extends TestBinaryUtils {
                 .setAnyDataWithSize(1)
                 .setSuffix("0000");
 
-        assertThrows("Stream did not contain a PUSHDATA OpCode at the current position.",
-                DeserializationException.class, this::readPushDataByteArray);
+        DeserializationException thrown = assertThrows(DeserializationException.class, this::readPushDataByteArray);
+        assertThat(thrown.getMessage(), is("Stream did not contain a PUSHDATA OpCode at the current position."));
     }
 
     @Test
@@ -143,8 +143,8 @@ public class BinaryReaderTest extends TestBinaryUtils {
     @Test
     public void failReadPushIntegerUnsupported() {
         this.arrayBuilder = new ByteArrayBuilder().setPrefix("0e"); // Not a PUSH OpCode
-        assertThrows("Couldn't parse PUSHINT OpCode", DeserializationException.class,
-                this::readPushInteger);
+        DeserializationException thrown = assertThrows(DeserializationException.class, this::readPushInteger);
+        assertThat(thrown.getMessage(), is("Couldn't parse PUSHINT OpCode"));
     }
 
     @Test

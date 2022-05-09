@@ -1,16 +1,15 @@
 package io.neow3j.protocol.core.stackitem;
 
 import io.neow3j.crypto.Base64;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -164,8 +163,8 @@ public class StackItemTest extends ResponseTester {
         StackItem item = getObjectMapper().readValue("{\"type\":\"Integer\"," +
                 "\"value\":\"\"}", StackItem.class);
 
-        assertThrows("Cannot cast stack item because its value is null",
-                StackItemCastException.class, item::getInteger);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getInteger);
+        assertThat(thrown.getMessage(), is("Cannot cast stack item because its value is null"));
     }
 
     @Test
@@ -429,7 +428,8 @@ public class StackItemTest extends ResponseTester {
                 getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
 
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        assertThrows("to an iterator.", StackItemCastException.class, item::getIterator);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getIterator);
+        assertThat(thrown.getMessage(), containsString("to an iterator"));
     }
 
     @Test
@@ -486,16 +486,16 @@ public class StackItemTest extends ResponseTester {
 
     @Test
     public void testStackItemType_InvalidByteValue() {
-        assertThrows("no stack item with the provided byte value", IllegalArgumentException.class,
-                () -> StackItemType.valueOf((byte) 31)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> StackItemType.valueOf((byte) 31));
+        assertThat(thrown.getMessage(), containsString("There exists no stack item with the provided byte value"));
     }
 
     @Test
     public void testStackItemType_InvalidJsonValue() {
-        assertThrows("no stack item with the provided json value", IllegalArgumentException.class,
-                () -> StackItemType.fromJsonValue("Enum")
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> StackItemType.fromJsonValue("Enum"));
+        assertThat(thrown.getMessage(), containsString("There exists no stack item with the provided json value."));
     }
 
     @Test
@@ -533,8 +533,8 @@ public class StackItemTest extends ResponseTester {
 
         item = new BufferStackItem();
 
-        assertThrows("Cannot cast stack item because its value is null",
-                StackItemCastException.class, item::getBoolean);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getBoolean);
+        assertThat(thrown.getMessage(), is("Cannot cast stack item because its value is null"));
     }
 
     @Test
@@ -592,8 +592,8 @@ public class StackItemTest extends ResponseTester {
     public void throwOnGetStringFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
 
-        assertThrows("Cannot cast stack item because its value is null",
-                StackItemCastException.class, item::getString);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getString);
+        assertThat(thrown.getMessage(), is("Cannot cast stack item because its value is null"));
     }
 
     @Test
@@ -605,8 +605,8 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwOnGetHexStringFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
-        assertThrows("Cannot cast stack item because its value is null",
-                StackItemCastException.class, item::getHexString);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getHexString);
+        assertThat(thrown.getMessage(), is("Cannot cast stack item because its value is null"));
     }
 
     @Test
@@ -618,15 +618,14 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwOnGetByteArrayFromNullIntegerStackItem() {
         IntegerStackItem item = new IntegerStackItem(null);
-        assertThrows("Cannot cast stack item because its value is null",
-                StackItemCastException.class, item::getByteArray);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getByteArray);
+        assertThat(thrown.getMessage(), is("Cannot cast stack item because its value is null"));
     }
 
     @Test
     public void listLikeStackItemValueToString() {
-        ArrayStackItem item = new ArrayStackItem(Arrays.asList(
-                new ByteStringStackItem("word".getBytes(UTF_8)),
-                new IntegerStackItem(BigInteger.ONE)));
+        ArrayStackItem item = new ArrayStackItem(
+                asList(new ByteStringStackItem("word".getBytes(UTF_8)), new IntegerStackItem(BigInteger.ONE)));
         assertThat(item.valueToString(), is("ByteString{value='776f7264'}, Integer{value='1'}"));
     }
 

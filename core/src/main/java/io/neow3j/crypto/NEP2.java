@@ -3,19 +3,18 @@ package io.neow3j.crypto;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import org.bouncycastle.crypto.generators.SCrypt;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.util.Arrays;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.SecretKeySpec;
-
-import org.bouncycastle.crypto.generators.SCrypt;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.util.Arrays;
 
 import static io.neow3j.crypto.Hash.hash256;
 import static io.neow3j.utils.ArrayUtils.concatenate;
@@ -62,7 +61,7 @@ public class NEP2 {
      * @param nep2String   the NEP-2 ecnrypted private key.
      * @param scryptParams the scrypt parameters used for encryption.
      * @return an EC key pair constructed form the decrypted private key.
-     * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
+     * @throws NEP2InvalidFormat     if the encrypted NEP-2 has an invalid format.
      * @throws CipherException       if failed encrypt the created wallet.
      * @throws NEP2InvalidPassphrase if the passphrase is not valid.
      */
