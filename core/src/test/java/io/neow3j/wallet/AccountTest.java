@@ -18,6 +18,7 @@ import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
+import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 
@@ -45,6 +46,7 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -96,7 +98,8 @@ public class AccountTest {
         Account account = Account.fromVerificationScript(
                 new VerificationScript(
                         hexStringToByteArray(
-                                "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78")));
+                                "0x0c2102163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b600b4195440d78"
+                        )));
 
         assertThat(account.getAddress(), is("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj"));
         assertThat(account.getVerificationScript().getScript(),
@@ -164,7 +167,8 @@ public class AccountTest {
     public void failEncryptAccountWithoutPrivateKey() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        assertThrows(AccountStateException.class, () -> a.encryptPrivateKey("pwd"));
+        AccountStateException thrown = assertThrows(AccountStateException.class, () -> a.encryptPrivateKey("pwd"));
+        assertThat(thrown.getMessage(), is("The account does not hold a decrypted private key."));
     }
 
     @Test
@@ -186,8 +190,9 @@ public class AccountTest {
     public void failDecryptingAccountWithoutDecryptedPrivateKey() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        assertThrows(AccountStateException.class,
-                () -> a.decryptPrivateKey(defaultAccountPassword()));
+        AccountStateException thrown =
+                assertThrows(AccountStateException.class, () -> a.decryptPrivateKey(defaultAccountPassword()));
+        assertThat(thrown.getMessage(), is("The account does not hold an encrypted private key."));
     }
 
     @Test
@@ -239,7 +244,8 @@ public class AccountTest {
     public void toNep6AccountWithUnencryptedPrivateKey() {
         Account a = Account.fromWIF(defaultAccountWIF());
 
-        assertThrows("private key", AccountStateException.class, a::toNEP6Account);
+        AccountStateException thrown = assertThrows(AccountStateException.class, a::toNEP6Account);
+        assertThat(thrown.getMessage(), is("Account private key is available but not encrypted."));
     }
 
     @Test
@@ -379,16 +385,18 @@ public class AccountTest {
     public void callingGetSigningThresholdWithSingleSigShouldFail() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        assertThrows("Cannot get signing threshold from account " + defaultAccountAddress(),
-                AccountStateException.class, a::getSigningThreshold);
+        AccountStateException thrown = assertThrows(AccountStateException.class, a::getSigningThreshold);
+        assertThat(thrown.getMessage(),
+                containsString("Cannot get signing threshold from account " + defaultAccountAddress()));
     }
 
     @Test
     public void callingGetNrOfParticipantsWithSingleSigShouldFail() {
         Account a = Account.fromAddress(defaultAccountAddress());
 
-        assertThrows("Cannot get number of participants from account " + defaultAccountAddress(),
-                AccountStateException.class, a::getNrOfParticipants);
+        AccountStateException thrown = assertThrows(AccountStateException.class, a::getNrOfParticipants);
+        assertThat(thrown.getMessage(),
+                Matchers.containsString("Cannot get number of participants from account " + defaultAccountAddress()));
     }
 
 }

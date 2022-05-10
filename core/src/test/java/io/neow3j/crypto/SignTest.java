@@ -103,11 +103,9 @@ public class SignTest {
 
     @Test
     public void testInvalidSignature() {
-        assertThrows("r must be 32 bytes.", RuntimeException.class,
-                () -> signedMessageToKey(TEST_MESSAGE_BYTES, new Sign.SignatureData((byte) 27,
-                        new byte[]{1},
-                        new byte[]{0}))
-        );
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> signedMessageToKey(TEST_MESSAGE_BYTES,
+                new Sign.SignatureData((byte) 27, new byte[]{1}, new byte[]{0})));
+        assertThat(thrown.getMessage(), is("r must be 32 bytes."));
     }
 
     @Test

@@ -3,36 +3,36 @@ package io.neow3j.contract;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
-import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.transaction.TransactionBuilder;
-import io.neow3j.types.Hash160;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.TransactionBuilder;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.StackItemType;
 import io.neow3j.wallet.Account;
+import org.hamcrest.Matchers;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.hamcrest.Matchers;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
@@ -70,16 +70,16 @@ public class SmartContractTest {
 
     @Test
     public void constructSmartContractWithoutScriptHash() {
-        assertThrows("script hash", IllegalArgumentException.class,
-                () -> new SmartContract(null, neow)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> new SmartContract(null, neow));
+        assertThat(thrown.getMessage(), is("The contract script hash must not be null."));
     }
 
     @Test
     public void constructSmartContractWithoutNeow3j() {
-        assertThrows("Neow3j", IllegalArgumentException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, null)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> new SmartContract(NEO_SCRIPT_HASH, null));
+        assertThat(thrown.getMessage(), is("The Neow3j object must not be null."));
     }
 
     @Test
@@ -109,16 +109,16 @@ public class SmartContractTest {
 
     @Test
     public void invokeWithNullString() {
-        assertThrows("null", IllegalArgumentException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction(null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction(null));
+        assertThat(thrown.getMessage(), is("The invocation function must not be null or empty."));
     }
 
     @Test
     public void invokeWithEmptyString() {
-        assertThrows("empty", IllegalArgumentException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction("")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new SmartContract(NEO_SCRIPT_HASH, neow).invokeFunction(""));
+        assertThat(thrown.getMessage(), is("The invocation function must not be null or empty."));
     }
 
     @Test
@@ -203,16 +203,15 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
 
-        assertThrows("but expected " + StackItemType.INTEGER.jsonValue(),
-                UnexpectedReturnTypeException.class,
-                () -> sc.callFuncReturningInt(NEP17_TRANSFER)
-        );
+        UnexpectedReturnTypeException thrown =
+                assertThrows(UnexpectedReturnTypeException.class, () -> sc.callFuncReturningInt(NEP17_TRANSFER));
+        assertThat(thrown.getMessage(), containsString(format("but expected %s.", StackItemType.INTEGER.jsonValue())));
     }
 
     @Test
     public void callFunctionReturningBool() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+        setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json", NEO_SCRIPT_HASH.toString(),
+                NEP17_TRANSFER);
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER);
 
@@ -256,17 +255,15 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), "getCandidates");
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
 
-        assertThrows("but expected " + StackItemType.BOOLEAN.jsonValue(),
-                UnexpectedReturnTypeException.class,
-                () -> sc.callFuncReturningBool("getCandidates")
-        );
+        UnexpectedReturnTypeException thrown =
+                assertThrows(UnexpectedReturnTypeException.class, () -> sc.callFuncReturningBool("getCandidates"));
+        assertThat(thrown.getMessage(), containsString(format("but expected %s.", StackItemType.BOOLEAN.jsonValue())));
     }
 
     @Test
     public void testCallFunctionReturningIterator() throws IOException {
         setUpWireMockForInvokeFunction("tokensOf", "nft_tokensof.json");
-        List<StackItem> tokensOf = new SmartContract(NEO_SCRIPT_HASH, neow)
-                .callFunctionReturningIterator("tokensOf");
+        List<StackItem> tokensOf = new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("tokensOf");
 
         assertThat(tokensOf, hasSize(2));
         assertThat(tokensOf.get(0).getString(), is("tokenof1"));
@@ -277,29 +274,29 @@ public class SmartContractTest {
     public void testCallFunctionReturningIteratorNoIterator() throws IOException {
         setUpWireMockForInvokeFunction("noiterator", "interopInterface_noIterator.json");
 
-        assertThrows("Return did not contain an iterator.", UnexpectedReturnTypeException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator(
-                        "noiterator")
-        );
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("noiterator"));
+        assertThat(thrown.getMessage(), is("Return did not contain an iterator."));
     }
 
     @Test
     public void testCallFunctionReturningIteratorOtherReturnType() throws IOException {
         setUpWireMockForInvokeFunction("symbol", "invokefunction_symbol.json");
 
-        assertThrows("expected InteropInterface", UnexpectedReturnTypeException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("symbol")
-        );
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callFunctionReturningIterator("symbol"));
+        assertThat(thrown.getMessage(),
+                containsString(format("but expected %s.", StackItemType.INTEROP_INTERFACE.jsonValue())));
     }
 
     @Test
     public void invokingFunctionPerformsCorrectCall() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF, account1.getScriptHash().toString());
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json", NEO_SCRIPT_HASH.toString(),
+                NEP17_BALANCEOF, account1.getScriptHash().toString());
 
         SmartContract sc = new SmartContract(NEO_SCRIPT_HASH, neow);
         NeoInvokeFunction response = sc.callInvokeFunction(NEP17_BALANCEOF,
-                singletonList(hash160(account1.getScriptHash())));
+                asList(hash160(account1.getScriptHash())));
 
         assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(BigInteger.valueOf(3)));
@@ -318,19 +315,17 @@ public class SmartContractTest {
 
     @Test
     public void callInvokeFunction_missingFunction() {
-        assertThrows("The invocation function must not be null or empty.",
-                IllegalArgumentException.class,
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("",
-                        singletonList(hash160(account1.getScriptHash())))
-        );
+                        asList(hash160(account1.getScriptHash()))));
+        assertThat(thrown.getMessage(), is("The invocation function must not be null or empty."));
     }
 
     @Test
     public void callInvokeFunctionWithoutParameters_missingFunction() {
-        assertThrows("The invocation function must not be null or empty.",
-                IllegalArgumentException.class,
-                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction("")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new SmartContract(NEO_SCRIPT_HASH, neow).callInvokeFunction(""));
+        assertThat(thrown.getMessage(), is("The invocation function must not be null or empty."));
     }
 
 }

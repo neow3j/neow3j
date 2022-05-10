@@ -47,11 +47,9 @@ public class NeoURI {
      * @return a NeoURI object.
      * @throws IllegalFormatException if the provided URI has an invalid format.
      */
-    public static NeoURI fromURI(String uriString)
-            throws IllegalFormatException {
-
+    public static NeoURI fromURI(String uriString) throws IllegalFormatException {
         if (uriString == null) {
-            throw new IllegalArgumentException("The provided String is null.");
+            throw new IllegalArgumentException("The provided string is null.");
         }
 
         String[] baseAndQuery = uriString.split("\\?");
@@ -72,7 +70,7 @@ public class NeoURI {
             for (String singleQuery : query) {
                 String[] singleQueryParts = singleQuery.split("=");
                 if (singleQueryParts.length != 2) {
-                    throw new IllegalArgumentException("This uri contains invalid queries.");
+                    throw new IllegalArgumentException("This URI contains invalid queries.");
                 }
                 if (singleQueryParts[0].equals("asset") && neoURI.tokenHash == null) {
                     String tokenID = singleQueryParts[1];
@@ -114,15 +112,15 @@ public class NeoURI {
 
         int amountScale = amount.stripTrailingZeros().scale();
         if (isNeoToken(tokenHash) && amountScale > NeoToken.DECIMALS) {
-            throw new IllegalArgumentException("The Neo token does not support any decimal places.");
+            throw new IllegalArgumentException("The NEO token does not support any decimal places.");
         } else if (isGasToken(tokenHash) && amountScale > GasToken.DECIMALS) {
             throw new IllegalArgumentException(
-                    format("The Gas token does not support more than %s decimal places.", GasToken.DECIMALS));
+                    format("The GAS token does not support more than %s decimal places.", GasToken.DECIMALS));
         } else {
             int decimals = token.getDecimals();
             if (amountScale > decimals) {
                 throw new IllegalArgumentException(
-                        format("The token '%s' does not support more than %s decimal places.", tokenHash, decimals));
+                        format("The %s token does not support more than %s decimal places.", tokenHash, decimals));
             }
         }
         return token.transfer(sender, recipient, token.toFractions(amount));

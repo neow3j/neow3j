@@ -25,6 +25,8 @@ import org.junit.runners.Parameterized;
 import java.util.Arrays;
 import java.util.Collection;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -62,9 +64,9 @@ public class Base58DecodeTest {
 
     @Test
     public void testDecode_invalidBase58() {
-        assertThrows("Invalid character ' ' at position 4", AddressFormatException.class,
-                () -> Base58.decode("This isn't valid base58")
-        );
+        AddressFormatException thrown =
+                assertThrows(AddressFormatException.class, () -> Base58.decode("This isn't valid base58"));
+        assertThat(thrown.getMessage(), is("Invalid character ' ' at position 4"));
     }
 
 }

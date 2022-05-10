@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "id": 2,
+  "result": {
+    "script": "EQwLbWljaGFlbC5uZW8SwB8MCWdldFJlY29yZAwUCiJ0SQeNJR3TWgu9pnYscWYCtpJBYn1bUg==",
+    "state": "FAULT",
+    "gasconsumed": "14316810",
+    "exception": "An unhandled exception was thrown. The root does not exist.",
+    "stack": []
+  }
+}

@@ -258,12 +258,12 @@ public class Wallet {
                     .addAccounts(accs)
                     .defaultAccount(defaultAccountHash160);
         } else {
-            throw new IllegalArgumentException("The Nep-6 wallet does not contain any default account.");
+            throw new IllegalArgumentException("The NEP-6 wallet does not contain any default account.");
         }
     }
 
     /**
-     * Creates a NEP6 compatible wallet file.
+     * Creates a NEP-6 compatible wallet file.
      *
      * @param destination the file that the wallet file should be saved.
      * @return the new wallet.

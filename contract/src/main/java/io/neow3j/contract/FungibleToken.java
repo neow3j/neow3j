@@ -159,7 +159,7 @@ public class FungibleToken extends Token {
             throws IOException {
 
         if (amount.signum() < 0) {
-            throw new IllegalArgumentException("The amount must be greater than or equal to 0");
+            throw new IllegalArgumentException("The amount must be greater than or equal to 0.");
         }
         byte[] transferScript = buildTransferScript(from, to, amount, data);
         return new TransactionBuilder(neow3j).script(transferScript);

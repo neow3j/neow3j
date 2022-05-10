@@ -1,24 +1,24 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertThrows;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash160;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import io.neow3j.types.Hash160;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertThrows;
 
 public class TokenTest {
 
@@ -68,10 +68,9 @@ public class TokenTest {
     @Test
     public void testToFractions_tooHighScale() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
-        assertThrows("The provided amount has too many decimal points.",
-                IllegalArgumentException.class,
-                () -> someToken.toFractions(new BigDecimal("1.023"))
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> someToken.toFractions(new BigDecimal("1.023")));
+        assertThat(thrown.getMessage(), containsString("The provided amount has too many decimal points."));
     }
 
     @Test

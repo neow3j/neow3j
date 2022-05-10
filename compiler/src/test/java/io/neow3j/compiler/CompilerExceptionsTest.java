@@ -33,8 +33,7 @@ public class CompilerExceptionsTest {
     @Test
     public void throwExceptionIfNonDefaultExceptionInstanceIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(UnsupportedException.class.getName())
-        );
+                () -> new Compiler().compile(UnsupportedException.class.getName()));
         assertThat(thrown.getMessage(), stringContainsInOrder(asList(
                 IllegalArgumentException.class.getCanonicalName(),
                 Exception.class.getCanonicalName())));
@@ -51,14 +50,16 @@ public class CompilerExceptionsTest {
 
     @Test
     public void throwExceptionIfExceptionWithMoreThanOneArgumentIsUsed() {
-        assertThrows("You provided 2 arguments.", CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedNumberOfExceptionArguments.class.getName()));
+        assertThat(thrown.getMessage(), containsString("You provided 2 arguments."));
     }
 
     @Test
     public void throwExceptionIfExceptionWithANonStringArgumentIsUsed() {
-        assertThrows("You provided a non-string argument.", CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedExceptionArgument.class.getName()));
+        assertThat(thrown.getMessage(), containsString("You provided a non-string argument."));
     }
 
     @Test
@@ -139,8 +140,8 @@ public class CompilerExceptionsTest {
         MethodNode method = asmClass.methods.get(1);
         NeoMethod neoMethod = new NeoMethod(method, asmClass);
 
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> Compiler.processInstructionAnnotations(method, neoMethod));
+        CompilerException thrown =
+                assertThrows(CompilerException.class, () -> Compiler.processInstructionAnnotations(method, neoMethod));
         assertThat(thrown.getMessage(), stringContainsInOrder(
                 asList("1122", OpCode.ASSERT.name(), "doesn't take any operands.")));
     }
@@ -148,31 +149,26 @@ public class CompilerExceptionsTest {
     @Test
     public void testNonPublicMethodsMarkedWithSafeAnnotation() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(PrivateMethodMarkedAsSafe.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                this.getClass().getSimpleName() + ".java", // the file name
-                "privateMethod", "safe")));
+                () -> new Compiler().compile(PrivateMethodMarkedAsSafe.class.getName()));
+        assertThat(thrown.getMessage(),
+                stringContainsInOrder(asList(this.getClass().getSimpleName() + ".java", "privateMethod", "safe")));
 
         thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ProtectedMethodMarkedAsSafe.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                this.getClass().getSimpleName() + ".java", // the file name
-                "protectedMethod", "safe")));
+        assertThat(thrown.getMessage(),
+                stringContainsInOrder(asList(this.getClass().getSimpleName() + ".java", "protectedMethod", "safe")));
 
         thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(PackagePrivateMethodMarkedAsSafe.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                this.getClass().getSimpleName() + ".java", // the file name
-                "packagePrivateMethod", "safe")));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(this.getClass().getSimpleName() + ".java", "packagePrivateMethod", "safe")));
     }
 
     @Test
     public void failIfLocalVariablesAreUsedInStaticConstructor() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(LocalVariableInStaticConstructorContract.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                CompilerExceptionsTest.class.getSimpleName(),
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(CompilerExceptionsTest.class.getSimpleName(),
                 "Local variables are not supported in the static constructor")));
     }
 
@@ -180,26 +176,26 @@ public class CompilerExceptionsTest {
     public void failIfInstanceOfIsUsedOnUnsupportedType() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(InstanceOfContract.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                Notification.class.getName(), "is not supported for the instanceof operation.")));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(Notification.class.getName(), "is not supported for the instanceof operation.")));
     }
 
     @Test
     public void failCallingAContractInterfaceWithoutContractHashAnnotation() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractInterfaceWithoutHash.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList("Contract interface",
-                FungibleToken.class.getSimpleName(),
-                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList("Contract interface", FungibleToken.class.getSimpleName(),
+                        "needs to be annotated with the 'ContractHash' annotation to be usable.")));
     }
 
     @Test
     public void failCallingAContractInterfaceWithoutContractHashAnnotationAndMultipleInheritance() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList("Contract interface",
-                CustomFungibleToken.class.getSimpleName(),
-                "needs to be annotated with the 'ContractHash' annotation to be usable.")));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList("Contract interface", CustomFungibleToken.class.getSimpleName(),
+                        "needs to be annotated with the 'ContractHash' annotation to be usable.")));
     }
 
     @Test
@@ -213,27 +209,25 @@ public class CompilerExceptionsTest {
     public void throwOnTokenContractInterfaceMissingHashAnnotation() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(TokenContractMissingHashAnnotation.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                TokenContractWithoutHashAnnotation.class.getSimpleName(),
-                ContractHash.class.getSimpleName())));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(TokenContractWithoutHashAnnotation.class.getSimpleName(), ContractHash.class.getSimpleName())));
     }
 
     @Test
     public void throwOnContractInterfaceMissingHashAnnotation() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractMissingHashAnnotation.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                ContractWithoutHashAnnotation.class.getSimpleName(),
-                ContractHash.class.getSimpleName())));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(ContractWithoutHashAnnotation.class.getSimpleName(), ContractHash.class.getSimpleName())));
     }
 
     @Test
     public void throwOnContractMissingContractInterface() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractMissingContractInterface.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                ContractWithoutContractInterface.class.getSimpleName(),
-                ContractHash.class.getSimpleName(), ContractInterface.class.getSimpleName())));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(ContractWithoutContractInterface.class.getSimpleName(), ContractHash.class.getSimpleName(),
+                        ContractInterface.class.getSimpleName())));
     }
 
     @Test
@@ -242,36 +236,40 @@ public class CompilerExceptionsTest {
         c.name = ContractWithWrongClassCompatibility.class.getSimpleName();
         c.version = 51;
 
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(c));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                ContractWithWrongClassCompatibility.class.getSimpleName(), "51",
-                Integer.toString(CLASS_VERSION_SUPPORTED))));
+        CompilerException thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(c));
+        assertThat(thrown.getMessage(), stringContainsInOrder(
+                asList(ContractWithWrongClassCompatibility.class.getSimpleName(), "51",
+                        Integer.toString(CLASS_VERSION_SUPPORTED))));
     }
 
     @Test
     public void throwOnStaticVariableInNonContractClass() {
-        assertThrows("Static variables are not allowed outside the main contract class", CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractClassWithReferenceToStaticVariable.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("Static variables are not allowed outside the main contract class if "));
     }
 
     @Test
     public void throwOnEventDeclarationInNonContractClass() {
-        assertThrows("Couldn't find triggered event in list of events", CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractClassWithReferenceToEventInOtherClass.class.getName()));
+        assertThat(thrown.getMessage(), containsString("Couldn't find triggered event in list of events."));
     }
 
     @Test
     public void throwOnEventFiredInVerifyMethod() {
-        assertThrows("The verify method is not allowed to fire any event.", CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(VerificationWithEvent.class.getName()));
+        assertThat(thrown.getMessage(), containsString("The verify method is not allowed to fire any event."));
     }
 
     @Test
     public void multiDimensionalArraySize() {
-        assertThrows("Only the first dimension of a multi-dimensional array declaration can be defined",
-                CompilerException.class,
+        CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(MultiDimensionalArraySize.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("Only the first dimension of a multi-dimensional array declaration can be defined,"));
     }
 
     static class UnsupportedInheritanceInConstructor {

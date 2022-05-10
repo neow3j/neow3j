@@ -1,29 +1,27 @@
 package io.neow3j.crypto;
 
+import org.junit.Test;
+
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
-
-import io.neow3j.utils.Numeric;
-import org.junit.Test;
 
 public class WIFTest {
 
     @Test
     public void testWIF() {
-        final String privateKey =
-                "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
-        byte[] privateKeyFromWIF =
-                WIF.getPrivateKeyFromWIF("L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13A");
-        assertThat(Numeric.toHexStringNoPrefix(privateKeyFromWIF), is(privateKey));
+        final String privateKey = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
+        byte[] privateKeyFromWIF = WIF.getPrivateKeyFromWIF("L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13A");
+        assertThat(toHexStringNoPrefix(privateKeyFromWIF), is(privateKey));
     }
 
     @Test
     public void testWIFLargerThan38() {
-        assertThrows("Incorrect WIF format.", IllegalArgumentException.class,
-                () -> WIF.getPrivateKeyFromWIF(
-                        "L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13Ahc7S")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> WIF.getPrivateKeyFromWIF("L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13Ahc7S"));
+        assertThat(thrown.getMessage(), is("Incorrect WIF format."));
     }
 
     @Test
@@ -32,9 +30,9 @@ public class WIFTest {
         wifBytes[0] = (byte) 0x81;
         String wifString = Base58.encode(wifBytes);
 
-        assertThrows("Incorrect WIF format.", IllegalArgumentException.class,
-                () -> WIF.getPrivateKeyFromWIF(wifString)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> WIF.getPrivateKeyFromWIF(wifString));
+        assertThat(thrown.getMessage(), is("Incorrect WIF format."));
     }
 
     @Test
@@ -43,9 +41,9 @@ public class WIFTest {
         wifBytes[33] = (byte) 0x00;
         String wifString = Base58.encode(wifBytes);
 
-        assertThrows("Incorrect WIF format.", IllegalArgumentException.class,
-                () -> WIF.getPrivateKeyFromWIF(wifString)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> WIF.getPrivateKeyFromWIF(wifString));
+        assertThat(thrown.getMessage(), is("Incorrect WIF format."));
     }
 
     @Test
@@ -55,9 +53,8 @@ public class WIFTest {
 
     @Test
     public void privateKeyToWif() {
-        final String privateKey =
-                "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
-        String result = WIF.getWIFFromPrivateKey(Numeric.hexStringToByteArray(privateKey));
+        final String privateKey = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3";
+        String result = WIF.getWIFFromPrivateKey(hexStringToByteArray(privateKey));
         String expected = "L25kgAQJXNHnhc7Sx9bomxxwVSMsZdkaNQ3m2VfHrnLzKWMLP13A";
 
         assertThat(result, is(expected));
@@ -67,10 +64,9 @@ public class WIFTest {
     public void failUsingWrongSizePrivateKey() {
         final String privateKey = "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3";
 
-        assertThrows("Given key is not of expected length (32 bytes).",
-                IllegalArgumentException.class,
-                () -> WIF.getWIFFromPrivateKey(Numeric.hexStringToByteArray(privateKey))
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> WIF.getWIFFromPrivateKey(hexStringToByteArray(privateKey)));
+        assertThat(thrown.getMessage(), is("Given key is not of expected length (32 bytes)."));
     }
 
 }

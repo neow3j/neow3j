@@ -37,6 +37,7 @@ import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertArrayEquals;
@@ -97,9 +98,8 @@ public class ContractParameterTest {
     @Test
     public void testByteArrayParamCreationFromInvalidHexString() {
         String value = "value";
-        assertThrows("Argument is not a valid hex number.", IllegalArgumentException.class,
-                () -> byteArray(value)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> byteArray(value));
+        assertThat(thrown.getMessage(), is("Argument is not a valid hex number."));
     }
 
     @Test
@@ -151,8 +151,9 @@ public class ContractParameterTest {
 
     @Test
     public void testArrayParamCreationFromObjects_failUnSupportedObject() {
-        assertThrows("provided object could not be casted into a supported contract",
-                IllegalArgumentException.class, () -> array(new Object()));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> array(new Object()));
+        assertThat(thrown.getMessage(),
+                is("The provided object could not be casted into a supported contract parameter type."));
     }
 
     @Test
@@ -251,8 +252,8 @@ public class ContractParameterTest {
         String sig =
                 "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f2";
 
-        assertThrows("Signature is expected to have a length of 64 bytes, but had 63.", IllegalArgumentException.class,
-                () -> signature(sig));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> signature(sig));
+        assertThat(thrown.getMessage(), is("Signature is expected to have a length of 64 bytes, but had 63."));
     }
 
     @Test
@@ -260,8 +261,8 @@ public class ContractParameterTest {
         String sig =
                 "d8485d4771e9112cca6ac7e6b75fc52585a2e7ee9a702db4a39dfad0f888ea6c22b6185ceab38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213ff";
 
-        assertThrows("Signature is expected to have a length of 64 bytes, but had 65.", IllegalArgumentException.class,
-                () -> signature(sig));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> signature(sig));
+        assertThat(thrown.getMessage(), is("Signature is expected to have a length of 64 bytes, but had 65."));
     }
 
     @Test
@@ -269,7 +270,8 @@ public class ContractParameterTest {
         String sig = "d8485d4771e9112cca6ac7e6b75fc52585t2e7ee9a702db4a39dfad0f888ea6c22b6185ceab" +
                 "38d8322b67737a5574d8b63f4e27b0d208f3f9efcdbf56093f213";
 
-        assertThrows("Argument is not a valid hex number.", IllegalArgumentException.class, () -> signature(sig));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> signature(sig));
+        assertThat(thrown.getMessage(), is("Argument is not a valid hex number."));
     }
 
     @Test
@@ -327,9 +329,8 @@ public class ContractParameterTest {
 
     @Test
     public void testHash160_null() {
-        assertThrows("The script hash argument must not be null", IllegalArgumentException.class,
-                () -> hash160((Hash160) null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> hash160((Hash160) null));
+        assertThat(thrown.getMessage(), is("The script hash argument must not be null."));
     }
 
     @Test
@@ -363,23 +364,24 @@ public class ContractParameterTest {
     public void testHash256ParamCreationFromTooShortString() {
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6";
 
-        assertThrows("must be 32 bytes but was 31 bytes.", IllegalArgumentException.class, () -> hash256(sig));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> hash256(sig));
+        assertThat(thrown.getMessage(), is("A Hash256 parameter must be 32 bytes but was 31 bytes."));
     }
 
     @Test
     public void testHash256ParamCreationFromTooLongString() {
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cfaa";
 
-        assertThrows("must be 32 bytes but was 33 bytes.", IllegalArgumentException.class, () -> hash256(sig));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> hash256(sig));
+        assertThat(thrown.getMessage(), is("A Hash256 parameter must be 32 bytes but was 33 bytes."));
     }
 
     @Test
     public void testHash256ParamCreationFromNoHexString() {
         String sig = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cg";
 
-        assertThrows("is not a valid hex number", IllegalArgumentException.class,
-                () -> hash256(sig)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> hash256(sig));
+        assertThat(thrown.getMessage(), is("Argument is not a valid hex number."));
     }
 
     @Test
@@ -406,7 +408,8 @@ public class ContractParameterTest {
         // One byte too short
         byte[] pubKey = hexStringToByteArray("03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368");
 
-        assertThrows("must be 33 bytes but was 32 bytes.", IllegalArgumentException.class, () -> publicKey(pubKey));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> publicKey(pubKey));
+        assertThat(thrown.getMessage(), is("Public key argument must be 33 bytes but was 32 bytes."));
     }
 
     @Test
@@ -423,7 +426,8 @@ public class ContractParameterTest {
         // One byte too short.
         String pubKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368";
 
-        assertThrows("must be 33 bytes but was 32 bytes.", IllegalArgumentException.class, () -> publicKey(pubKey));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> publicKey(pubKey));
+        assertThat(thrown.getMessage(), is("Public key argument must be 33 bytes but was 32 bytes."));
     }
 
     @Test
@@ -477,16 +481,16 @@ public class ContractParameterTest {
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
         map.put(array(integer(1), string("test")), string("first"));
 
-        assertThrows("The provided map contains an invalid key.", IllegalArgumentException.class, () -> map(map));
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> map(map));
+        assertThat(thrown.getMessage(), containsString("The provided map contains an invalid key."));
     }
 
     @Test
     public void testMap_empty() {
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
 
-        assertThrows("At least one map entry is required to create a map contract parameter.",
-                IllegalArgumentException.class, () -> map(map)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> map(map));
+        assertThat(thrown.getMessage(), is("At least one map entry is required to create a map contract parameter."));
     }
 
     @Test

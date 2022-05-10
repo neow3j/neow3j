@@ -1,18 +1,5 @@
 package io.neow3j.contract;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
-import static io.neow3j.types.ContractParameter.array;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.publicKey;
-import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
-import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThrows;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import io.neow3j.crypto.ECKeyPair;
@@ -24,15 +11,28 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThrows;
 
 public class RoleManagementTest {
 
@@ -92,18 +92,18 @@ public class RoleManagementTest {
 
     @Test
     public void testGetDesignatedByRole_negativeIndex() {
-        assertThrows("The block index has to be positive.", IllegalArgumentException.class,
-                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1"))
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("-1")));
+        assertThat(thrown.getMessage(), is("The block index has to be positive."));
     }
 
     @Test
     public void testGetDesignatedByRole_indexTooHigh() throws IOException {
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
-        assertThrows("The provided block index (1001) is too high.", IllegalArgumentException.class,
-                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001"))
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("1001")));
+        assertThat(thrown.getMessage(), containsString("The provided block index (1001) is too high."));
     }
 
     @Test
@@ -116,8 +116,7 @@ public class RoleManagementTest {
                         "designateAsRole",
                         asList(
                                 integer(Role.ORACLE.byteValue()),
-                                array(publicKey(
-                                        account1.getECKeyPair().getPublicKey().getEncoded(true)))))
+                                array(publicKey(account1.getECKeyPair().getPublicKey().getEncoded(true)))))
                 .toArray();
 
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
@@ -132,25 +131,25 @@ public class RoleManagementTest {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
         pubKeys.add(account1.getECKeyPair().getPublicKey());
 
-        assertThrows("role cannot be null", IllegalArgumentException.class,
-                () -> roleManagement.designateAsRole(null, pubKeys)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> roleManagement.designateAsRole(null, pubKeys));
+        assertThat(thrown.getMessage(), is("The designation role cannot be null."));
     }
 
     @Test
     public void testDesignate_pubKeysNull() {
-        assertThrows("one public key is required for designation", IllegalArgumentException.class,
-                () -> roleManagement.designateAsRole(Role.ORACLE, null)
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> roleManagement.designateAsRole(Role.ORACLE, null));
+        assertThat(thrown.getMessage(), is("At least one public key is required for designation."));
     }
 
     @Test
     public void testDesignate_pubKeysEmpty() {
         ArrayList<ECPublicKey> pubKeys = new ArrayList<>();
 
-        assertThrows("one public key is required for designation", IllegalArgumentException.class,
-                () -> roleManagement.designateAsRole(Role.ORACLE, pubKeys)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> roleManagement.designateAsRole(Role.ORACLE, pubKeys));
+        assertThat(thrown.getMessage(), is("At least one public key is required for designation."));
     }
 
     @Test

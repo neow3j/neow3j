@@ -295,7 +295,7 @@ public class Transaction extends NeoSerializable {
         int size = getSize();
         if (size > MAX_TRANSACTION_SIZE) {
             throw new TransactionConfigurationException(format("The transaction exceeds the maximum transaction size." +
-                    " The maximum size is {} bytes. This transaction has size {}", MAX_TRANSACTION_SIZE, size));
+                    " The maximum size is %s bytes while the transaction has size %s.", MAX_TRANSACTION_SIZE, size));
         }
         String hex = toHexStringNoPrefix(toArray());
         blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();

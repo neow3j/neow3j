@@ -2,6 +2,8 @@ package io.neow3j.compiler;
 
 import org.objectweb.asm.tree.ClassNode;
 
+import static java.lang.String.format;
+
 public class CompilerException extends RuntimeException {
 
     public CompilerException(String s) {
@@ -9,12 +11,12 @@ public class CompilerException extends RuntimeException {
     }
 
     public CompilerException(NeoMethod neoMethod, String errorMessage) {
-        super(neoMethod.getOwnerClass().sourceFile + ": " + neoMethod.getCurrentLine() + ": "
-                + "error:\n" + errorMessage);
+        super(format("%s: line %s\n Error: \"%s\"", neoMethod.getOwnerClass().sourceFile, neoMethod.getCurrentLine(),
+                errorMessage));
     }
 
     public CompilerException(ClassNode owner, String errorMessage) {
-        super(owner.sourceFile + ".java: error:\n" + errorMessage);
+        super(format(owner.sourceFile + "\n Error: \"%s\"", errorMessage));
     }
 
     public CompilerException(Exception e) {
