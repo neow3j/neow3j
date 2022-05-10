@@ -47,6 +47,32 @@ public class Storage {
     public static native ByteString get(StorageContext context, byte[] key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, byte[] key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, byte[] key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -136,6 +162,32 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, String key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, String key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, String key);
 
     /**
      * Returns the value corresponding to the given key and converts it to a byte array.
@@ -229,6 +281,32 @@ public class Storage {
     public static native ByteString get(StorageContext context, ByteString key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, ByteString key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, ByteString key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -318,6 +396,32 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native ByteString get(StorageContext context, int key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, int key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, int key);
 
     /**
      * Returns the value corresponding to the given key and converts it to a byte array.

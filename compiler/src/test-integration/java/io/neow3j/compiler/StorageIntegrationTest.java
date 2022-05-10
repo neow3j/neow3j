@@ -13,6 +13,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.StackItemType;
+import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -32,6 +33,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -45,8 +47,11 @@ public class StorageIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StorageIntegrationTest.StorageIntegrationTestContract.class.getName());
+    public static ContractTestRule ct =
+            new ContractTestRule(StorageIntegrationTest.StorageIntegrationTestContract.class.getName());
+
+    private static final String STORE_DATA = "storeData";
+    private static final String STORE_INT = "storeInteger";
 
     private static final String KEY1_HEX = "01";
     private static final String DATA1 = "0001020304";
@@ -76,42 +81,41 @@ public class StorageIntegrationTest {
     private static final int KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
+    private static Hash256 hash256;
+
     @BeforeClass
     public static void setUp() throws Throwable {
-        String storeData = "storeData";
-        String storeInteger = "storeInteger";
-
         ContractParameter key = byteArray(KEY1_HEX);
         ContractParameter data = byteArray(DATA1);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        hash256 = ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArrayFromString(KEY2_STRING);
         data = byteArrayFromString(DATA2);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArray(KEY3_HEX);
         data = integer(INTEGER3);
-        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_INT, key, data);
 
         key = string(KEY4_STRING);
         data = integer(INTEGER4);
-        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_INT, key, data);
 
         key = integer(KEY5_INT);
         data = byteArrayFromString(DATA5);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArray(KEY6_HEX);
         data = bool(BOOLEAN_6);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArray(KEY7_HEX);
         data = bool(BOOLEAN_7);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArray(KEY8_HEX);
         data = byteArray(DATA8);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
     }
 
     // region get
@@ -145,6 +149,96 @@ public class StorageIntegrationTest {
     }
 
     // endregion get
+    // region getHash160
+
+    @Test
+    public void getHash160ByByteArrayKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+    }
+
+    @Test
+    public void getHash160ByByteStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+    }
+
+    @Test
+    public void getHash160ByStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+    }
+
+    @Test
+    public void getHash160ByIntegerKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+    }
+
+    // endregion getHash160
+    // region getHash256
+
+    @Test
+    public void getHash256ByByteArrayKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+    }
+
+    @Test
+    public void getHash256ByByteStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+    }
+
+    @Test
+    public void getHash256ByStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+    }
+
+    @Test
+    public void getHash256ByIntegerKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+    }
+
+    // endregion getHash256
     // region getByteArray
 
     @Test
@@ -743,6 +837,64 @@ public class StorageIntegrationTest {
         }
 
         // endregion get
+        // region getHash160
+
+        public static io.neow3j.devpack.Hash160 getHash160ByByteArrayKey(byte[] key) {
+            byte[] k = new ByteString(key).toByteArray();
+            assert k instanceof byte[];
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
+            assert io.neow3j.devpack.Hash160.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByByteStringKey(ByteString key) {
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
+            assert io.neow3j.devpack.Hash160.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByStringKey(String key) {
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
+            assert io.neow3j.devpack.Hash160.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByIntegerKey(int key) {
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
+            assert io.neow3j.devpack.Hash160.isValid(hash);
+            return hash;
+        }
+
+        // endregion getHash160
+        // region getHash256
+
+        public static io.neow3j.devpack.Hash256 getHash256ByByteArrayKey(byte[] key) {
+            byte[] k = new ByteString(key).toByteArray();
+            assert k instanceof byte[];
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
+            assert io.neow3j.devpack.Hash256.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByByteStringKey(ByteString key) {
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
+            assert io.neow3j.devpack.Hash256.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByStringKey(String key) {
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
+            assert io.neow3j.devpack.Hash256.isValid(hash);
+            return hash;
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByIntegerKey(int key) {
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
+            assert io.neow3j.devpack.Hash256.isValid(hash);
+            return hash;
+        }
+
+        // endregion getHash256
         // region getByteArray
 
         public static byte[] getByteArrayByByteArrayKey(byte[] key) {

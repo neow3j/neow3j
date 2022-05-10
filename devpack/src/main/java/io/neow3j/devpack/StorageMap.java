@@ -99,6 +99,46 @@ public class StorageMap {
     public native ByteString get(byte[] key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash160 getHash160(byte[] key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash256 getHash256(byte[] key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -223,6 +263,45 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native ByteString get(ByteString key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash160}.
+     * <p>
+     * <b>Does not check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} to verify.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash160 getHash160(ByteString key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash256 getHash256(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -353,6 +432,46 @@ public class StorageMap {
     public native ByteString get(String key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash160 getHash160(String key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash256 getHash256(String key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
      * and converts it to a byte array.
      *
@@ -479,6 +598,46 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native ByteString get(int key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash160 getHash160(int key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash256 getHash256(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
