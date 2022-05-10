@@ -55,16 +55,16 @@ public class AddressUtilsTest {
 
     @Test
     public void testAddressToScriptHash_InvalidAddress() {
-        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
-                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88"));
+        assertThat(thrown.getMessage(), is("Not a valid NEO address."));
     }
 
     @Test
     public void testToScriptHashLargerThan25Chars() {
-        assertThrows("Not a valid NEO address.", IllegalArgumentException.class,
-                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88ue")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> addressToScriptHash("NfAmTpaR5kxaUDs6LDBR9DWau53NsEz88ue"));
+        assertThat(thrown.getMessage(), is("Not a valid NEO address."));
     }
 
     @Test

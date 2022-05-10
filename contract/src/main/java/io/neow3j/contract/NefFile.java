@@ -230,7 +230,7 @@ public class NefFile extends NeoSerializable {
             // Check sum
             checkSum = reader.readBytes(CHECKSUM_SIZE);
             if (!Arrays.equals(checkSum, computeChecksum(this))) {
-                throw new DeserializationException("The checksums did not match");
+                throw new DeserializationException("The checksums did not match.");
             }
         } catch (IOException e) {
             throw new DeserializationException(e);

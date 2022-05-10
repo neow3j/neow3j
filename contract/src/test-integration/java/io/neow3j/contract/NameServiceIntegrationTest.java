@@ -39,6 +39,7 @@ import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -294,8 +295,9 @@ public class NameServiceIntegrationTest {
         register(domain, CLIENT_1);
 
         // setRecord should throw an exception, since client2 should not be able to create a record.
-        assertThrows(TransactionConfigurationException.class,
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> setRecord(domain, RecordType.A, A_RECORD, CLIENT_2));
+        assertThat(thrown.getMessage(), containsString("The vm exited"));
 
         Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
                 .signers(calledByEntry(CLIENT_1), calledByEntry(CLIENT_2))
@@ -357,10 +359,10 @@ public class NameServiceIntegrationTest {
                 .getSendRawTransaction()
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
-        System.out.println("");
-        assertThrows("Could not get any record of type 'TXT' for the domain 'delete.neo'." + RecordType.TXT.jsonValue(),
-                InvocationFaultStateException.class,
-                () -> nameService.getRecord(domain, RecordType.TXT));
+        InvocationFaultStateException thrown =
+                assertThrows(InvocationFaultStateException.class, () -> nameService.getRecord(domain, RecordType.TXT));
+        assertThat(thrown.getMessage(),
+                containsString("Could not get any record of type TXT for the domain name 'delete.neo'."));
     }
 
     @Test

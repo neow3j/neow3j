@@ -1,22 +1,21 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.OnDeployment;
+import io.neow3j.devpack.annotations.OnVerification;
+import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import io.neow3j.types.ContractParameterType;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThrows;
-
-import io.neow3j.devpack.annotations.OnDeployment;
-import io.neow3j.devpack.annotations.OnVerification;
-import io.neow3j.types.ContractParameterType;
-import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.junit.Test;
 
 public class DeploymentMethodTest {
 
@@ -38,41 +37,31 @@ public class DeploymentMethodTest {
     @Test
     public void throwExceptionWhenDeployMethodHasIllegalSignature() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(DeploymentMethodIllegalReturnTypeTestContract.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("doDeploy", "Object", "boolean", "void")));
-
-        thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
-                DeploymentMethodIllegalParameterTypeTestContract.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("doDeploy", "Object", "boolean", "void")));
+                () -> new Compiler().compile(DeploymentMethodIllegalReturnTypeTestContract.class.getName()));
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList("doDeploy", "Object", "boolean", "void")));
 
         thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(
-                        DeploymentMethodMissingParameterTestContract.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList(
-                "doDeploy", "Object", "boolean", "void")));
+                () -> new Compiler().compile(DeploymentMethodIllegalParameterTypeTestContract.class.getName()));
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList("doDeploy", "Object", "boolean", "void")));
+
+        thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(DeploymentMethodMissingParameterTestContract.class.getName()));
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList("doDeploy", "Object", "boolean", "void")));
     }
 
     @Test
     public void throwExceptionWhenMultipleDeployMethodsAreUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(MultipleDeploymentMethodsTestContract.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("multiple methods", DEPLOY_METHOD_NAME)));
+                () -> new Compiler().compile(MultipleDeploymentMethodsTestContract.class.getName()));
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList("multiple methods", DEPLOY_METHOD_NAME)));
     }
 
     @Test
     public void throwExceptionWhenTwoMethodSignatureAnnotationsAreUsedOnTheSameMethod() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(MultipleMethodSignatureAnnotationsTestContract.class.getName())
-        );
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("annotatedMethod", "multiple annotations", "specific method signature")));
+                () -> new Compiler().compile(MultipleMethodSignatureAnnotationsTestContract.class.getName()));
+        assertThat(thrown.getMessage(),
+                stringContainsInOrder(asList("annotatedMethod", "multiple annotations", "specific method signature")));
     }
 
     static class DeploymentMethodTestContract {

@@ -81,7 +81,7 @@ public class Signer extends NeoSerializable {
         }
         if (this.allowedContracts.size() + allowedContracts.length > MAX_SIGNER_SUBITEMS) {
             throw new SignerConfigurationException(
-                    format("Tyring to set more than %s allowed contracts on a signer.", MAX_SIGNER_SUBITEMS));
+                    format("Trying to set more than %s allowed contracts on a signer.", MAX_SIGNER_SUBITEMS));
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
         if (!scopes.contains(WitnessScope.CUSTOM_CONTRACTS)) {
@@ -108,7 +108,7 @@ public class Signer extends NeoSerializable {
         }
         if (this.allowedGroups.size() + allowedGroups.length > MAX_SIGNER_SUBITEMS) {
             throw new SignerConfigurationException(
-                    format("Tyring to set more than %s allowed contract groups on a signer.", MAX_SIGNER_SUBITEMS));
+                    format("Trying to set more than %s allowed contract groups on a signer.", MAX_SIGNER_SUBITEMS));
         }
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.
         if (!scopes.contains(WitnessScope.CUSTOM_GROUPS)) {
@@ -130,7 +130,7 @@ public class Signer extends NeoSerializable {
         }
         if (this.rules.size() + rules.length > MAX_SIGNER_SUBITEMS) {
             throw new SignerConfigurationException(
-                    format("Tyring to set more than %s allowed witness rules on a signer.", MAX_SIGNER_SUBITEMS));
+                    format("Trying to set more than %s allowed witness rules on a signer.", MAX_SIGNER_SUBITEMS));
         }
         Arrays.stream(rules).forEach(r -> checkDepth(r.getCondition(), MAX_NESTING_DEPTH));
         scopes.remove(WitnessScope.NONE); // remove the none witness scope if it is present.

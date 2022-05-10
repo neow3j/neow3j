@@ -132,26 +132,25 @@ public class PermissionManifestTest {
 
     @Test
     public void withBothContractAndNativeContract() {
-        assertThrows("must either have the attribute 'contract' or 'nativeContract' set but not " +
-                "both", CompilerException.class, () -> new Compiler().compile(
-                PermissionManifestTestContractWithContractAndNativeContract.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
+                PermissionManifestTestContractWithContractAndNativeContract.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("must either have the attribute 'contract' or 'nativeContract' set but not both"));
     }
 
     @Test
     public void withoutBothContractAndNativeContract() {
-        assertThrows("must either have the attribute 'contract' or 'nativeContract' set but not " +
-                "both", CompilerException.class, () -> new Compiler().compile(
-                PermissionManifestTestContractWithoutContract.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(PermissionManifestTestContractWithoutContract.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("must either have the attribute 'contract' or 'nativeContract' set but not both"));
     }
 
     @Test
     public void withNoneNativeContractValue() {
-        assertThrows("The provided native contract does not exist.", CompilerException.class,
-                () -> new Compiler().compile(
-                        PermissionManifestTestContractWithNoneNativeContractValue.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
+                PermissionManifestTestContractWithNoneNativeContractValue.class.getName()));
+        assertThat(thrown.getMessage(), containsString("The provided native contract does not exist."));
     }
 
     @Test
@@ -162,10 +161,9 @@ public class PermissionManifestTest {
 
     @Test
     public void invalidNativeContract() {
-        assertThrows("There exists no native contract with ", IllegalArgumentException.class,
-                () -> NativeContract.valueOf(
-                        new Hash160("6a3828e0378f9f331c69476f016fe91f5bba8dbd"))
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> NativeContract.valueOf(new Hash160("6a3828e0378f9f331c69476f016fe91f5bba8dbd")));
+        assertThat(thrown.getMessage(), containsString("There exists no native contract with the provided hash"));
     }
 
     @Permission(contract = CONTRACT_HASH_1)
@@ -205,7 +203,7 @@ public class PermissionManifestTest {
     @Permissions({
             @Permission(contract = CONTRACT_HASH_1),
             @Permission(contract = CONTRACT_HASH_2,
-                    methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+                        methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
     })
     static class PermissionManifestTestContractWithPermissionsAnnotation {
 
@@ -223,7 +221,7 @@ public class PermissionManifestTest {
 
     @Permission(contract = CONTRACT_HASH_1)
     @Permission(contract = "invalidContractHashOrPubKey",
-            methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
+                methods = {CONTRACT_METHOD_1, CONTRACT_METHOD_2})
     static class PermissionManifestTestContractWithNotValidContractHashNorGroupKey {
 
         public static void main() {

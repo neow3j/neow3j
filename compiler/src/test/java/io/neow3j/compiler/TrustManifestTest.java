@@ -1,21 +1,21 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.Trust;
+import io.neow3j.devpack.annotations.Trust.Trusts;
+import io.neow3j.devpack.constants.NativeContract;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.List;
+
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThrows;
-
-import io.neow3j.devpack.annotations.Trust;
-import io.neow3j.devpack.annotations.Trust.Trusts;
-
-import java.io.IOException;
-import java.util.List;
-
-import io.neow3j.devpack.constants.NativeContract;
-import org.junit.Test;
 
 public class TrustManifestTest {
 
@@ -82,27 +82,25 @@ public class TrustManifestTest {
 
     @Test
     public void withBothContractAndNativeContract() {
-        assertThrows("must either have the attribute 'contract' or 'nativeContract' set but not " +
-                        "both",
-                CompilerException.class, () -> new Compiler().compile(
-                        TrustManifestTest.TrustManifestTestContractWithContractAndNativeContract.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TrustManifestTestContractWithContractAndNativeContract.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("must either have the attribute 'contract' or 'nativeContract' set but not both"));
     }
 
     @Test
     public void withoutBothContractAndNativeContract() {
-        assertThrows("requires either the attribute 'contract' or 'nativeContract' to be set.",
-                CompilerException.class, () -> new Compiler().compile(
-                        TrustManifestTest.TrustManifestTestContractWithoutContract.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TrustManifestTestContractWithoutContract.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("requires either the attribute 'contract' or 'nativeContract' to be set."));
     }
 
     @Test
     public void withNoneNativeContractValue() {
-        assertThrows("The provided native contract does not exist.", CompilerException.class,
-                () -> new Compiler().compile(
-                        TrustManifestTest.TrustManifestTestContractWithNoneNativeContractValue.class.getName())
-        );
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TrustManifestTestContractWithNoneNativeContractValue.class.getName()));
+        assertThat(thrown.getMessage(), containsString("The provided native contract does not exist."));
     }
 
     @Trust(contract = CONTRACT_HASH_1)

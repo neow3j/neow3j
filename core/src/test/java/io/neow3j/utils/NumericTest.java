@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
+import static io.neow3j.utils.Numeric.toHexStringNoPrefixZeroPadded;
 import static junit.framework.TestCase.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -53,26 +54,23 @@ public class NumericTest {
 
     @Test
     public void testQuantityDecodeLeadingZeroException() {
-        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
-                MessageDecodingException.class,
-                () -> Numeric.decodeQuantity("0x0400")
-        );
+        MessageDecodingException thrown =
+                assertThrows(MessageDecodingException.class, () -> Numeric.decodeQuantity("0x0400"));
+        assertThat(thrown.getMessage(), is("Value must be in format 0x[1-9]+[0-9]* or 0x0"));
     }
 
     @Test
     public void testQuantityDecodeMissingPrefix() {
-        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
-                MessageDecodingException.class,
-                () -> Numeric.decodeQuantity("ff")
-        );
+        MessageDecodingException thrown =
+                assertThrows(MessageDecodingException.class, () -> Numeric.decodeQuantity("ff"));
+        assertThat(thrown.getMessage(), is("Value must be in format 0x[1-9]+[0-9]* or 0x0"));
     }
 
     @Test
     public void testQuantityDecodeMissingValue() {
-        assertThrows("Value must be in format 0x[1-9]+[0-9]* or 0x0",
-                MessageDecodingException.class,
-                () -> Numeric.decodeQuantity("0x")
-        );
+        MessageDecodingException thrown =
+                assertThrows(MessageDecodingException.class, () -> Numeric.decodeQuantity("0x"));
+        assertThat(thrown.getMessage(), is("Value must be in format 0x[1-9]+[0-9]* or 0x0"));
     }
 
     @Test
@@ -80,18 +78,16 @@ public class NumericTest {
         assertThat(Numeric.encodeQuantity(BigInteger.valueOf(0)), is("0x0"));
         assertThat(Numeric.encodeQuantity(BigInteger.valueOf(1)), is("0x1"));
         assertThat(Numeric.encodeQuantity(BigInteger.valueOf(1024)), is("0x400"));
-        assertThat(Numeric.encodeQuantity(
-                BigInteger.valueOf(Long.MAX_VALUE)), is("0x7fffffffffffffff"));
-        assertThat(Numeric.encodeQuantity(
-                        new BigInteger("204516877000845695339750056077105398031")),
+        assertThat(Numeric.encodeQuantity(BigInteger.valueOf(Long.MAX_VALUE)), is("0x7fffffffffffffff"));
+        assertThat(Numeric.encodeQuantity(new BigInteger("204516877000845695339750056077105398031")),
                 is("0x99dc848b94efc27edfad28def049810f"));
     }
 
     @Test
     public void testQuantityEncodeNegative() {
-        assertThrows("Negative values are not supported", MessageEncodingException.class,
-                () -> Numeric.encodeQuantity(BigInteger.valueOf(-1))
-        );
+        MessageEncodingException thrown =
+                assertThrows(MessageEncodingException.class, () -> Numeric.encodeQuantity(BigInteger.valueOf(-1)));
+        assertThat(thrown.getMessage(), is("Negative values are not supported"));
     }
 
     @Test
@@ -134,9 +130,9 @@ public class NumericTest {
 
     @Test
     public void testToBytesPaddedInvalid() {
-        assertThrows("Input is too large to put in byte array of size 7", RuntimeException.class,
-                () -> Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7)
-        );
+        RuntimeException thrown = assertThrows(RuntimeException.class,
+                () -> Numeric.toBytesPadded(BigInteger.valueOf(Long.MAX_VALUE), 7));
+        assertThat(thrown.getMessage(), is("Input is too large to put in byte array of size 7"));
     }
 
     @Test
@@ -144,11 +140,9 @@ public class NumericTest {
         assertThat(Numeric.hexStringToByteArray(""), is(new byte[]{}));
         assertThat(Numeric.hexStringToByteArray("0"), is(new byte[]{0}));
         assertThat(Numeric.hexStringToByteArray("1"), is(new byte[]{0x1}));
-        assertThat(Numeric.hexStringToByteArray(HEX_RANGE_STRING),
-                is(HEX_RANGE_ARRAY));
+        assertThat(Numeric.hexStringToByteArray(HEX_RANGE_STRING), is(HEX_RANGE_ARRAY));
 
-        assertThat(Numeric.hexStringToByteArray("0x123"),
-                is(new byte[]{0x1, 0x23}));
+        assertThat(Numeric.hexStringToByteArray("0x123"), is(new byte[]{0x1, 0x23}));
     }
 
     @Test
@@ -160,20 +154,16 @@ public class NumericTest {
 
     @Test
     public void testToHexStringNoPrefixZeroPadded() {
-        assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
-                        BigInteger.ZERO,
-                        5),
-                is("00000"));
+        assertThat(toHexStringNoPrefixZeroPadded(BigInteger.ZERO, 5), is("00000"));
 
         assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
+                toHexStringNoPrefixZeroPadded(
                         new BigInteger("11c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("11c52b08330e05d731e38c856c1043288f7d9744"));
 
         assertThat(
-                Numeric.toHexStringNoPrefixZeroPadded(
+                toHexStringNoPrefixZeroPadded(
                         new BigInteger("01c52b08330e05d731e38c856c1043288f7d9744", 16),
                         40),
                 is("01c52b08330e05d731e38c856c1043288f7d9744"));
@@ -202,26 +192,26 @@ public class NumericTest {
 
     @Test
     public void testToHexStringZeroPaddedNegative() {
-        assertThrows("Value cannot be negative", UnsupportedOperationException.class,
-                () -> Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20)
-        );
+        UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class,
+                () -> toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 20));
+        assertThat(thrown.getMessage(), is("Value cannot be negative."));
     }
 
     @Test
     public void testToHexStringZeroPaddedTooLargs() {
-        assertThrows("Value cannot be negative", UnsupportedOperationException.class,
-                () -> Numeric.toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5)
-        );
+        UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class,
+                () -> toHexStringNoPrefixZeroPadded(BigInteger.valueOf(-1), 5));
+        assertThat(thrown.getMessage(), is("Value cannot be negative."));
     }
 
     @Test
     public void convertingToHexStringAndZeroPaddingAnOddLengthHexString() {
-        assertThat(Numeric.toHexStringNoPrefixZeroPadded(new BigInteger("0e", 16)), is("0e"));
+        assertThat(toHexStringNoPrefixZeroPadded(new BigInteger("0e", 16)), is("0e"));
     }
 
     @Test
     public void convertingToHexStringAndZeroPaddingAnEvenLengthHexString() {
-        assertThat(Numeric.toHexStringNoPrefixZeroPadded(new BigInteger("1e", 16)), is("1e"));
+        assertThat(toHexStringNoPrefixZeroPadded(new BigInteger("1e", 16)), is("1e"));
     }
 
     @Test

@@ -8,6 +8,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -32,11 +34,11 @@ public class JsonRpc2_0Neow3jTest {
     }
 
     @Test
-    public void testThrowsRuntimeExceptionIfFailedToCloseService() throws Exception {
-        doThrow(new IOException("Failed to close"))
-                .when(service).close();
+    public void testThrowsRuntimeExceptionIfFailedToCloseService() throws IOException {
+        doThrow(new IOException()).when(service).close();
 
-        assertThrows("Failed to close", RuntimeException.class, () -> neow3j.shutdown());
+        RuntimeException thrown = assertThrows(RuntimeException.class, () -> neow3j.shutdown());
+        assertThat(thrown.getMessage(), is("Failed to close neow3j service"));
     }
 
 }

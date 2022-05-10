@@ -137,9 +137,9 @@ public class FungibleTokenTest {
 
     @Test
     public void testTransfer_illegalAmountProvided() {
-        assertThrows("amount must be greater than or equal to 0", IllegalArgumentException.class,
-                () -> neoToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("-2"))
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> neoToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("-2")));
+        assertThat(thrown.getMessage(), is("The amount must be greater than or equal to 0."));
     }
 
 }

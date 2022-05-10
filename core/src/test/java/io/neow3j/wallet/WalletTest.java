@@ -5,7 +5,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration;
 import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.google.common.io.Files;
-import io.neow3j.types.Hash160;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -13,9 +12,12 @@ import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.types.Hash160;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;
 import io.neow3j.wallet.nep6.NEP6Wallet;
+import org.junit.Rule;
+import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,13 +30,11 @@ import java.security.NoSuchProviderException;
 import java.util.Collections;
 import java.util.Map;
 
-import org.junit.Rule;
-import org.junit.Test;
-
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -75,8 +75,8 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletWithAccounts_noAccounts() {
-        assertThrows("No accounts provided to initialize a wallet", IllegalArgumentException.class,
-                Wallet::withAccounts);
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, Wallet::withAccounts);
+        assertThat(thrown.getMessage(), is("No accounts provided to initialize a wallet."));
     }
 
     @Test
@@ -137,9 +137,9 @@ public class WalletTest {
 
     @Test
     public void testCreateWalletFromNEP6File_noDefaultAccount() {
-        assertThrows("wallet does not contain any default account.", IllegalArgumentException.class,
-                () -> Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json")
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> Wallet.fromNEP6Wallet("wallet/wallet_noDefaultAccount.json"));
+        assertThat(thrown.getMessage(), is("The NEP-6 wallet does not contain any default account."));
     }
 
     @Test
@@ -174,9 +174,8 @@ public class WalletTest {
         w1.addAccounts(acc);
         Wallet w2 = Wallet.create();
 
-        assertThrows("is already contained in a wallet.", IllegalArgumentException.class,
-                () -> w2.addAccounts(acc)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> w2.addAccounts(acc));
+        assertThat(thrown.getMessage(), containsString("is already contained in a wallet."));
     }
 
     @Test
@@ -230,10 +229,9 @@ public class WalletTest {
         assertEquals(w, lastRemainingAccount.getWallet());
         assertEquals(lastRemainingAccount, w.getDefaultAccount());
 
-        assertThrows("is the only account in the wallet. It cannot be removed.",
-                IllegalStateException.class,
-                () -> w.removeAccount(lastRemainingAccount.getScriptHash())
-        );
+        IllegalStateException thrown =
+                assertThrows(IllegalStateException.class, () -> w.removeAccount(lastRemainingAccount.getScriptHash()));
+        assertThat(thrown.getMessage(), containsString("is the only account in the wallet. It cannot be removed."));
     }
 
     @Test
@@ -263,8 +261,8 @@ public class WalletTest {
         Wallet w = Wallet.withAccounts(a);
         w.addAccounts(a);
 
-        assertThrows("Account private key is available but not encrypted.",
-                AccountStateException.class, w::toNEP6Wallet);
+        AccountStateException thrown = assertThrows(AccountStateException.class, w::toNEP6Wallet);
+        assertThat(thrown.getMessage(), is("Account private key is available but not encrypted."));
     }
 
     @Test
@@ -329,9 +327,8 @@ public class WalletTest {
     public void failSaveToFileWithoutDestination() {
         Wallet w = Wallet.create();
 
-        assertThrows("Destination file cannot be null.", IllegalArgumentException.class,
-                () -> w.saveNEP6Wallet(null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> w.saveNEP6Wallet(null));
+        assertThat(thrown.getMessage(), is("Destination file cannot be null."));
     }
 
     @Test
@@ -456,18 +453,17 @@ public class WalletTest {
         Wallet w = Wallet.create();
         Account a = Account.create();
 
-        assertThrows("Wallet does not contain the account", IllegalArgumentException.class,
-                () -> w.defaultAccount(a.getScriptHash())
-        );
+        IllegalArgumentException thrown =
+                assertThrows(IllegalArgumentException.class, () -> w.defaultAccount(a.getScriptHash()));
+        assertThat(thrown.getMessage(), containsString("Wallet does not contain the account"));
     }
 
     @Test
     public void provideNoAccountToSetDefault() {
         Wallet w = Wallet.create();
 
-        assertThrows("No account provided", IllegalArgumentException.class,
-                () -> w.defaultAccount(null)
-        );
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class, () -> w.defaultAccount(null));
+        assertThat(thrown.getMessage(), is("No account provided to set default."));
     }
 
     @Test
