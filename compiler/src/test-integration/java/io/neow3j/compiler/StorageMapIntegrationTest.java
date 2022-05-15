@@ -12,6 +12,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.StackItemType;
+import io.neow3j.wallet.Account;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -33,6 +34,7 @@ import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
@@ -46,10 +48,18 @@ public class StorageMapIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StorageMapIntegrationTest.StorageMapIntegrationTestContract.class.getName());
+    public static ContractTestRule ct =
+            new ContractTestRule(StorageMapIntegrationTest.StorageMapIntegrationTestContract.class.getName());
 
-    // keys and data to tests StorageMap initialization
+    // Store data to a key parameter that contains the prefix
+    private static final String STORE_DATA_FULLKEY = "storeDataFullKey";
+    // Store data to a key parameter that will be prepended by a default prefix
+    private static final String STORE_DATA = "storeData";
+    private static final String STORE_WITH_INT_KEY = "storeWithIntKey";
+    private static final String STORE_INT = "storeInteger";
+    private static final String REMOVE_DATA = "removeData";
+
+    // Keys and data to tests StorageMap initialization
     private static final byte PREFIX1 = 0x01;
     private static final String KEY1 = "01";
     private static final String DATA1 = "0001020304";
@@ -86,52 +96,48 @@ public class StorageMapIntegrationTest {
     private static final Integer KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
+    private static Hash256 hash256;
+
     @BeforeClass
     public static void setUp() throws Throwable {
-        // store data to a key parameter that contains the prefix
-        String storeDataFullKey = "storeDataFullKey";
-        // store data to a key parameter that will be prepended by a default prefix
-        String storeData = "storeData";
-        String storeInteger = "storeInteger";
-
         byte[] bytes = concatenate(PREFIX1, hexStringToByteArray(KEY1));
         ContractParameter key = byteArray(bytes);
         ContractParameter data = byteArray(DATA1);
-        ct.invokeFunctionAndAwaitExecution(storeDataFullKey, key, data);
+        hash256 = ct.invokeFunctionAndAwaitExecution(STORE_DATA_FULLKEY, key, data);
 
         bytes = concatenate(PREFIX2, hexStringToByteArray(KEY2));
         key = byteArray(bytes);
         data = byteArray(DATA2);
-        ct.invokeFunctionAndAwaitExecution(storeDataFullKey, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA_FULLKEY, key, data);
 
         bytes = concatenate(PREFIX3.getBytes(StandardCharsets.UTF_8), hexStringToByteArray(KEY3));
         key = byteArray(bytes);
         data = byteArray(DATA3);
-        ct.invokeFunctionAndAwaitExecution(storeDataFullKey, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA_FULLKEY, key, data);
 
         key = byteArray(KEY4);
         data = byteArray(DATA4);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArrayFromString(KEY5);
         data = byteArrayFromString(DATA5);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = byteArrayFromString(KEY6);
         data = integer(DATA6);
-        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_INT, key, data);
 
         key = integer(KEY7);
         data = byteArrayFromString(DATA7);
-        ct.invokeFunctionAndAwaitExecution(storeData, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
 
         key = integer(KEY8);
         data = integer(DATA8);
-        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_INT, key, data);
 
         key = integer(KEY9);
         data = bool(BOOLEAN9);
-        ct.invokeFunctionAndAwaitExecution(storeInteger, key, data);
+        ct.invokeFunctionAndAwaitExecution(STORE_INT, key, data);
     }
 
     // region create map
@@ -180,6 +186,31 @@ public class StorageMapIntegrationTest {
         ContractParameter param = byteArray(KEY4);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA4));
+    }
+
+    @Test
+    public void getHash160ByByteStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
+    }
+
+    @Test
+    public void getHash256ByByteStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
     }
 
     @Test
@@ -233,6 +264,31 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
+    public void getHash160ByByteArrayKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
+    }
+
+    @Test
+    public void getHash256ByByteArrayKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
+    }
+
+    @Test
     public void getByteArrayByByteArrayKey() throws IOException {
         ContractParameter param = byteArray(KEY4);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
@@ -280,6 +336,31 @@ public class StorageMapIntegrationTest {
         ContractParameter param = string(KEY5);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA5));
+    }
+
+    @Test
+    public void getHash160ByStringKey() throws Throwable {
+        ContractParameter key = string(testName.getMethodName());
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
+    }
+
+    @Test
+    public void getHash256ByStringKey() throws Throwable {
+        ContractParameter key = string(testName.getMethodName());
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
     }
 
     @Test
@@ -331,6 +412,31 @@ public class StorageMapIntegrationTest {
         ContractParameter param = integer(KEY7);
         InvocationResult res = ct.callInvokeFunction(testName, param).getInvocationResult();
         assertThat(res.getStack().get(0).getString(), is(DATA7));
+    }
+
+    @Test
+    public void getHash160ByIntegerKey() throws Throwable {
+        ContractParameter key = integer(1234567891);
+        Hash160 hash160 = Account.create().getScriptHash();
+        ContractParameter data = hash160(hash160);
+        ct.invokeFunctionAndAwaitExecution(STORE_WITH_INT_KEY, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
+    }
+
+    @Test
+    public void getHash256ByIntegerKey() throws Throwable {
+        ContractParameter key = integer(1234567892);
+        ContractParameter data = hash256(hash256);
+        ct.invokeFunctionAndAwaitExecution(STORE_WITH_INT_KEY, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, key);
     }
 
     @Test
@@ -667,7 +773,7 @@ public class StorageMapIntegrationTest {
         static StorageContext ctx = Storage.getStorageContext();
         static StorageMap map = new StorageMap(ctx, prefix.toByteArray());
 
-        // region store data
+        // region store and delete data
 
         public static void storeDataFullKey(byte[] fullKey, byte[] data) {
             Storage.put(ctx, fullKey, data);
@@ -677,11 +783,19 @@ public class StorageMapIntegrationTest {
             map.put(key, data);
         }
 
+        public static void storeWithIntKey(int key, ByteString data) {
+            map.put(key, data);
+        }
+
         public static void storeInteger(ByteString key, int data) {
             map.put(key, data);
         }
 
-        // endregion store data
+        public static void removeData(ByteString key) {
+            map.delete(key);
+        }
+
+        // endregion store and delete data
         // region initialize StorageMap
 
         public static ByteString createMapWithByteStringPrefix(ByteString prefix, ByteString key) {
@@ -722,6 +836,14 @@ public class StorageMapIntegrationTest {
             return map.get(s);
         }
 
+        public static io.neow3j.devpack.Hash160 getHash160ByByteStringKey(ByteString s) {
+            return map.getHash160(s);
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByByteStringKey(ByteString s) {
+            return map.getHash256(s);
+        }
+
         public static byte[] getByteArrayByByteStringKey(ByteString s) {
             return map.getByteArray(s);
         }
@@ -747,6 +869,14 @@ public class StorageMapIntegrationTest {
 
         public static ByteString getByByteArrayKey(byte[] b) {
             return map.get(b);
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByByteArrayKey(byte[] s) {
+            return map.getHash160(s);
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByByteArrayKey(byte[] s) {
+            return map.getHash256(s);
         }
 
         public static byte[] getByteArrayByByteArrayKey(byte[] b) {
@@ -776,6 +906,14 @@ public class StorageMapIntegrationTest {
             return map.get(s);
         }
 
+        public static io.neow3j.devpack.Hash160 getHash160ByStringKey(String s) {
+            return map.getHash160(s);
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByStringKey(String s) {
+            return map.getHash256(s);
+        }
+
         public static byte[] getByteArrayByStringKey(String s) {
             return map.getByteArray(s);
         }
@@ -801,6 +939,14 @@ public class StorageMapIntegrationTest {
 
         public static ByteString getByIntegerKey(int i) {
             return map.get(i);
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByIntegerKey(int i) {
+            return map.getHash160(i);
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByIntegerKey(int i) {
+            return map.getHash256(i);
         }
 
         public static byte[] getByteArrayByIntegerKey(int i) {
