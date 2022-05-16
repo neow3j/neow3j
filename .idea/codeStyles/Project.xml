@@ -23,7 +23,6 @@
       <option name="METHOD_CALL_CHAIN_WRAP" value="1" />
       <option name="BINARY_OPERATION_WRAP" value="1" />
       <option name="ARRAY_INITIALIZER_WRAP" value="1" />
-      <option name="ASSIGNMENT_WRAP" value="1" />
       <option name="ASSERT_STATEMENT_WRAP" value="1" />
       <option name="IF_BRACE_FORCE" value="3" />
       <option name="DOWHILE_BRACE_FORCE" value="3" />
