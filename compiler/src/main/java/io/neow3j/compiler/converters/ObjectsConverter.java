@@ -358,6 +358,7 @@ public class ObjectsConverter implements Converter {
         boolean isFirstCall = true;
         while (insn != null) {
             if (isCallToStringBuilderAppend(insn)) {
+                throwIfNotStringType(insn.getPrevious());
                 if (!isFirstCall) {
                     neoMethod.addInstruction(new NeoInstruction(OpCode.CAT));
                 }
@@ -382,6 +383,20 @@ public class ObjectsConverter implements Converter {
                     "method.");
         }
         return insn;
+    }
+
+    // Ensures that the instruction (the one to append in the StringBuilder) is a string. Otherwise, throw an exception.
+    private static void throwIfNotStringType(AbstractInsnNode insn) {
+        int type = insn.getType();
+        if (type == AbstractInsnNode.INT_INSN) {
+            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+        } else if (type == AbstractInsnNode.METHOD_INSN &&
+                !((MethodInsnNode) insn).desc.endsWith("Ljava/lang/String;")) {
+            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+        } else if (type == AbstractInsnNode.FIELD_INSN &&
+                !((FieldInsnNode) insn).desc.endsWith("Ljava/lang/String;")) {
+            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+        }
     }
 
     private static boolean isCallToStringBuilderAppend(AbstractInsnNode insn) {

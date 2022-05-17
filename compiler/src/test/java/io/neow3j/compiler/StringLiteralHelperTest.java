@@ -2,13 +2,16 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Runtime;
+import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.contracts.NeoToken;
 import org.junit.Test;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
 import static org.junit.Assert.assertThrows;
 
@@ -47,6 +50,34 @@ public class StringLiteralHelperTest {
                 () -> new Compiler().compile(IllegalInputConverterMethod.class.getName())
         );
         assertThat(thrown.getMessage(), containsString("constant string literals"));
+    }
+
+    @Test
+    public void unsupportedStringConcatenationWithStaticValue() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UnsupportedStringConcatenationWithStaticValue.class.getName()));
+        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+    }
+
+    @Test
+    public void unsupportedStringConcatenationWithHash160() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UnsupportedStringConcatenationWithHash160.class.getName()));
+        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+    }
+
+    @Test
+    public void unsupportedStringConcatenationWithMethodReturningInt() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UnsupportedStringConcatenationWithMethodReturningInt.class.getName()));
+        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+    }
+
+    @Test
+    public void unsupportedStringConcatenationWithInteger() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UnsupportedStringConcatenationWithInteger.class.getName()));
+        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
     }
 
     static class InvalidAddressVariable {
@@ -90,6 +121,33 @@ public class StringLiteralHelperTest {
             return bytes;
         }
 
+    }
+
+    static class UnsupportedStringConcatenationWithStaticValue {
+        static int value = 51;
+
+        public static String main() {
+            return "area" + value;
+        }
+    }
+
+    static class UnsupportedStringConcatenationWithHash160 {
+        public static String main(Hash160 hash160) {
+            return "hash: " + Hash160.isValid(hash160);
+        }
+    }
+
+    static class UnsupportedStringConcatenationWithMethodReturningInt {
+
+        public static String main() {
+            return "token" + NeoToken.decimals();
+        }
+    }
+
+    static class UnsupportedStringConcatenationWithInteger {
+        public static String main(byte[] s3) {
+            return Helper.toString(s3) + 25;
+        }
     }
 
 }
