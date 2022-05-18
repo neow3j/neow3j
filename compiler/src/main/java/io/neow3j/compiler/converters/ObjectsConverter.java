@@ -389,14 +389,27 @@ public class ObjectsConverter implements Converter {
     private static void throwIfNotStringType(AbstractInsnNode insn) {
         int type = insn.getType();
         if (type == AbstractInsnNode.INT_INSN) {
-            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+            throw new CompilerException(
+                    "String concatenation with an array or a type other than string or char is not supported.");
         } else if (type == AbstractInsnNode.METHOD_INSN &&
-                !((MethodInsnNode) insn).desc.endsWith("Ljava/lang/String;")) {
-            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+                !isNonArrayStringOrCharType(((MethodInsnNode) insn).desc)) {
+            throw new CompilerException(
+                    "String concatenation with an array or a type other than string or char is not supported.");
         } else if (type == AbstractInsnNode.FIELD_INSN &&
-                !((FieldInsnNode) insn).desc.endsWith("Ljava/lang/String;")) {
-            throw new CompilerException("Concatenation of non-string with string argument is not supported.");
+                !isNonArrayStringOrCharType("()" + ((FieldInsnNode) insn).desc)) {
+            // The added "()" is imitating a method to retrieve a return type due to the inability of retrieving a
+            // usable internal name from a non-method Type.
+            throw new CompilerException(
+                    "String concatenation with an array or a type other than string or char is not supported.");
         }
+    }
+
+    private static boolean isNonArrayStringOrCharType(String desc) {
+        Type returnType = Type.getMethodType(desc).getReturnType();
+        String internalReturnTypeName = returnType.getInternalName();
+        return internalReturnTypeName.equals(getInternalName(String.class)) ||
+                internalReturnTypeName.equals(getInternalName(Character.class)) ||
+                internalReturnTypeName.equals("C"); // Primitive type char
     }
 
     private static boolean isCallToStringBuilderAppend(AbstractInsnNode insn) {

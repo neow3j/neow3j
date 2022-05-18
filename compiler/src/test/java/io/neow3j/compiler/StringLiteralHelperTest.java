@@ -17,6 +17,9 @@ import static org.junit.Assert.assertThrows;
 
 public class StringLiteralHelperTest {
 
+    private static final String UNSUPPORTED_STRING_CAT_MESSAGE = "String concatenation with an array or a type other " +
+            "than string or char is not supported.";
+
     @Test
     public void invalidAddressStringLiteralThrowsCompilerExceptions() {
         CompilerException thrown = assertThrows(CompilerException.class,
@@ -56,28 +59,35 @@ public class StringLiteralHelperTest {
     public void unsupportedStringConcatenationWithStaticValue() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedStringConcatenationWithStaticValue.class.getName()));
-        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_STRING_CAT_MESSAGE));
     }
 
     @Test
     public void unsupportedStringConcatenationWithHash160() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedStringConcatenationWithHash160.class.getName()));
-        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_STRING_CAT_MESSAGE));
     }
 
     @Test
     public void unsupportedStringConcatenationWithMethodReturningInt() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedStringConcatenationWithMethodReturningInt.class.getName()));
-        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_STRING_CAT_MESSAGE));
     }
 
     @Test
     public void unsupportedStringConcatenationWithInteger() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(UnsupportedStringConcatenationWithInteger.class.getName()));
-        assertThat(thrown.getMessage(), is("Concatenation of non-string with string argument is not supported."));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_STRING_CAT_MESSAGE));
+    }
+
+    @Test
+    public void unsupportedStringConcatenationWithArray() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(UnsupportedStringConcatenationWithArray.class.getName()));
+        assertThat(thrown.getMessage(), is(UNSUPPORTED_STRING_CAT_MESSAGE));
     }
 
     static class InvalidAddressVariable {
@@ -147,6 +157,16 @@ public class StringLiteralHelperTest {
     static class UnsupportedStringConcatenationWithInteger {
         public static String main(byte[] s3) {
             return Helper.toString(s3) + 25;
+        }
+    }
+
+    static class UnsupportedStringConcatenationWithArray {
+        public static String[] getArray() {
+            return new String[]{"hello ", "world!"};
+        }
+
+        public static String main(byte[] s3) {
+            return Helper.toString(s3) + getArray();
         }
     }
 

@@ -51,15 +51,39 @@ public class StringConcatenationTest {
     }
 
     @Test
+    public void concatInStaticVariableWithChar() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwon"));
+    }
+
+    @Test
     public void concatStringWithMethodReturn() throws IOException {
         InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
         assertThat(response.getStack().get(0).getString(), is("awesome token"));
     }
 
     @Test
+    public void concatStringWithMethodReturnChar() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack().get(0).getString(), is("neow3j"));
+    }
+
+    @Test
     public void concatStringWithStaticStringValue() throws IOException {
         InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
         assertThat(response.getStack().get(0).getString(), is("hello world!"));
+    }
+
+    @Test
+    public void concatStringWithStaticCharValue() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack().get(0).getString(), is("A and B"));
+    }
+
+    @Test
+    public void concatStringWithStaticCharWrapperValue() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack().get(0).getString(), is("A and B"));
     }
 
     @Test
@@ -75,15 +99,35 @@ public class StringConcatenationTest {
         assertThat(response.getStack().get(0).getString(), is("hello world"));
     }
 
+    @Test
+    public void concatWithCharValueFromStruct() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack().get(0).getString(), is("hello C"));
+    }
+
+    @Test
+    public void concatWithCharWrapperValueFromStruct() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertThat(response.getStack().get(0).getString(), is("hello N"));
+    }
+
     static class StringConcatenation {
 
         private static final String staticString = "one" + "two" + NeoToken.symbol();
+        private static final String staticStringWithChar = "one" + "two" + getCharVal();
+
         static String value1 = "hello";
         static final int value2 = 51;
+        static char charVal = 'B';
+        static Character charWrapperVal = 'B';
 
 
         public static String getStringValue() {
             return "token";
+        }
+
+        public static char getCharVal() {
+            return 'n';
         }
 
         public static String concatTwoStrings(String s1, String s2) {
@@ -98,12 +142,28 @@ public class StringConcatenationTest {
             return staticString;
         }
 
+        public static String concatInStaticVariableWithChar() {
+            return staticStringWithChar;
+        }
+
         public static String concatStringWithMethodReturn() {
             return "awesome " + getStringValue();
         }
 
+        public static String concatStringWithMethodReturnChar() {
+            return getCharVal() + "eow3j";
+        }
+
         public static String concatStringWithStaticStringValue() {
             return value1 + " world!";
+        }
+
+        public static String concatStringWithStaticCharValue() {
+            return "A and " + charVal;
+        }
+
+        public static String concatStringWithStaticCharWrapperValue() {
+            return "A and " + charWrapperVal;
         }
 
         public static String concatStringWithStaticFinalIntegerValue() {
@@ -111,15 +171,28 @@ public class StringConcatenationTest {
         }
 
         public static String concatWithValueFromStruct() {
-            return "hello " + new POJO("world").value;
+            return "hello " + new POJO("world", 'C', 'N').strVal;
+        }
+
+        public static String concatWithCharValueFromStruct() {
+            return "hello " + new POJO("world", 'C', 'N').charVal;
+        }
+
+        public static String concatWithCharWrapperValueFromStruct() {
+            return "hello " + new POJO("world", 'C', 'N').charWrapperVal;
         }
 
         @Struct
         static class POJO {
-            String value;
+            String strVal;
+            char charVal;
 
-            POJO(String value) {
-                this.value = value;
+            Character charWrapperVal;
+
+            POJO(String strVal, char charVal, Character charWrapperVal) {
+                this.strVal = strVal;
+                this.charVal = charVal;
+                this.charWrapperVal = charWrapperVal;
             }
         }
 
