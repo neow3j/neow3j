@@ -214,7 +214,7 @@ public class NNSIntegrationTest {
 
     }
 
-    @ContractHash("0759376c6b3e3163b1e7afcbe84490f6e41ba1a7")
+    @ContractHash("4a65798c64826ac26765ae7a1bc4ddcc78e35ea5")
     static class CustomNeoNameService extends NeoNameService {
     }
 
