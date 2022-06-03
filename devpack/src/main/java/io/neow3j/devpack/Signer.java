@@ -10,8 +10,6 @@ import io.neow3j.transaction.WitnessScope;
  */
 public class Signer {
 
-    public ByteString serialized;
-
     /**
      * The account of the signer.
      */

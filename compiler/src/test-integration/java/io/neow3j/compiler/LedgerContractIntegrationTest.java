@@ -132,35 +132,15 @@ public class LedgerContractIntegrationTest {
         assertThat(signers, hasSize(2));
 
         List<StackItem> signer1 = signers.get(0).getList();
-        assertThat(signer1, hasSize(6));
+        assertThat(signer1, hasSize(5));
         List<StackItem> signer2 = signers.get(1).getList();
-        assertThat(signer2, hasSize(6));
+        assertThat(signer2, hasSize(5));
 
-        String expectedSerialized = reverseHexString(ct.getClient1().getScriptHash().toString()) //  account
-                + toHexStringNoPrefix(WitnessScope.WITNESS_RULES.byteValue()) // scope
-                + "" // would be allowedContracts
-                + "" // would be allowedGroups
-                + toHexStringNoPrefix((byte) 2) // numer of rules
-                // Rule 1
-                + toHexStringNoPrefix(WitnessAction.DENY.byteValue()) // action
-                + toHexStringNoPrefix(WitnessConditionType.OR.byteValue()) // condition
-                + toHexStringNoPrefix((byte) 2) // size of expressions in or condition
-                + toHexStringNoPrefix(WitnessConditionType.SCRIPT_HASH.byteValue()) // scripthash type
-                + reverseHexString(neoTokenHash()) // script hash value
-                + toHexStringNoPrefix(WitnessConditionType.CALLED_BY_ENTRY.byteValue()) // calledbyentry type
-                // Rule 2
-                + toHexStringNoPrefix(WitnessAction.ALLOW.byteValue()) // action
-                + toHexStringNoPrefix(WitnessConditionType.NOT.byteValue()) // condition
-                + toHexStringNoPrefix(WitnessConditionType.BOOLEAN.byteValue()) // boolean type
-                + toHexStringNoPrefix((byte) 0); // false
-
-        assertThat(signer2.get(0).getHexString(), is(expectedSerialized));
-
-        assertThat(signer2.get(1).getAddress(), is(ct.getClient1().getAddress()));
-        assertThat(signer2.get(2).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
+        assertThat(signer2.get(0).getAddress(), is(ct.getClient1().getAddress()));
+        assertThat(signer2.get(1).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
+        assertThat(signer2.get(2).getList(), hasSize(0));
         assertThat(signer2.get(3).getList(), hasSize(0));
-        assertThat(signer2.get(4).getList(), hasSize(0));
-        List<StackItem> rules = signer2.get(5).getList();
+        List<StackItem> rules = signer2.get(4).getList();
         assertThat(rules, hasSize(2));
 
         List<StackItem> rule1 = rules.get(0).getList();
@@ -205,28 +185,24 @@ public class LedgerContractIntegrationTest {
         assertThat(stack, hasSize(1));
         List<StackItem> signerList = stack.get(0).getList();
         assertThat(signerList, hasSize(2));
-        assertThat(signerList.get(1).getList().get(2).getInteger().byteValue(),
+        assertThat(signerList.get(1).getList().get(1).getInteger().byteValue(),
                 is(WitnessScope.WITNESS_RULES.byteValue()));
-        assertThat(signerList.get(1).getList().get(5).getList(), hasSize(2)); // 2 rules
+        assertThat(signerList.get(1).getList().get(4).getList(), hasSize(2)); // 2 rules
 
         response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(0));
         stack = response.getInvocationResult().getStack();
         List<StackItem> signer = stack.get(0).getList();
-        assertThat(signer, hasSize(6));
-        assertThat(signer.get(1).getAddress(), is(ct.getDefaultAccount().getAddress()));
-        assertThat(signer.get(2).getInteger().byteValue(), is(WitnessScope.GLOBAL.byteValue()));
+        assertThat(signer, hasSize(5));
+        assertThat(signer.get(0).getAddress(), is(ct.getDefaultAccount().getAddress()));
+        assertThat(signer.get(1).getInteger().byteValue(), is(WitnessScope.GLOBAL.byteValue()));
 
         response = ct.callInvokeFunction("getTransactionSigner", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
         signer = stack.get(0).getList();
-        assertThat(signer, hasSize(6));
-        assertThat(signer.get(1).getAddress(), is(ct.getClient1().getAddress()));
-        assertThat(signer.get(2).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
-        assertThat(signer.get(5).getList(), hasSize(2));
-
-        response = ct.callInvokeFunction("getTransactionSignerSerialized", hash256(preparedTx), integer(1));
-        stack = response.getInvocationResult().getStack();
-        assertNotNull(stack.get(0).getString());
+        assertThat(signer, hasSize(5));
+        assertThat(signer.get(0).getAddress(), is(ct.getClient1().getAddress()));
+        assertThat(signer.get(1).getInteger().byteValue(), is(WitnessScope.WITNESS_RULES.byteValue()));
+        assertThat(signer.get(4).getList(), hasSize(2));
 
         response = ct.callInvokeFunction("getTransactionSignerAccount", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
@@ -373,10 +349,6 @@ public class LedgerContractIntegrationTest {
 
         public static Signer getTransactionSigner(Hash256 txHash, int index) {
             return LedgerContract.getTransactionSigners(txHash)[index];
-        }
-
-        public static ByteString getTransactionSignerSerialized(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].serialized;
         }
 
         public static Hash160 getTransactionSignerAccount(Hash256 txHash, int index) {
