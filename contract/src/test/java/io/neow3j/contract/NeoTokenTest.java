@@ -44,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NeoTokenTest {
 
@@ -403,6 +404,16 @@ public class NeoTokenTest {
                 "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
 
         assertTrue(new NeoToken(neow).isCandidate(pubKey));
+    }
+
+    @Test
+    public void getAllCandidates() {
+        fail();
+    }
+
+    @Test
+    public void getCandidateVotes() {
+        fail();
     }
 
 }

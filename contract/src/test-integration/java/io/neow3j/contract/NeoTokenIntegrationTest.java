@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 public class NeoTokenIntegrationTest {
 
@@ -79,6 +80,19 @@ public class NeoTokenIntegrationTest {
 
         candidates = neoToken.getCandidates();
         assertThat(candidates.keySet(), not(hasItem(CLIENT_1.getECKeyPair().getPublicKey())));
+    }
+
+    @Test
+    public void testGetAllCandidates() throws IOException {
+        fail();
+        Map<ECKeyPair.ECPublicKey, BigInteger> allCandidates = neoToken.getAllCandidates();
+    }
+
+    @Test
+    public void testGetCandidateVotes() throws IOException {
+        fail();
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey("");
+        BigInteger votes = neoToken.getCandidateVotes(pubKey);
     }
 
     @Test

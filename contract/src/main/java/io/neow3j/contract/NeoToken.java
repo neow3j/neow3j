@@ -25,6 +25,7 @@ import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
 import static io.neow3j.types.StackItemType.STRUCT;
 import static java.util.Arrays.asList;
 
@@ -45,6 +46,8 @@ public class NeoToken extends FungibleToken {
     private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     private static final String VOTE = "vote";
     private static final String GET_CANDIDATES = "getCandidates";
+    private static final String GET_ALL_CANDIDATES = "getAllCandidates";
+    private static final String GET_CANDIDATE_VOTES = "getCandidateVote";
     private static final String GET_COMMITTEE = "getCommittee";
     private static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     private static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
@@ -185,7 +188,7 @@ public class NeoToken extends FungibleToken {
      * <p>
      * The vote count is based on the summed up NEO balances of the respective candidate's voters.
      *
-     * @return the candidate public keys and their corresponding vote count.
+     * @return the validator public keys and their corresponding vote count.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the return type is not an array or the array elements are not public
      *                                       keys and node counts.
@@ -197,15 +200,7 @@ public class NeoToken extends FungibleToken {
         }
         Map<ECPublicKey, BigInteger> validators = new HashMap<>();
         for (StackItem valItem : arrayItem.getList()) {
-            if (!valItem.getType().equals(STRUCT)) {
-                throw new UnexpectedReturnTypeException(valItem.getType(), STRUCT);
-            }
-            ECPublicKey key = extractPublicKey(valItem.getList().get(0));
-            StackItem nrItem = valItem.getList().get(1);
-            if (!nrItem.getType().equals(INTEGER)) {
-                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
-            }
-            validators.put(key, nrItem.getInteger());
+            addMappingOfCandidateAndVote(validators, valItem);
         }
         return validators;
     }
@@ -213,12 +208,62 @@ public class NeoToken extends FungibleToken {
     /**
      * Checks if there is a committee candidate or member with {@code publicKey}.
      *
-     * @param publicKey the candidates public key.
+     * @param publicKey the candidate's public key.
      * @return true if the public key belongs to a candidate. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isCandidate(ECPublicKey publicKey) throws IOException {
         return getCandidates().containsKey(publicKey);
+    }
+
+    /**
+     * Gets the public keys of all currently registered candidates and their corresponding vote count.
+     * <p>
+     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
+     * <p>
+     * The response contains an iterator which might be truncated based on the size configuration of the node this
+     * request is sent to.
+     *
+     * @return the candidate public keys and their corresponding vote count.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
+     *                                       are not public keys and node counts.
+     */
+    public Map<ECPublicKey, BigInteger> getAllCandidates() throws IOException {
+        StackItem interopInterfaceItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
+        if (interopInterfaceItem.getType().equals(INTEROP_INTERFACE)) {
+            throw new UnexpectedReturnTypeException(interopInterfaceItem.getType(), INTEROP_INTERFACE);
+        }
+        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
+        for (StackItem candItem : interopInterfaceItem.getIterator()) {
+            addMappingOfCandidateAndVote(candidates, candItem);
+        }
+        return candidates;
+    }
+
+    // Extracts the candidates public key and its votes from the stack item, and adds a corresponding mapping to the
+    // provided Map instance.
+    private void addMappingOfCandidateAndVote(Map<ECPublicKey, BigInteger> candidates, StackItem candItem) {
+        if (!candItem.getType().equals(STRUCT)) {
+            throw new UnexpectedReturnTypeException(candItem.getType(), STRUCT);
+        }
+        ECPublicKey key = extractPublicKey(candItem.getList().get(0));
+        StackItem nrItem = candItem.getList().get(1);
+        if (!nrItem.getType().equals(INTEGER)) {
+            throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
+        }
+        candidates.put(key, nrItem.getInteger());
+    }
+
+    /**
+     * Gets the votes from a specific candidate.
+     *
+     * @param publicKey the candidate's public key.
+     * @return the votes from the candidate.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getCandidateVotes(ECPublicKey publicKey) throws IOException {
+        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(publicKey.getEncoded(true)));
     }
 
     /**

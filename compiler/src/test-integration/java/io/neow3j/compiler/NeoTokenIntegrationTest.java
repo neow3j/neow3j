@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.ECPoint;
@@ -33,6 +34,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class NeoTokenIntegrationTest {
 
@@ -83,6 +85,16 @@ public class NeoTokenIntegrationTest {
         assertThat(candidateStruct.get(0).getByteArray(),
                 is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
         assertThat(candidateStruct.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ZERO));
+    }
+
+    @Test
+    public void getAllCandidates() {
+        fail();
+    }
+
+    @Test
+    public void getCandidateVotes() {
+        fail();
     }
 
     @Test
@@ -204,6 +216,14 @@ public class NeoTokenIntegrationTest {
         public static Candidate[] registerAndGetCandidates(ECPoint publicKey) {
             NeoToken.registerCandidate(publicKey);
             return NeoToken.getCandidates();
+        }
+
+        public static Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates() {
+            return NeoToken.getAllCandidates();
+        }
+
+        public static int getCandidateVotes(ECPoint candidatePubKey) {
+            return NeoToken.getCandidateVote(candidatePubKey);
         }
 
         public static ECPoint[] getNextBlockValidators() {
