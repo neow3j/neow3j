@@ -17,8 +17,8 @@ public enum InteropService {
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
-    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 1 << 8),
-    SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT("System.Contract.CreateMultisigAccount", 1 << 8),
+    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 0),
+    SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT("System.Contract.CreateMultisigAccount", 0),
 
     SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
     SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
