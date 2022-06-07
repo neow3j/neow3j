@@ -40,7 +40,7 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
     SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
-    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 8),
+    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 12),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
     SYSTEM_RUNTIME_BURNGAS("System.Runtime.BurnGas", 1 << 4),
     SYSTEM_RUNTIME_GETNETWORK("System.Runtime.GetNetwork", 1 << 3),
