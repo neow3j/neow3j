@@ -577,8 +577,8 @@ public class NeoMethod {
     }
 
     /**
-     * Replaces the last instruction on this method with the given one. If the last instruction is a jump target, i.e
-     * ., has a label set, the label will be transferred to the new instruction.
+     * Replaces the last instruction on this method with the given one. If the last instruction is a jump target, i.e.,
+     * has a label set, the label will be transferred to the new instruction.
      *
      * @param newInsn the replacement instruction.
      */

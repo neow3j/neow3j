@@ -10,6 +10,7 @@ import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Struct;
+import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
@@ -78,6 +79,8 @@ public class ObjectsConverter implements Converter {
                 TypeInsnNode typeInsn = (TypeInsnNode) insn;
                 if (isStruct(typeInsn.desc, compUnit)) {
                     insn = handleNewStruct(insn, neoMethod, compUnit);
+                } else if (isContractWrapper(typeInsn.desc, compUnit)) {
+                    insn = handleContractInterfaceCtor(insn, neoMethod, compUnit);
                 } else {
                     insn = handleNew(insn, neoMethod, compUnit);
                 }
@@ -90,6 +93,44 @@ public class ObjectsConverter implements Converter {
                 break;
         }
         return insn;
+    }
+
+    private AbstractInsnNode handleContractInterfaceCtor(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        TypeInsnNode typeInsn = (TypeInsnNode) insn;
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
+
+        ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        insn = typeInsn.getNext().getNext();
+        while (insn != null) {
+            if (isCallToCtor(insn, ownerClassNode.name)) {
+                return insn;
+            }
+            insn = handleInsn(insn, neoMethod, compUnit);
+            insn = insn.getNext();
+        }
+        // TODO: 15.06.22:
+        // check if super call takes string arg = check 'desc'=="(Ljava/lang/String;)V"
+        // if so, the argument has to be passed and there is no need to go to the next super ctor method
+        // i.e., the hash insns can be handled here
+        throw new CompilerException(
+                format("Expected a constructor of the class %s, but never reached it.", ownerClassNode.name));
+    }
+
+    // Whether the type extends the abstract class ContractInterface.
+    private boolean isContractWrapper(String desc, CompilationUnit compUnit) throws IOException {
+        ClassNode ownerClassNode = getAsmClassForInternalName(desc, compUnit.getClassLoader());
+        String superName = getFullyQualifiedNameForInternalName(ownerClassNode.superName);
+        while (!superName.equals(Object.class.getCanonicalName())) {
+            if (superName.equals(ContractInterface.class.getCanonicalName())) {
+                return true;
+            }
+            ownerClassNode = getAsmClassForInternalName(superName, compUnit.getClassLoader());
+            superName = getFullyQualifiedNameForInternalName(ownerClassNode.superName);
+        }
+        return false;
     }
 
     private boolean isStruct(String desc, CompilationUnit compUnit) throws IOException {
@@ -128,8 +169,8 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
-                : "Expected DUP after NEW but got other instructions";
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
 
         ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), ownerClassNode);
@@ -163,8 +204,8 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
-                : "Expected DUP after NEW but got other instructions";
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
 
         if (isNewStringBuilder(typeInsn)) {
             // Java, in the background, performs String concatenation, like `s1 + s2`, with the instantiation of a
