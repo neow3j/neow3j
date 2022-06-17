@@ -1,6 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.CompilerException;
 import io.neow3j.compiler.JVMOpcode;
@@ -8,21 +7,16 @@ import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoJumpInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
-import io.neow3j.contract.NefFile.MethodToken;
 import io.neow3j.devpack.StringLiteralHelper;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.Instruction.Instructions;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.CallFlags;
-import io.neow3j.types.Hash160;
 import io.neow3j.utils.AddressUtils;
-import io.neow3j.utils.ArrayUtils;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnNode;
 import org.objectweb.asm.tree.IntInsnNode;
@@ -35,8 +29,6 @@ import org.objectweb.asm.tree.VarInsnNode;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.List;
 import java.util.Optional;
 
@@ -49,7 +41,6 @@ import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.script.OpCode.CALLT;
 import static io.neow3j.script.OpCode.DROP;
 import static io.neow3j.script.OpCode.DUP;
 import static io.neow3j.script.OpCode.NEWARRAY;
@@ -58,7 +49,6 @@ import static io.neow3j.script.OpCode.SETITEM;
 import static io.neow3j.script.OpCode.SWAP;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
-import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
@@ -451,40 +441,6 @@ public class MethodsConverter implements Converter {
         if (returnType.getClassName().equals(void.class.getName())) {
             callingNeoMethod.addInstruction(new NeoInstruction(DROP));
         }
-    }
-
-    private static void addContractCallWithMethodToken(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
-            ClassNode owner, CompilationUnit compUnit) {
-
-        AnnotationNode annotation = AsmHelper.getAnnotationNode(owner, ContractHash.class).get();
-        Hash160 scriptHash;
-        try {
-            scriptHash = new Hash160((String) annotation.values.get(1));
-        } catch (IllegalArgumentException e) {
-            throw new CompilerException(owner, format("Script hash '%s' of the contract class '%s' does not have the " +
-                            "length of a correct script hash.", annotation.values.get(1),
-                    getClassNameForInternalName(owner.name)));
-        }
-
-        // If it's a call to the `getHash()` method, simply add PUSHDATA <scriptHash>.
-        if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
-            callingNeoMethod.addInstruction(
-                    // The contract hash is pushed in little-endian ordering because the NeoVM also returns contract
-                    // hashes in little-endian ordering.
-                    buildPushDataInsn(ArrayUtils.reverseArray(scriptHash.toArray())));
-            return;
-        }
-
-        int nrOfParams = Type.getType(calledAsmMethod.desc).getArgumentTypes().length;
-        boolean hasReturnValue = !Type.getMethodType(calledAsmMethod.desc).getReturnType().getClassName()
-                .equals(void.class.getTypeName());
-        MethodToken token =
-                new MethodToken(scriptHash, calledAsmMethod.name, nrOfParams, hasReturnValue, CallFlags.ALL);
-        int idx = compUnit.getNeoModule().addMethodToken(token);
-        byte[] idxBytes =
-                ArrayUtils.getFirstNBytes(ByteBuffer.allocate(4).order(ByteOrder.LITTLE_ENDIAN).putInt(idx).array(), 2);
-        addReverseArguments(callingNeoMethod, nrOfParams);
-        callingNeoMethod.addInstruction(new NeoInstruction(CALLT, idxBytes));
     }
 
     private static AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type, NeoMethod neoMethod) {
