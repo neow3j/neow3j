@@ -50,6 +50,7 @@ import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.script.OpCode.CALLT;
+import static io.neow3j.script.OpCode.DROP;
 import static io.neow3j.script.OpCode.DUP;
 import static io.neow3j.script.OpCode.NEWARRAY;
 import static io.neow3j.script.OpCode.ROT;
@@ -152,7 +153,7 @@ public class MethodsConverter implements Converter {
             ownerClass = getAsmClassForInternalName(ownerClass.superName, compUnit.getClassLoader());
             calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
-        if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) { // Contract.call()
+        if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) {
             processInstructionAnnotations(calledAsmMethod.get(), callingNeoMethod);
         } else if (isContractCall(topLevelOwnerClass, compUnit)) {
             addContractCall(calledAsmMethod.get(), callingNeoMethod);
@@ -420,6 +421,10 @@ public class MethodsConverter implements Converter {
     // pre on stack (top to bottom): paramN, ..., param0, hash
     // post on stack: syscall (Contract.Call), hash, methodName, callFlags, array (containing all params)
     private static void addContractCall(MethodNode calledAsmMethod, NeoMethod callingNeoMethod) {
+        if (calledAsmMethod.name.equals(GET_CONTRACT_HASH_METHOD_NAME)) {
+            return;
+        }
+
         int paramCount = Type.getArgumentTypes(calledAsmMethod.desc).length;
         callingNeoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(paramCount)));
         callingNeoMethod.addInstruction(new NeoInstruction(NEWARRAY));
@@ -441,6 +446,11 @@ public class MethodsConverter implements Converter {
 
         byte[] syscallHash = hexStringToByteArray(InteropService.SYSTEM_CONTRACT_CALL.getHash());
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SYSCALL, syscallHash));
+
+        Type returnType = Type.getReturnType(calledAsmMethod.desc);
+        if (returnType.getClassName().equals(void.class.getName())) {
+            callingNeoMethod.addInstruction(new NeoInstruction(DROP));
+        }
     }
 
     private static void addContractCallWithMethodToken(MethodNode calledAsmMethod, NeoMethod callingNeoMethod,
