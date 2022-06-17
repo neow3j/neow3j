@@ -8,7 +8,9 @@ import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.InteropService;
@@ -106,17 +108,50 @@ public class ObjectsConverter implements Converter {
         insn = typeInsn.getNext().getNext();
         while (insn != null) {
             if (isCallToCtor(insn, ownerClassNode.name)) {
-                return insn;
+                break;
             }
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
-        // TODO: 15.06.22:
-        // check if super call takes string arg = check 'desc'=="(Ljava/lang/String;)V"
-        // if so, the argument has to be passed and there is no need to go to the next super ctor method
-        // i.e., the hash insns can be handled here
-        throw new CompilerException(
-                format("Expected a constructor of the class %s, but never reached it.", ownerClassNode.name));
+        if (insn == null) {
+            throw new CompilerException(
+                    format("Expected a constructor of the class %s, but never reached it.", ownerClassNode.name));
+        }
+        MethodNode methodNode = getMethodNode((MethodInsnNode) insn, ownerClassNode).get();
+        Type[] cTorArgTypes = Type.getType(methodNode.desc).getArgumentTypes();
+        int cTorParamLength = cTorArgTypes.length;
+        if (cTorParamLength == 0) {
+            if (!hasAnnotations(ownerClassNode, NativeContract.class)) {
+                throwIfIncorrectContractInterfaceCtor();
+            }
+            handleNativeContractHash(methodNode, ownerClassNode, neoMethod, compUnit);
+        } else if (cTorParamLength == 1) {
+            String argInternalName = cTorArgTypes[0].getInternalName();
+            if (!argInternalName.equals(getInternalName(Hash160.class))) {
+                throwIfIncorrectContractInterfaceCtor();
+            }
+        } else {
+            throwIfIncorrectContractInterfaceCtor();
+        }
+        return insn;
+    }
+
+    private void throwIfIncorrectContractInterfaceCtor() {
+        throw new CompilerException(format("A constructor of a ContractInterface is required to take exactly one %s " +
+                "type as parameter.", getInternalName(Hash160.class)));
+    }
+
+    private void handleNativeContractHash(MethodNode methodNode, ClassNode ownerClassNode, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        AbstractInsnNode insn = methodNode.instructions.get(0).getNext().getNext().getNext();
+        while (insn != null) {
+            if (isCallToCtor(insn, ownerClassNode.superName)) {
+                break;
+            }
+            insn = handleInsn(insn, neoMethod, compUnit);
+            insn = insn.getNext();
+        }
     }
 
     // Whether the type extends the abstract class ContractInterface.
