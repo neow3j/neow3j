@@ -34,8 +34,7 @@ public class CryptoLibIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            CryptoLibIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(CryptoLibIntegrationTestContract.class.getName());
 
     @Test
     public void sha256() throws IOException {
@@ -96,29 +95,29 @@ public class CryptoLibIntegrationTest {
     static class CryptoLibIntegrationTestContract {
 
         public static ByteString sha256(ByteString value) {
-            return CryptoLib.sha256(value);
+            return new CryptoLib().sha256(value);
         }
 
         public static ByteString ripemd160(ByteString value) {
-            return CryptoLib.ripemd160(value);
+            return new CryptoLib().ripemd160(value);
         }
 
         public static ByteString murmur32(ByteString value, int seed) {
-            return CryptoLib.murmur32(value, seed);
+            return new CryptoLib().murmur32(value, seed);
         }
 
         public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey,
                 ByteString signature, byte curve) {
-            return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
+            return new CryptoLib().verifyWithECDsa(message, pubKey, signature, curve);
         }
 
         public static boolean verifyWithECDsaWithSignatureData(ByteString message, ECPoint pubKey,
                 ByteString signature, byte curve) {
-            return CryptoLib.verifyWithECDsa(message, pubKey, signature, curve);
+            return new CryptoLib().verifyWithECDsa(message, pubKey, signature, curve);
         }
 
         public static Hash160 getHash() {
-            return CryptoLib.getHash();
+            return new CryptoLib().getHash();
         }
     }
 

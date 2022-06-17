@@ -61,11 +61,10 @@ public class OracleContractIntegrationTest {
     public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            OracleContractIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(OracleContractIntegrationTestContract.class.getName());
 
     @Test
-    public void getScriptHash() throws IOException {
+    public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(oracleContractHash())));
@@ -158,14 +157,12 @@ public class OracleContractIntegrationTest {
 
         private static Event4Args<String, String, Integer, String> callbackEvent;
 
-        public static Hash160 getScriptHash() {
-            return OracleContract.getHash();
+        public static Hash160 getHash() {
+            return new OracleContract().getHash();
         }
 
-        public static void performRequest(String url, String filter, String userdata,
-                int gasForResponse) {
-
-            OracleContract.request(url, filter, "callback", userdata, gasForResponse);
+        public static void performRequest(String url, String filter, String userdata, int gasForResponse) {
+            new OracleContract().request(url, filter, "callback", userdata, gasForResponse);
         }
 
         public static void callback(String url, String userdata, int code, String result) {

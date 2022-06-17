@@ -3,13 +3,10 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Safe;
-import io.neow3j.devpack.contracts.ContractInterface;
-import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
 import org.junit.Test;
@@ -67,13 +64,6 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(DuplicateUseOfEventDisplayName.class.getName()));
         assertThat(thrown.getMessage(), stringContainsInOrder(asList("Two events", "transfer")));
-    }
-
-    @Test
-    public void throwExceptionIfContractInterfaceClassHasInvalidScriptHash() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(InvalidScriptHashContractInterfaceContract.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(asList("Script hash", "8", "CustomContractInterface")));
     }
 
     @Test
@@ -181,53 +171,10 @@ public class CompilerExceptionsTest {
     }
 
     @Test
-    public void failCallingAContractInterfaceWithoutContractHashAnnotation() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(ContractInterfaceWithoutHash.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("Contract interface", FungibleToken.class.getSimpleName(),
-                        "needs to be annotated with the 'ContractHash' annotation to be usable.")));
-    }
-
-    @Test
-    public void failCallingAContractInterfaceWithoutContractHashAnnotationAndMultipleInheritance() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(ContractInterfaceWithoutHashAndMultipleInheritance.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList("Contract interface", CustomFungibleToken.class.getSimpleName(),
-                        "needs to be annotated with the 'ContractHash' annotation to be usable.")));
-    }
-
-    @Test
     public void failUsingConstructorOnAnEvent() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(EventConstructorMisuse.class.getName()));
         assertThat(thrown.getMessage(), containsString("Events must not be initialized by calling their constructor."));
-    }
-
-    @Test
-    public void throwOnTokenContractInterfaceMissingHashAnnotation() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(TokenContractMissingHashAnnotation.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(TokenContractWithoutHashAnnotation.class.getSimpleName(), ContractHash.class.getSimpleName())));
-    }
-
-    @Test
-    public void throwOnContractInterfaceMissingHashAnnotation() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(ContractMissingHashAnnotation.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(ContractWithoutHashAnnotation.class.getSimpleName(), ContractHash.class.getSimpleName())));
-    }
-
-    @Test
-    public void throwOnContractMissingContractInterface() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(ContractMissingContractInterface.class.getName()));
-        assertThat(thrown.getMessage(), stringContainsInOrder(
-                asList(ContractWithoutContractInterface.class.getSimpleName(), ContractHash.class.getSimpleName(),
-                        ContractInterface.class.getSimpleName())));
     }
 
     @Test
@@ -325,16 +272,6 @@ public class CompilerExceptionsTest {
         }
     }
 
-    static class InvalidScriptHashContractInterfaceContract {
-        public static void getScriptHashOfContractInterface() {
-            CustomContractInterface.getHash();
-        }
-
-        @ContractHash("8")
-        static class CustomContractInterface extends ContractInterface {
-        }
-    }
-
     static class InstructionAnnotationWithWrongSizeOperandContract {
         @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
         public static native void annotatedMethod();
@@ -398,21 +335,6 @@ public class CompilerExceptionsTest {
         }
     }
 
-    static class ContractInterfaceWithoutHash {
-        public static String method() {
-            return FungibleToken.symbol();
-        }
-    }
-
-    static class ContractInterfaceWithoutHashAndMultipleInheritance {
-        public static String method() {
-            return CustomFungibleToken.symbol();
-        }
-    }
-
-    static class CustomFungibleToken extends FungibleToken {
-    }
-
     static class EventConstructorMisuse {
         static Event1Arg<String> event = new Event1Arg<>();
 
@@ -420,36 +342,6 @@ public class CompilerExceptionsTest {
             String s;
             event.fire("test");
         }
-    }
-
-    static class TokenContractMissingHashAnnotation {
-        public static String method() {
-            return TokenContractWithoutHashAnnotation.symbol();
-        }
-    }
-
-    static class TokenContractWithoutHashAnnotation extends FungibleToken {
-    }
-
-    static class ContractMissingHashAnnotation {
-        public static String method() {
-            return ContractWithoutHashAnnotation.symbol();
-        }
-    }
-
-    static class ContractWithoutHashAnnotation extends ContractInterface {
-        public static native String symbol();
-    }
-
-    static class ContractMissingContractInterface {
-        public static String method() {
-            return ContractWithoutContractInterface.symbol();
-        }
-    }
-
-    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // some hash
-    static class ContractWithoutContractInterface {
-        public static native String symbol();
     }
 
     static class ContractWithWrongClassCompatibility {

@@ -191,54 +191,54 @@ public class LedgerContractIntegrationTest {
     static class LedgerContractIntegrationTestContract {
 
         public static byte getTransactionVMState(Hash256 hash) {
-            return LedgerContract.getTransactionVMState(hash);
+            return new LedgerContract().getTransactionVMState(hash);
         }
 
         public static int getTransactionHeight(Hash256 blockHash) {
-            return LedgerContract.getTransactionHeight(blockHash);
+            return new LedgerContract().getTransactionHeight(blockHash);
         }
 
         public static Object getTransactionFromBlock(int blockNr, int txNr) {
-            return LedgerContract.getTransactionFromBlock(blockNr, txNr);
+            return new LedgerContract().getTransactionFromBlock(blockNr, txNr);
         }
 
         public static Object getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
-            return LedgerContract.getTransactionFromBlock(blockHash, txNr);
+            return new LedgerContract().getTransactionFromBlock(blockHash, txNr);
         }
 
         public static Object getTransaction(Hash256 txHash) {
-            return LedgerContract.getTransaction(txHash);
+            return new LedgerContract().getTransaction(txHash);
         }
 
         public static boolean getNonExistentTransaction(Hash256 txHash) {
-            if (LedgerContract.getTransaction(txHash) == null) {
+            if (new LedgerContract().getTransaction(txHash) == null) {
                 return true;
             }
             return false;
         }
 
         public static byte getTransactionState(Hash256 txHash) {
-            return LedgerContract.getTransactionVMState(txHash);
+            return new LedgerContract().getTransactionVMState(txHash);
         }
 
         public static Block getBlockWithBlockHash(Hash256 blockHash) {
-            return LedgerContract.getBlock(blockHash);
+            return new LedgerContract().getBlock(blockHash);
         }
 
         public static Block getBlockWithBlockNumber(int blockNr) {
-            return LedgerContract.getBlock(blockNr);
+            return new LedgerContract().getBlock(blockNr);
         }
 
         public static int currentIndex() {
-            return LedgerContract.currentIndex();
+            return new LedgerContract().currentIndex();
         }
 
         public static Hash256 currentHash() {
-            return LedgerContract.currentHash();
+            return new LedgerContract().currentHash();
         }
 
         public static Hash160 getHash() {
-            return LedgerContract.getHash();
+            return new LedgerContract().getHash();
         }
     }
 

@@ -68,15 +68,15 @@ public class RoleManagementTest {
     static class RoleManagementTestContract {
 
         public static Hash160 getHash() {
-            return RoleManagement.getHash();
+            return new RoleManagement().getHash();
         }
 
         public static ECPoint[] getDesignatedByRole(byte role, int index) {
-            return RoleManagement.getDesignatedByRole(role, index);
+            return new RoleManagement().getDesignatedByRole(role, index);
         }
 
         public static void designateAsRole(byte role, ECPoint[] publicKeys) {
-            RoleManagement.designateAsRole(role, publicKeys);
+            new RoleManagement().designateAsRole(role, publicKeys);
         }
     }
 
