@@ -1,22 +1,34 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Block;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Transaction;
-import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.annotations.NativeContract;
 
-@ContractHash("0xda65b600f7124ce6c79950c1772a36403104f2be")
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.devpack.constants.NativeContract.LedgerContractScriptHash;
+
+/**
+ * Represents an interface to the native LedgerContract that stores all blocks and transactions.
+ */
+@NativeContract
 public class LedgerContract extends ContractInterface {
+
+    public LedgerContract() {
+        super(new Hash160(reverse(hexToBytes(LedgerContractScriptHash).toByteArray())));
+    }
 
     /**
      * @return the latest block hash.
      */
-    public static native Hash256 currentHash();
+    public native Hash256 currentHash();
 
     /**
      * @return the current block height.
      */
-    public static native int currentIndex();
+    public native int currentIndex();
 
     /**
      * Gets the block at the given index/height.
@@ -24,7 +36,7 @@ public class LedgerContract extends ContractInterface {
      * @param index the block index.
      * @return the block at the given index or {@code null} if it doesn't exist.
      */
-    public static native Block getBlock(int index);
+    public native Block getBlock(int index);
 
     /**
      * Gets the block with the given hash.
@@ -32,7 +44,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the block hash.
      * @return the block with the given hash or {@code null} if it doesn't exist.
      */
-    public static native Block getBlock(Hash256 hash);
+    public native Block getBlock(Hash256 hash);
 
     /**
      * Gets the transaction with the given hash.
@@ -40,7 +52,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the transaction with the given hash or {@code null} if it doesn't exist.
      */
-    public static native Transaction getTransaction(Hash256 hash);
+    public native Transaction getTransaction(Hash256 hash);
 
     /**
      * Gets the transaction at {@code index} in the block with {@code blockHash}.
@@ -49,7 +61,7 @@ public class LedgerContract extends ContractInterface {
      * @param index     the transaction index in the block.
      * @return the transaction or {@code null} if it doesn't exist.
      */
-    public static native Transaction getTransactionFromBlock(Hash256 blockHash, int index);
+    public native Transaction getTransactionFromBlock(Hash256 blockHash, int index);
 
     /**
      * Gets the transaction at {@code index} in the block at index {@code blockIndex}.
@@ -58,7 +70,7 @@ public class LedgerContract extends ContractInterface {
      * @param index      the transaction index in the block.
      * @return the transaction or {@code null} if it doesn't exist.
      */
-    public static native Transaction getTransactionFromBlock(int blockIndex, int index);
+    public native Transaction getTransactionFromBlock(int blockIndex, int index);
 
     /**
      * Gets the VM state of the transaction with the given hash.
@@ -68,7 +80,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the transaction's VM state.
      */
-    public static native byte getTransactionVMState(Hash256 hash);
+    public native byte getTransactionVMState(Hash256 hash);
 
     /**
      * Gets the index of the block that contains the transaction with the given hash.
@@ -76,6 +88,6 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the block index.
      */
-    public static native int getTransactionHeight(Hash256 hash);
+    public native int getTransactionHeight(Hash256 hash);
 
 }

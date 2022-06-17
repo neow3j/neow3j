@@ -1,10 +1,22 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.NativeContract;
 
-@ContractHash("0xacce6fd80d44e1796aa0c2c625e9e4e0ce39efc0")
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.devpack.constants.NativeContract.StdLibScriptHash;
+
+/**
+ * Represents an interface to the native StdLib contract that provides useful functions.
+ */
+@NativeContract
 public class StdLib extends ContractInterface {
+
+    public StdLib() {
+        super(new Hash160(reverse(hexToBytes(StdLibScriptHash).toByteArray())));
+    }
 
     /**
      * The maximum byte length for input values.
@@ -45,7 +57,7 @@ public class StdLib extends ContractInterface {
      * @param source the object to serialize.
      * @return the serialized bytes.
      */
-    public static native ByteString serialize(Object source);
+    public native ByteString serialize(Object source);
 
     /**
      * Deserializes the given bytes. It is up to the developer to know what type to expect from the deserialization.
@@ -55,7 +67,7 @@ public class StdLib extends ContractInterface {
      * @param source the bytes to deserialize.
      * @return the deserialized object.
      */
-    public static native Object deserialize(ByteString source);
+    public native Object deserialize(ByteString source);
 
 
     /**
@@ -83,7 +95,7 @@ public class StdLib extends ContractInterface {
      * @param obj the object to JSON-serialize.
      * @return the object as a JSON string.
      */
-    public native static String jsonSerialize(Object obj);
+    public native String jsonSerialize(Object obj);
 
     /**
      * Deserializes the given JSON-formatted string into an object.
@@ -106,7 +118,7 @@ public class StdLib extends ContractInterface {
      * @param json the string to deserialize.
      * @return the deserialized object.
      */
-    public native static Object jsonDeserialize(String json);
+    public native Object jsonDeserialize(String json);
 
     /**
      * Encodes the given bytes to a Base64 string.
@@ -114,7 +126,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    public static native String base64Encode(ByteString input);
+    public native String base64Encode(ByteString input);
 
     /**
      * Decodes the given Base64-encoded string.
@@ -122,7 +134,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base64-encoded string.
      * @return the decoded byte string.
      */
-    public static native ByteString base64Decode(String input);
+    public native ByteString base64Decode(String input);
 
     /**
      * Encodes the given byte string to a Base58 string.
@@ -130,7 +142,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    public static native String base58Encode(ByteString input);
+    public native String base58Encode(ByteString input);
 
     /**
      * Decodes the given Base58-encoded string.
@@ -138,7 +150,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base58-encoded string.
      * @return the decoded bytes.
      */
-    public static native ByteString base58Decode(String input);
+    public native ByteString base58Decode(String input);
 
     /**
      * Encodes the given byte string to a Base58 string.
@@ -148,7 +160,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    public static native String base58CheckEncode(ByteString input);
+    public native String base58CheckEncode(ByteString input);
 
     /**
      * Decodes the given Base58-encoded string. Expects the input to contain the checksum of the binary data.
@@ -156,7 +168,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base58-encoded string.
      * @return the decoded bytes.
      */
-    public static native ByteString base58CheckDecode(String input);
+    public native ByteString base58CheckDecode(String input);
 
     /**
      * Converts the given number to its string representation.
@@ -170,7 +182,7 @@ public class StdLib extends ContractInterface {
      * @param base the base to use for the string representation. Can be decimal (10) or hexadecimal (16).
      * @return the number as a string.
      */
-    public static native String itoa(int i, int base);
+    public native String itoa(int i, int base);
 
     /**
      * Converts the given number string into an integer.
@@ -179,7 +191,7 @@ public class StdLib extends ContractInterface {
      * @param base the base to use for interpreting the string. Can be decimal (10) or hexadecimal (16).
      * @return the number.
      */
-    public static native int atoi(String s, int base);
+    public native int atoi(String s, int base);
 
     /**
      * Determines the relative order of the two given byte strings.
@@ -192,7 +204,7 @@ public class StdLib extends ContractInterface {
      * <li> 1, if {@code mem1} follows {@code mem2}.
      * </ul>
      */
-    public static native int memoryCompare(ByteString mem1, ByteString mem2);
+    public native int memoryCompare(ByteString mem1, ByteString mem2);
 
     /**
      * Searches for the first occurrence of {@code value} in {@code mem} starting at index 0.
@@ -201,7 +213,7 @@ public class StdLib extends ContractInterface {
      * @param value the value to search.
      * @return the index of the first occurrence of {@code value}, or -1 if not found.
      */
-    public static native int memorySearch(ByteString mem, ByteString value);
+    public native int memorySearch(ByteString mem, ByteString value);
 
     /**
      * Searches for the first occurrence of {@code value} in {@code mem} starting at index defined by {@code start}.
@@ -211,7 +223,7 @@ public class StdLib extends ContractInterface {
      * @param start the index at which to start searching.
      * @return the index of the first occurrence of {@code value}, or -1 if not found.
      */
-    public static native int memorySearch(ByteString mem, ByteString value, int start);
+    public native int memorySearch(ByteString mem, ByteString value, int start);
 
     /**
      * Searches for the first occurrence of {@code value} in {@code mem} starting at index defined by {@code start}.
@@ -229,7 +241,7 @@ public class StdLib extends ContractInterface {
      * @return the index of the first occurrence of {@code value} depending on the choice of {@code backward}, or -1
      * if not found.
      */
-    public static native int memorySearch(ByteString mem, ByteString value, int start, boolean backward);
+    public native int memorySearch(ByteString mem, ByteString value, int start, boolean backward);
 
     /**
      * Splits the given string at the locations of the {@code separator}.
@@ -241,7 +253,7 @@ public class StdLib extends ContractInterface {
      * @param separator the character sequence to use as the separator.
      * @return the list of separated strings.
      */
-    public static native String[] stringSplit(String str, String separator);
+    public native String[] stringSplit(String str, String separator);
 
     /**
      * Splits the given string at the locations of the {@code separator}.
@@ -251,6 +263,6 @@ public class StdLib extends ContractInterface {
      * @param removeEmptyEntries if empty strings should be included in the returned array or not.
      * @return the list of separated strings.
      */
-    public static native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
+    public native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
 
 }

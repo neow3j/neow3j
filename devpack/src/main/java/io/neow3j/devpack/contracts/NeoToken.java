@@ -2,13 +2,22 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.annotations.NativeContract;
+import io.neow3j.devpack.annotations.Struct;
+
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.devpack.constants.NativeContract.NeoTokenScriptHash;
 
 /**
- * An interface to the NEO token contract.
+ * Represents an interface to the native NEO token contract.
  */
-@ContractHash("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
+@NativeContract
 public class NeoToken extends FungibleToken {
+
+    public NeoToken() {
+        super(new Hash160(reverse(hexToBytes(NeoTokenScriptHash).toByteArray())));
+    }
 
     /**
      * Gets the amount of unclaimed GAS for the given account up the the given block number.
@@ -17,7 +26,7 @@ public class NeoToken extends FungibleToken {
      * @param blockHeight the block height up to which the GAS amount will be fetched.
      * @return the amount of unclaimed GAS.
      */
-    public static native int unclaimedGas(Hash160 scriptHash, int blockHeight);
+    public native int unclaimedGas(Hash160 scriptHash, int blockHeight);
 
     /**
      * Registers the given public key as a validator candidate.
@@ -25,7 +34,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if registering was successful. False, otherwise.
      */
-    public static native boolean registerCandidate(ECPoint publicKey);
+    public native boolean registerCandidate(ECPoint publicKey);
 
     /**
      * Unregisters the given public key from the list of validator candidates.
@@ -33,7 +42,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if deregistering was successful. False, otherwise.
      */
-    public static native boolean unregisterCandidate(ECPoint publicKey);
+    public native boolean unregisterCandidate(ECPoint publicKey);
 
     /**
      * Casts a vote for the candidate with the given public key.
@@ -45,27 +54,27 @@ public class NeoToken extends FungibleToken {
      * @param candidatePubKey the public key of the candidate to vote for.
      * @return true if voting was successful. False, otherwise.
      */
-    public static native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
+    public native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
      * @return the list of registered candidates.
      */
-    public static native Candidate[] getCandidates();
+    public native Candidate[] getCandidates();
 
     /**
      * @return the committee members' public keys.
      */
-    public static native ECPoint[] getCommittee();
+    public native ECPoint[] getCommittee();
 
     /**
      * @return the next validators' public keys.
      */
-    public static native ECPoint[] getNextBlockValidators();
+    public native ECPoint[] getNextBlockValidators();
 
     /**
      * @return the amount of GAS that is minted per newly generated block.
      */
-    public static native int getGasPerBlock();
+    public native int getGasPerBlock();
 
     /**
      * Sets the amount of GAS that should be minted per newly generated block.
@@ -74,12 +83,12 @@ public class NeoToken extends FungibleToken {
      *
      * @param gasPerBlock the desired amount of GAS per block.
      */
-    public static native void setGasPerBlock(int gasPerBlock);
+    public native void setGasPerBlock(int gasPerBlock);
 
     /**
      * @return the GAS price for registering a new candidate.
      */
-    public static native int getRegisterPrice();
+    public native int getRegisterPrice();
 
     /**
      * Sets the GAS price for registering a new candidate.
@@ -88,7 +97,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param registerPrice the new price for registering a candidate.
      */
-    public static native void setRegisterPrice(int registerPrice);
+    public native void setRegisterPrice(int registerPrice);
 
     /**
      * Gets the account state.
@@ -96,11 +105,12 @@ public class NeoToken extends FungibleToken {
      * @param scriptHash the script hash of the account.
      * @return the state of the account or null if the account does not hold any NEO.
      */
-    public static native AccountState getAccountState(Hash160 scriptHash);
+    public native AccountState getAccountState(Hash160 scriptHash);
 
     /**
      * The state of an account regarding its NEO balance and voting target.
      */
+    @Struct
     public static class AccountState {
 
         /**
@@ -133,6 +143,7 @@ public class NeoToken extends FungibleToken {
     /**
      * Represents a validator candidate.
      */
+    @Struct
     public static class Candidate {
 
         /**

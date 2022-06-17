@@ -1,9 +1,21 @@
 package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.NativeContract;
 
-@ContractHash("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
+import static io.neow3j.devpack.constants.NativeContract.OracleContractScriptHash;
+
+/**
+ * Represents an interface to the native OracleContract that provides oracle services.
+ */
+@NativeContract
 public class OracleContract extends ContractInterface {
+
+    public OracleContract() {
+        super(new Hash160(reverse(hexToBytes(OracleContractScriptHash).toByteArray())));
+    }
 
     /**
      * The minimum GAS fee necessary on an oracle request to pay for the response.
@@ -40,6 +52,6 @@ public class OracleContract extends ContractInterface {
      * @param userData       additional data.
      * @param gasForResponse the GAS amount to pay for the oracle response.
      */
-    public static native void request(String url, String filter, String callback, Object userData, int gasForResponse);
+    public native void request(String url, String filter, String callback, Object userData, int gasForResponse);
 
 }
