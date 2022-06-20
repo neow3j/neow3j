@@ -1,7 +1,5 @@
 package io.neow3j.devpack;
 
-import io.neow3j.devpack.constants.WitnessRuleAction;
-
 /**
  * The rule used to describe the scope of the witness.
  */

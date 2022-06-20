@@ -7,6 +7,8 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
+import io.neow3j.devpack.WitnessRuleCondition;
+import io.neow3j.devpack.constants.WitnessRuleAction;
 import io.neow3j.devpack.contracts.LedgerContract;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -229,6 +231,16 @@ public class LedgerContractIntegrationTest {
         assertThat(rules.get(1).getList().get(1).getList().get(1).getList().get(0).getInteger().byteValue(),
                 is(WitnessConditionType.BOOLEAN.byteValue()));
         assertFalse(rules.get(1).getList().get(1).getList().get(1).getList().get(1).getBoolean());
+
+        response = ct.callInvokeFunction("getTransactionSignerWitnessRuleAction", hash256(preparedTx), integer(1));
+        stack = response.getInvocationResult().getStack();
+        assertThat(stack.get(0).getInteger().byteValue(), is(WitnessRuleAction.Deny));
+
+        response = ct.callInvokeFunction("getTransactionSignerWitnessRuleCondition", hash256(preparedTx), integer(1));
+        stack = response.getInvocationResult().getStack();
+        List<StackItem> list = stack.get(0).getList();
+        assertThat(stack.get(0).getList().get(0).getInteger().byteValue(), is(WitnessConditionType.OR.byteValue()));
+        assertThat(stack.get(0).getList().get(1).getList(), hasSize(2));
     }
 
     @Test
@@ -365,6 +377,14 @@ public class LedgerContractIntegrationTest {
 
         public static io.neow3j.devpack.WitnessRule[] getTransactionSignerWitnessRules(Hash256 txHash, int index) {
             return LedgerContract.getTransactionSigners(txHash)[index].witnessRules;
+        }
+
+        public static byte getTransactionSignerWitnessRuleAction(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules[0].action;
+        }
+
+        public static WitnessRuleCondition getTransactionSignerWitnessRuleCondition(Hash256 txHash, int index) {
+            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules[0].condition;
         }
 
         public static Transaction getTransaction(Hash256 txHash) {
