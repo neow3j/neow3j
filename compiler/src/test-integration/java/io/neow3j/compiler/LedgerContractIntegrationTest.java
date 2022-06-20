@@ -2,7 +2,6 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Block;
-import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
@@ -35,19 +34,15 @@ import java.math.BigInteger;
 import java.util.List;
 
 import static io.neow3j.test.TestProperties.ledgerContractHash;
-import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.reverseHexString;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
 
 public class LedgerContractIntegrationTest {
 
@@ -262,7 +257,8 @@ public class LedgerContractIntegrationTest {
     public void getTransactionVMState() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(NeoVMStateType.HALT.intValue()));
+                is(NeoVMStateType.NONE.intValue()));
+        // None, because the deploy tx is no longer traceable on the LedgerContract (due to maxTraceableBlocks).
     }
 
     @Test
