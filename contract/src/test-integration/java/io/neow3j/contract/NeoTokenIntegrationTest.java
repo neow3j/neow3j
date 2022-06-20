@@ -39,7 +39,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
 
 public class NeoTokenIntegrationTest {
 
@@ -51,10 +50,11 @@ public class NeoTokenIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
-        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         neoToken = new NeoToken(neow3j);
         fundAccountsWithGas(neow3j, CLIENT_1, CLIENT_2);
+        fundAccountsWithNeo(neow3j, BigInteger.TEN, CLIENT_2);
     }
 
     @Test
@@ -83,16 +83,56 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
-    public void testGetAllCandidates() throws IOException {
-        fail();
+    public void testGetAllCandidates() throws Throwable {
         Map<ECKeyPair.ECPublicKey, BigInteger> allCandidates = neoToken.getAllCandidates();
+        assertThat(allCandidates.keySet(), hasSize(0));
+        registerAsCandidate(CLIENT_1);
+        registerAsCandidate(CLIENT_2);
+
+        allCandidates = neoToken.getAllCandidates();
+        assertThat(allCandidates.keySet(), hasSize(2));
+        assertThat(allCandidates.get(CLIENT_1.getECKeyPair().getPublicKey()), is(BigInteger.ZERO));
+        assertThat(allCandidates.get(CLIENT_2.getECKeyPair().getPublicKey()), is(BigInteger.ZERO));
+
+        // Client 2 votes for its own node
+        Hash256 txHash = neoToken.vote(CLIENT_2, CLIENT_2.getECKeyPair().getPublicKey())
+                .signers(calledByEntry(CLIENT_2))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        allCandidates = neoToken.getAllCandidates();
+        assertThat(allCandidates.get(CLIENT_1.getECKeyPair().getPublicKey()), is(BigInteger.ZERO));
+        assertThat(allCandidates.get(CLIENT_2.getECKeyPair().getPublicKey()), is(BigInteger.TEN));
+
+        unregisterAsCandidate(CLIENT_1);
+        unregisterAsCandidate(CLIENT_2);
+
+        allCandidates = neoToken.getAllCandidates();
+        assertThat(allCandidates.keySet(), hasSize(0));
     }
 
     @Test
-    public void testGetCandidateVotes() throws IOException {
-        fail();
-        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey("");
-        BigInteger votes = neoToken.getCandidateVotes(pubKey);
+    public void testGetCandidateVotes() throws Throwable {
+        registerAsCandidate(CLIENT_2);
+        BigInteger votes = neoToken.getCandidateVotes(CLIENT_2.getECKeyPair().getPublicKey());
+        assertThat(votes, is(BigInteger.ZERO));
+
+        // Client 2 votes for its own node
+        Hash256 txHash = neoToken.vote(CLIENT_2, CLIENT_2.getECKeyPair().getPublicKey())
+                .signers(calledByEntry(CLIENT_2))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        votes = neoToken.getCandidateVotes(CLIENT_2.getECKeyPair().getPublicKey());
+        BigInteger client2VotingPower = neoToken.getBalanceOf(CLIENT_2);
+        assertThat(client2VotingPower, is(not(BigInteger.ZERO)));
+        assertThat(votes, is(client2VotingPower));
     }
 
     @Test

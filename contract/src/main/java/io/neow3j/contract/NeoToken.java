@@ -230,13 +230,13 @@ public class NeoToken extends FungibleToken {
      *                                       are not public keys and node counts.
      */
     public Map<ECPublicKey, BigInteger> getAllCandidates() throws IOException {
-        StackItem interopInterfaceItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
-        if (interopInterfaceItem.getType().equals(INTEROP_INTERFACE)) {
-            throw new UnexpectedReturnTypeException(interopInterfaceItem.getType(), INTEROP_INTERFACE);
+        StackItem stackItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
+        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
         }
         Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
-        for (StackItem candItem : interopInterfaceItem.getIterator()) {
-            addMappingOfCandidateAndVote(candidates, candItem);
+        for (StackItem iteratorItem : stackItem.getIterator()) {
+            addMappingOfCandidateAndVote(candidates, iteratorItem);
         }
         return candidates;
     }
