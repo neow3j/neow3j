@@ -310,6 +310,35 @@ public class Helper {
     public static native int pow(int base, int exponent);
 
     /**
+     * Performs modulus division on a number multiplied by another number.
+     * <p>
+     * The result equals {@code (factor * factor) % modulus}. For example, modular multiplication for factors 5 and 7,
+     * and modulus of 13 equals to 9.
+     *
+     * @param factor1 the first factor.
+     * @param factor2 the second factor.
+     * @param modulus the modulus.
+     * @return the modular multiplication result.
+     */
+    @Instruction(opcode = OpCode.MODMUL)
+    public static native int modMul(int factor1, int factor2, int modulus);
+
+    /**
+     * Performs modulus division on a number raised to the power of another number. If the exponent is -1, it will
+     * have the calculation of the modular inverse.
+     * <p>
+     * The result equals {@code (base ^ exponent) % modulus}. For example, modular exponentiation for base 5,
+     * exponent 7, and modulus of 13 equals to 8.
+     *
+     * @param base     the base.
+     * @param exponent the exponent.
+     * @param modulus  the modulus.
+     * @return the result of modular exponentiation.
+     */
+    @Instruction(opcode = OpCode.MODPOW)
+    public static native int modPow(int base, int exponent, int modulus);
+
+    /**
      * Copies {@code n} consecutive bytes from the given source starting at {@code srcIndex} to the destination at
      * {@code dstIndex}.
      *
