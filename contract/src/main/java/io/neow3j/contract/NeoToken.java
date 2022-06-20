@@ -256,10 +256,10 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the votes from a specific candidate.
+     * Gets a specific candidate's votes.
      *
      * @param publicKey the candidate's public key.
-     * @return the votes from the candidate.
+     * @return the candidate's votes.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getCandidateVotes(ECPublicKey publicKey) throws IOException {
