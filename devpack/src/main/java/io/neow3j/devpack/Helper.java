@@ -325,7 +325,7 @@ public class Helper {
 
     /**
      * Performs modulus division on a number raised to the power of another number. If the exponent is -1, it will
-     * have the calculation of the modular inverse.
+     * calculate the modular inverse. I.e., {@code modMul(b, -1, m) = b^-1} where {@code b * b^-1 = 1 (mod m)}.
      * <p>
      * The result equals {@code (base ^ exponent) % modulus}. For example, modular exponentiation for base 5,
      * exponent 7, and modulus of 13 equals to 8.
