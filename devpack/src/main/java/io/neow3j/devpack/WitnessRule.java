@@ -37,13 +37,7 @@ public class WitnessRule {
      * by reference only, since its structure is unknown.
      */
     public boolean equals(WitnessRule r) {
-        if (this == r) {
-            return true;
-        }
-        if (action != r.action || condition != r.condition) {
-            return false;
-        }
-        return true;
+        return this == r || (action == r.action && condition == r.condition);
     }
 
 }

@@ -239,7 +239,6 @@ public class LedgerContractIntegrationTest {
 
         response = ct.callInvokeFunction("getTransactionSignerWitnessRuleCondition", hash256(preparedTx), integer(1));
         stack = response.getInvocationResult().getStack();
-        List<StackItem> list = stack.get(0).getList();
         assertThat(stack.get(0).getList().get(0).getInteger().byteValue(), is(WitnessConditionType.OR.byteValue()));
         assertThat(stack.get(0).getList().get(1).getList(), hasSize(2));
     }
