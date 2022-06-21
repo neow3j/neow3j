@@ -45,6 +45,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class LedgerContractIntegrationTest {
 
@@ -244,6 +245,20 @@ public class LedgerContractIntegrationTest {
     }
 
     @Test
+    public void transactionSignerEquals() throws Throwable {
+        io.neow3j.types.Hash256 hash = ct.invokeFunctionAndAwaitExecution("setup", asList());
+        List<StackItem> stack = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()), hash256(hash))
+                .getInvocationResult().getStack();
+
+        List<StackItem> stackList = stack.get(0).getList();
+        assertThat(stackList, hasSize(4));
+        assertTrue(stackList.get(0).getBoolean());
+        assertTrue(stackList.get(1).getBoolean());
+        assertFalse(stackList.get(2).getBoolean());
+        assertFalse(stackList.get(3).getBoolean());
+    }
+
+    @Test
     public void getTransaction() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash256(ct.getDeployTxHash()));
         List<StackItem> tx = response.getInvocationResult().getStack().get(0).getList();
@@ -385,6 +400,19 @@ public class LedgerContractIntegrationTest {
 
         public static WitnessRuleCondition getTransactionSignerWitnessRuleCondition(Hash256 txHash, int index) {
             return LedgerContract.getTransactionSigners(txHash)[index].witnessRules[0].condition;
+        }
+
+        public static boolean[] transactionSignerEquals(Hash256 txHash1, Hash256 txHash2) {
+            Signer signerTx1 = LedgerContract.getTransactionSigners(txHash1)[0];
+            Signer signerTx1_other = LedgerContract.getTransactionSigners(txHash1)[0];
+            Signer signerTx2 = LedgerContract.getTransactionSigners(txHash2)[0];
+
+            boolean[] b = new boolean[4];
+            b[0] = signerTx1.equals(signerTx1);
+            b[1] = signerTx1.equals(signerTx1_other);
+            b[2] = signerTx1.equals(signerTx2);
+            b[3] = signerTx1.equals(22);
+            return b;
         }
 
         public static Transaction getTransaction(Hash256 txHash) {
