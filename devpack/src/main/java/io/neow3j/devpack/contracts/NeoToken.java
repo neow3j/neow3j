@@ -49,7 +49,7 @@ public class NeoToken extends FungibleToken {
     public static native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
-     * @return the list of the current validators.
+     * @return the first 256 registered candidates.
      */
     public static native Candidate[] getCandidates();
 
@@ -59,7 +59,7 @@ public class NeoToken extends FungibleToken {
     public static native Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates();
 
     /**
-     * @return the number of votes of the candidate with the given public key.
+     * @return the number of votes of the candidate with the given public key, or -1 if it was not found.
      */
     public static native int getCandidateVote(ECPoint candidatePubKey);
 
@@ -69,7 +69,7 @@ public class NeoToken extends FungibleToken {
     public static native ECPoint[] getCommittee();
 
     /**
-     * @return the next validators' public keys.
+     * @return the next block validators' public keys.
      */
     public static native ECPoint[] getNextBlockValidators();
 

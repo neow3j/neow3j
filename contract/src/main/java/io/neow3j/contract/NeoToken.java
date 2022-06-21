@@ -66,7 +66,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the name of the NeoToken contract.
+     * Returns the name of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -78,7 +78,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the symbol of the NeoToken contract.
+     * Returns the symbol of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -90,7 +90,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the total supply of the NeoToken contract.
+     * Returns the total supply of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -132,7 +132,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param scriptHash  the account's script hash.
      * @param blockHeight the block height.
-     * @return the amount of unclaimed GAS
+     * @return the amount of unclaimed GAS.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger unclaimedGas(Hash160 scriptHash, long blockHeight) throws IOException {
@@ -145,8 +145,8 @@ public class NeoToken extends FungibleToken {
     // region candidate registration
 
     /**
-     * Creates a transaction script for registering a committee candidate with the given
-     * public key and initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script for registering a candidate with the given public key and initializes a
+     * {@link TransactionBuilder} based on this script.
      * <p>
      * Note, that the transaction has to be signed with the account corresponding to the public key.
      *
@@ -158,8 +158,8 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction script for registering a validator candidate and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script for registering a candidate and initializes a {@link TransactionBuilder} based on
+     * this script.
      *
      * @param candidateKey the public key to register as a candidate.
      * @return a transaction builder.
@@ -184,11 +184,11 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of the currently registered validator candidates and their corresponding vote count.
+     * Gets the public keys of the currently registered candidates and their corresponding vote count.
      * <p>
      * The vote count is based on the summed up NEO balances of the respective candidate's voters.
      *
-     * @return the validator public keys and their corresponding vote count.
+     * @return the candidates' public keys and their corresponding vote count.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the return type is not an array or the array elements are not public
      *                                       keys and node counts.
@@ -206,7 +206,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Checks if there is a committee candidate or member with {@code publicKey}.
+     * Checks if there is a candidate with the provided public key.
      *
      * @param publicKey the candidate's public key.
      * @return true if the public key belongs to a candidate. False otherwise.
@@ -259,7 +259,7 @@ public class NeoToken extends FungibleToken {
      * Gets a specific candidate's votes.
      *
      * @param publicKey the candidate's public key.
-     * @return the candidate's votes.
+     * @return the candidate's votes, or -1 if it was not found.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getCandidateVotes(ECPublicKey publicKey) throws IOException {
@@ -306,7 +306,7 @@ public class NeoToken extends FungibleToken {
     // region voting
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link TransactionBuilder}
+     * Creates a transaction script to vote for the given candidate and initializes a {@link TransactionBuilder}
      * based on this script.
      *
      * @param voter     the account that casts the vote.
@@ -315,12 +315,12 @@ public class NeoToken extends FungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder vote(Account voter, ECPublicKey candidate) throws IOException {
+    public TransactionBuilder vote(Account voter, ECPublicKey candidate) {
         return vote(voter.getScriptHash(), candidate);
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link TransactionBuilder}
+     * Creates a transaction script to vote for the given candidate and initializes a {@link TransactionBuilder}
      * based on this script.
      *
      * @param voter     the account that casts the vote.
@@ -336,26 +336,26 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction script to cancel the vote of {@code voter} and initializes a transaction Builder based
-     * on the script.
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a {@link TransactionBuilder}
+     * based on the script.
      *
      * @param voter the account for which to cancel the vote.
-     * @return a transaction builder
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder cancelVote(Hash160 voter) throws IOException {
+    public TransactionBuilder cancelVote(Hash160 voter) {
         return vote(voter, null);
     }
 
     /**
-     * Creates a transaction script to cancel the vote of {@code voter} and initializes a transaction Builder based
-     * on the script.
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a {@link TransactionBuilder}
+     * based on the script.
      *
      * @param voter the account for which to cancel the vote.
-     * @return a transaction builder
+     * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder cancelVote(Account voter) throws IOException {
+    public TransactionBuilder cancelVote(Account voter) {
         return cancelVote(voter.getScriptHash());
     }
 
