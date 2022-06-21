@@ -18,9 +18,6 @@ import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
-import io.neow3j.transaction.witnessrule.CalledByEntryCondition;
-import io.neow3j.transaction.witnessrule.WitnessAction;
-import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
@@ -301,7 +298,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunction(TestName testName, List<ContractParameter> params, Signer... additionalSigners)
             throws Throwable {
-
         return invokeFunction(testName.getMethodName(), params, additionalSigners);
     }
 
@@ -324,10 +320,6 @@ public class ContractTestRule implements TestRule {
         TransactionBuilder b = contract.invokeFunction(function, params.toArray(new ContractParameter[0]));
         List<Signer> signerList = new ArrayList<>(asList(additionalSigners));
         if (signAsCommittee) {
-//            signerList.add(AccountSigner.none(committee).setAllowedContracts(getContract().getScriptHash()));
-            WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, new CalledByEntryCondition());
-//            AccountSigner.none(committee).setRules(rule);
-//            signerList.add(AccountSigner.none(committee).setRules(rule));
             signerList.add(AccountSigner.global(committee));
             Signer[] modifiedSigners = signerList.toArray(new Signer[0]);
             tx = b.signers(modifiedSigners).firstSigner(committee).getUnsignedTransaction();
@@ -364,8 +356,7 @@ public class ContractTestRule implements TestRule {
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params)
-            throws Throwable {
+    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params) throws Throwable {
         return invokeFunctionAndAwaitExecution(testName.getMethodName(), params);
     }
 
@@ -379,9 +370,7 @@ public class ContractTestRule implements TestRule {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
-            throws Throwable {
-
+    public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params) throws Throwable {
         Hash256 txHash = invokeFunction(function, params);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -399,7 +388,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunctionAndAwaitExecution(TestName testName, List<ContractParameter> params,
             Signer... additionalSigners) throws Throwable {
-
         Hash256 txHash = invokeFunction(testName.getMethodName(), params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -417,7 +405,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunctionAndAwaitExecution(String function, List<ContractParameter> params,
             Signer... additionalSigners) throws Throwable {
-
         Hash256 txHash = invokeFunction(function, params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -425,8 +412,7 @@ public class ContractTestRule implements TestRule {
 
     public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
-        assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
-                is(NeoVMStateType.HALT));
+        assertThat(response.getApplicationLog().getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
     }
 
     public void signWithCommitteeAccount() {
