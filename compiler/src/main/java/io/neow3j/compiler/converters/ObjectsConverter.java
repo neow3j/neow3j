@@ -106,16 +106,9 @@ public class ObjectsConverter implements Converter {
 
         ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         insn = typeInsn.getNext().getNext();
-        while (insn != null) {
-            if (isCallToCtor(insn, ownerClassNode.name)) {
-                break;
-            }
+        while (!isCallToCtor(insn, ownerClassNode.name)) {
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
-        }
-        if (insn == null) {
-            throw new CompilerException(
-                    format("Expected a constructor of the class %s, but never reached it.", ownerClassNode.name));
         }
         MethodNode methodNode = getMethodNode((MethodInsnNode) insn, ownerClassNode).get();
         Type[] cTorArgTypes = Type.getType(methodNode.desc).getArgumentTypes();
