@@ -198,11 +198,8 @@ public class NeoToken extends FungibleToken {
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
-        Map<ECPublicKey, BigInteger> validators = new HashMap<>();
-        for (StackItem valItem : arrayItem.getList()) {
-            addMappingOfCandidateAndVote(validators, valItem);
-        }
-        return validators;
+        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(arrayItem.getList());
+        return candidates;
     }
 
     /**
@@ -234,25 +231,25 @@ public class NeoToken extends FungibleToken {
         if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
         }
-        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
-        for (StackItem iteratorItem : stackItem.getIterator()) {
-            addMappingOfCandidateAndVote(candidates, iteratorItem);
-        }
+        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(stackItem.getIterator());
         return candidates;
     }
 
-    // Extracts the candidates public key and its votes from the stack item, and adds a corresponding mapping to the
-    // provided Map instance.
-    private void addMappingOfCandidateAndVote(Map<ECPublicKey, BigInteger> candidates, StackItem candItem) {
-        if (!candItem.getType().equals(STRUCT)) {
-            throw new UnexpectedReturnTypeException(candItem.getType(), STRUCT);
+    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
+    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
+        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
+        for (StackItem candidateItem : candidateList) {
+            if (!candidateItem.getType().equals(STRUCT)) {
+                throw new UnexpectedReturnTypeException(candidateItem.getType(), STRUCT);
+            }
+            ECPublicKey key = extractPublicKey(candidateItem.getList().get(0));
+            StackItem nrItem = candidateItem.getList().get(1);
+            if (!nrItem.getType().equals(INTEGER)) {
+                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
+            }
+            candidates.put(key, nrItem.getInteger());
         }
-        ECPublicKey key = extractPublicKey(candItem.getList().get(0));
-        StackItem nrItem = candItem.getList().get(1);
-        if (!nrItem.getType().equals(INTEGER)) {
-            throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
-        }
-        candidates.put(key, nrItem.getInteger());
+        return candidates;
     }
 
     /**
