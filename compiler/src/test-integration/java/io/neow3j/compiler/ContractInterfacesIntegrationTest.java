@@ -163,6 +163,16 @@ public class ContractInterfacesIntegrationTest {
     }
 
     @Test
+    public void getUnclaimedGasFromNeoTokenWithParam() throws Throwable {
+        BigInteger blockCount = ct.getNeow3j().getBlockCount().send().getBlockCount();
+        BigInteger unclaimedGas = new NeoToken(ct.getNeow3j()).unclaimedGas(ct.getCommittee(), blockCount.longValue());
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(NeoToken.SCRIPT_HASH),
+                hash160(ct.getCommittee()),
+                integer(blockCount));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(unclaimedGas));
+    }
+
+    @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(reverseHexString(stdLibHash())));
@@ -235,6 +245,12 @@ public class ContractInterfacesIntegrationTest {
                     .decimals();
         }
 
+        public static int getUnclaimedGasFromNeoTokenWithParam(Hash160 contractHash, Hash160 account, int blockIndex) {
+            CustomFungibleToken customFungibleToken = new CustomFungibleToken(contractHash);
+            assert customFungibleToken.getHash() == new io.neow3j.devpack.contracts.NeoToken().getHash();
+            return customFungibleToken.unclaimedGas(account, blockIndex);
+        }
+
         public static Hash160 getHash() {
             return new CustomContract(
                     new Hash160(reverse(hexToBytes("acce6fd80d44e1796aa0c2c625e9e4e0ce39efc0").toByteArray())))
@@ -262,6 +278,9 @@ public class ContractInterfacesIntegrationTest {
         public CustomFungibleToken(Hash160 contractHash) {
             super(contractHash);
         }
+
+        public native int unclaimedGas(Hash160 scriptHash, int blockIndex);
+
     }
 
 }
