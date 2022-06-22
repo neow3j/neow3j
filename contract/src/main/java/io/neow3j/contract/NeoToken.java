@@ -253,14 +253,14 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets a specific candidate's votes.
+     * Gets the votes for a specific candidate.
      *
-     * @param publicKey the candidate's public key.
+     * @param pubKey the candidate's public key.
      * @return the candidate's votes, or -1 if it was not found.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public BigInteger getCandidateVotes(ECPublicKey publicKey) throws IOException {
-        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(publicKey.getEncoded(true)));
+    public BigInteger getCandidateVotes(ECPublicKey pubKey) throws IOException {
+        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
     }
 
     /**
@@ -310,7 +310,6 @@ public class NeoToken extends FungibleToken {
      * @param candidate the candidate to vote for. If null, then the current vote of the voter is withdrawn (see
      *                  {@link NeoToken#cancelVote(Account)}).
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder vote(Account voter, ECPublicKey candidate) {
         return vote(voter.getScriptHash(), candidate);
@@ -338,7 +337,6 @@ public class NeoToken extends FungibleToken {
      *
      * @param voter the account for which to cancel the vote.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder cancelVote(Hash160 voter) {
         return vote(voter, null);
@@ -350,7 +348,6 @@ public class NeoToken extends FungibleToken {
      *
      * @param voter the account for which to cancel the vote.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder cancelVote(Account voter) {
         return cancelVote(voter.getScriptHash());

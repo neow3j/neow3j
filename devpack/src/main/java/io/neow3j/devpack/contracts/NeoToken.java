@@ -59,9 +59,12 @@ public class NeoToken extends FungibleToken {
     public static native Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates();
 
     /**
-     * @return the number of votes of the candidate with the given public key, or -1 if it was not found.
+     * Gets the votes for a specific candidate.
+     *
+     * @param pubKey the candidate's public key.
+     * @return the candidate's votes, or -1 if it was not found.
      */
-    public static native int getCandidateVote(ECPoint candidatePubKey);
+    public static native int getCandidateVote(ECPoint pubKey);
 
     /**
      * @return the committee members' public keys.
@@ -147,12 +150,12 @@ public class NeoToken extends FungibleToken {
     public static class Candidate {
 
         /**
-         * This candidates public key.
+         * This candidate's public key.
          */
         public final ECPoint publicKey;
 
         /**
-         * This candidates votes.
+         * This candidate's votes.
          */
         public final int votes;
 
