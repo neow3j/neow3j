@@ -255,7 +255,6 @@ public class ObjectInheritedIntegrationTest {
         assertFalse(boolArr.get(3).getBoolean());
     }
 
-
     static class ObjectInheritedIntegrationTestContract {
 
         public static boolean[] blockEquals() throws Exception {

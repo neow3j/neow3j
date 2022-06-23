@@ -3,6 +3,7 @@
     "Network": 5195086,
     "Nodes": [],
     "MaxTaskTimeout": 432000000,
+    "MaxOracleTimeout": 10000,
     "AllowPrivateHost": true,
     "AllowedContentTypes": [
       "application/json"

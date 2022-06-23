@@ -25,6 +25,7 @@ import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
+import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
 import static io.neow3j.types.StackItemType.STRUCT;
 import static java.util.Arrays.asList;
 
@@ -45,6 +46,8 @@ public class NeoToken extends FungibleToken {
     private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     private static final String VOTE = "vote";
     private static final String GET_CANDIDATES = "getCandidates";
+    private static final String GET_ALL_CANDIDATES = "getAllCandidates";
+    private static final String GET_CANDIDATE_VOTES = "getCandidateVote";
     private static final String GET_COMMITTEE = "getCommittee";
     private static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
     private static final String SET_GAS_PER_BLOCK = "setGasPerBlock";
@@ -63,7 +66,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the name of the NeoToken contract.
+     * Returns the name of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -75,7 +78,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the symbol of the NeoToken contract.
+     * Returns the symbol of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -87,7 +90,7 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Returns the total supply of the NeoToken contract.
+     * Returns the total supply of the NEO token.
      * <p>
      * Doesn't require a call to the Neo node.
      *
@@ -129,7 +132,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param scriptHash  the account's script hash.
      * @param blockHeight the block height.
-     * @return the amount of unclaimed GAS
+     * @return the amount of unclaimed GAS.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger unclaimedGas(Hash160 scriptHash, long blockHeight) throws IOException {
@@ -142,8 +145,8 @@ public class NeoToken extends FungibleToken {
     // region candidate registration
 
     /**
-     * Creates a transaction script for registering a committee candidate with the given
-     * public key and initializes a {@link TransactionBuilder} based on this script.
+     * Creates a transaction script for registering a candidate with the given public key and initializes a
+     * {@link TransactionBuilder} based on this script.
      * <p>
      * Note, that the transaction has to be signed with the account corresponding to the public key.
      *
@@ -155,8 +158,8 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction script for registering a validator candidate and initializes a
-     * {@link TransactionBuilder} based on this script.
+     * Creates a transaction script for registering a candidate and initializes a {@link TransactionBuilder} based on
+     * this script.
      *
      * @param candidateKey the public key to register as a candidate.
      * @return a transaction builder.
@@ -181,11 +184,11 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of the currently registered validator candidates and their corresponding vote count.
+     * Gets the public keys of the currently registered candidates and their corresponding vote count.
      * <p>
      * The vote count is based on the summed up NEO balances of the respective candidate's voters.
      *
-     * @return the candidate public keys and their corresponding vote count.
+     * @return the candidates' public keys and their corresponding vote count.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the return type is not an array or the array elements are not public
      *                                       keys and node counts.
@@ -195,30 +198,69 @@ public class NeoToken extends FungibleToken {
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
-        Map<ECPublicKey, BigInteger> validators = new HashMap<>();
-        for (StackItem valItem : arrayItem.getList()) {
-            if (!valItem.getType().equals(STRUCT)) {
-                throw new UnexpectedReturnTypeException(valItem.getType(), STRUCT);
-            }
-            ECPublicKey key = extractPublicKey(valItem.getList().get(0));
-            StackItem nrItem = valItem.getList().get(1);
-            if (!nrItem.getType().equals(INTEGER)) {
-                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
-            }
-            validators.put(key, nrItem.getInteger());
-        }
-        return validators;
+        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(arrayItem.getList());
+        return candidates;
     }
 
     /**
-     * Checks if there is a committee candidate or member with {@code publicKey}.
+     * Checks if there is a candidate with the provided public key.
      *
-     * @param publicKey the candidates public key.
+     * @param publicKey the candidate's public key.
      * @return true if the public key belongs to a candidate. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isCandidate(ECPublicKey publicKey) throws IOException {
         return getCandidates().containsKey(publicKey);
+    }
+
+    /**
+     * Gets the public keys of all currently registered candidates and their corresponding vote count.
+     * <p>
+     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
+     * <p>
+     * The response contains an iterator which might be truncated based on the size configuration of the node this
+     * request is sent to.
+     *
+     * @return the candidate public keys and their corresponding vote count.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
+     *                                       are not public keys and node counts.
+     */
+    public Map<ECPublicKey, BigInteger> getAllCandidates() throws IOException {
+        StackItem stackItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
+        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
+            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
+        }
+        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(stackItem.getIterator());
+        return candidates;
+    }
+
+    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
+    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
+        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
+        for (StackItem candidateItem : candidateList) {
+            if (!candidateItem.getType().equals(STRUCT)) {
+                throw new UnexpectedReturnTypeException(candidateItem.getType(), STRUCT);
+            }
+            ECPublicKey key = extractPublicKey(candidateItem.getList().get(0));
+            StackItem nrItem = candidateItem.getList().get(1);
+            if (!nrItem.getType().equals(INTEGER)) {
+                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
+            }
+            candidates.put(key, nrItem.getInteger());
+        }
+        return candidates;
+    }
+
+    /**
+     * Gets the votes for a specific candidate.
+     *
+     * @param pubKey the candidate's public key.
+     * @return the candidate's votes, or -1 if it was not found.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getCandidateVotes(ECPublicKey pubKey) throws IOException {
+        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
     }
 
     /**
@@ -261,21 +303,20 @@ public class NeoToken extends FungibleToken {
     // region voting
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link TransactionBuilder}
+     * Creates a transaction script to vote for the given candidate and initializes a {@link TransactionBuilder}
      * based on this script.
      *
      * @param voter     the account that casts the vote.
      * @param candidate the candidate to vote for. If null, then the current vote of the voter is withdrawn (see
      *                  {@link NeoToken#cancelVote(Account)}).
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder vote(Account voter, ECPublicKey candidate) throws IOException {
+    public TransactionBuilder vote(Account voter, ECPublicKey candidate) {
         return vote(voter.getScriptHash(), candidate);
     }
 
     /**
-     * Creates a transaction script to vote for the given validators and initializes a {@link TransactionBuilder}
+     * Creates a transaction script to vote for the given candidate and initializes a {@link TransactionBuilder}
      * based on this script.
      *
      * @param voter     the account that casts the vote.
@@ -291,26 +332,24 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Creates a transaction script to cancel the vote of {@code voter} and initializes a transaction Builder based
-     * on the script.
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a {@link TransactionBuilder}
+     * based on the script.
      *
      * @param voter the account for which to cancel the vote.
-     * @return a transaction builder
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @return a transaction builder.
      */
-    public TransactionBuilder cancelVote(Hash160 voter) throws IOException {
+    public TransactionBuilder cancelVote(Hash160 voter) {
         return vote(voter, null);
     }
 
     /**
-     * Creates a transaction script to cancel the vote of {@code voter} and initializes a transaction Builder based
-     * on the script.
+     * Creates a transaction script to cancel the vote of {@code voter} and initializes a {@link TransactionBuilder}
+     * based on the script.
      *
      * @param voter the account for which to cancel the vote.
-     * @return a transaction builder
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @return a transaction builder.
      */
-    public TransactionBuilder cancelVote(Account voter) throws IOException {
+    public TransactionBuilder cancelVote(Account voter) {
         return cancelVote(voter.getScriptHash());
     }
 
