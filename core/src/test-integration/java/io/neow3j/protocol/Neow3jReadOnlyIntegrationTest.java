@@ -1134,8 +1134,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
-        assertThat(stateRoot.getRootHash(),
-                is(new Hash256("d396e35b651bcb5a13d0120d7d04f5208c6c3ca8f2ebddf0b9bd84b993da9cdb")));
+        assertThat(stateRoot.getRootHash(), instanceOf(Hash256.class));
+        assertThat(stateRoot.getRootHash(), not(Hash256.ZERO));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 
@@ -1201,36 +1201,36 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testFindStates() throws IOException {
-        long stateHeight = getNeow3j().getStateHeight().send()
-                .getStateHeight().getLocalRootIndex();
-        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
-                .getStateRoot().getRootHash();
         String keyPrefix = "14";
         Hash160 contractHash = new Hash160(gasTokenHash());
+
+        long stateHeight = getNeow3j().getStateHeight().send().getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send().getStateRoot().getRootHash();
         NeoFindStates.States states = getNeow3j()
                 .findStates(rootHash, contractHash, keyPrefix).send()
                 .getStates();
+
+        assertThat(states.getResults(), hasSize(3));
         assertNotNull(states.getFirstProof());
         assertNotNull(states.getLastProof());
         assertFalse(states.isTruncated());
-        assertThat(states.getResults(), hasSize(3));
         assertNotNull(states.getResults().get(2));
     }
 
     @Test
     public void testFindStates_startKey() throws IOException {
-        long stateHeight = getNeow3j().getStateHeight().send()
-                .getStateHeight().getLocalRootIndex();
-        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
-                .getStateRoot().getRootHash();
         String keyPrefix = "14";
         String startKey = "147f";
         Hash160 contractHash = new Hash160(gasTokenHash());
+
+        long stateHeight = getNeow3j().getStateHeight().send().getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send().getStateRoot().getRootHash();
         NeoFindStates.States states = getNeow3j()
                 .findStates(rootHash, contractHash, keyPrefix, startKey).send()
                 .getStates();
+
         assertNotNull(states.getFirstProof());
-        assertNull(states.getLastProof());
+        assertNull(states.getLastProof()); // A last proof is only included if there are more than 1 result.
         assertFalse(states.isTruncated());
         assertThat(states.getResults(), hasSize(1));
         assertNotNull(states.getResults().get(0).getKey());
