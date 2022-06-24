@@ -1,0 +1,15 @@
+description 'neow3j: Integration Tests'
+
+testSets {
+    integrationTest { dirName = 'test-integration' }
+}
+
+dependencies {
+
+    testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
+            project(':compiler'),
+            project(':contract'),
+            project(':devpack'),
+            project(':devpack-test'),
+            project(':test-tools')
+}
