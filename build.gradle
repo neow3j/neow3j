@@ -126,10 +126,6 @@ subprojects {
         apply plugin: 'com.gradle.plugin-publish'
     }
 
-    testSets {
-        integrationTest { dirName = 'test-integration' }
-    }
-
     dependencies {
         testImplementation "junit:junit:$junitVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
