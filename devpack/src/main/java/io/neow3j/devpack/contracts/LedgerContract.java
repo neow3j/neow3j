@@ -1,23 +1,20 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Block;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.annotations.NativeContract;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.LedgerContractScriptHash;
 
 /**
  * Represents an interface to the native LedgerContract that stores all blocks and transactions.
  */
-@NativeContract
+@NativeContract(LedgerContractScriptHash)
 public class LedgerContract extends ContractInterface {
 
     public LedgerContract() {
-        super(new Hash160(reverse(hexToBytes(LedgerContractScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

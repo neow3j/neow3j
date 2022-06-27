@@ -5,18 +5,16 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.NeoTokenScriptHash;
 
 /**
  * Represents an interface to the native NEO token contract.
  */
-@NativeContract
+@NativeContract(NeoTokenScriptHash)
 public class NeoToken extends FungibleToken {
 
     public NeoToken() {
-        super(new Hash160(reverse(hexToBytes(NeoTokenScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

@@ -3,18 +3,16 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.PolicyContractScriptHash;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
  */
-@NativeContract
+@NativeContract(PolicyContractScriptHash)
 public class PolicyContract extends ContractInterface {
 
     public PolicyContract() {
-        super(new Hash160(reverse(hexToBytes(PolicyContractScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

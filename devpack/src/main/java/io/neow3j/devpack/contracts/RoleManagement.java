@@ -1,12 +1,9 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.constants.Role;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.RoleManagementScriptHash;
 
 /**
@@ -14,11 +11,11 @@ import static io.neow3j.devpack.constants.NativeContract.RoleManagementScriptHas
  * roles. A node can have the roles defined in {@link Role}, e.g., be an oracle node or a validator node. This
  * contract provides the functionality to check the nodes assigned a particular role.
  */
-@NativeContract
+@NativeContract(RoleManagementScriptHash)
 public class RoleManagement extends ContractInterface {
 
     public RoleManagement() {
-        super(new Hash160(reverse(hexToBytes(RoleManagementScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

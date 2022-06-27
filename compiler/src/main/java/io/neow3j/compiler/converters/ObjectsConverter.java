@@ -1,5 +1,6 @@
 package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.CompilerException;
@@ -19,6 +20,7 @@ import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -43,6 +45,7 @@ import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.Compiler.skipToCtorCall;
 import static io.neow3j.compiler.Compiler.skipToSuperCtorCall;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -113,38 +116,35 @@ public class ObjectsConverter implements Converter {
         MethodNode methodNode = getMethodNode((MethodInsnNode) insn, ownerClassNode).get();
         Type[] cTorArgTypes = Type.getType(methodNode.desc).getArgumentTypes();
         int cTorParamLength = cTorArgTypes.length;
-        if (cTorParamLength == 0) {
-            if (!hasAnnotations(ownerClassNode, NativeContract.class)) {
-                throwIfIncorrectContractInterfaceCtor();
-            }
-            handleNativeContractHash(methodNode, ownerClassNode, neoMethod, compUnit);
-        } else if (cTorParamLength == 1) {
-            String argInternalName = cTorArgTypes[0].getInternalName();
-            if (!argInternalName.equals(getInternalName(Hash160.class))) {
-                throwIfIncorrectContractInterfaceCtor();
-            }
-        } else {
-            throwIfIncorrectContractInterfaceCtor();
+        if (hasAnnotations(ownerClassNode, NativeContract.class)) {
+            return handleNativeContractHash(neoMethod, ownerClassNode, insn);
         }
-        return insn;
+        if (cTorParamLength == 1 && getInternalName(Hash160.class).equals(cTorArgTypes[0].getInternalName())) {
+            // The instructions that lead to the contract hash are already on the stack at this point.
+            return insn;
+        }
+        throw new CompilerException(
+                format("A constructor of a ContractInterface is required to take exactly one %s type as parameter.",
+                        getInternalName(Hash160.class)));
     }
 
-    private void throwIfIncorrectContractInterfaceCtor() {
-        throw new CompilerException(format("A constructor of a ContractInterface is required to take exactly one %s " +
-                "type as parameter.", getInternalName(Hash160.class)));
-    }
+    private AbstractInsnNode handleNativeContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
+            AbstractInsnNode insn) {
 
-    private void handleNativeContractHash(MethodNode methodNode, ClassNode ownerClassNode, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
-
-        AbstractInsnNode insn = methodNode.instructions.get(0).getNext().getNext().getNext();
-        while (insn != null) {
-            if (isCallToCtor(insn, ownerClassNode.superName)) {
-                break;
-            }
-            insn = handleInsn(insn, neoMethod, compUnit);
+        AnnotationNode annotation = AsmHelper.getAnnotationNode(ownerClassNode, NativeContract.class).get();
+        io.neow3j.types.Hash160 scriptHash;
+        try {
+            scriptHash = new io.neow3j.types.Hash160((String) annotation.values.get(1));
+        } catch (IllegalArgumentException e) {
+            throw new CompilerException(ownerClassNode,
+                    format("Script hash '%s' of the contract class '%s' does not have the length of a valid script " +
+                            "hash.", annotation.values.get(1), getClassNameForInternalName(ownerClassNode.name)));
+        }
+        neoMethod.addInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
+        while (!isCallToCtor(insn, ownerClassNode.name)) {
             insn = insn.getNext();
         }
+        return insn;
     }
 
     // Whether the type extends the abstract class ContractInterface.

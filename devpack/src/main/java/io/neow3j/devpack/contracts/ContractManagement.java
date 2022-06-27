@@ -5,19 +5,17 @@ import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.ContractManagementScriptHash;
 
 /**
  * Represents an interface to the native ContractManagement contract that is used to manage all deployed smart
  * contracts.
  */
-@NativeContract
+@NativeContract(ContractManagementScriptHash)
 public class ContractManagement extends ContractInterface {
 
     public ContractManagement() {
-        super(new Hash160(reverse(hexToBytes(ContractManagementScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

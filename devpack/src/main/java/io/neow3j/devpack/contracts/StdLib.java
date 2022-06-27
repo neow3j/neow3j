@@ -1,21 +1,18 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.StdLibScriptHash;
 
 /**
  * Represents an interface to the native StdLib contract that provides useful functions.
  */
-@NativeContract
+@NativeContract(StdLibScriptHash)
 public class StdLib extends ContractInterface {
 
     public StdLib() {
-        super(new Hash160(reverse(hexToBytes(StdLibScriptHash).toByteArray())));
+        super(null);
     }
 
     /**

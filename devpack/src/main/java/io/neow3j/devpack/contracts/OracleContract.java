@@ -1,20 +1,17 @@
 package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.NativeContract;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.devpack.constants.NativeContract.OracleContractScriptHash;
 
 /**
  * Represents an interface to the native OracleContract that provides oracle services.
  */
-@NativeContract
+@NativeContract(OracleContractScriptHash)
 public class OracleContract extends ContractInterface {
 
     public OracleContract() {
-        super(new Hash160(reverse(hexToBytes(OracleContractScriptHash).toByteArray())));
+        super(null);
     }
 
     /**
