@@ -197,18 +197,17 @@ public class ContractInterfaceIntegrationTest {
     static class ContractInterfaceIntegrationTestContract {
 
         static final String cst = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
-        static final CustomFungibleToken customFungibleToken = new CustomFungibleToken(
-                new Hash160(reverse(hexToBytes("d2a4cff31913016155e38e474a2c06d08be276cf").toByteArray())));
+        static final CustomFungibleToken customFungibleToken =
+                new CustomFungibleToken("d2a4cff31913016155e38e474a2c06d08be276cf");
 
         public static String callSymbolOfFungibleToken() {
-            CustomFungibleToken customFungibleToken = new CustomFungibleToken(
-                    new Hash160(reverse(hexToBytes("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5").toByteArray())));
-            return customFungibleToken.symbol();
+            CustomFungibleToken customFungibleToken =
+                    new CustomFungibleToken("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
+            return customFungibleToken.symbol();// 0x457fa4900813d577495b5c980849337cb048f041
         }
 
         public static String callSymbolOfFungibleTokenWithStaticHash() {
-            CustomFungibleToken customFungibleToken =
-                    new CustomFungibleToken(new Hash160(reverse(hexToBytes(cst).toByteArray())));
+            CustomFungibleToken customFungibleToken = new CustomFungibleToken(cst);
             return customFungibleToken.symbol();
         }
 
@@ -217,8 +216,8 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static boolean transferFungibleToken(Hash160 from, Hash160 to, int amount) {
-            CustomFungibleToken customFungibleToken = new CustomFungibleToken(
-                    new Hash160(reverse(hexToBytes("d2a4cff31913016155e38e474a2c06d08be276cf").toByteArray())));
+            CustomFungibleToken customFungibleToken =
+                    new CustomFungibleToken("d2a4cff31913016155e38e474a2c06d08be276cf");
             return customFungibleToken.transfer(from, to, amount, "mydata");
         }
 
@@ -240,9 +239,7 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static int callDecimalsOfFungibleTokenInOneLine() {
-            return new CustomFungibleToken(
-                    new Hash160(reverse(hexToBytes("d2a4cff31913016155e38e474a2c06d08be276cf").toByteArray())))
-                    .decimals();
+            return new CustomFungibleToken("d2a4cff31913016155e38e474a2c06d08be276cf").decimals();
         }
 
         public static int getUnclaimedGasFromNeoTokenWithParam(Hash160 contractHash, Hash160 account, int blockIndex) {
@@ -275,7 +272,12 @@ public class ContractInterfaceIntegrationTest {
     }
 
     static class CustomFungibleToken extends FungibleToken {
+
         public CustomFungibleToken(Hash160 contractHash) {
+            super(contractHash);
+        }
+
+        public CustomFungibleToken(String contractHash) {
             super(contractHash);
         }
 

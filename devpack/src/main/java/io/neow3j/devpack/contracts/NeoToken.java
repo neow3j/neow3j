@@ -11,11 +11,11 @@ import static io.neow3j.devpack.constants.NativeContract.NeoTokenScriptHash;
 /**
  * Represents an interface to the native NEO token contract.
  */
-@NativeContract(NeoTokenScriptHash)
+@NativeContract
 public class NeoToken extends FungibleToken {
 
     public NeoToken() {
-        super(null);
+        super(NeoTokenScriptHash);
     }
 
     /**

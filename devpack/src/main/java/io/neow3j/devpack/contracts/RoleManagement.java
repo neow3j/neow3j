@@ -11,11 +11,11 @@ import static io.neow3j.devpack.constants.NativeContract.RoleManagementScriptHas
  * roles. A node can have the roles defined in {@link Role}, e.g., be an oracle node or a validator node. This
  * contract provides the functionality to check the nodes assigned a particular role.
  */
-@NativeContract(RoleManagementScriptHash)
+@NativeContract
 public class RoleManagement extends ContractInterface {
 
     public RoleManagement() {
-        super(null);
+        super(RoleManagementScriptHash);
     }
 
     /**

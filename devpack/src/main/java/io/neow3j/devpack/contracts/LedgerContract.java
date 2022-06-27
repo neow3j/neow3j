@@ -11,11 +11,11 @@ import static io.neow3j.devpack.constants.NativeContract.LedgerContractScriptHas
 /**
  * Represents an interface to the native LedgerContract that stores all blocks and transactions.
  */
-@NativeContract(LedgerContractScriptHash)
+@NativeContract
 public class LedgerContract extends ContractInterface {
 
     public LedgerContract() {
-        super(null);
+        super(LedgerContractScriptHash);
     }
 
     /**

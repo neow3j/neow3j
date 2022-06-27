@@ -7,7 +7,7 @@ import static io.neow3j.devpack.constants.NativeContract.OracleContractScriptHas
 /**
  * Represents an interface to the native OracleContract that provides oracle services.
  */
-@NativeContract(OracleContractScriptHash)
+@NativeContract
 public class OracleContract extends ContractInterface {
 
     /**
@@ -36,7 +36,7 @@ public class OracleContract extends ContractInterface {
     public static final int MaxUserDataLength = 1 << 9;
 
     public OracleContract() {
-        super(null);
+        super(OracleContractScriptHash);
     }
 
     /**

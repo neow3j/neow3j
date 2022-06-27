@@ -222,13 +222,6 @@ public class CompilerExceptionsTest {
                 containsString("Only the first dimension of a multi-dimensional array declaration can be defined,"));
     }
 
-    @Test
-    public void throwOnInvalidNativeContractHash() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(TestNativeContractWrapperInvalidHash.class.getName()));
-        assertThat(thrown.getMessage(), containsString("does not have the length of a valid script hash."));
-    }
-
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -390,19 +383,6 @@ public class CompilerExceptionsTest {
     static class MultiDimensionalArraySize {
         public static String[][] method() {
             return new String[10][4];
-        }
-    }
-
-    static class TestNativeContractWrapperInvalidHash {
-        public static Hash160 test() {
-            return new WrapperWithInvalidNativeContractHash().getHash();
-        }
-    }
-
-    @NativeContract("fffdc93764dbaddd97c48f252a53ea4643faa3") // Invalid script hash
-    static class WrapperWithInvalidNativeContractHash extends ContractInterface {
-        public WrapperWithInvalidNativeContractHash() {
-            super(null);
         }
     }
 
