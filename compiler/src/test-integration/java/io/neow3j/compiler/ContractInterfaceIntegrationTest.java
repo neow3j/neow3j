@@ -36,13 +36,13 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-public class ContractInterfacesIntegrationTest {
+public class ContractInterfaceIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(ContractInterfacesIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(ContractInterfaceIntegrationTestContract.class.getName());
 
     @Test
     public void callSymbolOfFungibleToken() throws IOException {
@@ -194,7 +194,7 @@ public class ContractInterfacesIntegrationTest {
 
     @Permission(nativeContract = NativeContract.NeoToken)
     @Permission(nativeContract = NativeContract.GasToken)
-    static class ContractInterfacesIntegrationTestContract {
+    static class ContractInterfaceIntegrationTestContract {
 
         static final String cst = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5";
         static final CustomFungibleToken customFungibleToken = new CustomFungibleToken(
