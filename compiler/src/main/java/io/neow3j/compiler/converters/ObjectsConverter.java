@@ -129,7 +129,7 @@ public class ObjectsConverter implements Converter {
     }
 
     private AbstractInsnNode handleNativeContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
-            AbstractInsnNode insn) {
+            AbstractInsnNode ctorInsn) {
 
         AnnotationNode annotation = AsmHelper.getAnnotationNode(ownerClassNode, NativeContract.class).get();
         io.neow3j.types.Hash160 scriptHash;
@@ -141,10 +141,7 @@ public class ObjectsConverter implements Converter {
                             "hash.", annotation.values.get(1), getClassNameForInternalName(ownerClassNode.name)));
         }
         neoMethod.addInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
-        while (!isCallToCtor(insn, ownerClassNode.name)) {
-            insn = insn.getNext();
-        }
-        return insn;
+        return ctorInsn;
     }
 
     // Whether the type extends the abstract class ContractInterface.
