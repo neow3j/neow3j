@@ -430,9 +430,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
-        assertThat(nef.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef.getChecksum(), is(588003825L));
+        assertThat(nef.getScript(),
+                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQA=="));
+        assertThat(nef.getChecksum(), is(65467259L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -443,18 +443,18 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(17));
-        ContractMethod method = abi.getMethods().get(8);
+        assertThat(abi.getMethods(), hasSize(19));
+        ContractMethod method = abi.getMethods().get(10);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getType(),
                 is(ContractParameterType.PUBLIC_KEY));
-        assertThat(method.getOffset(), is(56));
+        assertThat(method.getOffset(), is(70));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
         assertNotNull(abi.getEvents());
-        assertThat(abi.getEvents(), hasSize(1));
+        assertThat(abi.getEvents(), hasSize(3));
         ContractEvent event = abi.getEvents().get(0);
         assertThat(event.getName(), is("Transfer"));
         assertThat(event.getParameters(), hasSize(3));
@@ -781,7 +781,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(10));
+        assertThat(plugins, hasSize(9));
     }
 
     @Test
@@ -915,7 +915,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(transfer.getTransferAddress(), is(TX_RECIPIENT_1.toAddress()));
         assertThat(transfer.getAmount(), is(TX_AMOUNT_NEO));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
-        assertThat(transfer.getTransferNotifyIndex(), is(1L));
+        assertThat(transfer.getTransferNotifyIndex(), is(0L));
 
         assertNotNull(nep17Transfers.getReceived());
         assertThat(nep17Transfers.getReceived().size(), greaterThanOrEqualTo(1));
@@ -925,7 +925,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNull(transfer.getTransferAddress());
         assertThat(transfer.getAmount(), greaterThanOrEqualTo(new BigInteger("50000000")));
         assertThat(transfer.getBlockIndex(), greaterThanOrEqualTo(1L));
-        assertThat(transfer.getTransferNotifyIndex(), is(0L));
+        assertThat(transfer.getTransferNotifyIndex(), is(1L));
         assertThat(transfer.getTxHash(), instanceOf(Hash256.class));
     }
 
@@ -1112,7 +1112,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 isOneOf(NEO_HASH, GAS_HASH));
         assertThat(execution.getNotifications().get(0).getEventName(), is("Transfer"));
 
-        StackItem state = execution.getNotifications().get(0).getState();
+        StackItem state = execution.getNotifications().get(1).getState();
         assertThat(state, is(notNullValue()));
         assertThat(state.getType(), is(StackItemType.ARRAY));
         assertThat(state.getList(), hasSize(3));
@@ -1120,8 +1120,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(state.getList().get(1).getType(), is(StackItemType.BYTE_STRING));
         assertThat(state.getList().get(1).getAddress(), is(committeeAccountAddress()));
         assertThat(state.getList().get(2).getType(), is(StackItemType.INTEGER));
-        assertThat(state.getList().get(2).getInteger(),
-                greaterThanOrEqualTo(new BigInteger("50000000")));
+        assertThat(state.getList().get(2).getInteger(), greaterThanOrEqualTo(new BigInteger("50000000")));
     }
 
     // StateService
@@ -1135,8 +1134,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(stateRoot.getVersion(), is(0));
         assertThat(stateRoot.getIndex(), is(0L));
-        assertThat(stateRoot.getRootHash(),
-                is(new Hash256("088395d84a18fcba6c00f2dd23e84731d5a3adf0d82d81254d92bfda63314b34")));
+        assertThat(stateRoot.getRootHash(), instanceOf(Hash256.class));
+        assertThat(stateRoot.getRootHash(), not(Hash256.ZERO));
         assertThat(stateRoot.getWitnesses(), hasSize(0));
     }
 
@@ -1195,43 +1194,43 @@ public class Neow3jReadOnlyIntegrationTest {
         Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
                 .getStateRoot().getRootHash();
         String state = getNeow3j().getState(rootHash, new Hash160(gasTokenHash()),
-                "147f65d434362708b255f0e06856bdcb5ce99d8505").send().getState();
+                "140d165c9899c38bbf5991c5e47b04937258caec69").send().getState();
 
         assertNotNull(state);
     }
 
     @Test
     public void testFindStates() throws IOException {
-        long stateHeight = getNeow3j().getStateHeight().send()
-                .getStateHeight().getLocalRootIndex();
-        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
-                .getStateRoot().getRootHash();
         String keyPrefix = "14";
         Hash160 contractHash = new Hash160(gasTokenHash());
+
+        long stateHeight = getNeow3j().getStateHeight().send().getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send().getStateRoot().getRootHash();
         NeoFindStates.States states = getNeow3j()
                 .findStates(rootHash, contractHash, keyPrefix).send()
                 .getStates();
+
+        assertThat(states.getResults(), hasSize(3));
         assertNotNull(states.getFirstProof());
         assertNotNull(states.getLastProof());
         assertFalse(states.isTruncated());
-        assertThat(states.getResults(), hasSize(3));
         assertNotNull(states.getResults().get(2));
     }
 
     @Test
     public void testFindStates_startKey() throws IOException {
-        long stateHeight = getNeow3j().getStateHeight().send()
-                .getStateHeight().getLocalRootIndex();
-        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
-                .getStateRoot().getRootHash();
         String keyPrefix = "14";
         String startKey = "147f";
         Hash160 contractHash = new Hash160(gasTokenHash());
+
+        long stateHeight = getNeow3j().getStateHeight().send().getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send().getStateRoot().getRootHash();
         NeoFindStates.States states = getNeow3j()
                 .findStates(rootHash, contractHash, keyPrefix, startKey).send()
                 .getStates();
+
         assertNotNull(states.getFirstProof());
-        assertNull(states.getLastProof());
+        assertNull(states.getLastProof()); // A last proof is only included if there are more than 1 result.
         assertFalse(states.isTruncated());
         assertThat(states.getResults(), hasSize(1));
         assertNotNull(states.getResults().get(0).getKey());

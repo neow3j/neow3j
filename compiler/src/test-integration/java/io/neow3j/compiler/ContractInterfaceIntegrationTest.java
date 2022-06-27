@@ -95,21 +95,21 @@ public class ContractInterfaceIntegrationTest {
         assertThat(exec.getState(), is(NeoVMStateType.HALT));
         assertTrue(exec.getStack().get(0).getBoolean());
 
-        assertThat(exec.getNotifications().get(0).getContract(), is(GasToken.SCRIPT_HASH));
+        assertThat(exec.getNotifications().get(0).getContract(), is(NeoToken.SCRIPT_HASH));
         assertThat(exec.getNotifications().get(0).getEventName(), is("Transfer"));
-        assertThat(exec.getNotifications().get(0).getState().getList().get(0).getType(),
-                is(StackItemType.ANY));
-        assertNull(exec.getNotifications().get(0).getState().getList().get(0).getValue());
+        assertThat(exec.getNotifications().get(0).getState().getList().get(0).getAddress(),
+                is(ct.getCommittee().getAddress()));
         assertThat(exec.getNotifications().get(0).getState().getList().get(1).getAddress(),
                 is(ct.getCommittee().getAddress()));
+        assertThat(exec.getNotifications().get(0).getState().getList().get(2).getInteger(), is(BigInteger.ZERO));
 
-        assertThat(exec.getNotifications().get(1).getContract(), is(NeoToken.SCRIPT_HASH));
+        assertThat(exec.getNotifications().get(1).getContract(), is(GasToken.SCRIPT_HASH));
         assertThat(exec.getNotifications().get(1).getEventName(), is("Transfer"));
-        assertThat(exec.getNotifications().get(1).getState().getList().get(0).getAddress(),
-                is(ct.getCommittee().getAddress()));
+        assertThat(exec.getNotifications().get(1).getState().getList().get(0).getType(),
+                is(StackItemType.ANY));
+        assertNull(exec.getNotifications().get(1).getState().getList().get(0).getValue());
         assertThat(exec.getNotifications().get(1).getState().getList().get(1).getAddress(),
                 is(ct.getCommittee().getAddress()));
-        assertThat(exec.getNotifications().get(1).getState().getList().get(2).getInteger(), is(BigInteger.ZERO));
     }
 
     @Test

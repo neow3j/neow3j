@@ -2,6 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
 
@@ -55,9 +56,22 @@ public class NeoToken extends FungibleToken {
     public native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
-     * @return the list of registered candidates.
+     * @return the first 256 registered candidates.
      */
     public native Candidate[] getCandidates();
+
+    /**
+     * @return an iterator of all registered candidates.
+     */
+    public native Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates();
+
+    /**
+     * Gets the votes for a specific candidate.
+     *
+     * @param pubKey the candidate's public key.
+     * @return the candidate's votes, or -1 if it was not found.
+     */
+    public native int getCandidateVote(ECPoint pubKey);
 
     /**
      * @return the committee members' public keys.
@@ -65,7 +79,7 @@ public class NeoToken extends FungibleToken {
     public native ECPoint[] getCommittee();
 
     /**
-     * @return the next validators' public keys.
+     * @return the next block validators' public keys.
      */
     public native ECPoint[] getNextBlockValidators();
 
@@ -145,12 +159,12 @@ public class NeoToken extends FungibleToken {
     public static class Candidate {
 
         /**
-         * This candidates public key.
+         * This candidate's public key.
          */
         public final ECPoint publicKey;
 
         /**
-         * This candidates votes.
+         * This candidate's votes.
          */
         public final int votes;
 

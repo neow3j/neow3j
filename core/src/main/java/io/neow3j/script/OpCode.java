@@ -856,6 +856,17 @@ public enum OpCode {
     SQRT(0xA4, 1 << 11),
 
     /**
+     * Performs modulus division on a number multiplied by another number.
+     */
+    MODMUL(0xA5, 1 << 5),
+
+    /**
+     * Performs modulus division on a number raised to the power of another number. If the exponent is -1, it will
+     * have the calculation of the modular inverse.
+     */
+    MODPOW(0xA6, 1 << 11),
+
+    /**
      * Shifts a left b bits, preserving sign.
      */
     SHL(0xA8, 1 << 3),

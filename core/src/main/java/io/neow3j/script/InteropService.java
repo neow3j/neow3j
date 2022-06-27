@@ -14,17 +14,17 @@ import static java.lang.String.format;
  */
 public enum InteropService {
 
+    SYSTEM_CRYPTO_CHECKSIG("System.Crypto.CheckSig", 1 << 15),
+    SYSTEM_CRYPTO_CHECKMULTISIG("System.Crypto.CheckMultisig", 0),
+
     SYSTEM_CONTRACT_CALL("System.Contract.Call", 1 << 15),
     SYSTEM_CONTRACT_CALLNATIVE("System.Contract.CallNative", 0),
     SYSTEM_CONTRACT_GETCALLFLAGS("System.Contract.GetCallFlags", 1 << 10),
-    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", 1 << 8),
-    SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT("System.Contract.CreateMultisigAccount", 1 << 8),
+    SYSTEM_CONTRACT_CREATESTANDARDACCOUNT("System.Contract.CreateStandardAccount", SYSTEM_CRYPTO_CHECKSIG.price),
+    SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT("System.Contract.CreateMultisigAccount", 0),
 
     SYSTEM_CONTRACT_NATIVEONPERSIST("System.Contract.NativeOnPersist", 0),
     SYSTEM_CONTRACT_NATIVEPOSTPERSIST("System.Contract.NativePostPersist", 0),
-
-    SYSTEM_CRYPTO_CHECKSIG("System.Crypto.CheckSig", 1 << 15),
-    SYSTEM_CRYPTO_CHECKMULTISIG("System.Crypto.CheckMultisig", 0),
 
     SYSTEM_ITERATOR_NEXT("System.Iterator.Next", 1 << 15),
     SYSTEM_ITERATOR_VALUE("System.Iterator.Value", 1 << 4),
@@ -40,7 +40,7 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
     SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
-    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 8),
+    SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 12),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
     SYSTEM_RUNTIME_BURNGAS("System.Runtime.BurnGas", 1 << 4),
     SYSTEM_RUNTIME_GETNETWORK("System.Runtime.GetNetwork", 1 << 3),

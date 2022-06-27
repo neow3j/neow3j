@@ -13,6 +13,7 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -403,6 +404,23 @@ public class NeoTokenTest {
                 "02c0b60c995bc092e866f15a37c176bb59b7ebacf069ba94c0ebf561cb8f956238");
 
         assertTrue(new NeoToken(neow).isCandidate(pubKey));
+    }
+
+    @Test
+    public void getAllCandidates() throws IOException {
+        setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_getAllCandidates.json");
+        Map<ECPublicKey, BigInteger> allCandidates = new NeoToken(neow).getAllCandidates();
+        ECPublicKey pubKey1 = new ECPublicKey("02607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f");
+        ECPublicKey pubKey2 = new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+        assertThat(allCandidates.get(pubKey1), Matchers.is(BigInteger.valueOf(340356)));
+        assertThat(allCandidates.get(pubKey2), Matchers.is(BigInteger.valueOf(10000000)));
+    }
+
+    @Test
+    public void getCandidateVotes() throws IOException {
+        setUpWireMockForInvokeFunction("getCandidateVote", "invokefunction_getCandidateVote.json");
+        BigInteger votes = new NeoToken(neow).getCandidateVotes(Account.create().getECKeyPair().getPublicKey());
+        assertThat(votes, is(BigInteger.valueOf(721978)));
     }
 
 }

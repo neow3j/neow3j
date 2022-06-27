@@ -316,6 +316,20 @@ public class HelperIntegrationTest {
     }
 
     @Test
+    public void modMul() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(19), integer(5), integer(11));
+        // (19 * 5) % 11 = 7
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(7));
+    }
+
+    @Test
+    public void modPow() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(3), integer(9), integer(23));
+        // (3 ^ 9) % 23 = 18
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(18));
+    }
+
+    @Test
     public void memcpyOfByteArray() throws IOException {
         NeoInvokeFunction response =
                 ct.callInvokeFunction(
@@ -442,6 +456,14 @@ public class HelperIntegrationTest {
 
         public static int pow(int x, int y) {
             return Helper.pow(x, y);
+        }
+
+        public static int modMul(int factor1, int factor2, int modulus) {
+            return Helper.modMul(factor1, factor2, modulus);
+        }
+
+        public static int modPow(int factor, int exponent, int modulus) {
+            return Helper.modPow(factor, exponent, modulus);
         }
 
         public static byte[] memcpyOfByteArray(ByteString d, int di, byte[] s, int si, int n) {

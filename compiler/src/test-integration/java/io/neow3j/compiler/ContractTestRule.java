@@ -37,6 +37,7 @@ import java.util.List;
 
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.test.TestProperties.client1AccountWIF;
+import static io.neow3j.test.TestProperties.client2AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
@@ -57,6 +58,7 @@ public class ContractTestRule implements TestRule {
     private Account defaultAccount;
     private Account committee;
     private Account client1;
+    private Account client2;
     private Neow3j neow3j;
     private SmartContract contract;
     private Hash256 deployTxHash;
@@ -98,6 +100,7 @@ public class ContractTestRule implements TestRule {
         committee = Account.createMultiSigAccount(
                 asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         client1 = Account.fromWIF(client1AccountWIF());
+        client2 = Account.fromWIF(client2AccountWIF());
         neow3j = Neow3j.build(new HttpService(containerURL, true));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
     }
@@ -150,6 +153,10 @@ public class ContractTestRule implements TestRule {
 
     public Account getClient1() {
         return client1;
+    }
+
+    public Account getClient2() {
+        return client2;
     }
 
     public Neow3j getNeow3j() {
@@ -291,7 +298,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunction(TestName testName, List<ContractParameter> params, Signer... additionalSigners)
             throws Throwable {
-
         return invokeFunction(testName.getMethodName(), params, additionalSigners);
     }
 
@@ -350,8 +356,7 @@ public class ContractTestRule implements TestRule {
      * @param params The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params)
-            throws Throwable {
+    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params) throws Throwable {
         return invokeFunctionAndAwaitExecution(testName.getMethodName(), params);
     }
 
@@ -365,9 +370,7 @@ public class ContractTestRule implements TestRule {
      * @param params   The parameters to pass with the function call.
      * @return the hash of the transaction.
      */
-    public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params)
-            throws Throwable {
-
+    public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params) throws Throwable {
         Hash256 txHash = invokeFunction(function, params);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -385,7 +388,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunctionAndAwaitExecution(TestName testName, List<ContractParameter> params,
             Signer... additionalSigners) throws Throwable {
-
         Hash256 txHash = invokeFunction(testName.getMethodName(), params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -403,7 +405,6 @@ public class ContractTestRule implements TestRule {
      */
     public Hash256 invokeFunctionAndAwaitExecution(String function, List<ContractParameter> params,
             Signer... additionalSigners) throws Throwable {
-
         Hash256 txHash = invokeFunction(function, params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
@@ -411,8 +412,7 @@ public class ContractTestRule implements TestRule {
 
     public void assertVMExitedWithHalt(Hash256 hash) throws IOException {
         NeoGetApplicationLog response = neow3j.getApplicationLog(hash).send();
-        assertThat(response.getApplicationLog().getExecutions().get(0).getState(),
-                is(NeoVMStateType.HALT));
+        assertThat(response.getApplicationLog().getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
     }
 
     public void signWithCommitteeAccount() {
