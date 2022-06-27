@@ -268,81 +268,83 @@ public class StdLibIntegrationTest {
 
     static class StdLibIntegrationTestContract {
 
+        static StdLib stdLib = new StdLib();
+
         public static Object serializeAndDeserialize(boolean b, int i) {
-            ByteString ser = StdLib.serialize(new SimpleClass(b, i));
-            return StdLib.deserialize(ser);
+            ByteString ser = stdLib.serialize(new SimpleClass(b, i));
+            return stdLib.deserialize(ser);
         }
 
         public static ByteString serialize(boolean b, int i) {
-            return StdLib.serialize(new SimpleClass(b, i));
+            return stdLib.serialize(new SimpleClass(b, i));
         }
 
         public static String jsonSerialize(boolean b, int i, String s) {
-            return StdLib.jsonSerialize(new OtherClass(b, i, s));
+            return stdLib.jsonSerialize(new OtherClass(b, i, s));
         }
 
         public static Object jsonDeserialize(String json) {
-            return StdLib.jsonDeserialize(json);
+            return stdLib.jsonDeserialize(json);
         }
 
         public static String base64Encode(ByteString bytes) {
-            return StdLib.base64Encode(bytes);
+            return stdLib.base64Encode(bytes);
         }
 
         public static ByteString base64Decode(String encoded) {
-            return StdLib.base64Decode(encoded);
+            return stdLib.base64Decode(encoded);
         }
 
         public static String base58Encode(ByteString bytes) {
-            return StdLib.base58Encode(bytes);
+            return stdLib.base58Encode(bytes);
         }
 
         public static ByteString base58Decode(String encoded) {
-            return StdLib.base58Decode(encoded);
+            return stdLib.base58Decode(encoded);
         }
 
         public static String base58CheckEncode(ByteString bytes) {
-            return StdLib.base58CheckEncode(bytes);
+            return stdLib.base58CheckEncode(bytes);
         }
 
         public static ByteString base58CheckDecode(String encoded) {
-            return StdLib.base58CheckDecode(encoded);
+            return stdLib.base58CheckDecode(encoded);
         }
 
         public static String itoa(int i, int base) {
-            return StdLib.itoa(i, base);
+            return stdLib.itoa(i, base);
         }
 
         public static int atoi(String s, int base) {
-            return StdLib.atoi(s, base);
+            return stdLib.atoi(s, base);
         }
 
         public static Hash160 getHash() {
-            return StdLib.getHash();
+            return stdLib.getHash();
         }
 
         public static int memoryCompare(ByteString b1, ByteString b2) {
-            return StdLib.memoryCompare(b1, b2);
+            return stdLib.memoryCompare(b1, b2);
         }
 
         public static int memorySearch(ByteString b, ByteString value) {
-            return StdLib.memorySearch(b, value);
+            return stdLib.memorySearch(b, value);
         }
 
         public static int memorySearchWithStart(ByteString b, ByteString value, int start) {
-            return StdLib.memorySearch(b, value, start);
+            return stdLib.memorySearch(b, value, start);
         }
 
         public static int memorySearchWithStartAndBackwards(ByteString b, ByteString value, int start) {
-            return StdLib.memorySearch(b, value, start, true);
+            return stdLib.memorySearch(b, value, start, true);
         }
 
         public static String[] stringSplit(String s, String sep) {
-            return StdLib.stringSplit(s, sep);
+            return stdLib.stringSplit(s, sep);
         }
 
         public static String[] stringSplitRemoveEmptyEntries(String s, String sep) {
-            return StdLib.stringSplit(s, sep, true);
+            return stdLib.stringSplit(s, sep, true);
         }
 
         @Struct

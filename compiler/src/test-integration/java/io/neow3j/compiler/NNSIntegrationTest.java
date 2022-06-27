@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.List;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NeoNameService;
 import io.neow3j.protocol.core.RecordType;
@@ -17,6 +16,8 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.math.BigInteger;
 
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
@@ -125,48 +126,51 @@ public class NNSIntegrationTest {
     @Permission(contract = "*")
     static class NNSTestContract {
 
+        static NeoNameService nameService = new NeoNameService(
+                new Hash160(reverse(hexToBytes("4a65798c64826ac26765ae7a1bc4ddcc78e35ea5").toByteArray())));
+
         public static void testAddRoot(String root) {
-            CustomNeoNameService.addRoot(root);
+            nameService.addRoot(root);
         }
 
         public static void testSetPrice(List<Integer> priceList) {
-            CustomNeoNameService.setPrice(priceList);
+            nameService.setPrice(priceList);
         }
 
         public static int testGetPrice(int length) {
-            return CustomNeoNameService.getPrice(length);
+            return nameService.getPrice(length);
         }
 
         public static boolean testIsAvailable(String name) {
-            return CustomNeoNameService.isAvailable(name);
+            return nameService.isAvailable(name);
         }
 
         public static boolean testRegister(String name, Hash160 owner) {
-            return CustomNeoNameService.register(name, owner);
+            return nameService.register(name, owner);
         }
 
         public static int testRenew(String name) {
-            return CustomNeoNameService.renew(name);
+            return nameService.renew(name);
         }
 
         public static void testSetAdmin(String name, Hash160 admin) {
-            CustomNeoNameService.setAdmin(name, admin);
+            nameService.setAdmin(name, admin);
         }
 
         public static void testSetRecord(String name, int type, String data) {
-            CustomNeoNameService.setRecord(name, type, data);
+            nameService.setRecord(name, type, data);
         }
 
         public static String testGetRecord(String name, int type) {
-            return CustomNeoNameService.getRecord(name, type);
+            return nameService.getRecord(name, type);
         }
 
         public static void testDeleteRecord(String name, int type) {
-            CustomNeoNameService.deleteRecord(name, type);
+            nameService.deleteRecord(name, type);
         }
 
         public static String testResolve(String name, int type) {
-            return CustomNeoNameService.resolve(name, type);
+            return nameService.resolve(name, type);
         }
 
     }
@@ -212,10 +216,6 @@ public class NNSIntegrationTest {
             return "resolveReturn";
         }
 
-    }
-
-    @ContractHash("4a65798c64826ac26765ae7a1bc4ddcc78e35ea5")
-    static class CustomNeoNameService extends NeoNameService {
     }
 
 }

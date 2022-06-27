@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.types.Hash256;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.PolicyContract;
@@ -34,8 +35,7 @@ public class PolicyContractIntegrationTest {
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            PolicyContractIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(PolicyContractIntegrationTestContract.class.getName());
 
     @Test
     public void setAndGetFeePerByte() throws IOException {
@@ -107,46 +107,48 @@ public class PolicyContractIntegrationTest {
                 is(Numeric.reverseHexString(policyContractHash())));
     }
 
-    @Permission(contract = "0xcc5e4edd9f5f8dba8bb65734541df7a1c081c67b", methods = "*")
+    @Permission(nativeContract = NativeContract.PolicyContract, methods = "*")
     static class PolicyContractIntegrationTestContract {
+
+        static PolicyContract policyContract = new PolicyContract();
 
         public static int[] setAndGetFeePerByte(int newFee) {
             int[] sizes = new int[2];
-            sizes[0] = PolicyContract.getFeePerByte();
-            PolicyContract.setFeePerByte(newFee);
-            sizes[1] = PolicyContract.getFeePerByte();
+            sizes[0] = policyContract.getFeePerByte();
+            policyContract.setFeePerByte(newFee);
+            sizes[1] = policyContract.getFeePerByte();
             return sizes;
         }
 
         public static boolean blockAccount(Hash160 scriptHash) {
-            return PolicyContract.blockAccount(scriptHash);
+            return policyContract.blockAccount(scriptHash);
         }
 
         public static boolean isBlocked(Hash160 scriptHash) {
-            return PolicyContract.isBlocked(scriptHash);
+            return policyContract.isBlocked(scriptHash);
         }
 
         public static boolean unblockAccount(Hash160 scriptHash) {
-            return PolicyContract.unblockAccount(scriptHash);
+            return policyContract.unblockAccount(scriptHash);
         }
 
         public static Hash160 getHash() {
-            return PolicyContract.getHash();
+            return policyContract.getHash();
         }
 
         public static int[] setAndGetExecFeeFactor(int newFactor) {
             int[] factors = new int[2];
-            factors[0] = PolicyContract.getExecFeeFactor();
-            PolicyContract.setExecFeeFactor(newFactor);
-            factors[1] = PolicyContract.getExecFeeFactor();
+            factors[0] = policyContract.getExecFeeFactor();
+            policyContract.setExecFeeFactor(newFactor);
+            factors[1] = policyContract.getExecFeeFactor();
             return factors;
         }
 
         public static int[] setAndGetStoragePrice(int newPrice) {
             int[] prices = new int[2];
-            prices[0] = PolicyContract.getStoragePrice();
-            PolicyContract.setStoragePrice(newPrice);
-            prices[1] = PolicyContract.getStoragePrice();
+            prices[0] = policyContract.getStoragePrice();
+            policyContract.setStoragePrice(newPrice);
+            prices[1] = policyContract.getStoragePrice();
             return prices;
         }
     }

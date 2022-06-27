@@ -20,8 +20,7 @@ public class NullCheckIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            NullCheckIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(NullCheckIntegrationTestContract.class.getName());
 
     @Test
     public void nullCheckWithLargeObject() throws IOException {
@@ -39,10 +38,10 @@ public class NullCheckIntegrationTest {
 
         public static boolean nullCheckWithLargeObject(int i) throws Exception {
             POJO obj = new POJO(i);
-            if (StdLib.serialize(obj).length() < 32) {
+            if (new StdLib().serialize(obj).length() < 32) {
                 throw new Exception("Object is not big enough for this test.");
             }
-            if (StdLib.serialize(obj) == null) {
+            if (new StdLib().serialize(obj) == null) {
                 return false;
             }
             if (obj == null) {
@@ -53,10 +52,10 @@ public class NullCheckIntegrationTest {
 
         public static boolean notNullCheckWithLargeObject(int i) throws Exception {
             POJO obj = new POJO(i);
-            if (StdLib.serialize(obj).length() < 32) {
+            if (new StdLib().serialize(obj).length() < 32) {
                 throw new Exception("Object is not big enough for this test.");
             }
-            if (StdLib.serialize(obj) != null) {
+            if (new StdLib().serialize(obj) != null) {
                 if (obj != null) {
                     return true;
                 }
