@@ -1,8 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.crypto.Hash;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
@@ -14,7 +12,6 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
-import io.neow3j.utils.ArrayUtils;
 import org.junit.Test;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;

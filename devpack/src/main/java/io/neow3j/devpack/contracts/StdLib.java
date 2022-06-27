@@ -11,14 +11,14 @@ import static io.neow3j.devpack.constants.NativeContract.StdLibScriptHash;
 @NativeContract(StdLibScriptHash)
 public class StdLib extends ContractInterface {
 
-    public StdLib() {
-        super(null);
-    }
-
     /**
      * The maximum byte length for input values.
      */
     public static final int MaxInputLength = 1024;
+
+    public StdLib() {
+        super(null);
+    }
 
     /**
      * Serialize the given object to a byte string.

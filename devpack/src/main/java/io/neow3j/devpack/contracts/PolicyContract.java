@@ -11,10 +11,6 @@ import static io.neow3j.devpack.constants.NativeContract.PolicyContractScriptHas
 @NativeContract(PolicyContractScriptHash)
 public class PolicyContract extends ContractInterface {
 
-    public PolicyContract() {
-        super(null);
-    }
-
     /**
      * The maximum execution fee factor that the committee can set.
      */
@@ -24,6 +20,10 @@ public class PolicyContract extends ContractInterface {
      * The maximum storage price that the committee can set.
      */
     public static final int MaxStoragePrice = 10000000;
+
+    public PolicyContract() {
+        super(null);
+    }
 
     /**
      * @return the GAS cost per transaction byte, i.e., the fee per byte.

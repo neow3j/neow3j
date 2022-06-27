@@ -10,10 +10,6 @@ import static io.neow3j.devpack.constants.NativeContract.OracleContractScriptHas
 @NativeContract(OracleContractScriptHash)
 public class OracleContract extends ContractInterface {
 
-    public OracleContract() {
-        super(null);
-    }
-
     /**
      * The minimum GAS fee necessary on an oracle request to pay for the response.
      */
@@ -38,6 +34,10 @@ public class OracleContract extends ContractInterface {
      * The maximum byte length of the user data.
      */
     public static final int MaxUserDataLength = 1 << 9;
+
+    public OracleContract() {
+        super(null);
+    }
 
     /**
      * Does a request to the oracle service with the given request data. The given callback function will be called
