@@ -1,5 +1,6 @@
 package io.neow3j.compiler.converters;
 
+import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.CompilerException;
@@ -8,14 +9,18 @@ import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Instruction;
+import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
+import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
@@ -40,6 +45,7 @@ import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.Compiler.skipToCtorCall;
 import static io.neow3j.compiler.Compiler.skipToSuperCtorCall;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static java.lang.String.format;
@@ -78,6 +84,8 @@ public class ObjectsConverter implements Converter {
                 TypeInsnNode typeInsn = (TypeInsnNode) insn;
                 if (isStruct(typeInsn.desc, compUnit)) {
                     insn = handleNewStruct(insn, neoMethod, compUnit);
+                } else if (isContractWrapper(typeInsn.desc, compUnit)) {
+                    insn = handleContractInterfaceCtor(insn, neoMethod, compUnit);
                 } else {
                     insn = handleNew(insn, neoMethod, compUnit);
                 }
@@ -90,6 +98,64 @@ public class ObjectsConverter implements Converter {
                 break;
         }
         return insn;
+    }
+
+    private AbstractInsnNode handleContractInterfaceCtor(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        TypeInsnNode typeInsn = (TypeInsnNode) insn;
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
+
+        ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        insn = typeInsn.getNext().getNext();
+        while (!isCallToCtor(insn, ownerClassNode.name)) {
+            insn = handleInsn(insn, neoMethod, compUnit);
+            insn = insn.getNext();
+        }
+        MethodNode methodNode = getMethodNode((MethodInsnNode) insn, ownerClassNode).get();
+        Type[] cTorArgTypes = Type.getType(methodNode.desc).getArgumentTypes();
+        int cTorParamLength = cTorArgTypes.length;
+        if (hasAnnotations(ownerClassNode, NativeContract.class)) {
+            return handleNativeContractHash(neoMethod, ownerClassNode, insn);
+        }
+        if (cTorParamLength == 1 && getInternalName(Hash160.class).equals(cTorArgTypes[0].getInternalName())) {
+            // The instructions that lead to the contract hash are already on the stack at this point.
+            return insn;
+        }
+        throw new CompilerException(
+                format("A constructor of a ContractInterface is required to take exactly one %s type as parameter.",
+                        getInternalName(Hash160.class)));
+    }
+
+    private AbstractInsnNode handleNativeContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
+            AbstractInsnNode ctorInsn) {
+
+        AnnotationNode annotation = AsmHelper.getAnnotationNode(ownerClassNode, NativeContract.class).get();
+        io.neow3j.types.Hash160 scriptHash;
+        try {
+            scriptHash = new io.neow3j.types.Hash160((String) annotation.values.get(1));
+        } catch (IllegalArgumentException e) {
+            throw new CompilerException(ownerClassNode,
+                    format("Script hash '%s' of the contract class '%s' does not have the length of a valid script " +
+                            "hash.", annotation.values.get(1), getClassNameForInternalName(ownerClassNode.name)));
+        }
+        neoMethod.addInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
+        return ctorInsn;
+    }
+
+    // Whether the type extends the abstract class ContractInterface.
+    private boolean isContractWrapper(String desc, CompilationUnit compUnit) throws IOException {
+        ClassNode ownerClassNode = getAsmClassForInternalName(desc, compUnit.getClassLoader());
+        String superName = getFullyQualifiedNameForInternalName(ownerClassNode.superName);
+        while (!superName.equals(Object.class.getCanonicalName())) {
+            if (superName.equals(ContractInterface.class.getCanonicalName())) {
+                return true;
+            }
+            ownerClassNode = getAsmClassForInternalName(superName, compUnit.getClassLoader());
+            superName = getFullyQualifiedNameForInternalName(ownerClassNode.superName);
+        }
+        return false;
     }
 
     private boolean isStruct(String desc, CompilationUnit compUnit) throws IOException {
@@ -128,8 +194,8 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
-                : "Expected DUP after NEW but got other instructions";
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
 
         ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         MethodInsnNode ctorMethodInsn = skipToCtorCall(typeInsn.getNext(), ownerClassNode);
@@ -163,8 +229,8 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode()
-                : "Expected DUP after NEW but got other instructions";
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
 
         if (isNewStringBuilder(typeInsn)) {
             // Java, in the background, performs String concatenation, like `s1 + s2`, with the instantiation of a

@@ -5,6 +5,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.devpack.contracts.NeoToken.AccountState;
 import io.neow3j.devpack.contracts.NeoToken.Candidate;
@@ -54,6 +55,12 @@ public class NeoTokenIntegrationTest {
 
     @BeforeClass
     public static void setUp() throws Throwable {
+//<<<<<<< HEAD
+//        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
+//        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
+//        Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
+//        Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
+//=======
         neoToken = new io.neow3j.contract.NeoToken(ct.getNeow3j());
         Hash256 fundHash1 = ct.transferGas(ct.getDefaultAccount().getScriptHash(), new BigInteger("1000000000"));
         Hash256 fundHash2 = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
@@ -65,6 +72,7 @@ public class NeoTokenIntegrationTest {
         Await.waitUntilTransactionIsExecuted(fundHash2, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(fundHash3, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(fundHash4, ct.getNeow3j());
+//>>>>>>> main
     }
 
     @Test
@@ -275,74 +283,74 @@ public class NeoTokenIntegrationTest {
         assertThat(gasPerBlock, is(new BigInteger("50000")));
     }
 
-    @Permission(contract = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")
+    @Permission(nativeContract = NativeContract.NeoToken)
     static class NeoTokenTestContract {
+        static NeoToken neoToken = new NeoToken();
 
         public static int unclaimedGas(Hash160 scriptHash, int blockHeight) {
-            return NeoToken.unclaimedGas(scriptHash, blockHeight);
+            return neoToken.unclaimedGas(scriptHash, blockHeight);
         }
 
         public static boolean[] registerAndUnregisterCandidate(ECPoint publicKey) {
             boolean[] b = new boolean[2];
-            b[0] = NeoToken.registerCandidate(publicKey);
-            b[1] = NeoToken.unregisterCandidate(publicKey);
+            b[0] = neoToken.registerCandidate(publicKey);
+            b[1] = neoToken.unregisterCandidate(publicKey);
             return b;
         }
 
         public static Candidate[] registerAndGetCandidates(ECPoint publicKey) {
-            NeoToken.registerCandidate(publicKey);
-            return NeoToken.getCandidates();
+            neoToken.registerCandidate(publicKey);
+            return neoToken.getCandidates();
         }
 
         public static Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates() {
-            return NeoToken.getAllCandidates();
+            return neoToken.getAllCandidates();
         }
 
         public static int getCandidateVotes(ECPoint candidatePubKey) {
-            return NeoToken.getCandidateVote(candidatePubKey);
+            return neoToken.getCandidateVote(candidatePubKey);
         }
 
         public static ECPoint[] getNextBlockValidators() {
-            return NeoToken.getNextBlockValidators();
+            return neoToken.getNextBlockValidators();
         }
 
         public static ECPoint[] getCommittee() {
-            return NeoToken.getCommittee();
+            return neoToken.getCommittee();
         }
 
         public static int getGasPerBlock() {
-            return NeoToken.getGasPerBlock();
+            return neoToken.getGasPerBlock();
         }
 
         public static void setGasPerBlock(int gasPerBlock) {
-            NeoToken.setGasPerBlock(gasPerBlock);
+            neoToken.setGasPerBlock(gasPerBlock);
         }
 
         public static boolean vote(Hash160 scriptHash, ECPoint pubKey) {
-            return NeoToken.vote(scriptHash, pubKey);
+            return neoToken.vote(scriptHash, pubKey);
         }
 
         public static Hash160 getHash() {
-            return NeoToken.getHash();
+            return neoToken.getHash();
         }
 
         public static int getRegisterPrice() {
-            return NeoToken.getRegisterPrice();
+            return neoToken.getRegisterPrice();
         }
 
         public static void setRegisterPrice(int registerPrice) {
-            NeoToken.setRegisterPrice(registerPrice);
+            neoToken.setRegisterPrice(registerPrice);
         }
 
         public static AccountState getAccountStateWithoutVote(Hash160 scriptHash) {
-            return NeoToken.getAccountState(scriptHash);
+            return neoToken.getAccountState(scriptHash);
         }
 
-        public static AccountState registerVoteAndGetAccountState(Hash160 voter,
-                ECPoint publicKey) {
-            NeoToken.registerCandidate(publicKey);
-            NeoToken.vote(voter, publicKey);
-            return NeoToken.getAccountState(voter);
+        public static AccountState registerVoteAndGetAccountState(Hash160 voter, ECPoint publicKey) {
+            neoToken.registerCandidate(publicKey);
+            neoToken.vote(voter, publicKey);
+            return neoToken.getAccountState(voter);
         }
     }
 

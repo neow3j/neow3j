@@ -150,7 +150,7 @@ public class StringLiteralHelperTest {
     static class UnsupportedStringConcatenationWithMethodReturningInt {
 
         public static String main() {
-            return "token" + NeoToken.decimals();
+            return "token" + new NeoToken().decimals();
         }
     }
 

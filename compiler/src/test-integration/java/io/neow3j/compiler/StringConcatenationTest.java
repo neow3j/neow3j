@@ -113,7 +113,7 @@ public class StringConcatenationTest {
 
     static class StringConcatenation {
 
-        private static final String staticString = "one" + "two" + NeoToken.symbol();
+        private static final String staticString = "one" + "two" + new NeoToken().symbol();
         private static final String staticStringWithChar = "one" + "two" + getCharVal();
 
         static String value1 = "hello";
@@ -135,7 +135,7 @@ public class StringConcatenationTest {
         }
 
         public static String concatStringsFromMixedSources(String s1, String s2, byte[] s3) {
-            return s1 + s2 + "three" + Helper.toString(s3) + NeoToken.symbol();
+            return s1 + s2 + "three" + Helper.toString(s3) + new NeoToken().symbol();
         }
 
         public static String concatInStaticVariable() {

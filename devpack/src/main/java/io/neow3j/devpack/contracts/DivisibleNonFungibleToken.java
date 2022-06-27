@@ -3,14 +3,20 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
-import io.neow3j.devpack.annotations.ContractHash;
 
 /**
- * Base class for divisible, non-fungible token contracts that are compliant with the NEP-11 standard. Extend this
- * class in combination with the {@link ContractHash} annotation to create an "interface" to a NEP-11 (divisible)
- * token contract on the Neo blockchain.
+ * Base class for divisible, non-fungible token contracts that are compliant with the NEP-11 standard. Initialize this
+ * class with a contract hash ({@link Hash160}) to create an "interface" to a NEP-11 (divisible) token contract on
+ * the Neo blockchain.
+ * <p>
+ * When this class is extended, the constructor of the extending class must take exactly one parameter of type
+ * {@link Hash160} and pass it to the {@code super()} call without any additional logic.
  */
-public abstract class DivisibleNonFungibleToken extends NonFungibleToken {
+public class DivisibleNonFungibleToken extends NonFungibleToken {
+
+    public DivisibleNonFungibleToken(Hash160 contractHash) {
+        super(contractHash);
+    }
 
     /**
      * Transfers an amount of the token with {@code tokenId}.
@@ -23,7 +29,7 @@ public abstract class DivisibleNonFungibleToken extends NonFungibleToken {
      *                contract.
      * @return whether the transfer was successful.
      */
-    public static native boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data);
+    public native boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data);
 
     /**
      * Returns an iterator that contains all owners of the token with {@code tokenId}.
@@ -31,7 +37,7 @@ public abstract class DivisibleNonFungibleToken extends NonFungibleToken {
      * @param tokenId the token id.
      * @return a list of owners of the token.
      */
-    public static native Iterator<Hash160> ownerOf(ByteString tokenId);
+    public native Iterator<Hash160> ownerOf(ByteString tokenId);
 
     /**
      * Gets the balance of the token with {@code tokenId} for the given account.
@@ -40,6 +46,6 @@ public abstract class DivisibleNonFungibleToken extends NonFungibleToken {
      * @param tokenId the token id.
      * @return the token balance of the given account.
      */
-    public static native int balanceOf(Hash160 owner, ByteString tokenId);
+    public native int balanceOf(Hash160 owner, ByteString tokenId);
 
 }

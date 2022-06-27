@@ -2,8 +2,8 @@ package io.neow3j.compiler;
 
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
@@ -14,6 +14,8 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -28,8 +30,7 @@ public class FungibleTokenTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            FungibleTokenTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(FungibleTokenTestContract.class.getName());
 
     @Test
     public void callSymbolMethodOfFungibleToken() throws IOException {
@@ -71,44 +72,41 @@ public class FungibleTokenTest {
     }
 
     @Test
-    public void getScriptHashOfFungibleToken() throws IOException {
+    public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
                 is(Numeric.reverseHexString(neoTokenHash())));
     }
 
-    @Permission(contract = "ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5", methods = "*")
+    @Permission(nativeContract = NativeContract.NeoToken, methods = "*")
     static class FungibleTokenTestContract {
 
+        static FungibleToken token = new FungibleToken(
+                new Hash160(reverse(hexToBytes("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5").toByteArray())));
+
         public static String callSymbolMethodOfFungibleToken() {
-            return CustomNeoToken.symbol();
+            return token.symbol();
         }
 
         public static int callDecimalsMethodOfFungibleToken() {
-            return CustomNeoToken.decimals();
+            return token.decimals();
         }
 
         public static int callTotalSupplyMethodOfFungibleToken() {
-            return CustomNeoToken.totalSupply();
+            return token.totalSupply();
         }
 
         public static int callBalanceOfMethodOfFungibleToken(Hash160 scriptHash) {
-            return CustomNeoToken.balanceOf(scriptHash);
+            return token.balanceOf(scriptHash);
         }
 
-        public static boolean callTransferMethodOfFungibleToken(Hash160 from, Hash160 to,
-                int amount) {
-            return CustomNeoToken.transfer(from, to, amount, new byte[]{});
+        public static boolean callTransferMethodOfFungibleToken(Hash160 from, Hash160 to, int amount) {
+            return token.transfer(from, to, amount, new byte[]{});
         }
 
-        public static Hash160 getScriptHashOfFungibleToken() {
-            return CustomNeoToken.getHash();
+        public static Hash160 getHash() {
+            return token.getHash();
         }
-
     }
 
-    @ContractHash("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5") // NEO script hash
-    static class CustomNeoToken extends FungibleToken {
-
-    }
 }

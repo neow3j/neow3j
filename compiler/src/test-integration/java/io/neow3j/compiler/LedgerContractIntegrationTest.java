@@ -345,66 +345,68 @@ public class LedgerContractIntegrationTest {
 
     static class LedgerContractIntegrationTestContract {
 
+        public static final LedgerContract ledgerContract = new LedgerContract();
+
         public static int setup() {
             return 1;
         }
 
         public static byte getTransactionVMState(Hash256 hash) {
-            return LedgerContract.getTransactionVMState(hash);
+            return ledgerContract.getTransactionVMState(hash);
         }
 
         public static int getTransactionHeight(Hash256 blockHash) {
-            return LedgerContract.getTransactionHeight(blockHash);
+            return ledgerContract.getTransactionHeight(blockHash);
         }
 
         public static Object getTransactionFromBlock(int blockNr, int txNr) {
-            return LedgerContract.getTransactionFromBlock(blockNr, txNr);
+            return ledgerContract.getTransactionFromBlock(blockNr, txNr);
         }
 
         public static Transaction getTransactionFromBlockWithBlockHash(Hash256 blockHash, int txNr) {
-            return LedgerContract.getTransactionFromBlock(blockHash, txNr);
+            return ledgerContract.getTransactionFromBlock(blockHash, txNr);
         }
 
         public static Signer[] getTransactionSigners(Hash256 txHash) {
-            return LedgerContract.getTransactionSigners(txHash);
+            return ledgerContract.getTransactionSigners(txHash);
         }
 
         public static Signer getTransactionSigner(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index];
+            return ledgerContract.getTransactionSigners(txHash)[index];
         }
 
         public static Hash160 getTransactionSignerAccount(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].account;
+            return ledgerContract.getTransactionSigners(txHash)[index].account;
         }
 
         public static byte getTransactionSignerWitnessScope(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].witnessScopes;
+            return ledgerContract.getTransactionSigners(txHash)[index].witnessScopes;
         }
 
         public static Hash160[] getTransactionSignerAllowedContracts(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].allowedContracts;
+            return ledgerContract.getTransactionSigners(txHash)[index].allowedContracts;
         }
 
         public static ECPoint[] getTransactionSignerAllowedGroups(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].allowedGroups;
+            return ledgerContract.getTransactionSigners(txHash)[index].allowedGroups;
         }
 
         public static io.neow3j.devpack.WitnessRule[] getTransactionSignerWitnessRules(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules;
+            return ledgerContract.getTransactionSigners(txHash)[index].witnessRules;
         }
 
         public static byte getTransactionSignerWitnessRuleAction(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules[0].action;
+            return ledgerContract.getTransactionSigners(txHash)[index].witnessRules[0].action;
         }
 
         public static WitnessRuleCondition getTransactionSignerWitnessRuleCondition(Hash256 txHash, int index) {
-            return LedgerContract.getTransactionSigners(txHash)[index].witnessRules[0].condition;
+            return ledgerContract.getTransactionSigners(txHash)[index].witnessRules[0].condition;
         }
 
         public static boolean[] transactionSignerEquals(Hash256 txHash1, Hash256 txHash2) {
-            Signer signerTx1 = LedgerContract.getTransactionSigners(txHash1)[0];
-            Signer signerTx1_other = LedgerContract.getTransactionSigners(txHash1)[0];
-            Signer signerTx2 = LedgerContract.getTransactionSigners(txHash2)[0];
+            Signer signerTx1 = ledgerContract.getTransactionSigners(txHash1)[0];
+            Signer signerTx1_other = ledgerContract.getTransactionSigners(txHash1)[0];
+            Signer signerTx2 = ledgerContract.getTransactionSigners(txHash2)[0];
 
             boolean[] b = new boolean[4];
             b[0] = signerTx1.equals(signerTx1);
@@ -415,38 +417,38 @@ public class LedgerContractIntegrationTest {
         }
 
         public static Transaction getTransaction(Hash256 txHash) {
-            return LedgerContract.getTransaction(txHash);
+            return ledgerContract.getTransaction(txHash);
         }
 
         public static boolean getNonExistentTransaction(Hash256 txHash) {
-            if (LedgerContract.getTransaction(txHash) == null) {
+            if (ledgerContract.getTransaction(txHash) == null) {
                 return true;
             }
             return false;
         }
 
         public static byte getTransactionState(Hash256 txHash) {
-            return LedgerContract.getTransactionVMState(txHash);
+            return ledgerContract.getTransactionVMState(txHash);
         }
 
         public static Block getBlockWithBlockHash(Hash256 blockHash) {
-            return LedgerContract.getBlock(blockHash);
+            return ledgerContract.getBlock(blockHash);
         }
 
         public static Block getBlockWithBlockNumber(int blockNr) {
-            return LedgerContract.getBlock(blockNr);
+            return ledgerContract.getBlock(blockNr);
         }
 
         public static int currentIndex() {
-            return LedgerContract.currentIndex();
+            return ledgerContract.currentIndex();
         }
 
         public static Hash256 currentHash() {
-            return LedgerContract.currentHash();
+            return ledgerContract.currentHash();
         }
 
         public static Hash160 getHash() {
-            return LedgerContract.getHash();
+            return ledgerContract.getHash();
         }
     }
 

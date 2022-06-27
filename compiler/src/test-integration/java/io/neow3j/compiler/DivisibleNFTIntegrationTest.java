@@ -8,7 +8,6 @@ import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.contracts.DivisibleNonFungibleToken;
@@ -24,7 +23,9 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
+import static io.neow3j.devpack.Helper.reverse;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -73,16 +74,19 @@ public class DivisibleNFTIntegrationTest {
     @Permission(contract = "*")
     static class DivisibleNFTTestContract {
 
+        static DivisibleNonFungibleToken customDivisibleNFT = new DivisibleNonFungibleToken(
+                new Hash160(reverse(hexToBytes("1cb2c3cceb56f8c8216ccc7d25133ad63e0dba56").toByteArray())));
+
         public static boolean testTransfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
-            return CustomDivisibleNFT.transfer(from, to, amount, tokenId, data);
+            return customDivisibleNFT.transfer(from, to, amount, tokenId, data);
         }
 
         public static Iterator<Hash160> testOwnerOf(ByteString tokenId) {
-            return CustomDivisibleNFT.ownerOf(tokenId);
+            return customDivisibleNFT.ownerOf(tokenId);
         }
 
         public static int testBalanceOf(Hash160 account, ByteString tokenId) {
-            return CustomDivisibleNFT.balanceOf(account, tokenId);
+            return customDivisibleNFT.balanceOf(account, tokenId);
         }
 
     }
@@ -106,10 +110,6 @@ public class DivisibleNFTIntegrationTest {
             return 38;
         }
 
-    }
-
-    @ContractHash("1cb2c3cceb56f8c8216ccc7d25133ad63e0dba56")
-    static class CustomDivisibleNFT extends DivisibleNonFungibleToken {
     }
 
 }

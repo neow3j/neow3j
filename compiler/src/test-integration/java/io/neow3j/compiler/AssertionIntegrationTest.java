@@ -270,7 +270,7 @@ public class AssertionIntegrationTest {
         }
 
         public static void testComplexAssertion(String a, String b, Integer i, String n, boolean c) {
-            assert a == b && i == StdLib.atoi(n, 10) || i == 42 && c || a == getString();
+            assert a == b && i == new StdLib().atoi(n, 10) || i == 42 && c || a == getString();
         }
 
     }

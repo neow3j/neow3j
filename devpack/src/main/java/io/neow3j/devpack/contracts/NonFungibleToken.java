@@ -5,7 +5,14 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 
+/**
+ * This class holds the common methods of contracts that are compliant with the NEP-11 standard.
+ */
 public abstract class NonFungibleToken extends Token {
+
+    public NonFungibleToken(Hash160 contractHash) {
+        super(contractHash);
+    }
 
     /**
      * Returns an iterator that contains all of the token ids owned by the given owner.
@@ -13,7 +20,7 @@ public abstract class NonFungibleToken extends Token {
      * @param owner the hash of the owner.
      * @return the iterator.
      */
-    public static native Iterator<ByteString> tokensOf(Hash160 owner);
+    public native Iterator<ByteString> tokensOf(Hash160 owner);
 
     /**
      * Transfers the token with {@code tokenId} to the given address.
@@ -24,7 +31,7 @@ public abstract class NonFungibleToken extends Token {
      *                deployed contract.
      * @return true if the transfer is successful. False, for example, if the token has more than one owner.
      */
-    public static native boolean transfer(Hash160 to, ByteString tokenId, Object data);
+    public native boolean transfer(Hash160 to, ByteString tokenId, Object data);
 
     /**
      * Returns an iterator that contains all token ids that exist on this contract.
@@ -33,7 +40,7 @@ public abstract class NonFungibleToken extends Token {
      *
      * @return a list of tokens that are minted on this contract.
      */
-    public static native Iterator<ByteString> tokens();
+    public native Iterator<ByteString> tokens();
 
     /**
      * Gets the properties of the token with {@code tokenId}.
@@ -43,6 +50,6 @@ public abstract class NonFungibleToken extends Token {
      * @param tokenId the token id.
      * @return the properties of the token.
      */
-    public static native Map<String, String> properties(ByteString tokenId);
+    public native Map<String, String> properties(ByteString tokenId);
 
 }

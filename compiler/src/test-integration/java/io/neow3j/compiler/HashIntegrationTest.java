@@ -1,11 +1,11 @@
 package io.neow3j.compiler;
 
-import io.neow3j.types.Hash160;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.types.Hash160;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
