@@ -15,7 +15,9 @@
         "MaxConcurrentConnections": 40,
         "MaxIteratorResultItems": 100,
         "MaxStackSize": 65535,
-        "DisabledMethods": [ ]
+        "DisabledMethods": [ ],
+        "SessionEnabled": true,
+        "SessionExpirationTime": 60
       }
     ]
   }
