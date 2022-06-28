@@ -9,9 +9,9 @@ import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
+import io.neow3j.devpack.contracts.DivisibleNonFungibleToken;
 import io.neow3j.devpack.contracts.NonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
@@ -115,36 +115,38 @@ public class NFTIntegrationTest {
     @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
 
+        static NonFungibleToken nft = new DivisibleNonFungibleToken("1cf14fa33d5b841e37d066a7b9cf91cc5b85c352");
+
         public static String testSymbol() {
-            return CustomNonFungibleToken.symbol();
+            return nft.symbol();
         }
 
         public static int testDecimals() {
-            return CustomNonFungibleToken.decimals();
+            return nft.decimals();
         }
 
         public static int testTotalSupply() {
-            return CustomNonFungibleToken.totalSupply();
+            return nft.totalSupply();
         }
 
         public static int testBalanceOf(Hash160 account) {
-            return CustomNonFungibleToken.balanceOf(account);
+            return nft.balanceOf(account);
         }
 
         public static Iterator<ByteString> testTokensOf(Hash160 account) {
-            return CustomNonFungibleToken.tokensOf(account);
+            return nft.tokensOf(account);
         }
 
         public static boolean testTransfer(Hash160 to, ByteString tokenId, Object data) {
-            return CustomNonFungibleToken.transfer(to, tokenId, data);
+            return nft.transfer(to, tokenId, data);
         }
 
         public static Iterator<ByteString> testTokens() {
-            return CustomNonFungibleToken.tokens();
+            return nft.tokens();
         }
 
         public static Map<String, String> testProperties(ByteString tokenId) {
-            return CustomNonFungibleToken.properties(tokenId);
+            return nft.properties(tokenId);
         }
     }
 
@@ -195,10 +197,6 @@ public class NFTIntegrationTest {
             properties.put("name", "neow3jToken1");
             return properties;
         }
-    }
-
-    @ContractHash("1cf14fa33d5b841e37d066a7b9cf91cc5b85c352")
-    static class CustomNonFungibleToken extends NonFungibleToken {
     }
 
 }

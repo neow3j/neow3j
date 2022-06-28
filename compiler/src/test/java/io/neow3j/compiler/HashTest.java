@@ -1,11 +1,11 @@
 package io.neow3j.compiler;
 
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import io.neow3j.compiler.sourcelookup.MockSourceContainer;
-import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.types.ContractParameterType;
@@ -62,14 +62,12 @@ public class HashTest {
     static class HashTestContract {
 
         public static Hash160 methodReturningHash160() {
-            return new Hash160(new ByteString("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
+            return new Hash160(hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b"));
         }
 
         public static Hash256 methodReturningHash256() {
-            return new Hash256(new ByteString(
-                    "03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63"));
+            return new Hash256(hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63"));
         }
     }
+
 }
-
-

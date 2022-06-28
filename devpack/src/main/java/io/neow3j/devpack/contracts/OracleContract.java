@@ -1,8 +1,13 @@
 package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.ContractHash;
+import io.neow3j.devpack.annotations.NativeContract;
 
-@ContractHash("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")
+import static io.neow3j.devpack.constants.NativeContract.OracleContractScriptHash;
+
+/**
+ * Represents an interface to the native OracleContract that provides oracle services.
+ */
+@NativeContract
 public class OracleContract extends ContractInterface {
 
     /**
@@ -30,6 +35,10 @@ public class OracleContract extends ContractInterface {
      */
     public static final int MaxUserDataLength = 1 << 9;
 
+    public OracleContract() {
+        super(OracleContractScriptHash);
+    }
+
     /**
      * Does a request to the oracle service with the given request data. The given callback function will be called
      * with the response of the oracle as input.
@@ -40,6 +49,6 @@ public class OracleContract extends ContractInterface {
      * @param userData       additional data.
      * @param gasForResponse the GAS amount to pay for the oracle response.
      */
-    public static native void request(String url, String filter, String callback, Object userData, int gasForResponse);
+    public native void request(String url, String filter, String callback, Object userData, int gasForResponse);
 
 }

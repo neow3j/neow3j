@@ -52,8 +52,7 @@ public class ContractManagementIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ContractManagementIntegrationTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(ContractManagementIntegrationTestContract.class.getName());
 
     @Test
     public void getContract() throws IOException {
@@ -268,11 +267,11 @@ public class ContractManagementIntegrationTest {
     static class ContractManagementIntegrationTestContract {
 
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
-            return ContractManagement.getContract(contractHash);
+            return new ContractManagement().getContract(contractHash);
         }
 
         public static boolean[] checkManifestValues(io.neow3j.devpack.Hash160 contractHash) {
-            Manifest manifest = ContractManagement.getContract(contractHash).manifest;
+            Manifest manifest = new ContractManagement().getContract(contractHash).manifest;
             boolean[] objs = new boolean[4];
             objs[0] = manifest.name == "NeoToken";
             objs[1] = manifest.abi.methods.get(0).name == "balanceOf";
@@ -282,15 +281,15 @@ public class ContractManagementIntegrationTest {
         }
 
         public static io.neow3j.devpack.Hash160 getHash() {
-            return ContractManagement.getHash();
+            return new ContractManagement().getHash();
         }
 
         public static Contract deployWithoutData(ByteString nefFile, String manifest) {
-            return ContractManagement.deploy(nefFile, manifest);
+            return new ContractManagement().deploy(nefFile, manifest);
         }
 
         public static Contract deployWithData(ByteString nefFile, String manifest, Object data) {
-            return ContractManagement.deploy(nefFile, manifest, data);
+            return new ContractManagement().deploy(nefFile, manifest, data);
         }
     }
 
@@ -298,7 +297,7 @@ public class ContractManagementIntegrationTest {
     static class ContractManagementIntegrationTestContractToUpdateWithData {
 
         public static void updateWithData(ByteString nefFile, String manifest, Object data) {
-            ContractManagement.update(nefFile, manifest, data);
+            new ContractManagement().update(nefFile, manifest, data);
         }
     }
 
@@ -306,12 +305,11 @@ public class ContractManagementIntegrationTest {
     static class ContractManagementIntegrationTestContractToUpdateWithoutData {
 
         public static void updateWithoutData(ByteString nefFile, String manifest) {
-            ContractManagement.update(nefFile, manifest);
+            new ContractManagement().update(nefFile, manifest);
         }
     }
 
-    @DisplayName(
-            "ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithData")
+    @DisplayName("ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithData")
     static class ContractManagementIntegrationTestContractUpdatedWithData {
 
         static Event1Arg<Object> onUpdate;
@@ -322,8 +320,7 @@ public class ContractManagementIntegrationTest {
         }
     }
 
-    @DisplayName(
-            "ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithoutData")
+    @DisplayName("ContractManagementIntegrationTest$ContractManagementIntegrationTestContractToUpdateWithoutData")
     static class ContractManagementIntegrationTestContractUpdatedWithoutData {
 
         static Event1Arg<Object> onUpdate;
@@ -358,7 +355,7 @@ public class ContractManagementIntegrationTest {
     static class ContractManagementIntegrationTestContractToDestroy {
 
         public static void destroy() {
-            ContractManagement.destroy();
+            new ContractManagement().destroy();
         }
     }
 

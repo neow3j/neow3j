@@ -124,11 +124,11 @@ public class ObjectsTest {
         static StorageContext ctx = Storage.getStorageContext();
 
         public static void put(String s, byte[] bs, int i) {
-            Storage.put(ctx, "key", StdLib.serialize(new POJO2(s, bs, i)));
+            Storage.put(ctx, "key", new StdLib().serialize(new POJO2(s, bs, i)));
         }
 
         public static Object get() {
-            POJO2 obj = (POJO2) StdLib.deserialize(Storage.get(ctx, "key"));
+            POJO2 obj = (POJO2) new StdLib().deserialize(Storage.get(ctx, "key"));
             obj.s = "other String";
             obj.pojo1.s = "other String in POJO1";
             obj.i1 = 2_000_000_000;

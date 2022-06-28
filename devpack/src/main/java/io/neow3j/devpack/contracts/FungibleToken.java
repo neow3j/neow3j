@@ -1,14 +1,35 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.ContractHash;
 
 /**
- * Base class for fungible token contracts that are compliant with the NEP-17 standard. Extend this class in
- * combination with the {@link ContractHash} annotation to create an "interface" to a NEP-17 token contract on the
- * Neo blockchain. Examples are the {@link NeoToken} and {@link GasToken} contracts.
+ * Base class for fungible token contracts that are compliant with the NEP-17 standard. Initialize this class with a
+ * contract hash ({@link Hash160}) to create an "interface" to a NEP-17 token contract on the Neo blockchain.
+ * <p>
+ * When this class is extended, the constructor of the extending class must take exactly one parameter of type
+ * {@link Hash160} or a constant {@link String} and pass it to the {@code super()} call without any additional logic.
  */
-public abstract class FungibleToken extends Token {
+public class FungibleToken extends Token {
+
+    /**
+     * Initializes an interface to a fungible token.
+     * <p>
+     * Use this constructor only with a constant script hash.
+     *
+     * @param contractHash the big-endian contract script hash.
+     */
+    public FungibleToken(String contractHash) {
+        super(contractHash);
+    }
+
+    /**
+     * Initializes an interface to a fungible token.
+     *
+     * @param contractHash the contract script hash.
+     */
+    public FungibleToken(Hash160 contractHash) {
+        super(contractHash);
+    }
 
     /**
      * Transfers the token {@code amount} from the {@code from} account to the {@code to} account. The {@code data}
@@ -21,6 +42,6 @@ public abstract class FungibleToken extends Token {
      * @param data   the data to pass along with the transfer.
      * @return true if the transfer was successful. False, otherwise.
      */
-    public static native boolean transfer(Hash160 from, Hash160 to, int amount, Object data);
+    public native boolean transfer(Hash160 from, Hash160 to, int amount, Object data);
 
 }

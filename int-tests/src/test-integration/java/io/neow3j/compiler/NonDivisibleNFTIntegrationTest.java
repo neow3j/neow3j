@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.ContractHash;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NonDivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -15,6 +14,8 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
+import static io.neow3j.devpack.Helper.reverse;
+import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -43,8 +44,11 @@ public class NonDivisibleNFTIntegrationTest {
     @Permission(contract = "*")
     static class NonDivisibleNFTTestContract {
 
+        static NonDivisibleNonFungibleToken nft = new NonDivisibleNonFungibleToken(
+                new Hash160(reverse(hexToBytes("bd65d4664574381f4fc97da31e50738eac12a8b6").toByteArray())));
+
         public static Hash160 testOwnerOf(ByteString tokenId) {
-            return CustomNonDivisibleNFT.ownerOf(tokenId);
+            return nft.ownerOf(tokenId);
         }
 
     }
@@ -55,10 +59,6 @@ public class NonDivisibleNFTIntegrationTest {
             return Hash160.zero();
         }
 
-    }
-
-    @ContractHash("bd65d4664574381f4fc97da31e50738eac12a8b6")
-    static class CustomNonDivisibleNFT extends NonDivisibleNonFungibleToken {
     }
 
 }

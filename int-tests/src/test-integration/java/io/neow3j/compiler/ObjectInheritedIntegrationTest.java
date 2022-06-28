@@ -258,9 +258,10 @@ public class ObjectInheritedIntegrationTest {
     static class ObjectInheritedIntegrationTestContract {
 
         public static boolean[] blockEquals() throws Exception {
-            Block block0 = LedgerContract.getBlock(0);
-            Block block1 = LedgerContract.getBlock(1);
-            Block block0_other = LedgerContract.getBlock(0);
+            LedgerContract ledgerContract = new LedgerContract();
+            Block block0 = ledgerContract.getBlock(0);
+            Block block1 = ledgerContract.getBlock(1);
+            Block block0_other = ledgerContract.getBlock(0);
             if (block0 == null || block1 == null || block0_other == null) {
                 throw new Exception("Couldn't fetch blocks");
             }
@@ -272,11 +273,11 @@ public class ObjectInheritedIntegrationTest {
             return b;
         }
 
-        public static boolean[] transactionEquals(Hash256 deployTxHash, Hash256 transferTxHash)
-                throws Exception {
-            Transaction tx0 = LedgerContract.getTransaction(deployTxHash);
-            Transaction tx1 = LedgerContract.getTransaction(transferTxHash);
-            Transaction tx0_other = LedgerContract.getTransaction(deployTxHash);
+        public static boolean[] transactionEquals(Hash256 deployTxHash, Hash256 transferTxHash) throws Exception {
+            LedgerContract ledgerContract = new LedgerContract();
+            Transaction tx0 = ledgerContract.getTransaction(deployTxHash);
+            Transaction tx1 = ledgerContract.getTransaction(transferTxHash);
+            Transaction tx0_other = ledgerContract.getTransaction(deployTxHash);
             if (tx0 == null || tx1 == null || tx0_other == null) {
                 throw new Exception("Couldn't fetch transactions");
             }
@@ -318,9 +319,7 @@ public class ObjectInheritedIntegrationTest {
             return b;
         }
 
-        public static boolean[] byteStringEquals(ByteString bs1, ByteString bs1_other,
-                ByteString bs2) {
-
+        public static boolean[] byteStringEquals(ByteString bs1, ByteString bs1_other, ByteString bs2) {
             boolean[] b = new boolean[4];
             b[0] = bs1.equals(bs1);
             b[1] = bs1.equals(bs1_other);
@@ -421,9 +420,9 @@ public class ObjectInheritedIntegrationTest {
         }
 
         public static boolean[] contractEquals(Hash160 c1, Hash160 c2) {
-            Contract contr1 = ContractManagement.getContract(c1);
-            Contract contr1_other = ContractManagement.getContract(c1);
-            Contract contr2 = ContractManagement.getContract(c2);
+            Contract contr1 = new ContractManagement().getContract(c1);
+            Contract contr1_other = new ContractManagement().getContract(c1);
+            Contract contr2 = new ContractManagement().getContract(c2);
 
             boolean[] b = new boolean[4];
             b[0] = contr1.equals(contr1);

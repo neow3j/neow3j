@@ -1,21 +1,38 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.ContractHash;
 
 /**
- * Base class for contract interfaces that give convenient access to a deployed contract's methods. Extend this class
- * in combination with the {@link ContractHash} annotation to create an "interface" to smart contract on the Neo
- * blockchain. Examples are the {@link PolicyContract} and {@link NeoToken} contracts.
+ * Base class for contract interfaces that give convenient access to methods of a deployed contract. Initialize this
+ * class with a contract hash ({@link Hash160}) to create an "interface" to a smart contract on the
+ * Neo blockchain.
+ * <p>
+ * When this class is extended, the constructor of the extending class must take exactly one parameter of type
+ * {@link Hash160} or a constant {@link String} and pass it to the {@code super()} call without any additional logic.
  */
 public abstract class ContractInterface {
 
     /**
-     * Gets the contract's script hash in little-endian order. This requires the extending class to use the
-     * {@link ContractHash} annotation.
+     * Initializes an interface to a smart contract.
+     * <p>
+     * Use this constructor only with a constant script hash.
      *
-     * @return the contract's script hash.
+     * @param contractHash the big-endian contract script hash.
      */
-    public static native Hash160 getHash();
+    public ContractInterface(String contractHash) {
+    }
+
+    /**
+     * Initializes an interface to a smart contract.
+     *
+     * @param contractHash the contract script hash.
+     */
+    public ContractInterface(Hash160 contractHash) {
+    }
+
+    /**
+     * @return the contract's script hash in little-endian order.
+     */
+    public native Hash160 getHash();
 
 }

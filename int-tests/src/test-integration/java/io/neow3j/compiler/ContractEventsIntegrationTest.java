@@ -125,7 +125,7 @@ public class ContractEventsIntegrationTest {
         }
 
         public static void fireEventWithMethodReturnValueAsArgument() {
-            event4.fire(PolicyContract.getFeePerByte(), PolicyContract.getExecFeeFactor());
+            event4.fire(new PolicyContract().getFeePerByte(), new PolicyContract().getExecFeeFactor());
         }
 
         public static void fireEvent(byte[] from, byte[] to, int i) {
