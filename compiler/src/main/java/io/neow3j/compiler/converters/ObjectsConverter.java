@@ -1,6 +1,5 @@
 package io.neow3j.compiler.converters;
 
-import io.neow3j.compiler.AsmHelper;
 import io.neow3j.compiler.CompilationUnit;
 import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.CompilerException;
@@ -20,9 +19,9 @@ import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AbstractInsnNode;
-import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldInsnNode;
+import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
@@ -84,7 +83,7 @@ public class ObjectsConverter implements Converter {
                 TypeInsnNode typeInsn = (TypeInsnNode) insn;
                 if (isStruct(typeInsn.desc, compUnit)) {
                     insn = handleNewStruct(insn, neoMethod, compUnit);
-                } else if (isContractWrapper(typeInsn.desc, compUnit)) {
+                } else if (isContractInterface(typeInsn.desc, compUnit)) {
                     insn = handleContractInterfaceCtor(insn, neoMethod, compUnit);
                 } else {
                     insn = handleNew(insn, neoMethod, compUnit);
@@ -119,33 +118,52 @@ public class ObjectsConverter implements Converter {
         if (hasAnnotations(ownerClassNode, NativeContract.class)) {
             return handleNativeContractHash(neoMethod, ownerClassNode, insn);
         }
-        if (cTorParamLength == 1 && getInternalName(Hash160.class).equals(cTorArgTypes[0].getInternalName())) {
-            // The instructions that lead to the contract hash are already on the stack at this point.
-            return insn;
+        if (cTorParamLength == 1) {
+            if (getInternalName(Hash160.class).equals(cTorArgTypes[0].getInternalName())) {
+                // The instructions that lead to the contract hash are already on the stack at this point.
+                return insn;
+            } else if (getInternalName(String.class).equals(cTorArgTypes[0].getInternalName())) {
+                NeoInstruction lastInstruction = neoMethod.getLastInstruction();
+                handleConstantScriptHash(neoMethod, lastInstruction);
+                return insn;
+            }
         }
         throw new CompilerException(
-                format("A constructor of a ContractInterface is required to take exactly one %s type as parameter.",
-                        getInternalName(Hash160.class)));
+                format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName()));
+    }
+
+    private void handleConstantScriptHash(NeoMethod neoMethod, NeoInstruction lastInstruction) {
+        if (lastInstruction.getOpcode().equals(OpCode.PUSHDATA1)) {
+            io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160(new String(lastInstruction.getOperand()));
+            neoMethod.replaceLastInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
+        } else {
+            throw new CompilerException(
+                    format("Contract interface classes can only be initialized with a %s type or a constant %s. " +
+                                    "Expected opcode '%s' on the stack but found '%s'.",
+                            Hash160.class.getSimpleName(), String.class.getSimpleName(), OpCode.PUSHDATA1,
+                            lastInstruction.getOpcode()));
+        }
     }
 
     private AbstractInsnNode handleNativeContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
             AbstractInsnNode ctorInsn) {
 
-        AnnotationNode annotation = AsmHelper.getAnnotationNode(ownerClassNode, NativeContract.class).get();
-        io.neow3j.types.Hash160 scriptHash;
-        try {
-            scriptHash = new io.neow3j.types.Hash160((String) annotation.values.get(1));
-        } catch (IllegalArgumentException e) {
-            throw new CompilerException(ownerClassNode,
-                    format("Script hash '%s' of the contract class '%s' does not have the length of a valid script " +
-                            "hash.", annotation.values.get(1), getClassNameForInternalName(ownerClassNode.name)));
+        MethodNode methodNode = getMethodNode((MethodInsnNode) ctorInsn, ownerClassNode).orElseThrow(
+                () -> new CompilerException("Could not get method node from ctor instruction."));
+        AbstractInsnNode abstractInsnNode = methodNode.instructions.get(3);
+        if (abstractInsnNode.getType() != AbstractInsnNode.LDC_INSN) {
+            throw new CompilerException(format("Expected %s type node but found %s type.", AbstractInsnNode.LDC_INSN,
+                    abstractInsnNode.getType()));
         }
+        LdcInsnNode cstNode = (LdcInsnNode) abstractInsnNode;
+        io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160((String) cstNode.cst);
         neoMethod.addInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
         return ctorInsn;
     }
 
     // Whether the type extends the abstract class ContractInterface.
-    private boolean isContractWrapper(String desc, CompilationUnit compUnit) throws IOException {
+    private boolean isContractInterface(String desc, CompilationUnit compUnit) throws IOException {
         ClassNode ownerClassNode = getAsmClassForInternalName(desc, compUnit.getClassLoader());
         String superName = getFullyQualifiedNameForInternalName(ownerClassNode.superName);
         while (!superName.equals(Object.class.getCanonicalName())) {

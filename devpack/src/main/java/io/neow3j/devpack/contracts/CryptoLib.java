@@ -10,11 +10,11 @@ import static io.neow3j.devpack.constants.NativeContract.CryptoLibScriptHash;
 /**
  * Represents an interface to the native CryptoLib contract that provides cryptographic algorithms.
  */
-@NativeContract(CryptoLibScriptHash)
+@NativeContract
 public class CryptoLib extends ContractInterface {
 
     public CryptoLib() {
-        super(null);
+        super(CryptoLibScriptHash);
     }
 
     /**

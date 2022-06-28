@@ -8,7 +8,7 @@ import static io.neow3j.devpack.constants.NativeContract.PolicyContractScriptHas
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
  */
-@NativeContract(PolicyContractScriptHash)
+@NativeContract
 public class PolicyContract extends ContractInterface {
 
     /**
@@ -22,7 +22,7 @@ public class PolicyContract extends ContractInterface {
     public static final int MaxStoragePrice = 10000000;
 
     public PolicyContract() {
-        super(null);
+        super(PolicyContractScriptHash);
     }
 
     /**

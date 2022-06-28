@@ -25,8 +25,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -117,8 +115,7 @@ public class NFTIntegrationTest {
     @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
 
-        static NonFungibleToken nft = new DivisibleNonFungibleToken(
-                new Hash160(reverse(hexToBytes("1cf14fa33d5b841e37d066a7b9cf91cc5b85c352").toByteArray())));
+        static NonFungibleToken nft = new DivisibleNonFungibleToken("1cf14fa33d5b841e37d066a7b9cf91cc5b85c352");
 
         public static String testSymbol() {
             return nft.symbol();
