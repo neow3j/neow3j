@@ -1,15 +1,12 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Safe;
-import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
 import org.junit.Test;
