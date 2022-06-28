@@ -3,8 +3,8 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.ContractInterface;
+import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.script.OpCode;
-import io.neow3j.script.ScriptReader;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -12,8 +12,8 @@ import java.util.SortedMap;
 
 import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
-import static jdk.nashorn.internal.codegen.types.Type.getInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -21,12 +21,10 @@ import static org.junit.Assert.assertThrows;
 public class ContractInterfaceTest {
 
     @Test
-    public void testWrapperCtor() throws IOException {
-        CompilationUnit compUnit = new Compiler().compile(CallWrapperCtor.class.getName());
+    public void testContractInterfaceContractCall() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(TestContractInterfaceContractCallContract.class.getName());
         NeoMethod neoMethod = compUnit.getNeoModule().getSortedMethods().get(0);
         SortedMap<Integer, NeoInstruction> insns = neoMethod.getInstructions();
-
-        System.out.println(ScriptReader.convertToOpCodeString(compUnit.getNefFile().getScript()));
 
         // Comments about state of the stack: top -> bottom
         assertThat(insns.get(3).getOpcode(), is(OpCode.LDARG0)); // hash
@@ -56,52 +54,96 @@ public class ContractInterfaceTest {
     }
 
     @Test
-    public void testWrapperCtorWithInvalidNumberOfParameters() {
+    public void testToManyParams() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(CallWrapperWithInvalidCtorParamsContract.class.getName()));
+                () -> new Compiler().compile(TestToManyParamsContract.class.getName()));
         assertThat(thrown.getMessage(),
-                is(format("A constructor of a ContractInterface is required to take exactly one %s type as parameter.",
-                        getInternalName(Hash160.class))));
+                is(format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName())));
     }
 
     @Test
-    public void testWrapperCtorWithInvalidParameterType() {
+    public void testInvalidParamType() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(CallWrapperWithInvalidCtorContract.class.getName()));
+                () -> new Compiler().compile(TestInvalidParamTypeContract.class.getName()));
         assertThat(thrown.getMessage(),
-                is(format("A constructor of a ContractInterface is required to take exactly one %s type as parameter.",
-                        getInternalName(Hash160.class))));
+                is(format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName())));
     }
 
-    static class CallWrapperCtor {
+    @Test
+    public void testConstantStringParam() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(TestConstantStringParamContract.class.getName());
+        NeoMethod neoMethod = compUnit.getNeoModule().getSortedMethods().get(0);
+        SortedMap<Integer, NeoInstruction> insns = neoMethod.getInstructions();
+
+        // Comments about state of the stack: top -> bottom
+        assertThat(insns.get(0).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns.get(0).getOperand(),
+                is(hexStringToByteArray(reverseHexString("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")))); // hash
+        assertThat(insns.get(22).getOpcode(), is(OpCode.PUSH0));
+        assertThat(insns.get(23).getOpcode(), is(OpCode.NEWARRAY)); // array, hash
+        assertThat(insns.get(24).getOpcode(), is(OpCode.SWAP)); // hash, array
+        assertThat(insns.get(25).getOpcode(), is(OpCode.PUSH15)); // callflags, hash, array
+        assertThat(insns.get(26).getOpcode(), is(OpCode.SWAP)); // hash, callflags, array
+        assertThat(insns.get(27).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns.get(27).getOperand(), is("decimals".getBytes())); // method, hash, callflags, array
+        assertThat(insns.get(37).getOpcode(), is(OpCode.SWAP)); // hash, method, callflags, array
+        assertThat(insns.get(38).getOpcode(), is(OpCode.SYSCALL)); // return value
+        assertThat(insns.get(43).getOpcode(), is(OpCode.RET));
+    }
+
+    @Test
+    public void testConstantStringParamInvalidHash160() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TestConstantStringParamInvalidHash160Contract.class.getName()));
+        assertThat(thrown.getMessage(), is(format(
+                "Contract interface classes can only be initialized with a %s type or a constant %s. Expected opcode " +
+                        "'%s' on the stack but found '%s'.",
+                Hash160.class.getSimpleName(), String.class.getSimpleName(), OpCode.PUSHDATA1, OpCode.PUSHNULL)));
+    }
+
+    static class TestConstantStringParamContract {
+        public static int test() {
+            return new FungibleToken("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5").decimals();
+        }
+    }
+
+    static class TestConstantStringParamInvalidHash160Contract {
+        public static int test() {
+            return new FungibleToken((String) null).decimals();
+        }
+    }
+
+    static class TestContractInterfaceContractCallContract {
         public static String test(Hash160 hash, String value) {
-            return new Wrapper(hash).getSomeValue(value);
+            return new ContractInterfaceContract(hash).getSomeValue(value);
         }
     }
 
-    static class CallWrapperWithInvalidCtorParamsContract {
+    static class TestToManyParamsContract {
         public static Hash160 test(Hash160 hash, int i) {
-            return new Wrapper(hash, i).getHash();
+            return new ContractInterfaceContract(hash, i).getHash();
         }
     }
 
-    static class CallWrapperWithInvalidCtorContract {
+    static class TestInvalidParamTypeContract {
         public static Hash160 test(ByteString hash) {
-            return new Wrapper(hash).getHash();
+            return new ContractInterfaceContract(hash).getHash();
         }
     }
 
-    static class Wrapper extends ContractInterface {
+    static class ContractInterfaceContract extends ContractInterface {
 
-        public Wrapper(Hash160 contractHash) {
+        public ContractInterfaceContract(Hash160 contractHash) {
             super(contractHash);
         }
 
-        public Wrapper(Hash160 contractHash, int i) {
+        public ContractInterfaceContract(Hash160 contractHash, int i) {
             super(contractHash);
         }
 
-        public Wrapper(ByteString contractHash) {
+        public ContractInterfaceContract(ByteString contractHash) {
             super(new Hash160(contractHash));
         }
 

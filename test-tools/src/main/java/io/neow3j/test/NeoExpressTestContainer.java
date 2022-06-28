@@ -148,9 +148,19 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      * @return this.
      */
     public NeoExpressTestContainer withNefAndManifestFiles(String nefFile, String manifestFile) {
-        withCopyFileToContainer(MountableFile.forClasspathResource(nefFile, 777), CONTAINER_WORKDIR + nefFile);
+        String nefFileName = nefFile;
+        int nefFileNameIdx = nefFile.lastIndexOf('/');
+        if (nefFileNameIdx > -1) {
+           nefFileName = nefFile.substring(nefFileNameIdx+1);
+        }
+        String manifestFileName = manifestFile;
+        int manifestFileNameIdx = manifestFile.lastIndexOf('/');
+        if (manifestFileNameIdx > -1) {
+            manifestFileName = manifestFile.substring(manifestFileNameIdx+1);
+        }
+        withCopyFileToContainer(MountableFile.forClasspathResource(nefFile, 777), CONTAINER_WORKDIR + nefFileName);
         withCopyFileToContainer(MountableFile.forClasspathResource(manifestFile, 777),
-                CONTAINER_WORKDIR + manifestFile);
+                CONTAINER_WORKDIR + manifestFileName);
         return this;
     }
 

@@ -32,6 +32,7 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.Optional;
 
+import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
 import static io.neow3j.compiler.AsmHelper.getAsmClassForInternalName;
 import static io.neow3j.compiler.AsmHelper.getMethodNode;
 import static io.neow3j.compiler.AsmHelper.hasAnnotations;
@@ -429,7 +430,7 @@ public class MethodsConverter implements Converter {
         // currently on stack: array (with params), hash
         // afterwards on stack: syscall, hash, methodName, callFlags, array (with params)
         callingNeoMethod.addInstruction(new NeoInstruction(SWAP));
-        callingNeoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(CallFlags.ALL.getValue())));
+        pushCallFlags(callingNeoMethod, calledAsmMethod);
         callingNeoMethod.addInstruction(new NeoInstruction(SWAP));
         callingNeoMethod.addInstruction(buildPushDataInsn(calledAsmMethod.name));
         callingNeoMethod.addInstruction(new NeoInstruction(SWAP));
@@ -441,6 +442,14 @@ public class MethodsConverter implements Converter {
         if (returnType.getClassName().equals(void.class.getName())) {
             callingNeoMethod.addInstruction(new NeoInstruction(DROP));
         }
+    }
+
+    // If the method node has the CallFlags annotation use the value provided. Otherwise, use CallFlags.All.
+    private static void pushCallFlags(NeoMethod callingNeoMethod, MethodNode calledAsmMethod) {
+        byte callFlagsValue = getAnnotationNode(calledAsmMethod, io.neow3j.devpack.annotations.CallFlags.class)
+                .map(a -> (byte) a.values.get(1))
+                .orElse(CallFlags.ALL.getValue());
+        callingNeoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(callFlagsValue)));
     }
 
     private static AbstractInsnNode skipToInstructionType(AbstractInsnNode insn, int type, NeoMethod neoMethod) {

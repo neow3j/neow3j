@@ -11,11 +11,11 @@ import static io.neow3j.devpack.constants.NativeContract.ContractManagementScrip
  * Represents an interface to the native ContractManagement contract that is used to manage all deployed smart
  * contracts.
  */
-@NativeContract(ContractManagementScriptHash)
+@NativeContract
 public class ContractManagement extends ContractInterface {
 
     public ContractManagement() {
-        super(null);
+        super(ContractManagementScriptHash);
     }
 
     /**

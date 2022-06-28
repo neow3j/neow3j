@@ -1,5 +1,9 @@
 description 'neow3j: Gradle Plugin'
 
+testSets {
+    integrationTest { dirName = 'test-integration' }
+}
+
 gradlePlugin {
     plugins {
         neow3jDevpackGradlePlugin {

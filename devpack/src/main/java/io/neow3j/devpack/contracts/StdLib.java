@@ -8,7 +8,7 @@ import static io.neow3j.devpack.constants.NativeContract.StdLibScriptHash;
 /**
  * Represents an interface to the native StdLib contract that provides useful functions.
  */
-@NativeContract(StdLibScriptHash)
+@NativeContract
 public class StdLib extends ContractInterface {
 
     /**
@@ -17,7 +17,7 @@ public class StdLib extends ContractInterface {
     public static final int MaxInputLength = 1024;
 
     public StdLib() {
-        super(null);
+        super(StdLibScriptHash);
     }
 
     /**
