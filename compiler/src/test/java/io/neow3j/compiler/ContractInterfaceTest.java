@@ -14,7 +14,6 @@ import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
-import static jdk.nashorn.internal.codegen.types.Type.getInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
@@ -58,18 +57,18 @@ public class ContractInterfaceTest {
     public void testToManyParams() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(TestToManyParamsContract.class.getName()));
-        assertThat(thrown.getMessage(), is(format(
-                "A constructor of a ContractInterface is required to take exactly one %s or %s type as parameter.",
-                getInternalName(Hash160.class), getInternalName(String.class))));
+        assertThat(thrown.getMessage(),
+                is(format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName())));
     }
 
     @Test
     public void testInvalidParamType() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(TestInvalidParamTypeContract.class.getName()));
-        assertThat(thrown.getMessage(), is(format(
-                "A constructor of a ContractInterface is required to take exactly one %s or %s type as parameter.",
-                getInternalName(Hash160.class), getInternalName(String.class))));
+        assertThat(thrown.getMessage(),
+                is(format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName())));
     }
 
     @Test
@@ -94,9 +93,25 @@ public class ContractInterfaceTest {
         assertThat(insns.get(43).getOpcode(), is(OpCode.RET));
     }
 
+    @Test
+    public void testConstantStringParamInvalidHash160() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TestConstantStringParamInvalidHash160Contract.class.getName()));
+        assertThat(thrown.getMessage(), is(format(
+                "Contract interface classes can only be initialized with a %s type or a constant %s. Expected opcode " +
+                        "'%s' on the stack but found '%s'.",
+                Hash160.class.getSimpleName(), String.class.getSimpleName(), OpCode.PUSHDATA1, OpCode.PUSHNULL)));
+    }
+
     static class TestConstantStringParamContract {
         public static int test() {
             return new FungibleToken("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5").decimals();
+        }
+    }
+
+    static class TestConstantStringParamInvalidHash160Contract {
+        public static int test() {
+            return new FungibleToken((String) null).decimals();
         }
     }
 

@@ -129,8 +129,8 @@ public class ObjectsConverter implements Converter {
             }
         }
         throw new CompilerException(
-                format("A constructor of a ContractInterface is required to take exactly one %s or %s type as " +
-                        "parameter.", getInternalName(Hash160.class), getInternalName(String.class)));
+                format("Contract interface classes can only be initialized with a %s type or a constant %s.",
+                        Hash160.class.getSimpleName(), String.class.getSimpleName()));
     }
 
     private void handleConstantScriptHash(NeoMethod neoMethod, NeoInstruction lastInstruction) {
@@ -138,8 +138,11 @@ public class ObjectsConverter implements Converter {
             io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160(new String(lastInstruction.getOperand()));
             neoMethod.replaceLastInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
         } else {
-            throw new CompilerException("Contract interface classes can only be initialized with Hash160 or " +
-                    "constant String values.");
+            throw new CompilerException(
+                    format("Contract interface classes can only be initialized with a %s type or a constant %s. " +
+                                    "Expected opcode '%s' on the stack but found '%s'.",
+                            Hash160.class.getSimpleName(), String.class.getSimpleName(), OpCode.PUSHDATA1,
+                            lastInstruction.getOpcode()));
         }
     }
 
