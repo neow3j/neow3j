@@ -35,6 +35,9 @@ public class WitnessRule {
      * <p>
      * Note, that when using this implementation, only the action is compared by value, and the condition is compared
      * by reference only, since its structure is unknown.
+     *
+     * @param r another witness rule to compare to.
+     * @return true if all fields of the two witness rules are equal. False, otherwise.
      */
     public boolean equals(WitnessRule r) {
         return this == r || (action == r.action && condition == r.condition);
