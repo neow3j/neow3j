@@ -25,6 +25,9 @@ public class InvocationResult {
     @JsonProperty("exception")
     private String exception;
 
+    @JsonProperty("notifications")
+    private List<Notification> notifications;
+
     @JsonProperty("stack")
     private List<StackItem> stack;
 
@@ -34,18 +37,24 @@ public class InvocationResult {
     @JsonProperty("pendingsignature")
     private PendingSignature pendingSignature;
 
+    @JsonProperty("session")
+    private String sessionId;
+
     public InvocationResult() {
     }
 
     public InvocationResult(String script, NeoVMStateType state, String gasConsumed, String exception,
-            List<StackItem> stack, String tx, PendingSignature pendingSignature) {
+            List<Notification> notifications, List<StackItem> stack, String tx, PendingSignature pendingSignature,
+            String sessionId) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
+        this.notifications = notifications;
         this.exception = exception;
         this.stack = stack;
         this.tx = tx;
         this.pendingSignature = pendingSignature;
+        this.sessionId = sessionId;
     }
 
     public String getScript() {
@@ -68,6 +77,10 @@ public class InvocationResult {
         return exception;
     }
 
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
     public List<StackItem> getStack() {
         return stack;
     }
@@ -78,6 +91,10 @@ public class InvocationResult {
 
     public PendingSignature getPendingSignature() {
         return pendingSignature;
+    }
+
+    public String getSessionId() {
+        return sessionId;
     }
 
     @Override
@@ -93,15 +110,17 @@ public class InvocationResult {
                 Objects.equals(getState(), that.getState()) &&
                 Objects.equals(getGasConsumed(), that.getGasConsumed()) &&
                 Objects.equals(getException(), that.getException()) &&
+                Objects.equals(getNotifications(), that.getNotifications()) &&
                 Objects.equals(getStack(), that.getStack()) &&
                 Objects.equals(getTx(), that.getTx()) &&
-                Objects.equals(getPendingSignature(), that.getPendingSignature());
+                Objects.equals(getPendingSignature(), that.getPendingSignature()) &&
+                Objects.equals(getSessionId(), that.getSessionId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getStack(), getTx(),
-                getPendingSignature());
+        return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getNotifications(), getStack(),
+                getTx(), getPendingSignature(), getSessionId());
     }
 
     @Override
@@ -111,9 +130,11 @@ public class InvocationResult {
                 ", state=" + state +
                 ", gasconsumed=" + gasConsumed +
                 ", exception='" + exception + '\'' +
+                ", notifications='" + notifications + '\'' +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +
                 ", pendingsignature='" + pendingSignature + '\'' +
+                ", session='" + sessionId + '\'' +
                 '}';
     }
 

@@ -75,6 +75,7 @@ import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseAttribute;
@@ -84,6 +85,7 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionAttribute;
 import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
+import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.witnessrule.WitnessRule;
 import io.neow3j.transaction.TransactionAttributeType;
@@ -1610,54 +1612,89 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"script\": \"wh8MFnRva2Vuc1dpdGhXaXRuZXNzQ2hlY2sMFFdiWCF05OK8ywVb+rl30RPV3+zlQWJ9W1I=\",\n" +
                         "        \"state\": \"HALT\",\n" +
-                        "        \"gasconsumed\": \"2007570\",\n" +
-                        "        \"stack\": [\n" +
+                        "        \"gasconsumed\": \"12908980\",\n" +
+                        "        \"exception\": null,\n" +
+                        "        \"notifications\": [\n" +
                         "            {\n" +
-                        "                \"type\": \"ByteString\",\n" +
-                        "                \"value\": \"dHJhbnNmZXI=\"\n" +
-                        "            },\n" +
-                        "            {\n" +
-                        "                \"type\": \"Map\",\n" +
-                        "                \"value\": [\n" +
-                        "                    {\n" +
-                        "                        \"key\": {\n" +
-                        "                            \"type\": \"ByteString\",\n" +
-                        "                            \"value\": \"lBNDI5IT+g52XxAnznQvSNt3mpY=\"\n" +
-                        "                        },\n" +
-                        "                        \"value\": {\n" +
+                        "                \"eventname\": \"Mint\",\n" +
+                        "                \"contract\": \"0xe5ecdfd513d177b9fa5b05cbbce2e47421586257\",\n" +
+                        "                \"state\": {\n" +
+                        "                    \"type\": \"Array\",\n" +
+                        "                    \"value\": [\n" +
+                        "                        {\n" +
                         "                            \"type\": \"Integer\",\n" +
                         "                            \"value\": \"1\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"dG9rZW4x\"\n" +
                         "                        }\n" +
-                        "                    }\n" +
-                        "                ]\n" +
+                        "                    ]\n" +
+                        "                }\n" +
+                        "            },\n" +
+                        "            {\n" +
+                        "                \"eventname\": \"StorageUpdate\",\n" +
+                        "                \"contract\": \"0xe5ecdfd513d177b9fa5b05cbbce2e47421586257\",\n" +
+                        "                \"state\": {\n" +
+                        "                    \"type\": \"Array\",\n" +
+                        "                    \"value\": [\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"dG9rZW4x\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"ByteString\",\n" +
+                        "                            \"value\": \"Y3JlYXRl\"\n" +
+                        "                        }\n" +
+                        "                    ]\n" +
+                        "                }\n" +
                         "            }\n" +
-                        "        ]\n" +
+                        "        ],\n" +
+                        "        \"stack\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"InteropInterface\",\n" +
+                        "                \"interface\": \"IIterator\",\n" +
+                        "                \"id\": \"fcf7b800-192a-488f-95d3-c40ac7b30ef1\"\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"session\": \"6ecb0e24-ce7f-4550-9838-aeb8c9e08570\"\n" +
                         "    }\n" +
                         "}"
         );
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
-        assertThat(invokeFunction.getInvocationResult().getScript(),
-                is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
-        assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.HALT));
-        assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
+        InvocationResult invocationResult = invokeFunction.getInvocationResult();
+        assertThat(invocationResult.getScript(),
+                is("wh8MFnRva2Vuc1dpdGhXaXRuZXNzQ2hlY2sMFFdiWCF05OK8ywVb+rl30RPV3+zlQWJ9W1I="));
+        assertThat(invocationResult.getState(), is(NeoVMStateType.HALT));
+        assertThat(invocationResult.getGasConsumed(), is("12908980"));
+        assertNull(invocationResult.getException());
 
-        assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
-        assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(2));
+        List<Notification> notifications = invocationResult.getNotifications();
+        assertThat(notifications, hasSize(2));
+        assertThat(notifications.get(0).getContract(),
+                is(new Hash160("0xe5ecdfd513d177b9fa5b05cbbce2e47421586257")));
+        assertThat(notifications.get(0).getEventName(), is("Mint"));
+        assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
+        assertThat(notifications.get(0).getState().getList().get(0).getInteger(), is(BigInteger.ONE));
+        assertThat(notifications.get(0).getState().getList().get(1).getString(), is("token1"));
+        assertThat(notifications.get(1).getContract(),
+                is(new Hash160("0xe5ecdfd513d177b9fa5b05cbbce2e47421586257")));
+        assertThat(notifications.get(1).getEventName(), is("StorageUpdate"));
+        assertThat(notifications.get(1).getState().getType(), is(StackItemType.ARRAY));
+        assertThat(notifications.get(1).getState().getList().get(1).getString(), is("create"));
 
-        StackItem stackItem0 = invokeFunction.getInvocationResult().getStack().get(0);
-        assertThat(stackItem0.getType(), is(StackItemType.BYTE_STRING));
-        assertThat(stackItem0.getString(), is("transfer"));
+        assertThat(invocationResult.getStack(), hasSize(1));
+        assertThat(invocationResult.getStack().get(0).getType(), is(StackItemType.INTEROP_INTERFACE));
+        assertThat(invocationResult.getStack().get(0).getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
+        InteropInterfaceStackItem interopInterface = (InteropInterfaceStackItem) invocationResult.getStack().get(0);
+        assertThat(interopInterface.getInterfaceName(), is("IIterator"));
+        assertThat(interopInterface.getValue(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
+        assertThat(interopInterface.getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
 
-        StackItem stackItem1 = invokeFunction.getInvocationResult().getStack().get(1);
-        assertThat(stackItem1.getType(), is(StackItemType.MAP));
-        assertThat(stackItem1.getMap().size(), equalTo(1));
-        BigInteger value = stackItem1.getMap()
-                .get(new ByteStringStackItem(hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96")))
-                .getInteger();
-        assertThat(value, is(new BigInteger("1")));
+        assertThat(invocationResult.getSessionId(), is("6ecb0e24-ce7f-4550-9838-aeb8c9e08570"));
     }
 
     @Test
@@ -1670,6 +1707,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"2007570\",\n" +
+                        "        \"exception\": null,\n" +
+                        "        \"notifications\": [],\n" +
                         "        \"stack\": [\n" +
                         "            {\n" +
                         "                \"type\": \"Buffer\",\n" +
@@ -1712,6 +1751,8 @@ public class ResponseTest extends ResponseTester {
                 is("0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52"));
         assertThat(invokeFunction.getInvocationResult().getState(), is(NeoVMStateType.HALT));
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
+        assertNull(invokeFunction.getInvocationResult().getException());
+        assertThat(invokeFunction.getInvocationResult().getNotifications(), hasSize(0));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(5));
@@ -1744,7 +1785,8 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testInvokeFunction_pending_signatures() {
-        String s = "{\n" +
+        buildResponse(
+                "{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
@@ -1766,9 +1808,7 @@ public class ResponseTest extends ResponseTester {
                 "                        }\n" +
                 "                    ],\n" +
                 "                    \"signatures\": {\n" +
-                "                        " +
-                "\"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": " +
-                "\"base64 string of signature\"\n" +
+                "                        \"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": \"base64 string of signature\"\n" +
                 "                    }\n" +
                 "                },\n" +
                 "                \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
@@ -1782,19 +1822,15 @@ public class ResponseTest extends ResponseTester {
                 "                        }\n" +
                 "                    ],\n" +
                 "                    \"signatures\": {\n" +
-                "                        " +
-                "\"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81\": " +
-                "\"base64 string of signature\",\n" +
-                "                        " +
-                "\"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10\": " +
-                "\"base64 string of signature\"\n" +
+                "                        \"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81\": \"base64 string of signature\",\n" +
+                "                        \"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10\": \"base64 string of signature\"\n" +
                 "                    }\n" +
                 "                }\n" +
                 "            }\n" +
                 "        }\n" +
                 "    }\n" +
-                "}";
-        buildResponse(s);
+                "}"
+        );
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
         assertThat(invokeFunction.getInvocationResult(), is(notNullValue()));
@@ -1827,6 +1863,8 @@ public class ResponseTest extends ResponseTester {
                         "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"FAULT\",\n" +
                         "        \"gasconsumed\": \"2007390\",\n" +
+                        "        \"exception\": null,\n" +
+                        "        \"notifications\": [],\n" +
                         "        \"stack\": []\n" +
                         "    }\n" +
                         "}"
@@ -1840,6 +1878,10 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+        InvocationResult expectedResult = new InvocationResult(
+                "10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
+                NeoVMStateType.FAULT, "2007390", null, asList(), emptyList(), null, null, null);
+        assertThat(invokeFunction.getInvocationResult(), is(expectedResult));
     }
 
     @Test
@@ -1865,70 +1907,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
-    }
-
-    @Test
-    public void testInvokeFunctionIteratorSession() {
-        buildResponse(
-                "{\n" +
-                "    \"jsonrpc\": \"2.0\",\n" +
-                "    \"id\": 1,\n" +
-                "    \"result\": {\n" +
-                "        \"script\": \"wh8MBnRva2VucwwU2LZvrs+K7UkEJHT/iNVsMItofCpBYn1bUg==\",\n" +
-                "        \"state\": \"HALT\",\n" +
-                "        \"gasconsumed\": \"11818090\",\n" +
-                "        \"exception\": null,\n" +
-                "        \"notifications\": [],\n" +
-                "        \"diagnostics\": {\n" +
-                "            \"invokedcontracts\": {\n" +
-                "                \"hash\": \"0xc7cec7d3e00e9651059f9fa7dca6ccac3bd76d98\",\n" +
-                "                \"call\": [\n" +
-                "                    {\n" +
-                "                        \"hash\": \"0x2a7c688b306cd588ff74240449ed8acfae6fb6d8\",\n" +
-                "                        \"call\": [\n" +
-                "                            {\n" +
-                "                                \"hash\": \"0x2a7c688b306cd588ff74240449ed8acfae6fb6d8\"\n" +
-                "                            }\n" +
-                "                        ]\n" +
-                "                    }\n" +
-                "                ]\n" +
-                "            },\n" +
-                "            \"storagechanges\": [\n" +
-                "                {\n" +
-                "                    \"state\": \"Added\",\n" +
-                "                    \"key\": \"AQAAAAEB\",\n" +
-                "                    \"value\": \"dG9rZW5PbmU=\"\n" +
-                "                },\n" +
-                "                {\n" +
-                "                    \"state\": \"Added\",\n" +
-                "                    \"key\": \"AQAAAAEC\",\n" +
-                "                    \"value\": \"dG9rZW5Ud28=\"\n" +
-                "                },\n" +
-                "                {\n" +
-                "                    \"state\": \"Added\",\n" +
-                "                    \"key\": \"AQAAAAED\",\n" +
-                "                    \"value\": \"dG9rZW5UaHJlZQ==\"\n" +
-                "                },\n" +
-                "                {\n" +
-                "                    \"state\": \"Added\",\n" +
-                "                    \"key\": \"AQAAAAEE\",\n" +
-                "                    \"value\": \"dG9rZW5Gb3Vy\"\n" +
-                "                }\n" +
-                "            ]\n" +
-                "        },\n" +
-                "        \"stack\": [\n" +
-                "            {\n" +
-                "                \"type\": \"InteropInterface\",\n" +
-                "                \"interface\": \"IIterator\",\n" +
-                "                \"id\": \"d5a03f66-0507-4587-a6bb-4e2bff357d85\"\n" +
-                "            }\n" +
-                "        ],\n" +
-                "        \"session\": \"5fe3915b-38f2-4cdf-b7fa-703f3fb8620d\"\n" +
-                "    }\n" +
-                "}");
-
-        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
-        System.out.println(invokeFunction);
     }
 
     @Test
@@ -2853,7 +2831,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(execution.getNotifications(), hasSize(2));
 
         // Notification 0
-        NeoApplicationLog.Execution.Notification notification0 = execution.getNotifications().get(0);
+        Notification notification0 = execution.getNotifications().get(0);
 
         assertThat(notification0.getContract(), is(new Hash160("0x70e2301955bf1e74cbb31d18c2f96972abadb328")));
         assertThat(notification0.getState().getType(), is(StackItemType.ARRAY));
@@ -2870,7 +2848,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(amount0, is(BigInteger.valueOf(600000000)));
 
         // Notification 1
-        NeoApplicationLog.Execution.Notification notification1 = execution.getNotifications().get(1);
+        Notification notification1 = execution.getNotifications().get(1);
 
         assertThat(notification1.getContract(), is(new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83")));
         assertThat(notification1.getState().getType(), is(StackItemType.ARRAY));

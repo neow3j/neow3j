@@ -7,8 +7,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import io.neow3j.types.StackItemType;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.types.StackItemType;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -175,18 +175,17 @@ public abstract class StackItem {
     }
 
     /**
-     * Gets this item as an iterator.
+     * Gets the iterator id of this item.
      * <p>
      * This can only be used if the expected stack item type is {@link StackItemType#INTEROP_INTERFACE}.
      *
-     * @return the iterator.
+     * @return the iterator id.
      * @throws StackItemCastException if the stack item cannot be converted to an {@code InteropInterface} or if its
      *                                value is null.
      */
     @JsonIgnore
-    public List<StackItem> getIterator() {
-        throw new StackItemCastException(
-                format("Cannot cast stack item %s to a neo-vm interoperability interface.", toString()));
+    public String getIteratorId() {
+        throw new StackItemCastException(format("Cannot cast stack item %s to a neo-vm session id.", toString()));
     }
 
     protected void nullCheck() {
