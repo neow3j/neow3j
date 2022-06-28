@@ -69,10 +69,12 @@ import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseAttribute;
@@ -1866,6 +1868,70 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testInvokeFunctionIteratorSession() {
+        buildResponse(
+                "{\n" +
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": {\n" +
+                "        \"script\": \"wh8MBnRva2VucwwU2LZvrs+K7UkEJHT/iNVsMItofCpBYn1bUg==\",\n" +
+                "        \"state\": \"HALT\",\n" +
+                "        \"gasconsumed\": \"11818090\",\n" +
+                "        \"exception\": null,\n" +
+                "        \"notifications\": [],\n" +
+                "        \"diagnostics\": {\n" +
+                "            \"invokedcontracts\": {\n" +
+                "                \"hash\": \"0xc7cec7d3e00e9651059f9fa7dca6ccac3bd76d98\",\n" +
+                "                \"call\": [\n" +
+                "                    {\n" +
+                "                        \"hash\": \"0x2a7c688b306cd588ff74240449ed8acfae6fb6d8\",\n" +
+                "                        \"call\": [\n" +
+                "                            {\n" +
+                "                                \"hash\": \"0x2a7c688b306cd588ff74240449ed8acfae6fb6d8\"\n" +
+                "                            }\n" +
+                "                        ]\n" +
+                "                    }\n" +
+                "                ]\n" +
+                "            },\n" +
+                "            \"storagechanges\": [\n" +
+                "                {\n" +
+                "                    \"state\": \"Added\",\n" +
+                "                    \"key\": \"AQAAAAEB\",\n" +
+                "                    \"value\": \"dG9rZW5PbmU=\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"state\": \"Added\",\n" +
+                "                    \"key\": \"AQAAAAEC\",\n" +
+                "                    \"value\": \"dG9rZW5Ud28=\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"state\": \"Added\",\n" +
+                "                    \"key\": \"AQAAAAED\",\n" +
+                "                    \"value\": \"dG9rZW5UaHJlZQ==\"\n" +
+                "                },\n" +
+                "                {\n" +
+                "                    \"state\": \"Added\",\n" +
+                "                    \"key\": \"AQAAAAEE\",\n" +
+                "                    \"value\": \"dG9rZW5Gb3Vy\"\n" +
+                "                }\n" +
+                "            ]\n" +
+                "        },\n" +
+                "        \"stack\": [\n" +
+                "            {\n" +
+                "                \"type\": \"InteropInterface\",\n" +
+                "                \"interface\": \"IIterator\",\n" +
+                "                \"id\": \"d5a03f66-0507-4587-a6bb-4e2bff357d85\"\n" +
+                "            }\n" +
+                "        ],\n" +
+                "        \"session\": \"5fe3915b-38f2-4cdf-b7fa-703f3fb8620d\"\n" +
+                "    }\n" +
+                "}");
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        System.out.println(invokeFunction);
+    }
+
+    @Test
     public void testInvokeScript() {
         buildResponse(
                 "{\n" +
@@ -1895,6 +1961,39 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeScript.getInvocationResult().getStack(), hasSize(1));
         assertThat(invokeScript.getInvocationResult().getStack(),
                 hasItem(new ByteStringStackItem("Transfer".getBytes())));
+    }
+
+    @Test
+    public void testNeoTraverseIterator() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": [\n" +
+                        "        {\n" +
+                        "            \"type\": \"ByteString\",\n" +
+                        "            \"value\": \"dG9rZW5PbmU=\"\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "            \"type\": \"ByteString\",\n" +
+                        "            \"value\": \"dG9rZW5Ud28=\"\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "            \"type\": \"ByteString\",\n" +
+                        "            \"value\": \"dG9rZW5UaHJlZQ==\"\n" +
+                        "        },\n" +
+                        "        {\n" +
+                        "            \"type\": \"ByteString\",\n" +
+                        "            \"value\": \"dG9rZW5Gb3Vy\"\n" +
+                        "        }\n" +
+                        "    ]\n" +
+                        "}"
+        );
+
+        NeoTraverseIterator traverseIterator = deserialiseResponse(NeoTraverseIterator.class);
+        List<StackItem> iteratorList = traverseIterator.getTraverseIterator();
+        assertThat(iteratorList, hasSize(4));
+        assertThat(iteratorList.get(3).getString(), is("tokenFour"));
     }
 
     @Test

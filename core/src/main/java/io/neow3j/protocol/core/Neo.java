@@ -48,6 +48,7 @@ import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.TransactionSendToken;
@@ -137,6 +138,8 @@ public interface Neo {
             List<ContractParameter> params, Signer... signers);
 
     Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers);
+
+    Request<?, NeoTraverseIterator> traverseIterator(String sessionId, String iteratorId, int count);
 
     Request<?, NeoInvokeContractVerify> invokeContractVerify(Hash160 contractHash,
             List<ContractParameter> methodParameters, Signer... signers);
