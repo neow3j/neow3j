@@ -52,6 +52,7 @@ import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
@@ -616,6 +617,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(sessionId, iteratorId, maxItems),
                 neow3jService,
                 NeoTraverseIterator.class);
+    }
+
+    /**
+     * Terminates an open session.
+     *
+     * @param sessionId the session id.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoTerminateSession> terminateSession(String sessionId) {
+        return new Request<>(
+                "terminatesession",
+                asList(sessionId),
+                neow3jService,
+                NeoTerminateSession.class);
     }
 
     /**

@@ -69,12 +69,12 @@ import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
+import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
-import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseAttribute;
@@ -1964,7 +1964,7 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
-    public void testNeoTraverseIterator() {
+    public void testTraverseIterator() {
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -1994,6 +1994,20 @@ public class ResponseTest extends ResponseTester {
         List<StackItem> iteratorList = traverseIterator.getTraverseIterator();
         assertThat(iteratorList, hasSize(4));
         assertThat(iteratorList.get(3).getString(), is("tokenFour"));
+    }
+
+    @Test
+    public void testTerminateSession() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": true\n" +
+                        "}"
+        );
+
+        NeoTerminateSession terminateSession = deserialiseResponse(NeoTerminateSession.class);
+        assertTrue(terminateSession.getTerminateSession());
     }
 
     @Test

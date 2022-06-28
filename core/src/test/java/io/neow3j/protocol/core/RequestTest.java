@@ -538,6 +538,22 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testTerminateSession() throws Exception {
+        neow3j.terminateSession("127d3320-db35-48d5-b6d3-ca22dca4a370").send();
+
+        verifyResult(
+                "{\n" +
+                        " \"jsonrpc\": \"2.0\",\n" +
+                        " \"method\": \"terminatesession\",\n" +
+                        " \"params\":[\n" +
+                        "    \"127d3320-db35-48d5-b6d3-ca22dca4a370\"\n" +
+                        " ],\n" +
+                        " \"id\": 1\n" +
+                        "}"
+        );
+    }
+
+    @Test
     public void testInvokeContractVerify() throws Exception {
         neow3j.invokeContractVerify(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
