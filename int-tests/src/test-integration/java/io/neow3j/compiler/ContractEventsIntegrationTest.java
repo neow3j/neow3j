@@ -9,6 +9,7 @@ import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import org.junit.ClassRule;
@@ -42,8 +43,7 @@ public class ContractEventsIntegrationTest {
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                executions.get(0).getNotifications();
+        List<Notification> notifications = executions.get(0).getNotifications();
         assertThat(notifications, hasSize(2));
 
         assertThat(notifications.get(0).getEventName(), is("event1"));
@@ -66,8 +66,7 @@ public class ContractEventsIntegrationTest {
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                executions.get(0).getNotifications();
+        List<Notification> notifications = executions.get(0).getNotifications();
         assertThat(notifications, hasSize(1));
 
         assertThat(notifications.get(0).getEventName(), is("event4"));
@@ -85,9 +84,8 @@ public class ContractEventsIntegrationTest {
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
         List<NeoApplicationLog.Execution> executions = log.getExecutions();
         assertThat(executions, hasSize(1));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                executions.get(0).getNotifications();
-        NeoApplicationLog.Execution.Notification event = notifications.get(0);
+        List<Notification> notifications = executions.get(0).getNotifications();
+        Notification event = notifications.get(0);
         List<StackItem> state = event.getState().getList();
         assertThat(state.get(0).getHexString(), is("0f46dc4287b70117ce8354924b5cb3a47215ad93"));
         assertThat(state.get(1).getHexString(), is("d6c712eb53b1a130f59fd4e5864bdac27458a509"));
@@ -97,10 +95,10 @@ public class ContractEventsIntegrationTest {
     @Test
     public void fireEventWithMethodCallOnSelf() throws Throwable {
         Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
-        NeoApplicationLog.Execution.Notification n = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
+        Notification notification = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getNotifications().get(0);
-        assertThat(n.getEventName(), is("event5"));
-        assertThat(n.getState().getList().get(0).getAddress(), is("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA"));
+        assertThat(notification.getEventName(), is("event5"));
+        assertThat(notification.getState().getList().get(0).getAddress(), is("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA"));
     }
 
     static class ContractEventsIntegrationTestContract {

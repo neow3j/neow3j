@@ -11,7 +11,6 @@ import io.neow3j.devpack.contracts.NeoToken.AccountState;
 import io.neow3j.devpack.contracts.NeoToken.Candidate;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.Hash256;
@@ -110,10 +109,10 @@ public class NeoTokenIntegrationTest {
     @Test
     public void getAllCandidates() throws Throwable {
         InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
-        StackItem stackItem = response.getStack().get(0);
-        assertThat(stackItem.getType(), is(StackItemType.INTEROP_INTERFACE));
+        String sessionId = response.getSessionId();
+        String iteratorId = response.getStack().get(0).getIteratorId();
 
-        List<StackItem> allCandidates = stackItem.getIterator();
+        List<StackItem> allCandidates = ct.traverseIterator(sessionId, iteratorId);
         assertThat(allCandidates, hasSize(0));
 
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(ct.getNeow3j());
@@ -122,11 +121,10 @@ public class NeoTokenIntegrationTest {
 
         assertThat(neoToken.getBalanceOf(ct.getClient1()), is(client1NeoFunded));
         response = ct.callInvokeFunction(testName).getInvocationResult();
-        stackItem = response.getStack().get(0);
-        assertThat(stackItem.getType(), is(StackItemType.INTEROP_INTERFACE));
+        sessionId = response.getSessionId();
+        iteratorId = response.getStack().get(0).getIteratorId();
 
-        allCandidates = stackItem.getIterator();
-        assertFalse(((InteropInterfaceStackItem) stackItem).isTruncated());
+        allCandidates = ct.traverseIterator(sessionId, iteratorId);
         assertThat(allCandidates, hasSize(1));
         assertThat(allCandidates.get(0).getType(), is(StackItemType.STRUCT));
         List<StackItem> candStruct = allCandidates.get(0).getList();

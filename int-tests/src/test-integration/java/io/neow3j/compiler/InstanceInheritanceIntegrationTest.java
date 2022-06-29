@@ -6,6 +6,7 @@ import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -110,7 +111,7 @@ public class InstanceInheritanceIntegrationTest {
         assertThat(exec.getState(), is(NeoVMStateType.HALT));
         assertThat(exec.getNotifications(), hasSize(1));
 
-        NeoApplicationLog.Execution.Notification notification = exec.getNotifications().get(0);
+        Notification notification = exec.getNotifications().get(0);
         assertThat(notification.getEventName(), is("event"));
         assertThat(notification.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification.getState().getList(), hasSize(2));
@@ -128,7 +129,8 @@ public class InstanceInheritanceIntegrationTest {
         NeoApplicationLog.Execution exec = applicationLog.getExecutions().get(0);
         assertThat(exec.getState(), is(NeoVMStateType.HALT));
         assertThat(exec.getNotifications(), hasSize(1));
-        NeoApplicationLog.Execution.Notification notification = exec.getNotifications().get(0);
+
+        Notification notification = exec.getNotifications().get(0);
         assertThat(notification.getEventName(), is("event"));
         assertThat(notification.getState().getType(), is(StackItemType.ARRAY));
         assertThat(notification.getState().getList(), hasSize(2));

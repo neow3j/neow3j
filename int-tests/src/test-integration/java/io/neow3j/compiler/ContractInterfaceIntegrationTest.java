@@ -9,6 +9,7 @@ import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
@@ -125,7 +126,7 @@ public class ContractInterfaceIntegrationTest {
         assertTrue(exec.getStack().get(0).getBoolean());
 
         assertThat(exec.getNotifications(), hasSize(1));
-        NeoApplicationLog.Execution.Notification notification = exec.getNotifications().get(0);
+        Notification notification = exec.getNotifications().get(0);
 
         assertThat(notification.getContract(), is(GasToken.SCRIPT_HASH));
         assertThat(notification.getEventName(), is("Transfer"));
@@ -147,7 +148,7 @@ public class ContractInterfaceIntegrationTest {
         assertTrue(exec.getStack().get(0).getBoolean());
 
         assertThat(exec.getNotifications(), hasSize(1));
-        NeoApplicationLog.Execution.Notification notification = exec.getNotifications().get(0);
+        Notification notification = exec.getNotifications().get(0);
 
         assertThat(notification.getContract(), is(GasToken.SCRIPT_HASH));
         assertThat(notification.getEventName(), is("Transfer"));
@@ -259,9 +260,7 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static Hash160 getHashFromContractInterfaceWithHashFromInitsslotValue() {
-            return new CustomContract(
-                    new Hash160(reverse(hexToBytes(cst).toByteArray())))
-                    .getHash();
+            return new CustomContract(new Hash160(reverse(hexToBytes(cst).toByteArray()))).getHash();
         }
     }
 

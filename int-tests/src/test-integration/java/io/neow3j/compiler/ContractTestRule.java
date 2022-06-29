@@ -6,11 +6,13 @@ import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetStorage;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
@@ -66,6 +68,8 @@ public class ContractTestRule implements TestRule {
 
     private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
+
+    private static final int DEFAULT_ITERATOR_COUNT = 100;
 
     public ContractTestRule(String fullyQualifiedName) {
         this.fullyQualifiedClassName = fullyQualifiedName;
@@ -206,6 +210,24 @@ public class ContractTestRule implements TestRule {
                     AccountSigner.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, asList(params));
+    }
+
+    public List<StackItem> callAndTraverseIterator(TestName testName, ContractParameter... params) throws IOException {
+        return callAndTraverseIterator(testName.getMethodName(), params);
+    }
+
+    public List<StackItem> callAndTraverseIterator(String function, ContractParameter... params) throws IOException {
+        InvocationResult invocationResult = callInvokeFunction(function, params).getInvocationResult();
+        String sessionId = invocationResult.getSessionId();
+        String iteratorId = invocationResult.getStack().get(0).getIteratorId();
+        return traverseIterator(sessionId, iteratorId);
+    }
+
+    public List<StackItem> traverseIterator(String sessionId, String iteratorId) throws IOException {
+        List<StackItem> iter = neow3j.traverseIterator(sessionId, iteratorId, DEFAULT_ITERATOR_COUNT).send()
+                .getTraverseIterator();
+        neow3j.terminateSession(sessionId).send();
+        return iter;
     }
 
     /**

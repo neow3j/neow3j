@@ -58,8 +58,7 @@ public class DivisibleNFTIntegrationTest {
 
     @Test
     public void testOwnerOf() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArrayFromString("io/neow3j/test"));
-        List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
+        List<StackItem> iter = ct.callAndTraverseIterator(testName, byteArrayFromString("io/neow3j/test"));
         assertThat(iter.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
         assertThat(iter.get(1).getAddress(), is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
     }
