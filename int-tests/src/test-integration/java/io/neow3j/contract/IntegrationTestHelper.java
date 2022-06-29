@@ -1,8 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.contract.FungibleToken;
-import io.neow3j.contract.GasToken;
-import io.neow3j.contract.NeoToken;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
@@ -19,6 +16,7 @@ import static io.neow3j.test.TestProperties.client2AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
@@ -71,6 +69,26 @@ public class IntegrationTestHelper {
                 COMMITTEE_ACCOUNT.getVerificationScript());
 
         Hash256 txHash = unsignedTx.addWitness(multiSigWitness)
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+    }
+
+    static void registerCandidateAndAwaitExecution(Neow3j neow3j, Account candidate) throws Throwable {
+        Hash256 txHash = new NeoToken(neow3j).registerCandidate(candidate.getECKeyPair().getPublicKey())
+                .signers(calledByEntry(candidate))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+    }
+
+    static void unregisterCandidateAndAwaitExecution(Neow3j neow3j, Account candidate) throws Throwable {
+        Hash256 txHash = new NeoToken(neow3j).unregisterCandidate(candidate.getECKeyPair().getPublicKey())
+                .signers(calledByEntry(candidate))
+                .sign()
                 .send()
                 .getSendRawTransaction()
                 .getHash();

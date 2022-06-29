@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 import static io.neow3j.types.StackItemType.BOOLEAN;
 import static io.neow3j.types.StackItemType.BUFFER;
@@ -34,10 +35,13 @@ import static java.util.Arrays.asList;
 /**
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
  */
-public class SmartContract {
+@SuppressWarnings("unchecked")
+public class SmartContract<T> {
 
     protected Hash160 scriptHash;
     protected Neow3j neow3j;
+
+    protected static final int DEFAULT_ITERATOR_COUNT = 100;
 
     /**
      * Constructs a {@code SmartContract} representing the smart contract with the given script hash. Uses the given
@@ -192,31 +196,90 @@ public class SmartContract {
 
     /**
      * Sends an {@code invokefunction} RPC call to the given contract function expecting an
-     * {@link InteropInterfaceStackItem} as a return type that contains an iterator.
+     * {@link InteropInterfaceStackItem} as a return type.
      * <p>
-     * Consider that for this RPC the returned list may be limited in size and not reveal all entries that exist on
-     * the contract.
+     * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
-     * @return the script hash returned by the contract.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as script hash.
+     * @return the iterator.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
+    public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
             throws IOException {
+        return (Iterator<StackItem>) callFunctionReturningIterator(i -> (T) i, function, params);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type.
+     * <p>
+     * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items with
+     * provided mapper applied to each item.
+     *
+     * @param mapper the function to apply on the stack items in the iterator.
+     * @param function       the function to call.
+     * @param params         the contract parameters to include in the call.
+     * @return the iterator.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Iterator<T> callFunctionReturningIterator(Function<StackItem, T> mapper, String function,
+            ContractParameter... params) throws IOException {
 
         InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
         throwIfFaultState(invocationResult);
+
         StackItem stackItem = invocationResult.getStack().get(0);
         if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
         }
-        try {
-            return stackItem.getIterator();
-        } catch (StackItemCastException e) {
-            throw new UnexpectedReturnTypeException("Return did not contain an iterator.", e);
-        }
+
+        String sessionId = invocationResult.getSessionId();
+        String iteratorId = stackItem.getIteratorId();
+        return new Iterator<>(neow3j, sessionId, iteratorId, mapper);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
+     * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items mapped with the provided unwrap function.
+     * <p>
+     * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     *
+     * @param mapper   the function to apply on the stack items in the iterator.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the mapped iterator items.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
+            ContractParameter... params) throws IOException {
+
+        Iterator<T> iterator = callFunctionReturningIterator(mapper, function, params);
+        List<T> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
+        iterator.terminateSession();
+        return iteratorItems;
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
+     * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items.
+     * <p>
+     * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the iterator.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public List<StackItem> callFunctionAndTraverseIterator(String function, ContractParameter... params)
+            throws IOException {
+
+        Iterator<StackItem> iterator = callFunctionReturningIterator(function, params);
+        List<StackItem> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
+        iterator.terminateSession();
+        return iteratorItems;
     }
 
     /**

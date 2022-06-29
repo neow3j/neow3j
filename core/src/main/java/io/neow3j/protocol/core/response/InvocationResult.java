@@ -94,6 +94,10 @@ public class InvocationResult {
     }
 
     public String getSessionId() {
+        if (sessionId == null || sessionId.isEmpty()) {
+            throw new IllegalStateException("No session id was found. The connected Neo node might not support " +
+                    "sessions.");
+        }
         return sessionId;
     }
 

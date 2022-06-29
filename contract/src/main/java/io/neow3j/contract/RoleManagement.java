@@ -1,11 +1,5 @@
 package io.neow3j.contract;
 
-import static io.neow3j.types.ContractParameter.array;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.publicKey;
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
-
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.Role;
@@ -20,9 +14,16 @@ import java.math.BigInteger;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
+import static java.lang.String.format;
+import static java.util.Arrays.asList;
+
 /**
  * Represents the RoleManagement contract that is used to assign roles to and check roles of designated nodes.
  */
+@SuppressWarnings("unchecked")
 public class RoleManagement extends SmartContract {
 
     private static final String NAME = "RoleManagement";

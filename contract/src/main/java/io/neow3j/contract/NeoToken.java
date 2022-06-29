@@ -4,6 +4,7 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoAccountState;
+import io.neow3j.protocol.core.response.NeoGetTokenBalances;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -13,9 +14,11 @@ import io.neow3j.wallet.Account;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -24,14 +27,12 @@ import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
-import static io.neow3j.types.StackItemType.INTEGER;
-import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
-import static io.neow3j.types.StackItemType.STRUCT;
 import static java.util.Arrays.asList;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.
  */
+@SuppressWarnings("unchecked")
 public class NeoToken extends FungibleToken {
 
     public static final String NAME = "NeoToken";
@@ -46,7 +47,7 @@ public class NeoToken extends FungibleToken {
     private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     private static final String VOTE = "vote";
     private static final String GET_CANDIDATES = "getCandidates";
-    private static final String GET_ALL_CANDIDATES = "getAllCandidates";
+    static final String GET_ALL_CANDIDATES = "getAllCandidates";
     private static final String GET_CANDIDATE_VOTES = "getCandidateVote";
     private static final String GET_COMMITTEE = "getCommittee";
     private static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
@@ -184,14 +185,10 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of the currently registered candidates and their corresponding vote count.
-     * <p>
-     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
+     * Gets the public keys of the registered candidates and their corresponding vote count.
      *
-     * @return the candidates' public keys and their corresponding vote count.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the return type is not an array or the array elements are not public
-     *                                       keys and node counts.
+     * @return the candidates.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Map<ECPublicKey, BigInteger> getCandidates() throws IOException {
         StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
@@ -213,6 +210,14 @@ public class NeoToken extends FungibleToken {
         return getCandidates().containsKey(publicKey);
     }
 
+    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
+    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
+        return candidateList.stream().collect(Collectors.toMap(
+                e -> extractPublicKey(e.getList().get(0)),
+                e -> e.getList().get(1).getInteger()
+        ));
+    }
+
     /**
      * Gets the public keys of all currently registered candidates and their corresponding vote count.
      * <p>
@@ -226,30 +231,30 @@ public class NeoToken extends FungibleToken {
      * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
      *                                       are not public keys and node counts.
      */
-    public Map<ECPublicKey, BigInteger> getAllCandidates() throws IOException {
-        StackItem stackItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
-        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
-            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
-        }
-        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(stackItem.getIterator());
-        return candidates;
+    public List<Candidate> getAllCandidates() throws IOException {
+        return getAllCandidatesIterator().traverse(DEFAULT_ITERATOR_COUNT);
     }
 
-    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
-    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
-        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
-        for (StackItem candidateItem : candidateList) {
-            if (!candidateItem.getType().equals(STRUCT)) {
-                throw new UnexpectedReturnTypeException(candidateItem.getType(), STRUCT);
-            }
-            ECPublicKey key = extractPublicKey(candidateItem.getList().get(0));
-            StackItem nrItem = candidateItem.getList().get(1);
-            if (!nrItem.getType().equals(INTEGER)) {
-                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
-            }
-            candidates.put(key, nrItem.getInteger());
-        }
-        return candidates;
+    /**
+     * Gets an iterator of all registered candidates and their corresponding vote count.
+     * <p>
+     * The response contains an iterator which might be truncated based on the size configuration of the node this
+     * request is sent to.
+     *
+     * @return the candidate public keys and their corresponding vote count.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
+     *                                       are not public keys and node counts.
+     */
+    public Iterator<Candidate> getAllCandidatesIterator() throws IOException {
+        return (Iterator<Candidate>) callFunctionReturningIterator(candidateMapper(), GET_ALL_CANDIDATES);
+    }
+
+    static Function<StackItem, Candidate> candidateMapper() {
+        return stackItem -> {
+            List<StackItem> list = stackItem.getList();
+            return new Candidate(new ECPublicKey(list.get(0).getByteArray()), list.get(1).getInteger());
+        };
     }
 
     /**
@@ -441,6 +446,48 @@ public class NeoToken extends FungibleToken {
             return NeoAccountState.withNoVote(balance, updateHeight);
         }
         return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()));
+    }
+
+    /**
+     * This class represents the state of a candidate.
+     */
+    public static class Candidate {
+
+        /**
+         * The candidate's public key;
+         */
+        private final ECPublicKey publicKey;
+
+        /**
+         * The candidate's votes. It is based on the summed up NEO balances of this candidate's voters.
+         */
+        private final BigInteger votes;
+
+        public Candidate(ECPublicKey publicKey, BigInteger votes) {
+            this.publicKey = publicKey;
+            this.votes = votes;
+        }
+
+        public ECPublicKey getPublicKey() {
+            return publicKey;
+        }
+
+        public BigInteger getVotes() {
+            return votes;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Candidate)) {
+                return false;
+            }
+            Candidate that = (Candidate) o;
+            return Objects.equals(getPublicKey(), that.getPublicKey()) &&
+                    Objects.equals(getVotes(), that.getVotes());
+        }
     }
 
 }

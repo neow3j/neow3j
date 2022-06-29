@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 /**
  * Represents the NameService contract and provides methods to invoke its functions.
  */
+@SuppressWarnings("unchecked")
 public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
