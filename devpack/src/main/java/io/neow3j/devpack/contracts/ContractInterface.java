@@ -10,7 +10,7 @@ import io.neow3j.devpack.Hash160;
  * When this class is extended, the constructor of the extending class must take exactly one parameter of type
  * {@link Hash160} or a constant {@link String} and pass it to the {@code super()} call without any additional logic.
  */
-public abstract class ContractInterface {
+public class ContractInterface {
 
     /**
      * Initializes an interface to a smart contract.
