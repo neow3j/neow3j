@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -185,53 +184,33 @@ public class NeoToken extends FungibleToken {
 
     /**
      * Gets the public keys of the registered candidates and their corresponding vote count.
+     * <p>
+     * Note that this method returns at max 256 candidates. Use {@link NeoToken#getAllCandidatesIterator()} to
+     * traverse through all candidates if there are more than 256.
      *
      * @return the candidates.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Map<ECPublicKey, BigInteger> getCandidates() throws IOException {
+    public List<Candidate> getCandidates() throws IOException {
         StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
-        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(arrayItem.getList());
-        return candidates;
+        return arrayItem.getList().stream().map(candidateMapper()).collect(Collectors.toList());
     }
 
     /**
      * Checks if there is a candidate with the provided public key.
+     * <p>
+     * Note that this only checks the first 256 candidates. Use {@link NeoToken#getAllCandidatesIterator()} to
+     * traverse through all candidates if there are more than 256.
      *
      * @param publicKey the candidate's public key.
      * @return true if the public key belongs to a candidate. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isCandidate(ECPublicKey publicKey) throws IOException {
-        return getCandidates().containsKey(publicKey);
-    }
-
-    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
-    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
-        return candidateList.stream().collect(Collectors.toMap(
-                e -> extractPublicKey(e.getList().get(0)),
-                e -> e.getList().get(1).getInteger()
-        ));
-    }
-
-    /**
-     * Gets the first {@link SmartContract#DEFAULT_ITERATOR_COUNT} registered candidates.
-     * <p>
-     * Consider that the returned list might not reveal all entries that exist. To retrieve all candidates, use the
-     * method {@link NeoToken#getAllCandidatesIterator()} and then traverse through the iterator until all
-     * existing candidates could be retrieved.
-     *
-     * @return the first {@link SmartContract#DEFAULT_ITERATOR_COUNT} candidates.
-     * @throws IOException if there was a problem fetching information from the Neo node.
-     */
-    public List<Candidate> getAllCandidates() throws IOException {
-        Iterator<Candidate> iterator = getAllCandidatesIterator();
-        List<Candidate> candidates = iterator.traverse(DEFAULT_ITERATOR_COUNT);
-        iterator.terminateSession();
-        return candidates;
+        return getCandidates().stream().anyMatch(c -> c.getPublicKey().equals(publicKey));
     }
 
     /**
@@ -243,7 +222,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<Candidate> getAllCandidatesIterator() throws IOException {
-        return (Iterator<Candidate>) callFunctionReturningIterator(candidateMapper(), GET_ALL_CANDIDATES);
+        return callFunctionReturningIterator(candidateMapper(), GET_ALL_CANDIDATES);
     }
 
     static Function<StackItem, Candidate> candidateMapper() {

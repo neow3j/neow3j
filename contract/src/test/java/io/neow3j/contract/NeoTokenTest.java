@@ -20,7 +20,6 @@ import org.junit.Test;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
-import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
@@ -163,11 +162,11 @@ public class NeoTokenTest {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
                 NEOTOKEN_SCRIPTHASH, "getCandidates");
 
-        Map<ECPublicKey, BigInteger> result = new NeoToken(neow).getCandidates();
+        List<NeoToken.Candidate> result = new NeoToken(neow).getCandidates();
         assertThat(result.size(), is(2));
-        result.forEach((key, value) -> {
-            assertThat(key, notNullValue());
-            assertThat(value, is(BigInteger.ZERO));
+        result.forEach(c -> {
+            assertThat(c.getPublicKey(), notNullValue());
+            assertThat(c.getVotes(), is(BigInteger.ZERO));
         });
     }
 
@@ -406,31 +405,25 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void getAllCandidates() throws IOException {
+    public void getAllCandidatesIterator() throws IOException {
         setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_iterator_session.json");
         setUpWireMockForCall("traverseiterator", "neo_getAllCandidates_traverseiterator.json");
         setUpWireMockForCall("terminatesession", "terminatesession.json");
 
-        List<NeoToken.Candidate> allCandidates = new NeoToken(neow).getAllCandidates();
+        Iterator<NeoToken.Candidate> it = new NeoToken(neow).getAllCandidatesIterator();
+        assertThat(it.getMapper(), is(NeoToken.candidateMapper()));
+
+        List<NeoToken.Candidate> candidates = it.traverse(2);
         ECPublicKey pubKey1 = new ECPublicKey("02607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f");
         BigInteger votes1 = BigInteger.valueOf(340356);
         ECPublicKey pubKey2 = new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
         BigInteger votes2 = BigInteger.valueOf(10000000);
-        assertThat(allCandidates.get(0).getPublicKey(), is(pubKey1));
-        assertThat(allCandidates.get(0).getVotes(), is(votes1));
-        assertThat(allCandidates.get(1).getPublicKey(), is(pubKey2));
-        assertThat(allCandidates.get(1).getVotes(), is(votes2));
+        assertThat(candidates.get(0).getPublicKey(), is(pubKey1));
+        assertThat(candidates.get(0).getVotes(), is(votes1));
+        assertThat(candidates.get(1).getPublicKey(), is(pubKey2));
+        assertThat(candidates.get(1).getVotes(), is(votes2));
 
-        NeoToken.Candidate expected = new NeoToken.Candidate(pubKey1, votes1);
-        assertThat(allCandidates.get(0), is(expected));
-    }
-
-    @Test
-    public void getAllCandidatesIterator() throws IOException {
-        setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_iterator_session.json");
-
-        Iterator<NeoToken.Candidate> allCandidatesIterator = new NeoToken(neow).getAllCandidatesIterator();
-        assertThat(allCandidatesIterator.getMapper(), is(NeoToken.candidateMapper()));
+        it.terminateSession();
     }
 
     @Test
