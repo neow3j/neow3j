@@ -14,8 +14,6 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -31,6 +29,7 @@ public class NonDivisibleNFTIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
+        System.out.println(sc.getScriptHash());
     }
 
     @Test
@@ -44,8 +43,8 @@ public class NonDivisibleNFTIntegrationTest {
     @Permission(contract = "*")
     static class NonDivisibleNFTTestContract {
 
-        static NonDivisibleNonFungibleToken nft = new NonDivisibleNonFungibleToken(
-                new Hash160(reverse(hexToBytes("bd65d4664574381f4fc97da31e50738eac12a8b6").toByteArray())));
+        static NonDivisibleNonFungibleToken nft =
+                new NonDivisibleNonFungibleToken("68663f14cf7298b9a274034475a789c6830943fa");
 
         public static Hash160 testOwnerOf(ByteString tokenId) {
             return nft.ownerOf(tokenId);

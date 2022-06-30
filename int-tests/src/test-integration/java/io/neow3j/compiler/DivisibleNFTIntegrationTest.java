@@ -23,9 +23,7 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.util.List;
 
-import static io.neow3j.devpack.Helper.reverse;
 import static io.neow3j.devpack.StringLiteralHelper.addressToScriptHash;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -73,8 +71,8 @@ public class DivisibleNFTIntegrationTest {
     @Permission(contract = "*")
     static class DivisibleNFTTestContract {
 
-        static DivisibleNonFungibleToken customDivisibleNFT = new DivisibleNonFungibleToken(
-                new Hash160(reverse(hexToBytes("1cb2c3cceb56f8c8216ccc7d25133ad63e0dba56").toByteArray())));
+        static DivisibleNonFungibleToken customDivisibleNFT =
+                new DivisibleNonFungibleToken("31383c172f155a235a89cb68530037ef90047891");
 
         public static boolean testTransfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
             return customDivisibleNFT.transfer(from, to, amount, tokenId, data);

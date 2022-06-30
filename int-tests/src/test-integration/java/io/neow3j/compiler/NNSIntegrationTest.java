@@ -16,8 +16,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
@@ -126,8 +124,7 @@ public class NNSIntegrationTest {
     @Permission(contract = "*")
     static class NNSTestContract {
 
-        static NeoNameService nameService = new NeoNameService(
-                new Hash160(reverse(hexToBytes("4a65798c64826ac26765ae7a1bc4ddcc78e35ea5").toByteArray())));
+        static NeoNameService nameService = new NeoNameService("c58e21daa5f94352ab6f1b749bdbd3089bfed653");
 
         public static void testAddRoot(String root) {
             nameService.addRoot(root);

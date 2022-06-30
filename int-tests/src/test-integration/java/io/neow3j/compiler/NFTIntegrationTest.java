@@ -113,7 +113,7 @@ public class NFTIntegrationTest {
     @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
 
-        static NonFungibleToken nft = new DivisibleNonFungibleToken("1cf14fa33d5b841e37d066a7b9cf91cc5b85c352");
+        static NonFungibleToken nft = new DivisibleNonFungibleToken("8e830f69ace5e1d84a83e4dc5866b2ad6ca81167");
 
         public static String testSymbol() {
             return nft.symbol();
