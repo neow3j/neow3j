@@ -36,7 +36,7 @@ import static java.util.Arrays.asList;
  * Represents a smart contract on the Neo blockchain and provides methods to invoke and deploy it.
  */
 @SuppressWarnings("unchecked")
-public class SmartContract<T> {
+public class SmartContract {
 
     protected Hash160 scriptHash;
     protected Neow3j neow3j;
@@ -205,7 +205,7 @@ public class SmartContract<T> {
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
+    public <T> Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
             throws IOException {
         return (Iterator<StackItem>) callFunctionReturningIterator(i -> (T) i, function, params);
     }
@@ -223,7 +223,7 @@ public class SmartContract<T> {
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Iterator<T> callFunctionReturningIterator(Function<StackItem, T> mapper, String function,
+    public <T> Iterator<T> callFunctionReturningIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
 
         InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
@@ -252,7 +252,7 @@ public class SmartContract<T> {
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
+    public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
 
         Iterator<T> iterator = callFunctionReturningIterator(mapper, function, params);
