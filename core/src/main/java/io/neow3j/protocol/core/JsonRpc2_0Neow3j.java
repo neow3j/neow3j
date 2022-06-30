@@ -598,23 +598,23 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     /**
      * Returns the results from an iterator.
      * <p>
-     * The results are limited to {@code maxItems}. If {@code maxItems} is greater than {@code MaxIteratorResultItems}
+     * The results are limited to {@code count} items. If {@code count} is greater than {@code MaxIteratorResultItems}
      * in the Neo Node's configuration file, this request fails.
      * <p>
      * By sending the same request multiple times, the iterator advances and returns the remaining results. For
-     * example, in case there are more items than {@code maxItems}, sending the same request multiple times allows to
+     * example, in case there are more than {@code count} items, sending the same request multiple times allows to
      * retrive all stack items in the iterator.
      *
      * @param sessionId  the session id.
      * @param iteratorId the iterator id.
-     * @param maxItems   the maximal number of stack items returned.
+     * @param count      the maximal number of stack items returned.
      * @return the request object.
      */
     @Override
-    public Request<?, NeoTraverseIterator> traverseIterator(String sessionId, String iteratorId, int maxItems) {
+    public Request<?, NeoTraverseIterator> traverseIterator(String sessionId, String iteratorId, int count) {
         return new Request<>(
                 "traverseiterator",
-                asList(sessionId, iteratorId, maxItems),
+                asList(sessionId, iteratorId, count),
                 neow3jService,
                 NeoTraverseIterator.class);
     }
