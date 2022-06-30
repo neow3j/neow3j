@@ -110,15 +110,15 @@ public class InvocationResult {
             return false;
         }
         InvocationResult that = (InvocationResult) o;
-        return Objects.equals(getScript(), that.getScript()) &&
-                Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getGasConsumed(), that.getGasConsumed()) &&
-                Objects.equals(getException(), that.getException()) &&
-                Objects.equals(getNotifications(), that.getNotifications()) &&
-                Objects.equals(getStack(), that.getStack()) &&
-                Objects.equals(getTx(), that.getTx()) &&
-                Objects.equals(getPendingSignature(), that.getPendingSignature()) &&
-                Objects.equals(getSessionId(), that.getSessionId());
+        return Objects.equals(script, that.script) &&
+                Objects.equals(state, that.state) &&
+                Objects.equals(gasConsumed, that.getGasConsumed()) &&
+                Objects.equals(exception, that.exception) &&
+                Objects.equals(notifications, that.notifications) &&
+                Objects.equals(stack, that.stack) &&
+                Objects.equals(tx, that.tx) &&
+                Objects.equals(pendingSignature, that.pendingSignature) &&
+                Objects.equals(sessionId, that.sessionId);
     }
 
     @Override

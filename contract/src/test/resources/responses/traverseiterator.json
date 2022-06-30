@@ -1,0 +1,32 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "type": "Struct",
+      "value": [
+        {
+          "type": "ByteString",
+          "value": "bmVvdyMx"
+        },
+        {
+          "type": "ByteString",
+          "value": "YmVzdHRva2Vu"
+        }
+      ]
+    },
+    {
+      "type": "Struct",
+      "value": [
+        {
+          "type": "ByteString",
+          "value": "bmVvdyMy"
+        },
+        {
+          "type": "ByteString",
+          "value": "YWxtb3N0YmVzdHRva2Vu"
+        }
+      ]
+    }
+  ]
+}

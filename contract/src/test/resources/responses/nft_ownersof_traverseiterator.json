@@ -1,0 +1,14 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": [
+    {
+      "type": "ByteString",
+      "value": "Y7/vYJBc2HxW2kBkZEvm966OxIg="
+    },
+    {
+      "type": "ByteString",
+      "value": "ollOXJdkM0T7u2GYg6NsmP85m3M="
+    }
+  ]
+}

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -36,11 +37,11 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertThrows;
 
+@SuppressWarnings("unchecked")
 public class NonFungibleTokenTest {
 
     @Rule
@@ -152,8 +153,11 @@ public class NonFungibleTokenTest {
 
     @Test
     public void testTokensOf() throws IOException {
-        setUpWireMockForInvokeFunction("tokensOf", "nft_tokensof.json");
-        List<byte[]> tokens = nfTestToken.tokensOf(account1.getScriptHash());
+        setUpWireMockForInvokeFunction("tokensOf", "invokefunction_iterator_session.json");
+        setUpWireMockForCall("traverseiterator", "nft_tokensof_traverseiterator.json");
+
+        Iterator tokensIterator = nfTestToken.tokensOf(account1.getScriptHash());
+        List<byte[]> tokens = (List<byte[]>) tokensIterator.traverse(100);
 
         assertThat(tokens, hasSize(2));
         assertThat(tokens.get(0), is("tokenof1".getBytes(UTF_8)));
@@ -210,12 +214,15 @@ public class NonFungibleTokenTest {
 
     @Test
     public void testTokens() throws IOException {
-        setUpWireMockForInvokeFunction("tokens", "nft_tokens.json");
-        List<byte[]> tokens = nfTestToken.tokens();
+        setUpWireMockForInvokeFunction("tokens", "invokefunction_iterator_session.json");
+        setUpWireMockForCall("traverseiterator", "nft_tokens_traverseiterator.json");
+
+        Iterator<byte[]> iterator = nfTestToken.tokens();
+        List<byte[]> tokens = iterator.traverse(20);
 
         assertThat(tokens, hasSize(2));
-        assertThat(tokens.get(0), is("token1".getBytes(UTF_8)));
-        assertThat(tokens.get(1), is("token2".getBytes(UTF_8)));
+        assertThat(tokens.get(0), is("neow#1".getBytes()));
+        assertThat(tokens.get(1), is("neow#2".getBytes()));
     }
 
     @Test
@@ -256,14 +263,14 @@ public class NonFungibleTokenTest {
     @Test
     public void testOwnersOf() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
-        setUpWireMockForInvokeFunction("ownerOf", "nft_ownersof.json");
-        List<Hash160> owners = nfTestToken.ownersOf(TOKEN_ID);
+        setUpWireMockForInvokeFunction("ownerOf", "invokefunction_iterator_session.json");
+        setUpWireMockForCall("traverseiterator", "nft_ownersof_traverseiterator.json");
 
-        assertThat(owners, hasSize(2));
-        assertThat(owners, contains(
-                new Hash160("c6ae4518b51146820bef3df20bb89da05cfee3df"),
-                new Hash160("20be08e5fd3cfa9eafefb85d0243291462e2800f")
-        ));
+        Iterator<Hash160> iterator = nfTestToken.ownersOf("tokenId".getBytes());
+
+        List<Hash160> owners = iterator.traverse(100);
+        assertThat(owners.get(0), is(new Hash160("88c48eaef7e64b646440da567cd85c9060efbf63")));
+        assertThat(owners.get(1), is(new Hash160("739b39ff986ca3839861bbfb443364975c4e59a2")));
     }
 
     @Test

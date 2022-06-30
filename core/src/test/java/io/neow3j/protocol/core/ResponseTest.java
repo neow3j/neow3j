@@ -2999,8 +2999,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(results, hasSize(2));
         String key1 = "FA0WXJiZw4u/WZHF5HsEk3JYyuxp";
         String value1 = "QQEhBQAqz3cC";
-        System.out.println(results.get(1).getKey());
-        System.out.println(results.get(1).getValue());
         String key2 = "FH9l1DQ2JwiyVfDgaFa9y1zpnYUF";
         String value2 = "QQEhBwAA1VhfeRI=";
         assertThat(results.get(0).getKey(), is(key1));

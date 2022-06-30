@@ -13,7 +13,6 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -408,12 +407,30 @@ public class NeoTokenTest {
 
     @Test
     public void getAllCandidates() throws IOException {
-        setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_getAllCandidates.json");
-        Map<ECPublicKey, BigInteger> allCandidates = new NeoToken(neow).getAllCandidates();
+        setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_iterator_session.json");
+        setUpWireMockForCall("traverseiterator", "neo_getAllCandidates_traverseiterator.json");
+        setUpWireMockForCall("terminatesession", "terminatesession.json");
+
+        List<NeoToken.Candidate> allCandidates = new NeoToken(neow).getAllCandidates();
         ECPublicKey pubKey1 = new ECPublicKey("02607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f");
+        BigInteger votes1 = BigInteger.valueOf(340356);
         ECPublicKey pubKey2 = new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
-        assertThat(allCandidates.get(pubKey1), Matchers.is(BigInteger.valueOf(340356)));
-        assertThat(allCandidates.get(pubKey2), Matchers.is(BigInteger.valueOf(10000000)));
+        BigInteger votes2 = BigInteger.valueOf(10000000);
+        assertThat(allCandidates.get(0).getPublicKey(), is(pubKey1));
+        assertThat(allCandidates.get(0).getVotes(), is(votes1));
+        assertThat(allCandidates.get(1).getPublicKey(), is(pubKey2));
+        assertThat(allCandidates.get(1).getVotes(), is(votes2));
+
+        NeoToken.Candidate expected = new NeoToken.Candidate(pubKey1, votes1);
+        assertThat(allCandidates.get(0), is(expected));
+    }
+
+    @Test
+    public void getAllCandidatesIterator() throws IOException {
+        setUpWireMockForInvokeFunction("getAllCandidates", "invokefunction_iterator_session.json");
+
+        Iterator<NeoToken.Candidate> allCandidatesIterator = new NeoToken(neow).getAllCandidatesIterator();
+        assertThat(allCandidatesIterator.getMapper(), is(NeoToken.candidateMapper()));
     }
 
     @Test
