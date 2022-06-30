@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NonDivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -29,7 +30,7 @@ public class NonDivisibleNFTIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
-        System.out.println(sc.getScriptHash());
+        ct.setHash(sc.getScriptHash());
     }
 
     @Test
@@ -43,11 +44,16 @@ public class NonDivisibleNFTIntegrationTest {
     @Permission(contract = "*")
     static class NonDivisibleNFTTestContract {
 
-        static NonDivisibleNonFungibleToken nft =
-                new NonDivisibleNonFungibleToken("68663f14cf7298b9a274034475a789c6830943fa");
-
         public static Hash160 testOwnerOf(ByteString tokenId) {
-            return nft.ownerOf(tokenId);
+            return new NonDivisibleNonFungibleToken(getHash()).ownerOf(tokenId);
+        }
+
+        public static void setHash(Hash160 contractHash) {
+            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+        }
+
+        private static Hash160 getHash() {
+            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
         }
 
     }

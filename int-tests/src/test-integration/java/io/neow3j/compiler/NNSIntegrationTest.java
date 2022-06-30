@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.List;
+import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NeoNameService;
 import io.neow3j.protocol.core.RecordType;
@@ -34,11 +35,12 @@ public class NNSIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(NNSTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(TestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNeoNameService.class.getName());
+        ct.setHash(sc.getScriptHash());
     }
 
     @Test
@@ -122,52 +124,58 @@ public class NNSIntegrationTest {
     }
 
     @Permission(contract = "*")
-    static class NNSTestContract {
-
-        static NeoNameService nameService = new NeoNameService("c58e21daa5f94352ab6f1b749bdbd3089bfed653");
+    static class TestContract {
 
         public static void testAddRoot(String root) {
-            nameService.addRoot(root);
+            new NeoNameService(getHash()).addRoot(root);
         }
 
         public static void testSetPrice(List<Integer> priceList) {
-            nameService.setPrice(priceList);
+            new NeoNameService(getHash()).setPrice(priceList);
         }
 
         public static int testGetPrice(int length) {
-            return nameService.getPrice(length);
+            return new NeoNameService(getHash()).getPrice(length);
         }
 
         public static boolean testIsAvailable(String name) {
-            return nameService.isAvailable(name);
+            return new NeoNameService(getHash()).isAvailable(name);
         }
 
         public static boolean testRegister(String name, Hash160 owner) {
-            return nameService.register(name, owner);
+            return new NeoNameService(getHash()).register(name, owner);
         }
 
         public static int testRenew(String name) {
-            return nameService.renew(name);
+            return new NeoNameService(getHash()).renew(name);
         }
 
         public static void testSetAdmin(String name, Hash160 admin) {
-            nameService.setAdmin(name, admin);
+            new NeoNameService(getHash()).setAdmin(name, admin);
         }
 
         public static void testSetRecord(String name, int type, String data) {
-            nameService.setRecord(name, type, data);
+            new NeoNameService(getHash()).setRecord(name, type, data);
         }
 
         public static String testGetRecord(String name, int type) {
-            return nameService.getRecord(name, type);
+            return new NeoNameService(getHash()).getRecord(name, type);
         }
 
         public static void testDeleteRecord(String name, int type) {
-            nameService.deleteRecord(name, type);
+            new NeoNameService(getHash()).deleteRecord(name, type);
         }
 
         public static String testResolve(String name, int type) {
-            return nameService.resolve(name, type);
+            return new NeoNameService(getHash()).resolve(name, type);
+        }
+
+        public static void setHash(Hash160 contractHash) {
+            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+        }
+
+        private static Hash160 getHash() {
+            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
         }
 
     }
