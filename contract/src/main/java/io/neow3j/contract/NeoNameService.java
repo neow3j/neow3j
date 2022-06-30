@@ -33,6 +33,7 @@ import static java.util.Arrays.asList;
 /**
  * Represents the NameService contract and provides methods to invoke its functions.
  */
+@SuppressWarnings("unchecked")
 public class NeoNameService extends NonFungibleToken {
 
     public static final String NAME = "NameService";
@@ -136,7 +137,7 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getPrice(int domainNameLength) throws IOException {
-        return callFuncReturningInt(GET_PRICE, integer(domainNameLength));
+        return callFunctionReturningInt(GET_PRICE, integer(domainNameLength));
     }
 
     /**
@@ -148,7 +149,7 @@ public class NeoNameService extends NonFungibleToken {
      */
     public boolean isAvailable(String name) throws IOException {
         checkDomainNameValidity(name);
-        return callFuncReturningBool(IS_AVAILABLE, string(name));
+        return callFunctionReturningBool(IS_AVAILABLE, string(name));
     }
 
     /**
@@ -266,7 +267,7 @@ public class NeoNameService extends NonFungibleToken {
     public String getRecord(String name, RecordType type) throws IOException {
         checkDomainNameAvailability(name, false);
         try {
-            return callFuncReturningString(GET_RECORD, string(name), integer(type.byteValue()));
+            return callFunctionReturningString(GET_RECORD, string(name), integer(type.byteValue()));
         } catch (InvocationFaultStateException e) {
             throw new InvocationFaultStateException(format("Could not get any record of type %s for the domain name" +
                     " '%s'.", type.jsonValue(), name), e.getMessage());
@@ -296,7 +297,7 @@ public class NeoNameService extends NonFungibleToken {
     public String resolve(String name, RecordType type) throws IOException {
         checkDomainNameAvailability(name, false);
         try {
-            return callFuncReturningString(RESOLVE, string(name), integer(type.byteValue()));
+            return callFunctionReturningString(RESOLVE, string(name), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException e) {
             throw new IllegalArgumentException(
                     format("No record of type %s found for the domain name '%s'.", type.jsonValue(), name));

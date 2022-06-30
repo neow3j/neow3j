@@ -77,8 +77,7 @@ public class NFTIntegrationTest {
 
     @Test
     public void testTokensOf() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(dummyScriptHash));
-        List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
+        List<StackItem> iter = ct.callAndTraverseIterator(testName, hash160(dummyScriptHash));
         assertThat(iter, hasItems(
                 new ByteStringStackItem(toHexStringNoPrefix("token1".getBytes(UTF_8))),
                 new ByteStringStackItem(toHexStringNoPrefix("token2".getBytes(UTF_8))),
@@ -94,8 +93,7 @@ public class NFTIntegrationTest {
 
     @Test
     public void testTokens() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        List<StackItem> iter = response.getInvocationResult().getStack().get(0).getIterator();
+        List<StackItem> iter = ct.callAndTraverseIterator(testName);
         assertThat(iter, hasItems(
                 new ByteStringStackItem(toHexStringNoPrefix("tokenOne".getBytes(UTF_8))),
                 new ByteStringStackItem(toHexStringNoPrefix("tokenTwo".getBytes(UTF_8))),

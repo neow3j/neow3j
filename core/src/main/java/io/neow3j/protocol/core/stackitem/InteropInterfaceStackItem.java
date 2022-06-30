@@ -3,55 +3,45 @@ package io.neow3j.protocol.core.stackitem;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.types.StackItemType;
-import io.neow3j.protocol.exceptions.StackItemCastException;
 
-import java.util.List;
 import java.util.Objects;
-
-import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InteropInterfaceStackItem extends StackItem {
 
-    @JsonProperty("iterator")
-    private List<StackItem> iterator;
+    @JsonProperty("interface")
+    private String interfaceName;
 
-    @JsonProperty("truncated")
-    private Boolean truncated;
+    @JsonProperty("id")
+    private String iteratorId;
 
     public InteropInterfaceStackItem() {
         super(StackItemType.INTEROP_INTERFACE);
     }
 
+    public InteropInterfaceStackItem(String interfaceName, String iteratorId) {
+        super(StackItemType.INTEROP_INTERFACE);
+        this.interfaceName = interfaceName;
+        this.iteratorId = iteratorId;
+    }
+
     @Override
-    public List<StackItem> getValue() {
-        return iterator;
+    public String getValue() {
+        return iteratorId;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
     @Override
     protected String valueToString() {
-        return iterator.stream()
-                .map(StackItem::toString)
-                .reduce("", (a, b) -> a + ", " + b)
-                .substring(2); // remove the first comma and space
-    }
-
-    public InteropInterfaceStackItem(List<StackItem> iterator, Boolean truncated) {
-        super(StackItemType.INTEROP_INTERFACE);
-        this.iterator = iterator;
-        this.truncated = truncated;
+        return iteratorId;
     }
 
     @Override
-    public List<StackItem> getIterator() {
-        if (iterator == null) {
-            throw new StackItemCastException(format("Cannot cast stack item %s to an iterator.", toString()));
-        }
-        return iterator;
-    }
-
-    public boolean isTruncated() {
-        return truncated;
+    public String getIteratorId() {
+        return iteratorId;
     }
 
     @Override
@@ -64,12 +54,13 @@ public class InteropInterfaceStackItem extends StackItem {
         }
         InteropInterfaceStackItem other = (InteropInterfaceStackItem) o;
         return getType() == other.getType() &&
-                getValue().equals(other.getValue());
+                getInterfaceName().equals(other.getInterfaceName()) &&
+                getIteratorId().equals(other.getIteratorId());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getValue());
+        return Objects.hash(getType(), getInterfaceName(), getIteratorId());
     }
 
 }

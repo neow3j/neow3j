@@ -11,10 +11,10 @@ import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.response.NeoApplicationLog.Execution.Notification;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
@@ -94,9 +94,8 @@ public class ContractManagementIntegrationTest {
                 string(manifestString));
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
-        Notification notification =
-                ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
-                        .getExecutions().get(0).getNotifications().get(0);
+        Notification notification = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
+                .getExecutions().get(0).getNotifications().get(0);
         assertThat(notification.getEventName(), is("onDeployWithoutData"));
 
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),

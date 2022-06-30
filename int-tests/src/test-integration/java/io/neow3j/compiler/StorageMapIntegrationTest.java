@@ -749,8 +749,7 @@ public class StorageMapIntegrationTest {
 
     @Test
     public void findWithRemovePrefixOption() throws IOException {
-        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        List<StackItem> iterator = res.getStack().get(0).getIterator();
+        List<StackItem> iterator = ct.callAndTraverseIterator(testName);
 
         assertThat(iterator, hasSize(6)); // key-value pairs 4 to 9
 

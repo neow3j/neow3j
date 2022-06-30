@@ -66,7 +66,7 @@ public class StackItemTest extends ResponseTester {
     public void throwOnCastingToInteropInterfaceFromIllegalType() throws IOException {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
 
-        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getIterator);
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getIteratorId);
         assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
@@ -367,56 +367,25 @@ public class StackItemTest extends ResponseTester {
     public void testDeserializeInteropInterfaceStackItem() throws IOException {
         String json = "{\n" +
                 "    \"type\": \"InteropInterface\",\n" +
-                "    \"iterator\": [\n" +
-                "        {\n" +
-                "            \"type\": \"ByteString\",\n" +
-                "            \"value\": \"Dg==\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"truncated\": true\n" +
-                "}";
-        InteropInterfaceStackItem item =
-                getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
-        assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        List<StackItem> list = new ArrayList<>();
-        list.add(new ByteStringStackItem("0e"));
-        assertEquals(item.getIterator(), list);
-        assertTrue(item.isTruncated());
-    }
-
-    @Test
-    public void testDeserializeInteropInterfaceStackItem_getIterator() throws IOException {
-        String json = "{\n" +
-                "    \"type\": \"InteropInterface\",\n" +
-                "    \"iterator\": [\n" +
-                "        {\n" +
-                "            \"type\": \"ByteString\",\n" +
-                "            \"value\": \"Dg==\"\n" +
-                "        }\n" +
-                "    ],\n" +
-                "    \"truncated\": false\n" +
+                "    \"interface\": \"IIterator\",\n" +
+                "    \"id\": \"fcf7b800-192a-488f-95d3-c40ac7b30ef1\"\n" +
                 "}";
         StackItem item = getObjectMapper().readValue(json, StackItem.class);
         assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        List<StackItem> list = new ArrayList<>();
-        list.add(new ByteStringStackItem("0e"));
-        assertEquals(item.getIterator(), list);
-        assertThat(item.valueToString(), is("ByteString{value='0e'}"));
+        assertThat(item.getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
+        assertThat(item.getValue(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
+        assertThat(item.valueToString(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
 
-        InteropInterfaceStackItem other = new InteropInterfaceStackItem(list, false);
-        assertEquals(other, item);
-        assertEquals(other.hashCode(), item.hashCode());
-    }
+        InteropInterfaceStackItem interopInterfaceStackItem = getObjectMapper()
+                .readValue(json, InteropInterfaceStackItem.class);
+        assertThat(interopInterfaceStackItem.getType(), is(StackItemType.INTEROP_INTERFACE));
+        assertThat(interopInterfaceStackItem.getInterfaceName(), is("IIterator"));
+        assertThat(interopInterfaceStackItem.getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
 
-    @Test
-    public void testDeserializeInteropInterfaceStackItem_noIterator() throws IOException {
-        String json = "{\"type\": \"InteropInterface\"}";
-        InteropInterfaceStackItem item =
-                getObjectMapper().readValue(json, InteropInterfaceStackItem.class);
-
-        assertThat(item.getType(), is(StackItemType.INTEROP_INTERFACE));
-        StackItemCastException thrown = assertThrows(StackItemCastException.class, item::getIterator);
-        assertThat(thrown.getMessage(), containsString("to an iterator"));
+        InteropInterfaceStackItem expected = new InteropInterfaceStackItem("IIterator",
+                "fcf7b800-192a-488f-95d3-c40ac7b30ef1");
+        assertThat(item, is(expected));
+        assertThat(interopInterfaceStackItem, is(expected));
     }
 
     @Test

@@ -4,6 +4,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.ContractParameter;
@@ -34,8 +35,7 @@ public class InstructionAnnotationsIntegrationTest {
         Hash256 resp = ct.invokeFunctionAndAwaitExecution(testName);
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(resp).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                log.getExecutions().get(0).getNotifications();
+        List<Notification> notifications = log.getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("event"));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
@@ -49,8 +49,7 @@ public class InstructionAnnotationsIntegrationTest {
         Hash256 resp = ct.invokeFunctionAndAwaitExecution(testName);
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(resp).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                log.getExecutions().get(0).getNotifications();
+        List<Notification> notifications = log.getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("hello"));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertThat(notifications.get(0).getState().getList().get(0).getString(), is("state1"));
@@ -72,8 +71,7 @@ public class InstructionAnnotationsIntegrationTest {
         Hash256 resp = ct.invokeFunctionAndAwaitExecution(testName);
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(resp).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                log.getExecutions().get(0).getNotifications();
+        List<Notification> notifications = log.getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getEventName(), is("hello"));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertThat(notifications.get(0).getState().getList().get(0).getString(), is("state1"));

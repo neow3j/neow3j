@@ -25,6 +25,9 @@ public class InvocationResult {
     @JsonProperty("exception")
     private String exception;
 
+    @JsonProperty("notifications")
+    private List<Notification> notifications;
+
     @JsonProperty("stack")
     private List<StackItem> stack;
 
@@ -34,18 +37,24 @@ public class InvocationResult {
     @JsonProperty("pendingsignature")
     private PendingSignature pendingSignature;
 
+    @JsonProperty("session")
+    private String sessionId;
+
     public InvocationResult() {
     }
 
     public InvocationResult(String script, NeoVMStateType state, String gasConsumed, String exception,
-            List<StackItem> stack, String tx, PendingSignature pendingSignature) {
+            List<Notification> notifications, List<StackItem> stack, String tx, PendingSignature pendingSignature,
+            String sessionId) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
+        this.notifications = notifications;
         this.exception = exception;
         this.stack = stack;
         this.tx = tx;
         this.pendingSignature = pendingSignature;
+        this.sessionId = sessionId;
     }
 
     public String getScript() {
@@ -68,6 +77,10 @@ public class InvocationResult {
         return exception;
     }
 
+    public List<Notification> getNotifications() {
+        return notifications;
+    }
+
     public List<StackItem> getStack() {
         return stack;
     }
@@ -80,6 +93,14 @@ public class InvocationResult {
         return pendingSignature;
     }
 
+    public String getSessionId() {
+        if (sessionId == null || sessionId.isEmpty()) {
+            throw new IllegalStateException("No session id was found. The connected Neo node might not support " +
+                    "sessions.");
+        }
+        return sessionId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -89,19 +110,21 @@ public class InvocationResult {
             return false;
         }
         InvocationResult that = (InvocationResult) o;
-        return Objects.equals(getScript(), that.getScript()) &&
-                Objects.equals(getState(), that.getState()) &&
-                Objects.equals(getGasConsumed(), that.getGasConsumed()) &&
-                Objects.equals(getException(), that.getException()) &&
-                Objects.equals(getStack(), that.getStack()) &&
-                Objects.equals(getTx(), that.getTx()) &&
-                Objects.equals(getPendingSignature(), that.getPendingSignature());
+        return Objects.equals(script, that.script) &&
+                Objects.equals(state, that.state) &&
+                Objects.equals(gasConsumed, that.getGasConsumed()) &&
+                Objects.equals(exception, that.exception) &&
+                Objects.equals(notifications, that.notifications) &&
+                Objects.equals(stack, that.stack) &&
+                Objects.equals(tx, that.tx) &&
+                Objects.equals(pendingSignature, that.pendingSignature) &&
+                Objects.equals(sessionId, that.sessionId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getStack(), getTx(),
-                getPendingSignature());
+        return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getNotifications(), getStack(),
+                getTx(), getPendingSignature(), getSessionId());
     }
 
     @Override
@@ -111,9 +134,11 @@ public class InvocationResult {
                 ", state=" + state +
                 ", gasconsumed=" + gasConsumed +
                 ", exception='" + exception + '\'' +
+                ", notifications='" + notifications + '\'' +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +
                 ", pendingsignature='" + pendingSignature + '\'' +
+                ", session='" + sessionId + '\'' +
                 '}';
     }
 

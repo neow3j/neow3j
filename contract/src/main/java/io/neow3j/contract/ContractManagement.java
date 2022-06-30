@@ -44,7 +44,7 @@ public class ContractManagement extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getMinimumDeploymentFee() throws IOException {
-        return callFuncReturningInt(GET_MINIMUM_DEPLOYMENT_FEE);
+        return callFunctionReturningInt(GET_MINIMUM_DEPLOYMENT_FEE);
     }
 
     /**

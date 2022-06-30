@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.stackitem.ArrayStackItem;
 import io.neow3j.protocol.core.stackitem.BufferStackItem;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
@@ -132,8 +133,7 @@ public class ArraysConverterIntegrationTest {
         Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName,
                 array(hash160(hash1), hash160(hash2), hash160(hash3)));
         NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
-        List<NeoApplicationLog.Execution.Notification> notifications =
-                log.getExecutions().get(0).getNotifications();
+        List<Notification> notifications = log.getExecutions().get(0).getNotifications();
         assertThat(notifications.get(0).getState().getList().get(0).getHexString(),
                 is(Numeric.reverseHexString(gasTokenHash())));
         assertThat(notifications.get(1).getState().getList().get(0).getHexString(),

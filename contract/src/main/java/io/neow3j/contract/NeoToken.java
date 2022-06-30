@@ -13,9 +13,10 @@ import io.neow3j.wallet.Account;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -24,14 +25,12 @@ import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
-import static io.neow3j.types.StackItemType.INTEGER;
-import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
-import static io.neow3j.types.StackItemType.STRUCT;
 import static java.util.Arrays.asList;
 
 /**
  * Represents the NeoToken native contract and provides methods to invoke its functions.
  */
+@SuppressWarnings("unchecked")
 public class NeoToken extends FungibleToken {
 
     public static final String NAME = "NeoToken";
@@ -46,7 +45,7 @@ public class NeoToken extends FungibleToken {
     private static final String UNREGISTER_CANDIDATE = "unregisterCandidate";
     private static final String VOTE = "vote";
     private static final String GET_CANDIDATES = "getCandidates";
-    private static final String GET_ALL_CANDIDATES = "getAllCandidates";
+    static final String GET_ALL_CANDIDATES = "getAllCandidates";
     private static final String GET_CANDIDATE_VOTES = "getCandidateVote";
     private static final String GET_COMMITTEE = "getCommittee";
     private static final String GET_NEXT_BLOCK_VALIDATORS = "getNextBlockValidators";
@@ -138,7 +137,7 @@ public class NeoToken extends FungibleToken {
     public BigInteger unclaimedGas(Hash160 scriptHash, long blockHeight) throws IOException {
         ContractParameter accParam = hash160(scriptHash);
         ContractParameter heightParam = integer(BigInteger.valueOf(blockHeight));
-        return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
+        return callFunctionReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
     // endregion unclaimed gas
@@ -184,72 +183,53 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of the currently registered candidates and their corresponding vote count.
+     * Gets the public keys of the registered candidates and their corresponding vote count.
      * <p>
-     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
+     * Note that this method returns at max 256 candidates. Use {@link NeoToken#getAllCandidatesIterator()} to
+     * traverse through all candidates if there are more than 256.
      *
-     * @return the candidates' public keys and their corresponding vote count.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the return type is not an array or the array elements are not public
-     *                                       keys and node counts.
+     * @return the candidates.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Map<ECPublicKey, BigInteger> getCandidates() throws IOException {
+    public List<Candidate> getCandidates() throws IOException {
         StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
-        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(arrayItem.getList());
-        return candidates;
+        return arrayItem.getList().stream().map(candidateMapper()).collect(Collectors.toList());
     }
 
     /**
      * Checks if there is a candidate with the provided public key.
+     * <p>
+     * Note that this only checks the first 256 candidates. Use {@link NeoToken#getAllCandidatesIterator()} to
+     * traverse through all candidates if there are more than 256.
      *
      * @param publicKey the candidate's public key.
      * @return true if the public key belongs to a candidate. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isCandidate(ECPublicKey publicKey) throws IOException {
-        return getCandidates().containsKey(publicKey);
+        return getCandidates().stream().anyMatch(c -> c.getPublicKey().equals(publicKey));
     }
 
     /**
-     * Gets the public keys of all currently registered candidates and their corresponding vote count.
+     * Gets an iterator of all registered candidates.
      * <p>
-     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
-     * <p>
-     * The response contains an iterator which might be truncated based on the size configuration of the node this
-     * request is sent to.
+     * Use the method {@link Iterator#traverse(int)} to traverse the iterator and retrieve all candidates.
      *
-     * @return the candidate public keys and their corresponding vote count.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
-     *                                       are not public keys and node counts.
+     * @return an iterator of all registered candidates.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Map<ECPublicKey, BigInteger> getAllCandidates() throws IOException {
-        StackItem stackItem = callInvokeFunction(GET_ALL_CANDIDATES).getInvocationResult().getStack().get(0);
-        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
-            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
-        }
-        Map<ECPublicKey, BigInteger> candidates = createMappingOfCandidatesAndVotes(stackItem.getIterator());
-        return candidates;
+    public Iterator<Candidate> getAllCandidatesIterator() throws IOException {
+        return callFunctionReturningIterator(candidateMapper(), GET_ALL_CANDIDATES);
     }
 
-    // Extracts the candidate public keys and their corresponding votes from the stack items to a map.
-    private Map<ECPublicKey, BigInteger> createMappingOfCandidatesAndVotes(List<StackItem> candidateList) {
-        Map<ECPublicKey, BigInteger> candidates = new HashMap<>();
-        for (StackItem candidateItem : candidateList) {
-            if (!candidateItem.getType().equals(STRUCT)) {
-                throw new UnexpectedReturnTypeException(candidateItem.getType(), STRUCT);
-            }
-            ECPublicKey key = extractPublicKey(candidateItem.getList().get(0));
-            StackItem nrItem = candidateItem.getList().get(1);
-            if (!nrItem.getType().equals(INTEGER)) {
-                throw new UnexpectedReturnTypeException(nrItem.getType(), INTEGER);
-            }
-            candidates.put(key, nrItem.getInteger());
-        }
-        return candidates;
+    static Function<StackItem, Candidate> candidateMapper() {
+        return stackItem -> {
+            List<StackItem> list = stackItem.getList();
+            return new Candidate(new ECPublicKey(list.get(0).getByteArray()), list.get(1).getInteger());
+        };
     }
 
     /**
@@ -260,7 +240,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getCandidateVotes(ECPublicKey pubKey) throws IOException {
-        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
+        return callFunctionReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
     }
 
     /**
@@ -378,7 +358,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getGasPerBlock() throws IOException {
-        return callFuncReturningInt(GET_GAS_PER_BLOCK);
+        return callFunctionReturningInt(GET_GAS_PER_BLOCK);
     }
 
     /**
@@ -401,7 +381,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getRegisterPrice() throws IOException {
-        return callFuncReturningInt(GET_REGISTER_PRICE);
+        return callFunctionReturningInt(GET_REGISTER_PRICE);
     }
 
     /**
@@ -441,6 +421,48 @@ public class NeoToken extends FungibleToken {
             return NeoAccountState.withNoVote(balance, updateHeight);
         }
         return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()));
+    }
+
+    /**
+     * This class represents the state of a candidate.
+     */
+    public static class Candidate {
+
+        /**
+         * The candidate's public key;
+         */
+        private final ECPublicKey publicKey;
+
+        /**
+         * The candidate's votes. It is based on the summed up NEO balances of this candidate's voters.
+         */
+        private final BigInteger votes;
+
+        public Candidate(ECPublicKey publicKey, BigInteger votes) {
+            this.publicKey = publicKey;
+            this.votes = votes;
+        }
+
+        public ECPublicKey getPublicKey() {
+            return publicKey;
+        }
+
+        public BigInteger getVotes() {
+            return votes;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Candidate)) {
+                return false;
+            }
+            Candidate that = (Candidate) o;
+            return Objects.equals(getPublicKey(), that.getPublicKey()) &&
+                    Objects.equals(getVotes(), that.getVotes());
+        }
     }
 
 }

@@ -11,7 +11,6 @@ import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -26,6 +25,7 @@ import static java.util.Collections.singletonList;
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
  */
+@SuppressWarnings("unchecked")
 public class NonFungibleToken extends Token {
 
     private static final String OWNER_OF = "ownerOf";
@@ -60,24 +60,18 @@ public class NonFungibleToken extends Token {
      *                                       number.
      */
     public BigInteger balanceOf(Hash160 owner) throws IOException {
-        return callFuncReturningInt(BALANCE_OF, hash160(owner));
+        return callFunctionReturningInt(BALANCE_OF, hash160(owner));
     }
 
     /**
-     * Gets the token ids of the tokens that are owned by the {@code owner}.
-     * <p>
-     * Consider that for this RPC the returned list may be limited in size and not reveal all entries that exist on
-     * the contract.
+     * Gets an iterator over the token ids of the tokens that are owned by the {@code owner}.
      *
      * @param owner the owner of the tokens.
      * @return a list of token ids that are owned by the specified owner.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<byte[]> tokensOf(Hash160 owner) throws IOException {
-        return callFunctionReturningIterator(TOKENS_OF, hash160(owner))
-                .stream()
-                .map(StackItem::getByteArray)
-                .collect(Collectors.toList());
+    public Iterator<byte[]> tokensOf(Hash160 owner) throws IOException {
+        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS_OF, hash160(owner));
     }
 
     // endregion Common methods
@@ -314,10 +308,9 @@ public class NonFungibleToken extends Token {
     }
 
     /**
-     * Gets the owners of the token with {@code tokenId}.
+     * Gets an iterator of the owners of the token with {@code tokenId}.
      * <p>
-     * Consider that for this RPC the returned list may be limited in size and not reveal all entries that exist on
-     * the contract.
+     * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the owners.
      * <p>
      * This method is intended to be used for divisible NFTs only.
      *
@@ -325,13 +318,10 @@ public class NonFungibleToken extends Token {
      * @return a list of owners of the token.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<Hash160> ownersOf(byte[] tokenId) throws IOException {
+    public Iterator<Hash160> ownersOf(byte[] tokenId) throws IOException {
         throwIfNonDivisibleNFT();
-        return callFunctionReturningIterator(OWNER_OF, byteArray(tokenId))
-                .stream()
-                .map(StackItem::getAddress)
-                .map(Hash160::fromAddress)
-                .collect(Collectors.toList());
+        return callFunctionReturningIterator(i -> Hash160.fromAddress(((StackItem) i).getAddress()), OWNER_OF,
+                byteArray(tokenId));
     }
 
     private void throwIfNonDivisibleNFT() throws IOException {
@@ -359,28 +349,24 @@ public class NonFungibleToken extends Token {
      */
     public BigInteger balanceOf(Hash160 owner, byte[] tokenId) throws IOException {
         throwIfNonDivisibleNFT();
-        return callFuncReturningInt(BALANCE_OF, hash160(owner), byteArray(tokenId));
+        return callFunctionReturningInt(BALANCE_OF, hash160(owner), byteArray(tokenId));
     }
 
     // endregion Divisible NFT methods
     // region Optional methods
 
     /**
-     * Gets a list of tokens that are minted on this contract.
+     * Gets an iterator of the tokens that exist on this contract.
+     * <p>
+     * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the owners.
      * <p>
      * This method is optional for the NEP-11 standard.
-     * <p>
-     * Consider that for this RPC the returned list may be limited in size and not reveal all entries that exist on
-     * the contract.
      *
-     * @return a list of tokens that are minted on this contract.
+     * @return an iterator of the tokens that exist on this contract.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<byte[]> tokens() throws IOException {
-        return callFunctionReturningIterator(TOKENS)
-                .stream()
-                .map(StackItem::getByteArray)
-                .collect(Collectors.toList());
+    public Iterator<byte[]> tokens() throws IOException {
+        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS);
     }
 
     /**

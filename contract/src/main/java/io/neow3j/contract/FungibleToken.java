@@ -67,7 +67,7 @@ public class FungibleToken extends Token {
      */
     public BigInteger getBalanceOf(Hash160 scriptHash) throws IOException, UnexpectedReturnTypeException {
         ContractParameter ofParam = hash160(scriptHash);
-        return callFuncReturningInt(BALANCE_OF, ofParam);
+        return callFunctionReturningInt(BALANCE_OF, ofParam);
     }
 
     /**

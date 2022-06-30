@@ -1,0 +1,38 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DBRjv+9gkFzYfFbaQGRkS+b3ro7EiBHAHwwIdG9rZW5zT2YMFKJZTlyXZDNE+7thmIOjbJj/OZtzQWJ9W1I=",
+    "state": "HALT",
+    "gasconsumed": "3589500",
+    "exception": null,
+    "notifications": [],
+    "diagnostics": {
+      "invokedcontracts": {
+        "hash": "0xc6507de30c2a0cf14e35165fe99a6a32389dc1e8",
+        "call": [
+          {
+            "hash": "0x739b39ff986ca3839861bbfb443364975c4e59a2",
+            "call": [
+              {
+                "hash": "0x739b39ff986ca3839861bbfb443364975c4e59a2"
+              },
+              {
+                "hash": "0x739b39ff986ca3839861bbfb443364975c4e59a2"
+              }
+            ]
+          }
+        ]
+      },
+      "storagechanges": []
+    },
+    "stack": [
+      {
+        "type": "InteropInterface",
+        "interface": "IIterator",
+        "id": "190d19ca-e935-4ad0-95c9-93b8cf6d115c"
+      }
+    ],
+    "session": "a7b35b13-bdfc-4ab3-a398-88a9db9da4fe"
+  }
+}
