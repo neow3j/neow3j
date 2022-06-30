@@ -64,10 +64,7 @@ public class NonFungibleToken extends Token {
     }
 
     /**
-     * Gets the token ids of the tokens that are owned by the {@code owner}.
-     * <p>
-     * Consider that for this RPC the returned list may be limited in size and not reveal all entries that exist on
-     * the contract.
+     * Gets an iterator over the token ids of the tokens that are owned by the {@code owner}.
      *
      * @param owner the owner of the tokens.
      * @return a list of token ids that are owned by the specified owner.
