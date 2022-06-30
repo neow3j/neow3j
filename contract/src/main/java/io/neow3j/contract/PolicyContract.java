@@ -44,7 +44,7 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getFeePerByte() throws IOException {
-        return callFuncReturningInt(GET_FEE_PER_BYTE);
+        return callFunctionReturningInt(GET_FEE_PER_BYTE);
     }
 
     /**
@@ -54,7 +54,7 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getExecFeeFactor() throws IOException {
-        return callFuncReturningInt(GET_EXEC_FEE_FACTOR);
+        return callFunctionReturningInt(GET_EXEC_FEE_FACTOR);
     }
 
     /**
@@ -64,7 +64,7 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getStoragePrice() throws IOException {
-        return callFuncReturningInt(GET_STORAGE_PRICE);
+        return callFunctionReturningInt(GET_STORAGE_PRICE);
     }
 
     /**
@@ -75,7 +75,7 @@ public class PolicyContract extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean isBlocked(Hash160 scriptHash) throws IOException {
-        return callFuncReturningBool(IS_BLOCKED, hash160(scriptHash));
+        return callFunctionReturningBool(IS_BLOCKED, hash160(scriptHash));
     }
 
     /**

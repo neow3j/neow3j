@@ -60,7 +60,7 @@ public class NonFungibleToken extends Token {
      *                                       number.
      */
     public BigInteger balanceOf(Hash160 owner) throws IOException {
-        return callFuncReturningInt(BALANCE_OF, hash160(owner));
+        return callFunctionReturningInt(BALANCE_OF, hash160(owner));
     }
 
     /**
@@ -352,7 +352,7 @@ public class NonFungibleToken extends Token {
      */
     public BigInteger balanceOf(Hash160 owner, byte[] tokenId) throws IOException {
         throwIfNonDivisibleNFT();
-        return callFuncReturningInt(BALANCE_OF, hash160(owner), byteArray(tokenId));
+        return callFunctionReturningInt(BALANCE_OF, hash160(owner), byteArray(tokenId));
     }
 
     // endregion Divisible NFT methods
@@ -369,7 +369,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<byte[]> tokens() throws IOException {
-        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(),TOKENS);
+        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS);
     }
 
     /**

@@ -165,7 +165,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_symbol.json",
                 SOME_SCRIPT_HASH.toString(), "symbol");
         SmartContract sc = someContract;
-        String name = sc.callFuncReturningString("symbol");
+        String name = sc.callFunctionReturningString("symbol");
 
         assertThat(name, is("ant"));
     }
@@ -177,8 +177,7 @@ public class SmartContractTest {
         SmartContract sc = neoContract;
 
         assertThrows(StackItemType.INTEGER.jsonValue(), UnexpectedReturnTypeException.class,
-                () -> sc.callFuncReturningString(NEP17_NAME)
-        );
+                () -> sc.callFunctionReturningString(NEP17_NAME));
     }
 
     @Test
@@ -186,7 +185,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
         SmartContract sc = neoContract;
-        BigInteger supply = sc.callFuncReturningInt(NEP17_TOTALSUPPLY);
+        BigInteger supply = sc.callFunctionReturningInt(NEP17_TOTALSUPPLY);
 
         assertThat(supply, is(BigInteger.valueOf(3000000000000000L)));
     }
@@ -196,7 +195,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF);
         SmartContract sc = neoContract;
-        BigInteger balance = sc.callFuncReturningInt(NEP17_BALANCEOF,
+        BigInteger balance = sc.callFunctionReturningInt(NEP17_BALANCEOF,
                 hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
 
         assertThat(balance, is(BigInteger.valueOf(3)));
@@ -208,8 +207,8 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = neoContract;
 
-        UnexpectedReturnTypeException thrown =
-                assertThrows(UnexpectedReturnTypeException.class, () -> sc.callFuncReturningInt(NEP17_TRANSFER));
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> sc.callFunctionReturningInt(NEP17_TRANSFER));
         assertThat(thrown.getMessage(), containsString(format("but expected %s.", StackItemType.INTEGER.jsonValue())));
     }
 
@@ -218,7 +217,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json", NEO_SCRIPT_HASH.toString(),
                 NEP17_TRANSFER);
         SmartContract sc = neoContract;
-        boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER);
+        boolean transferSuccessful = sc.callFunctionReturningBool(NEP17_TRANSFER);
 
         assertFalse(transferSuccessful);
     }
@@ -228,7 +227,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
         SmartContract sc = neoContract;
-        boolean transferSuccessful = sc.callFuncReturningBool(NEP17_TRANSFER,
+        boolean transferSuccessful = sc.callFunctionReturningBool(NEP17_TRANSFER,
                 hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
 
         assertTrue(transferSuccessful);
@@ -239,7 +238,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_returnIntZero.json",
                 NEO_SCRIPT_HASH.toString(), "getZero");
         SmartContract sc = neoContract;
-        boolean b = sc.callFuncReturningBool("getZero");
+        boolean b = sc.callFunctionReturningBool("getZero");
 
         assertFalse(b);
     }
@@ -249,7 +248,7 @@ public class SmartContractTest {
         setUpWireMockForCall("invokefunction", "invokefunction_returnIntOne.json",
                 NEO_SCRIPT_HASH.toString(), "getOne");
         SmartContract sc = neoContract;
-        boolean b = sc.callFuncReturningBool("getOne");
+        boolean b = sc.callFunctionReturningBool("getOne");
 
         assertTrue(b);
     }
@@ -260,8 +259,8 @@ public class SmartContractTest {
                 NEO_SCRIPT_HASH.toString(), "getCandidates");
         SmartContract sc = neoContract;
 
-        UnexpectedReturnTypeException thrown =
-                assertThrows(UnexpectedReturnTypeException.class, () -> sc.callFuncReturningBool("getCandidates"));
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> sc.callFunctionReturningBool("getCandidates"));
         assertThat(thrown.getMessage(), containsString(format("but expected %s.", StackItemType.BOOLEAN.jsonValue())));
     }
 
@@ -279,7 +278,7 @@ public class SmartContractTest {
         setUpWireMockForCall("traverseiterator", "nft_tokensof_traverseiterator.json");
 
         Function<StackItem, String> function = StackItem::getString;
-        Iterator iterator = someContract.callFunctionReturningIterator(function ,"tokensOf");
+        Iterator iterator = someContract.callFunctionReturningIterator(function, "tokensOf");
         assertThat(iterator.getIteratorId(), is("190d19ca-e935-4ad0-95c9-93b8cf6d115c"));
         assertThat(iterator.getSessionId(), is("a7b35b13-bdfc-4ab3-a398-88a9db9da4fe"));
         assertThat(iterator.getMapper(), is(function));
@@ -329,7 +328,7 @@ public class SmartContractTest {
         // Get only the token name for each item
         Function<StackItem, String> function = i -> i.getList().get(1).getString();
 
-        List<String> traverse = someContract.callFunctionAndTraverseIterator(function ,"tokens");
+        List<String> traverse = someContract.callFunctionAndTraverseIterator(function, "tokens");
         assertThat(traverse.get(0), is("besttoken"));
         assertThat(traverse.get(1), is("almostbesttoken"));
     }

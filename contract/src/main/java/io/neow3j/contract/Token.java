@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 /**
- * Represents a token wrapper class that contains shared methods for the fungible Nep17 and non-fungible Nep11 token
+ * Represents a token wrapper class that contains shared methods for the fungible NEP-17 and non-fungible NEP-11 token
  * standards.
  */
 public class Token extends SmartContract {
@@ -40,7 +40,7 @@ public class Token extends SmartContract {
      */
     public String getSymbol() throws IOException, UnexpectedReturnTypeException {
         if (symbol == null) {
-            symbol = callFuncReturningString(SYMBOL);
+            symbol = callFunctionReturningString(SYMBOL);
         }
         return symbol;
     }
@@ -57,7 +57,7 @@ public class Token extends SmartContract {
      */
     public BigInteger getTotalSupply() throws IOException, UnexpectedReturnTypeException {
         if (totalSupply == null) {
-            totalSupply = callFuncReturningInt(TOTAL_SUPPLY);
+            totalSupply = callFunctionReturningInt(TOTAL_SUPPLY);
         }
         return totalSupply;
     }
@@ -74,7 +74,7 @@ public class Token extends SmartContract {
      */
     public int getDecimals() throws IOException, UnexpectedReturnTypeException {
         if (decimals == null) {
-            decimals = callFuncReturningInt(DECIMALS).intValue();
+            decimals = callFunctionReturningInt(DECIMALS).intValue();
         }
         return decimals;
     }

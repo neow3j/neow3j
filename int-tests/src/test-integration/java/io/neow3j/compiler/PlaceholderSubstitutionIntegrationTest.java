@@ -44,7 +44,7 @@ public class PlaceholderSubstitutionIntegrationTest {
                 replaceMap
         );
         SmartContract c = ct.deployContract(res.getNefFile(), res.getManifest());
-        assertThat(c.callFuncReturningString("method"), is(ph1+ph2));
+        assertThat(c.callFunctionReturningString("method"), is(ph1+ph2));
         assertThat(c.getManifest().getPermissions().get(0).getContract(),is("0x" + ph3));
         assertThat(c.getManifest().getPermissions().get(0).getMethods().get(0),is(ph4));
         assertThat(c.getManifest().getPermissions().get(1).getContract(),is("0x" + ph5));

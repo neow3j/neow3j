@@ -97,7 +97,7 @@ public class SmartContract<T> {
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
      */
-    public String callFuncReturningString(String function, ContractParameter... params)
+    public String callFunctionReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
         InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
@@ -119,7 +119,7 @@ public class SmartContract<T> {
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as an integer.
      */
-    public BigInteger callFuncReturningInt(String function, ContractParameter... params) throws IOException,
+    public BigInteger callFunctionReturningInt(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
 
         InvocationResult invocationResult;
@@ -145,7 +145,7 @@ public class SmartContract<T> {
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a boolean.
      */
-    public boolean callFuncReturningBool(String function, ContractParameter... params) throws IOException,
+    public boolean callFunctionReturningBool(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
 
         InvocationResult invocationResult;
@@ -217,9 +217,9 @@ public class SmartContract<T> {
      * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items with
      * provided mapper applied to each item.
      *
-     * @param mapper the function to apply on the stack items in the iterator.
-     * @param function       the function to call.
-     * @param params         the contract parameters to include in the call.
+     * @param mapper   the function to apply on the stack items in the iterator.
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */

@@ -138,7 +138,7 @@ public class NeoToken extends FungibleToken {
     public BigInteger unclaimedGas(Hash160 scriptHash, long blockHeight) throws IOException {
         ContractParameter accParam = hash160(scriptHash);
         ContractParameter heightParam = integer(BigInteger.valueOf(blockHeight));
-        return callFuncReturningInt(UNCLAIMED_GAS, accParam, heightParam);
+        return callFunctionReturningInt(UNCLAIMED_GAS, accParam, heightParam);
     }
 
     // endregion unclaimed gas
@@ -261,7 +261,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getCandidateVotes(ECPublicKey pubKey) throws IOException {
-        return callFuncReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
+        return callFunctionReturningInt(GET_CANDIDATE_VOTES, publicKey(pubKey));
     }
 
     /**
@@ -379,7 +379,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getGasPerBlock() throws IOException {
-        return callFuncReturningInt(GET_GAS_PER_BLOCK);
+        return callFunctionReturningInt(GET_GAS_PER_BLOCK);
     }
 
     /**
@@ -402,7 +402,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getRegisterPrice() throws IOException {
-        return callFuncReturningInt(GET_REGISTER_PRICE);
+        return callFunctionReturningInt(GET_REGISTER_PRICE);
     }
 
     /**
