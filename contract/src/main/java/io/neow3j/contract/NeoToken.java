@@ -4,7 +4,6 @@ import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoAccountState;
-import io.neow3j.protocol.core.response.NeoGetTokenBalances;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -219,32 +218,29 @@ public class NeoToken extends FungibleToken {
     }
 
     /**
-     * Gets the public keys of all currently registered candidates and their corresponding vote count.
+     * Gets the first {@link SmartContract#DEFAULT_ITERATOR_COUNT} registered candidates.
      * <p>
-     * The vote count is based on the summed up NEO balances of the respective candidate's voters.
-     * <p>
-     * The response contains an iterator which might be truncated based on the size configuration of the node this
-     * request is sent to.
+     * Consider that the returned list might not reveal all entries that exist. To retrieve all candidates, use the
+     * method {@link NeoToken#getAllCandidatesIterator()} and then traverse through the iterator until all
+     * existing candidates could be retrieved.
      *
-     * @return the candidate public keys and their corresponding vote count.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
-     *                                       are not public keys and node counts.
+     * @return the first {@link SmartContract#DEFAULT_ITERATOR_COUNT} candidates.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<Candidate> getAllCandidates() throws IOException {
-        return getAllCandidatesIterator().traverse(DEFAULT_ITERATOR_COUNT);
+        Iterator<Candidate> iterator = getAllCandidatesIterator();
+        List<Candidate> candidates = iterator.traverse(DEFAULT_ITERATOR_COUNT);
+        iterator.terminateSession();
+        return candidates;
     }
 
     /**
-     * Gets an iterator of all registered candidates and their corresponding vote count.
+     * Gets an iterator of all registered candidates.
      * <p>
-     * The response contains an iterator which might be truncated based on the size configuration of the node this
-     * request is sent to.
+     * Use the method {@link Iterator#traverse(int)} to traverse the iterator and retrieve all candidates.
      *
-     * @return the candidate public keys and their corresponding vote count.
-     * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the return type is not an interop interface or the iterator elements
-     *                                       are not public keys and node counts.
+     * @return an iterator of all registered candidates.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<Candidate> getAllCandidatesIterator() throws IOException {
         return (Iterator<Candidate>) callFunctionReturningIterator(candidateMapper(), GET_ALL_CANDIDATES);
