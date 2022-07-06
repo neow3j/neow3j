@@ -138,7 +138,15 @@ public interface Neo {
     Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
             List<ContractParameter> params, Signer... signers);
 
+    Request<?, NeoInvokeFunction> invokeFunctionDiagnostics(Hash160 contractHash, String functionName,
+            Signer... signers);
+
+    Request<?, NeoInvokeFunction> invokeFunctionDiagnostics(Hash160 contractHash, String functionName,
+            List<ContractParameter> params, Signer... signers);
+
     Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers);
+
+    Request<?, NeoInvokeScript> invokeScriptDiagnostics(String scriptHex, Signer... signers);
 
     Request<?, NeoTraverseIterator> traverseIterator(String sessionId, String iteratorId, int count);
 
