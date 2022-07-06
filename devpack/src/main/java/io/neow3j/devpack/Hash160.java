@@ -17,6 +17,17 @@ public class Hash160 {
     private static final byte LENGTH = 0x14; // 20 bytes
 
     /**
+     * Creates a {@code Hash160} from the given string. The string must be in big-endian order and 160 bits long.
+     * <p>
+     * This constructor can only be used with a constant string literal, and does not work on string variables or
+     * return values.
+     *
+     * @param value the hash in big-endian order.
+     */
+    public Hash160(String value) {
+    }
+
+    /**
      * Creates a {@code Hash160} from the given byte array.
      * <p>
      * Does NOT check if the value is a valid hash. Use {@code Hash160.isValid()} in order to verify the correct format.
