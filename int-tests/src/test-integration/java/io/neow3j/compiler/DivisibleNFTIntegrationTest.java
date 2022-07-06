@@ -39,11 +39,12 @@ public class DivisibleNFTIntegrationTest {
     public TestName testName = new TestName();
 
     @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(DivisibleNFTTestContract.class.getName());
+    public static ContractTestRule ct = new ContractTestRule(TestContract.class.getName());
 
     @BeforeClass
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteDivisibleNFT.class.getName());
+        ct.setHash(sc.getScriptHash());
     }
 
     @Test
@@ -69,21 +70,26 @@ public class DivisibleNFTIntegrationTest {
     }
 
     @Permission(contract = "*")
-    static class DivisibleNFTTestContract {
-
-        static DivisibleNonFungibleToken customDivisibleNFT =
-                new DivisibleNonFungibleToken("31383c172f155a235a89cb68530037ef90047891");
+    static class TestContract {
 
         public static boolean testTransfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
-            return customDivisibleNFT.transfer(from, to, amount, tokenId, data);
+            return new DivisibleNonFungibleToken(getHash()).transfer(from, to, amount, tokenId, data);
         }
 
         public static Iterator<Hash160> testOwnerOf(ByteString tokenId) {
-            return customDivisibleNFT.ownerOf(tokenId);
+            return new DivisibleNonFungibleToken(getHash()).ownerOf(tokenId);
         }
 
         public static int testBalanceOf(Hash160 account, ByteString tokenId) {
-            return customDivisibleNFT.balanceOf(account, tokenId);
+            return new DivisibleNonFungibleToken(getHash()).balanceOf(account, tokenId);
+        }
+
+        public static void setHash(Hash160 contractHash) {
+            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+        }
+
+        private static Hash160 getHash() {
+            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
         }
 
     }

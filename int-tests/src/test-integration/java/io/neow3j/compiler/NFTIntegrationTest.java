@@ -11,7 +11,6 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
-import io.neow3j.devpack.contracts.DivisibleNonFungibleToken;
 import io.neow3j.devpack.contracts.NonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
@@ -49,6 +48,7 @@ public class NFTIntegrationTest {
     @BeforeClass
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNonFungibleToken.class.getName());
+        ct.setHash(sc.getScriptHash());
     }
 
     @Test
@@ -113,38 +113,44 @@ public class NFTIntegrationTest {
     @Permission(contract = "*")
     static class NonFungibleTokenTestContract {
 
-        static NonFungibleToken nft = new DivisibleNonFungibleToken("8e830f69ace5e1d84a83e4dc5866b2ad6ca81167");
-
         public static String testSymbol() {
-            return nft.symbol();
+            return new NonFungibleToken(getHash()).symbol();
         }
 
         public static int testDecimals() {
-            return nft.decimals();
+            return new NonFungibleToken(getHash()).decimals();
         }
 
         public static int testTotalSupply() {
-            return nft.totalSupply();
+            return new NonFungibleToken(getHash()).totalSupply();
         }
 
         public static int testBalanceOf(Hash160 account) {
-            return nft.balanceOf(account);
+            return new NonFungibleToken(getHash()).balanceOf(account);
         }
 
         public static Iterator<ByteString> testTokensOf(Hash160 account) {
-            return nft.tokensOf(account);
+            return new NonFungibleToken(getHash()).tokensOf(account);
         }
 
         public static boolean testTransfer(Hash160 to, ByteString tokenId, Object data) {
-            return nft.transfer(to, tokenId, data);
+            return new NonFungibleToken(getHash()).transfer(to, tokenId, data);
         }
 
         public static Iterator<ByteString> testTokens() {
-            return nft.tokens();
+            return new NonFungibleToken(getHash()).tokens();
         }
 
         public static Map<String, String> testProperties(ByteString tokenId) {
-            return nft.properties(tokenId);
+            return new NonFungibleToken(getHash()).properties(tokenId);
+        }
+
+        public static void setHash(Hash160 contractHash) {
+            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+        }
+
+        private static Hash160 getHash() {
+            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
         }
     }
 

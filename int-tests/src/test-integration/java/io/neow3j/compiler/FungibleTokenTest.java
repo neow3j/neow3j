@@ -14,8 +14,6 @@ import org.junit.rules.TestName;
 
 import java.io.IOException;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -81,8 +79,7 @@ public class FungibleTokenTest {
     @Permission(nativeContract = NativeContract.NeoToken, methods = "*")
     static class FungibleTokenTestContract {
 
-        static FungibleToken token = new FungibleToken(
-                new Hash160(reverse(hexToBytes("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5").toByteArray())));
+        static FungibleToken token = new FungibleToken("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
 
         public static String callSymbolMethodOfFungibleToken() {
             return token.symbol();

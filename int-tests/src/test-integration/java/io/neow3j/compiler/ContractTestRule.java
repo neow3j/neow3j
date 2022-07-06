@@ -42,6 +42,7 @@ import static io.neow3j.test.TestProperties.client1AccountWIF;
 import static io.neow3j.test.TestProperties.client2AccountWIF;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilContractIsDeployed;
@@ -69,6 +70,7 @@ public class ContractTestRule implements TestRule {
     private boolean signAsCommittee = false;
     private boolean signWithDefaultAccount = false;
 
+    private static final String SET_HASH = "setHash";
     private static final int DEFAULT_ITERATOR_COUNT = 100;
 
     public ContractTestRule(String fullyQualifiedName) {
@@ -449,6 +451,10 @@ public class ContractTestRule implements TestRule {
 
     public ContainerState getNeoTestContainer() {
         return neoTestContainer;
+    }
+
+    public void setHash(Hash160 scriptHash) throws Throwable {
+        invokeFunctionAndAwaitExecution(SET_HASH, hash160(scriptHash));
     }
 
 }

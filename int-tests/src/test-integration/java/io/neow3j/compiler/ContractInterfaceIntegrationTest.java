@@ -23,8 +23,6 @@ import org.junit.rules.TestName;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.devpack.Helper.reverse;
-import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.stdLibHash;
@@ -204,7 +202,7 @@ public class ContractInterfaceIntegrationTest {
         public static String callSymbolOfFungibleToken() {
             CustomFungibleToken customFungibleToken =
                     new CustomFungibleToken("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
-            return customFungibleToken.symbol();// 0x457fa4900813d577495b5c980849337cb048f041
+            return customFungibleToken.symbol();
         }
 
         public static String callSymbolOfFungibleTokenWithStaticHash() {
@@ -223,8 +221,7 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static boolean transferFungibleTokenWithStaticHashToClaimGas(Hash160 gasClaimer) {
-            CustomFungibleToken customFungibleToken = new CustomFungibleToken(
-                    new Hash160(reverse(hexToBytes(cst).toByteArray())));
+            CustomFungibleToken customFungibleToken = new CustomFungibleToken(cst);
             int amount = 0;
             return customFungibleToken.transfer(gasClaimer, gasClaimer, amount, null);
         }
@@ -250,9 +247,7 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static Hash160 getHash() {
-            return new CustomContract(
-                    new Hash160(reverse(hexToBytes("acce6fd80d44e1796aa0c2c625e9e4e0ce39efc0").toByteArray())))
-                    .getHash();
+            return new CustomContract("acce6fd80d44e1796aa0c2c625e9e4e0ce39efc0").getHash();
         }
 
         public static Hash160 getHashFromContractInterfaceInInitsslot() {
@@ -260,12 +255,12 @@ public class ContractInterfaceIntegrationTest {
         }
 
         public static Hash160 getHashFromContractInterfaceWithHashFromInitsslotValue() {
-            return new CustomContract(new Hash160(reverse(hexToBytes(cst).toByteArray()))).getHash();
+            return new CustomContract(cst).getHash();
         }
     }
 
     static class CustomContract extends ContractInterface {
-        public CustomContract(Hash160 contractHash) {
+        public CustomContract(String contractHash) {
             super(contractHash);
         }
     }

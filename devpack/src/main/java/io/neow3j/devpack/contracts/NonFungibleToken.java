@@ -11,7 +11,7 @@ import io.neow3j.devpack.Map;
  * When this class is extended, the constructor of the extending class must take exactly one parameter of type
  * {@link Hash160} or a constant {@link String} and pass it to the {@code super()} call without any additional logic.
  */
-public abstract class NonFungibleToken extends Token {
+public class NonFungibleToken extends Token {
 
     /**
      * Initializes an interface to a non-fungible token.
