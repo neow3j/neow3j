@@ -56,6 +56,7 @@ public class TransactionBuilderIntegrationTest {
     @BeforeClass
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(container.getNodeUrl()));
+        Await.waitUntilBlockCountIsGreaterThanZero(neow3j);
     }
 
     @Test
