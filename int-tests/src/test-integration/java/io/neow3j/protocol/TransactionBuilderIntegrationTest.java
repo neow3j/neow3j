@@ -1,13 +1,12 @@
 package io.neow3j.protocol;
 
-import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.protocol.Neow3jExpress;
+import io.neow3j.contract.GasToken;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
-import io.neow3j.test.NeoExpressTestContainer;
+import io.neow3j.test.NeoTestContainer;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Signer;
@@ -33,13 +32,9 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
-import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
-import static io.neow3j.types.ContractParameter.hash160;
-import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -53,21 +48,19 @@ public class TransactionBuilderIntegrationTest {
             .contractCall(new Hash160(neoTokenHash()), "symbol", new ArrayList<>())
             .toArray());
 
-    protected static Neow3jExpress neow3jExpress;
+    protected static Neow3j neow3j;
 
     @ClassRule
-    public static NeoExpressTestContainer container = new NeoExpressTestContainer()
-            .withSecondsPerBlock(1)
-            .withConfigFile(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG);
+    public static NeoTestContainer container = new NeoTestContainer();
 
     @BeforeClass
     public static void setUp() {
-        neow3jExpress = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
+        neow3j = Neow3j.build(new HttpService(container.getNodeUrl()));
     }
 
     @Test
     public void testAutomaticSettingOfNetworkFeeWithDifferentAccounts() throws Throwable {
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+        TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(TEST_SCRIPT));
 
         // single-sig account from address, no verification script
@@ -89,7 +82,7 @@ public class TransactionBuilderIntegrationTest {
     @Test
     public void testAdditionalNetworkFee() throws Throwable {
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+        TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(TEST_SCRIPT))
                 .signers(AccountSigner.calledByEntry(a));
 
@@ -104,7 +97,7 @@ public class TransactionBuilderIntegrationTest {
     @Test
     public void testAdditionalSystemFee() throws Throwable {
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+        TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(TEST_SCRIPT))
                 .signers(AccountSigner.calledByEntry(a));
 
@@ -118,15 +111,9 @@ public class TransactionBuilderIntegrationTest {
 
     @Test
     public void testSignerWithWitnessRules() throws Throwable {
+        Account genesis = Account.fromWIF(TestProperties.defaultAccountWIF());
         Account recipient = Account.create();
-        ECKeyPair keyPair = ECKeyPair.create(hexStringToByteArray(container.getGenesisAccount().getPrivateKeys()[0]));
-        Account genesis = new Account(keyPair);
-        int amount = 10000;
-
-        byte[] script = new ScriptBuilder()
-                .contractCall(new Hash160(gasTokenHash()), "transfer", asList(hash160(genesis), hash160(recipient),
-                        integer(amount), null))
-                .toArray();
+        BigInteger amount = new BigInteger("10000");
 
         AndCondition condition = new AndCondition(
                 new CalledByEntryCondition(),
@@ -135,17 +122,14 @@ public class TransactionBuilderIntegrationTest {
         WitnessRule rule = new WitnessRule(WitnessAction.ALLOW, condition);
         Signer signer = AccountSigner.none(genesis).setRules(rule);
 
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
-                .script(script)
-                .signers(signer);
-
-        Transaction tx = b.sign();
-        NeoSendRawTransaction response = tx.send();
+        GasToken gas = new GasToken(neow3j);
+        TransactionBuilder b = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), amount).signers(signer);
+        NeoSendRawTransaction response = b.sign().send();
         assertFalse(response.hasError());
 
         Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3jExpress);
-        NeoApplicationLog log = neow3jExpress.getApplicationLog(txHash).send().getApplicationLog();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
         assertTrue(log.getExecutions().get(0).getStack().get(0).getBoolean()); // The transfer should be successful.
 
@@ -153,16 +137,12 @@ public class TransactionBuilderIntegrationTest {
         rule = new WitnessRule(WitnessAction.DENY, condition);
         signer = AccountSigner.none(genesis).setRules(rule);
 
-        b = new TransactionBuilder(neow3jExpress)
-                .script(script)
-                .signers(signer);
-
-        tx = b.sign();
-        response = tx.send();
+        b = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), amount).signers(signer);
+        response = b.sign().send();
         assertFalse(response.hasError());
         txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3jExpress);
-        log = neow3jExpress.getApplicationLog(txHash).send().getApplicationLog();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
         assertFalse(log.getExecutions().get(0).getStack().get(0).getBoolean()); // The transfer should fail.
     }
@@ -170,11 +150,11 @@ public class TransactionBuilderIntegrationTest {
     @Test
     public void testTransmissionOnFault() throws Throwable {
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
-        neow3jExpress.allowTransmissionOnFault();
+        neow3j.allowTransmissionOnFault();
         String failingScript = toHexStringNoPrefix(new ScriptBuilder()
                 .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
                 .toArray());
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+        TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(failingScript))
                 .signers(AccountSigner.none(a));
 
@@ -184,17 +164,17 @@ public class TransactionBuilderIntegrationTest {
 
         Transaction tx = b.getUnsignedTransaction();
         assertThat(tx.getSystemFee(), is(gasConsumed));
-        neow3jExpress.preventTransmissionOnFault();
+        neow3j.preventTransmissionOnFault();
     }
 
     @Test
     public void testPreventTransmissionOnFault() throws Throwable {
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
-        assertFalse(neow3jExpress.transmissionOnFaultIsAllowed());
+        assertFalse(neow3j.transmissionOnFaultIsAllowed());
         String failingScript = toHexStringNoPrefix(new ScriptBuilder()
                 .contractCall(new Hash160(neoTokenHash()), "balanceOf", new ArrayList<>())
                 .toArray());
-        TransactionBuilder b = new TransactionBuilder(neow3jExpress)
+        TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(failingScript))
                 .signers(AccountSigner.none(a));
 
