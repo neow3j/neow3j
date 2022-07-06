@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Neow3jExpressIntegrationTestNew {
+public class Neow3jExpressIntegrationTest {
 
     private static final String RESOURCE_DIR = "core/";
     private static final String NEF_FILE_SOURCE = RESOURCE_DIR + "OracleTestContract.nef";
