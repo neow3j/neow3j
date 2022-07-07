@@ -6,6 +6,7 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.NeoVMStateType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -26,7 +27,10 @@ public class InvocationResult {
     private String exception;
 
     @JsonProperty("notifications")
-    private List<Notification> notifications;
+    private List<Notification> notifications = new ArrayList<>();
+
+    @JsonProperty("diagnostics")
+    private Diagnostics diagnostics;
 
     @JsonProperty("stack")
     private List<StackItem> stack;
@@ -44,12 +48,13 @@ public class InvocationResult {
     }
 
     public InvocationResult(String script, NeoVMStateType state, String gasConsumed, String exception,
-            List<Notification> notifications, List<StackItem> stack, String tx, PendingSignature pendingSignature,
-            String sessionId) {
+            List<Notification> notifications, Diagnostics diagnostics, List<StackItem> stack, String tx,
+            PendingSignature pendingSignature, String sessionId) {
         this.script = script;
         this.state = state;
         this.gasConsumed = gasConsumed;
         this.notifications = notifications;
+        this.diagnostics = diagnostics;
         this.exception = exception;
         this.stack = stack;
         this.tx = tx;
@@ -79,6 +84,10 @@ public class InvocationResult {
 
     public List<Notification> getNotifications() {
         return notifications;
+    }
+
+    public Diagnostics getDiagnostics() {
+        return diagnostics;
     }
 
     public List<StackItem> getStack() {
@@ -115,6 +124,7 @@ public class InvocationResult {
                 Objects.equals(gasConsumed, that.getGasConsumed()) &&
                 Objects.equals(exception, that.exception) &&
                 Objects.equals(notifications, that.notifications) &&
+                Objects.equals(diagnostics, that.diagnostics) &&
                 Objects.equals(stack, that.stack) &&
                 Objects.equals(tx, that.tx) &&
                 Objects.equals(pendingSignature, that.pendingSignature) &&
@@ -124,7 +134,7 @@ public class InvocationResult {
     @Override
     public int hashCode() {
         return Objects.hash(getScript(), getState(), getGasConsumed(), getException(), getNotifications(), getStack(),
-                getTx(), getPendingSignature(), getSessionId());
+                getTx(), getPendingSignature(), sessionId, getDiagnostics());
     }
 
     @Override
@@ -134,7 +144,8 @@ public class InvocationResult {
                 ", state=" + state +
                 ", gasconsumed=" + gasConsumed +
                 ", exception='" + exception + '\'' +
-                ", notifications='" + notifications + '\'' +
+                ", notifications=" + notifications +
+                ", diagnostics=" + diagnostics +
                 ", stack=" + stack +
                 ", tx='" + tx + '\'' +
                 ", pendingsignature='" + pendingSignature + '\'' +

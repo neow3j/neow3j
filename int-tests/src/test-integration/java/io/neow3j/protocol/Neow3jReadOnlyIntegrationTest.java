@@ -719,6 +719,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getInvocationResult();
 
         assertNotNull(invocResult);
+        assertTrue(invocResult.getNotifications().isEmpty());
     }
 
     @Test
@@ -741,6 +742,34 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
+        assertThat(invoc.getNotifications(), hasSize(2));
+        assertNull(invoc.getDiagnostics());
+        assertTrue(invoc.getStack().get(0).getBoolean());
+        assertNotNull(invoc.getTx());
+    }
+
+    @Test
+    public void testInvokeFunctionWithDiagnostics() throws IOException {
+        List<ContractParameter> params = Arrays.asList(
+                hash160(new Hash160(committeeAccountScriptHash())),
+                hash160(new Hash160(defaultAccountScriptHash())),
+                integer(1),
+                integer(1));
+        Signer signer = AccountSigner.calledByEntry(new Hash160(committeeAccountScriptHash()))
+                .setAllowedContracts(NEO_HASH);
+
+        InvocationResult invoc = getNeow3j()
+                .invokeFunctionDiagnostics(NEO_HASH, "transfer", params, signer)
+                .send()
+                .getInvocationResult();
+
+        assertNotNull(invoc);
+        assertNotNull(invoc.getScript());
+        assertThat(invoc.getState(), is(NeoVMStateType.HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertThat(invoc.getNotifications(), hasSize(2));
+        assertNotNull(invoc.getDiagnostics());
         assertTrue(invoc.getStack().get(0).getBoolean());
         assertNotNull(invoc.getTx());
     }
@@ -767,6 +796,36 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
+        assertNotNull(invoc.getNotifications());
+        assertNull(invoc.getDiagnostics());
+        assertNotNull(invoc.getStack());
+        assertNotNull(invoc.getTx());
+    }
+
+    @Test
+    public void testInvokeScriptDiagnostics() throws IOException {
+        List<ContractParameter> params = asList(
+                hash160(new Hash160(committeeAccountScriptHash())),
+                hash160(new Hash160(defaultAccountScriptHash())),
+                integer(10),
+                any(null));
+        byte[] script = new ScriptBuilder()
+                .contractCall(new Hash160(neoTokenHash()), "transfer", params)
+                .toArray();
+
+        AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
+        InvocationResult invoc = getNeow3j()
+                .invokeScriptDiagnostics(Numeric.toHexString(script), signer)
+                .send()
+                .getInvocationResult();
+
+        assertNotNull(invoc);
+        assertThat(invoc.getScript(), is(Base64.encode(script)));
+        assertThat(invoc.getState(), is(NeoVMStateType.HALT));
+        assertNotNull(invoc.getGasConsumed());
+        assertNull(invoc.getException());
+        assertNotNull(invoc.getNotifications());
+        assertNotNull(invoc.getDiagnostics());
         assertNotNull(invoc.getStack());
         assertNotNull(invoc.getTx());
     }

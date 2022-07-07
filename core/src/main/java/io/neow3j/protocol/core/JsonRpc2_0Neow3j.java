@@ -537,7 +537,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      */
     @Override
     public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName, Signer... signers) {
-        return invokeFunction(contractHash, functionName, null, signers);
+        return invokeFunction(contractHash, functionName, asList(), signers);
     }
 
     /**
@@ -553,21 +553,53 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoInvokeFunction> invokeFunction(Hash160 contractHash, String functionName,
             List<ContractParameter> contractParams, Signer... signers) {
 
-        if (contractParams == null) {
-            contractParams = new ArrayList<>();
-        }
         List<TransactionSigner> txSigners = stream(signers)
                 .map(TransactionSigner::new)
                 .collect(Collectors.toList());
-        List<?> params;
-        if (txSigners.size() > 0) {
-            params = asList(contractHash, functionName, contractParams, txSigners);
-        } else {
-            params = asList(contractHash, functionName, contractParams);
-        }
         return new Request<>(
                 "invokefunction",
-                params.stream().filter(Objects::nonNull).collect(Collectors.toList()),
+                asList(contractHash, functionName, contractParams, txSigners),
+                neow3jService,
+                NeoInvokeFunction.class);
+    }
+
+    /**
+     * Invokes the function with {@code functionName} of the smart contract with the specified contract hash.
+     * <p>
+     * Includes diagnostics from the invocation.
+     *
+     * @param contractHash   the contract hash to invoke.
+     * @param functionName   the function to invoke.
+     * @param signers        the signers.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunctionDiagnostics(Hash160 contractHash, String functionName,
+            Signer... signers) {
+        return invokeFunctionDiagnostics(contractHash, functionName, asList(), signers);
+    }
+
+    /**
+     * Invokes the function with {@code functionName} of the smart contract with the specified contract hash.
+     * <p>
+     * Includes diagnostics from the invocation.
+     *
+     * @param contractHash   the contract hash to invoke.
+     * @param functionName   the function to invoke.
+     * @param contractParams the parameters of the function.
+     * @param signers        the signers.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoInvokeFunction> invokeFunctionDiagnostics(Hash160 contractHash, String functionName,
+            List<ContractParameter> contractParams, Signer... signers) {
+
+        List<TransactionSigner> txSigners = stream(signers)
+                .map(TransactionSigner::new)
+                .collect(Collectors.toList());
+        return new Request<>(
+                "invokefunction",
+                asList(contractHash, functionName, contractParams, txSigners, true),
                 neow3jService,
                 NeoInvokeFunction.class);
     }
@@ -581,16 +613,31 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      */
     @Override
     public Request<?, NeoInvokeScript> invokeScript(String scriptHex, Signer... signers) {
-        List<?> params;
         String scriptBase64 = Base64.encode(scriptHex);
-        if (signers.length > 0) {
-            params = asList(scriptBase64, stream(signers).map(TransactionSigner::new).collect(Collectors.toList()));
-        } else {
-            params = asList(scriptBase64);
-        }
+        List<TransactionSigner> signersList = stream(signers).map(TransactionSigner::new).collect(Collectors.toList());
         return new Request<>(
                 "invokescript",
-                params,
+                asList(scriptBase64, signersList),
+                neow3jService,
+                NeoInvokeScript.class);
+    }
+
+    /**
+     * Invokes a script.
+     * <p>
+     * Includes diagnostics from the invocation.
+     *
+     * @param scriptHex the script to invoke.
+     * @param signers   the signers.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoInvokeScript> invokeScriptDiagnostics(String scriptHex, Signer... signers) {
+        String scriptBase64 = Base64.encode(scriptHex);
+        List<TransactionSigner> signersList = stream(signers).map(TransactionSigner::new).collect(Collectors.toList());
+        return new Request<>(
+                "invokescript",
+                asList(scriptBase64, signersList, true),
                 neow3jService,
                 NeoInvokeScript.class);
     }
@@ -654,10 +701,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         List<TransactionSigner> txSigners = stream(signers)
                 .map(TransactionSigner::new)
                 .collect(Collectors.toList());
-        List<?> params = asList(contractHash, methodParams, txSigners);
         return new Request<>(
                 "invokecontractverify",
-                params.stream().filter(Objects::nonNull).collect(Collectors.toList()),
+                asList(contractHash, methodParams, txSigners),
                 neow3jService,
                 NeoInvokeContractVerify.class);
     }

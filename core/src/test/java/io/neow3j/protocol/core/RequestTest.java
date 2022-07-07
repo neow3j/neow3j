@@ -473,6 +473,58 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testInvokeFunctionDiagnostics() throws Exception {
+        neow3j.invokeFunctionDiagnostics(
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
+                "balanceOf",
+                asList(hash160(new Hash160("91b83e96f2a7c4fdf0c1688441ec61986c7cae26")))
+        ).send();
+
+        verifyResult(
+                "{" +
+                "    \"jsonrpc\":\"2.0\"," +
+                "    \"method\":\"invokefunction\"," +
+                "    \"params\": [" +
+                "        \"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\"," +
+                "        \"balanceOf\"," +
+                "        [" +
+                "            {" +
+                "                \"type\": \"Hash160\"," +
+                "                \"value\": \"91b83e96f2a7c4fdf0c1688441ec61986c7cae26\"" +
+                "            }" +
+                "        ]," +
+                "        []," +
+                "        true" +
+                "    ]," +
+                "    \"id\": 1" +
+                "}"
+        );
+    }
+
+    @Test
+    public void testInvokeFunctionDiagnostics_noParams() throws Exception {
+        neow3j.invokeFunctionDiagnostics(
+                new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
+                "symbol"
+        ).send();
+
+        verifyResult(
+                "{" +
+                        "    \"jsonrpc\":\"2.0\"," +
+                        "    \"method\":\"invokefunction\"," +
+                        "    \"params\": [" +
+                        "        \"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\"," +
+                        "        \"symbol\"," +
+                        "        []," +
+                        "        []," +
+                        "        true" +
+                        "    ]," +
+                        "    \"id\": 1" +
+                        "}"
+        );
+    }
+
+    @Test
     public void testInvokeFunction_without_Params() throws Exception {
         neow3j.invokeFunction(
                 new Hash160("af7c7328eee5a275a3bcaee2bf0cf662b5e739be"),
@@ -481,7 +533,7 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokefunction\"," +
-                "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"decimals\",[]]," +
+                "\"params\":[\"af7c7328eee5a275a3bcaee2bf0cf662b5e739be\",\"decimals\",[],[]]," +
                 "\"id\":1}"
         );
     }
@@ -493,13 +545,25 @@ public class RequestTest extends RequestTester {
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"invokescript\"," +
-                "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\"]," +
+                "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\",[]]," +
                 "\"id\":1}"
         );
     }
 
     @Test
-    public void testInvokeScriptWithWitness() throws Exception {
+    public void testInvokeScriptDiagnostics() throws Exception {
+        neow3j.invokeScriptDiagnostics("10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52")
+                .send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"invokescript\"," +
+                "\"params\":[\"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\",[], true]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testInvokeScriptWithSigner() throws Exception {
         neow3j.invokeScript(
                 "10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
                 calledByEntry(new Hash160("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))
@@ -512,6 +576,35 @@ public class RequestTest extends RequestTester {
                 "\"scopes\":\"CalledByEntry\",\"allowedcontracts\":[],\"allowedgroups\":[], " +
                 "\"rules\":[]}]]," +
                 "\"id\":1}"
+        );
+    }
+
+    @Test
+    public void testInvokeScriptDiagnosticsWithSigner() throws Exception {
+        neow3j.invokeScriptDiagnostics(
+                "10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52",
+                calledByEntry(new Hash160("0xcc45cc8987b0e35371f5685431e3c8eeea306722"))
+        ).send();
+
+        verifyResult(
+                "{" +
+                "    \"jsonrpc\": \"2.0\"," +
+                "    \"method\": \"invokescript\"," +
+                "    \"params\": [" +
+                "        \"EMAMCGRlY2ltYWxzDBQlBZ7LSHjTqHX5HFHO3tMw1Fdf3kFifVtS\"," +
+                "        [" +
+                "            {" +
+                "                \"account\": \"cc45cc8987b0e35371f5685431e3c8eeea306722\"," +
+                "                \"scopes\": \"CalledByEntry\"," +
+                "                \"allowedcontracts\": []," +
+                "                \"allowedgroups\": []," +
+                "                \"rules\": []" +
+                "            }" +
+                "        ]," +
+                "        true" +
+                "    ]," +
+                "    \"id\":1" +
+                "}"
         );
     }
 
