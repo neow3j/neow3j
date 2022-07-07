@@ -105,7 +105,7 @@ public class Diagnostics {
     public static class StorageChange {
 
         /**
-         * Represents the track state of the storage change.
+         * The type of change in the storage, e.g., "Added" or "Deleted".
          */
         @JsonProperty("state")
         private String state;
