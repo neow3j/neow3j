@@ -13,6 +13,17 @@ public class ECPoint {
     private static final byte LENGTH = 0x21; // 33 bytes
 
     /**
+     * Constructs an {@code ECPoint} from the given string.
+     * <p>
+     * This constructor can only be used with a constant string literal, and does not work on string variables or
+     * return values.
+     *
+     * @param value the EC point as a hexadecimal string.
+     */
+    public ECPoint(String value) {
+    }
+
+    /**
      * Constructs an {@code ECPoint} from the given byte array.
      * <p>
      * Does NOT check if the value has the appropriate size for an EC Point. Use {@code ECPoint.isValid()} in order
@@ -22,7 +33,6 @@ public class ECPoint {
      */
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
     public ECPoint(byte[] buffer) {
-
     }
 
     /**

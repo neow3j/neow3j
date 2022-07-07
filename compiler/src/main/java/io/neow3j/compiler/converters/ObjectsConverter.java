@@ -8,6 +8,8 @@ import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Instruction;
@@ -265,6 +267,10 @@ public class ObjectsConverter implements Converter {
             return handleNewHash256FromString(typeInsn, callingNeoMethod);
         }
 
+        if (isNewECPointFromString(typeInsn, compUnit)) {
+            return handleNewECPointFromString(typeInsn, callingNeoMethod);
+        }
+
         if (isAssertion(typeInsn, compUnit)) {
             return handleAssertion(typeInsn, callingNeoMethod);
         }
@@ -307,6 +313,10 @@ public class ObjectsConverter implements Converter {
         return typeInsn.desc.equals(getInternalName(Hash256.class)) && hasSingleStringArgument(typeInsn, compUnit);
     }
 
+    private static boolean isNewECPointFromString(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        return typeInsn.desc.equals(getInternalName(ECPoint.class)) && hasSingleStringArgument(typeInsn, compUnit);
+    }
+
     private static boolean hasSingleStringArgument(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
         ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
         AbstractInsnNode insn = typeInsn.getNext();
@@ -332,6 +342,13 @@ public class ObjectsConverter implements Converter {
         LdcInsnNode insn = checkForConstantStringArgument(typeInsn);
         io.neow3j.types.Hash256 hash256 = new io.neow3j.types.Hash256((String) insn.cst);
         callingNeoMethod.addInstruction(buildPushDataInsn(reverseArray(hash256.toArray())));
+        return insn.getNext();
+    }
+
+    private static AbstractInsnNode handleNewECPointFromString(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
+        LdcInsnNode insn = checkForConstantStringArgument(typeInsn);
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey((String) insn.cst);
+        callingNeoMethod.addInstruction(buildPushDataInsn(pubKey.toArray()));
         return insn.getNext();
     }
 
