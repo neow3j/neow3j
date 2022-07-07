@@ -220,7 +220,7 @@ public class ContractManifest {
         }
 
         private void checkPubKey(String pubKey) {
-            if (hexStringToByteArray(pubKey).length != NeoConstants.PUBLIC_KEY_SIZE) {
+            if (hexStringToByteArray(pubKey).length != NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED) {
                 throw new IllegalArgumentException(format("The provided value is not a valid public key: %s", pubKey));
             }
         }

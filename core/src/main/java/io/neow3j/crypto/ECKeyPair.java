@@ -344,10 +344,6 @@ public class ECKeyPair {
          * @param publicKey the public key.
          */
         public ECPublicKey(byte[] publicKey) {
-            if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-                throw new IllegalArgumentException("Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE
-                        + " long but was " + publicKey.length + " bytes");
-            }
             this.ecPoint = NeoConstants.secp256r1CurveParams().getCurve().decodePoint(publicKey);
         }
 
@@ -359,7 +355,7 @@ public class ECKeyPair {
          * @param publicKey the public key.
          */
         public ECPublicKey(BigInteger publicKey) {
-            this(toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE));
+            this(toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED));
         }
 
         /**
@@ -401,7 +397,7 @@ public class ECKeyPair {
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {
                 ecPoint = NeoConstants.secp256r1CurveParams().getCurve()
-                        .decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE));
+                        .decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED));
             } catch (IOException e) {
                 throw new DeserializationException();
             }
@@ -414,7 +410,7 @@ public class ECKeyPair {
 
         @Override
         public int getSize() {
-            return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE;
+            return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED;
         }
 
         @Override
@@ -450,7 +446,7 @@ public class ECKeyPair {
 
         @Override
         public String toString() {
-            return "ECPublicKey{" + toHexStringNoPrefix(getEncoded(true)) + "}";
+            return "ECPublicKey{" + getEncodedCompressedHex() + "}";
         }
 
     }

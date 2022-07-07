@@ -427,8 +427,8 @@ public class ContractParameter {
      * @return the contract parameter.
      */
     public static ContractParameter publicKey(byte[] publicKey) {
-        if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-            throw new IllegalArgumentException("Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE +
+        if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED) {
+            throw new IllegalArgumentException("Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED +
                     " bytes but was " + publicKey.length + " bytes.");
         }
         return new ContractParameter(PUBLIC_KEY, publicKey);

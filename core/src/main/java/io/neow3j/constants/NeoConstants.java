@@ -48,14 +48,14 @@ public class NeoConstants {
     public static final int HASH256_SIZE = 32;
 
     /**
-     * Size of a private key in bytes
+     * Size of a private key in bytes.
      */
     public static final int PRIVATE_KEY_SIZE = 32;
 
     /**
-     * Size of a public key in bytes
+     * Size of a compressed public key in bytes.
      */
-    public static final int PUBLIC_KEY_SIZE = 33;
+    public static final int PUBLIC_KEY_SIZE_COMPRESSED = 33;
 
     /**
      * Size of a signature in bytes.
