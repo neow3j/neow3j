@@ -38,7 +38,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class Neow3jExpressIntegrationTestNew {
+public class Neow3jExpressIntegrationTest {
 
     private static final String RESOURCE_DIR = "core/";
     private static final String NEF_FILE_SOURCE = RESOURCE_DIR + "OracleTestContract.nef";
@@ -100,7 +100,7 @@ public class Neow3jExpressIntegrationTestNew {
 
         assertThat(contractStorage, hasSize(4));
         assertThat(contractStorage.get(3).getKey(),
-                is("147f65d434362708b255f0e06856bdcb5ce99d8505"));
+                is("147F65D434362708B255F0E06856BDCB5CE99D8505"));
         assertThat(contractStorage.get(3).getValue(), is(not(isEmptyString())));
     }
 
