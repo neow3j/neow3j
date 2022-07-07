@@ -30,9 +30,11 @@ import java.util.Objects;
 
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -319,7 +321,7 @@ public class ECKeyPair {
          * @param publicKey the public key in hex format.
          */
         public ECPublicKey(String publicKey) {
-            this(hexStringToByteArray(publicKey));
+            this(hexStringToByteArray(cleanHexPrefix(publicKey)));
         }
 
         /**
@@ -345,8 +347,9 @@ public class ECKeyPair {
          */
         public ECPublicKey(byte[] publicKey) {
             if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-                throw new IllegalArgumentException("Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE
-                        + " long but was " + publicKey.length + " bytes");
+                throw new IllegalArgumentException(
+                        format("Public key must be %s bytes long but was %s bytes.", NeoConstants.PUBLIC_KEY_SIZE,
+                                publicKey.length));
             }
             this.ecPoint = NeoConstants.secp256r1CurveParams().getCurve().decodePoint(publicKey);
         }
