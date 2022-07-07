@@ -719,6 +719,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getInvocationResult();
 
         assertNotNull(invocResult);
+        assertTrue(invocResult.getNotifications().isEmpty());
     }
 
     @Test
@@ -741,6 +742,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
+        assertThat(invoc.getNotifications(), hasSize(2));
+        assertNull(invoc.getDiagnostics());
         assertTrue(invoc.getStack().get(0).getBoolean());
         assertNotNull(invoc.getTx());
     }
@@ -765,6 +768,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(invoc.getState(), is(NeoVMStateType.HALT));
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
+        assertThat(invoc.getNotifications(), hasSize(2));
+        assertNotNull(invoc.getDiagnostics());
         assertTrue(invoc.getStack().get(0).getBoolean());
         assertNotNull(invoc.getTx());
     }
@@ -792,6 +797,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(invoc.getGasConsumed());
         assertNull(invoc.getException());
         assertNotNull(invoc.getNotifications());
+        assertNull(invoc.getDiagnostics());
         assertNotNull(invoc.getStack());
         assertNotNull(invoc.getTx());
     }

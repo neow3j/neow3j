@@ -111,7 +111,7 @@ public class Diagnostics {
         private String state;
 
         /**
-         * The returned key is based on the contract's id and the key that was used in that contract.
+         * The returned key is based on the contract's id and the storage key that was used in that contract.
          */
         @JsonProperty("key")
         private String key;
