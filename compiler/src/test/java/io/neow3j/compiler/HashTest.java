@@ -99,9 +99,18 @@ public class HashTest {
     }
 
     @Test
-    public void testHashFromStringWithNonConstantString() {
+    public void testHash160FromStringWithNonConstantString() {
         CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(HashFromStringWithNonConstantString.class.getName()));
+                () -> new Compiler().compile(Hash160FromStringWithNonConstantString.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("Hash160, Hash256, and ECPoint constructors with a string argument can only be used with constant " +
+                        "string literals."));
+    }
+
+    @Test
+    public void testHash256FromStringWithNonConstantString() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(Hash256FromStringWithNonConstantString.class.getName()));
         assertThat(thrown.getMessage(),
                 is("Hash160, Hash256, and ECPoint constructors with a string argument can only be used with constant " +
                         "string literals."));
@@ -140,9 +149,15 @@ public class HashTest {
         }
     }
 
-    static class HashFromStringWithNonConstantString {
+    static class Hash160FromStringWithNonConstantString {
         public static Hash160 test(String value) {
             return new Hash160(value);
+        }
+    }
+
+    static class Hash256FromStringWithNonConstantString {
+        public static Hash256 test(String value) {
+            return new Hash256(value);
         }
     }
 
