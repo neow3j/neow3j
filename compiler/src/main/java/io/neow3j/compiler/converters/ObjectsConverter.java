@@ -8,7 +8,10 @@ import io.neow3j.compiler.NeoEvent;
 import io.neow3j.compiler.NeoInstruction;
 import io.neow3j.compiler.NeoMethod;
 import io.neow3j.compiler.SuperNeoMethod;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
@@ -256,6 +259,18 @@ public class ObjectsConverter implements Converter {
             return handleStringConcatenation(typeInsn, callingNeoMethod, compUnit);
         }
 
+        if (isNewHash160FromString(typeInsn, compUnit)) {
+            return handleNewHash160FromString(typeInsn, callingNeoMethod);
+        }
+
+        if (isNewHash256FromString(typeInsn, compUnit)) {
+            return handleNewHash256FromString(typeInsn, callingNeoMethod);
+        }
+
+        if (isNewECPointFromString(typeInsn, compUnit)) {
+            return handleNewECPointFromString(typeInsn, callingNeoMethod);
+        }
+
         if (isAssertion(typeInsn, compUnit)) {
             return handleAssertion(typeInsn, callingNeoMethod);
         }
@@ -288,6 +303,65 @@ public class ObjectsConverter implements Converter {
             }
             return insn;
         }
+    }
+
+    private static boolean isNewHash160FromString(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        return typeInsn.desc.equals(getInternalName(Hash160.class)) && hasSingleStringArgument(typeInsn, compUnit);
+    }
+
+    private static boolean isNewHash256FromString(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        return typeInsn.desc.equals(getInternalName(Hash256.class)) && hasSingleStringArgument(typeInsn, compUnit);
+    }
+
+    private static boolean isNewECPointFromString(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        return typeInsn.desc.equals(getInternalName(ECPoint.class)) && hasSingleStringArgument(typeInsn, compUnit);
+    }
+
+    private static boolean hasSingleStringArgument(TypeInsnNode typeInsn, CompilationUnit compUnit) throws IOException {
+        ClassNode ownerClassNode = getAsmClassForInternalName(typeInsn.desc, compUnit.getClassLoader());
+        AbstractInsnNode insn = typeInsn.getNext();
+
+        while (!isCallToCtor(insn, ownerClassNode.name)) {
+            insn = insn.getNext();
+        }
+        Type[] argTypes = Type.getArgumentTypes(((MethodInsnNode) insn).desc);
+        if (argTypes.length != 1) {
+            return false;
+        }
+        return getInternalName(String.class).equals(argTypes[0].getInternalName());
+    }
+
+    private static AbstractInsnNode handleNewHash160FromString(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
+        LdcInsnNode insn = checkForConstantStringArgument(typeInsn);
+        io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160((String) insn.cst);
+        callingNeoMethod.addInstruction(buildPushDataInsn(reverseArray(scriptHash.toArray())));
+        return insn.getNext();
+    }
+
+    private static AbstractInsnNode handleNewHash256FromString(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
+        LdcInsnNode insn = checkForConstantStringArgument(typeInsn);
+        io.neow3j.types.Hash256 hash256 = new io.neow3j.types.Hash256((String) insn.cst);
+        callingNeoMethod.addInstruction(buildPushDataInsn(reverseArray(hash256.toArray())));
+        return insn.getNext();
+    }
+
+    private static AbstractInsnNode handleNewECPointFromString(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
+        LdcInsnNode insn = checkForConstantStringArgument(typeInsn);
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey((String) insn.cst);
+        callingNeoMethod.addInstruction(buildPushDataInsn(pubKey.toArray()));
+        return insn.getNext();
+    }
+
+    private static LdcInsnNode checkForConstantStringArgument(TypeInsnNode typeInsn) {
+        assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
+                "Expected DUP after NEW but got other instructions";
+
+        AbstractInsnNode insn = typeInsn.getNext().getNext();
+        if (insn.getType() != AbstractInsnNode.LDC_INSN || !(((LdcInsnNode) insn).cst instanceof String)) {
+            throw new CompilerException("Hash160, Hash256, and ECPoint constructors with a string argument can only " +
+                    "be used with constant string literals.");
+        }
+        return (LdcInsnNode) insn;
     }
 
     private static boolean isNewStringBuilder(TypeInsnNode typeInsn) {

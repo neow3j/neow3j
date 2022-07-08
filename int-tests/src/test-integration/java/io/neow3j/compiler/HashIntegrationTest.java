@@ -72,7 +72,7 @@ public class HashIntegrationTest {
     }
 
     @Test
-    public void createHash160FromString() throws IOException {
+    public void createHash160FromByteString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(hash));
@@ -133,7 +133,7 @@ public class HashIntegrationTest {
     }
 
     @Test
-    public void createHash256FromString() throws IOException {
+    public void createHash256FromByteString() throws IOException {
         String hash = "03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hash));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(hash));
@@ -168,6 +168,20 @@ public class HashIntegrationTest {
                 is("03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000"));
     }
 
+    @Test
+    public void hash160FromString() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(reverseHexString("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b")));
+    }
+
+    @Test
+    public void hash256FromString() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
+                is(reverseHexString("0xcb30ea3c29e205e8b1233ac7fa7fa51284c40ab920a915353376014871752ca4")));
+    }
+
     static class HashIntegrationTestContract {
 
         public static io.neow3j.devpack.Hash160 getZeroHash160() {
@@ -197,7 +211,7 @@ public class HashIntegrationTest {
             return new io.neow3j.devpack.Hash160(buffer);
         }
 
-        public static io.neow3j.devpack.Hash160 createHash160FromString(ByteString s) {
+        public static io.neow3j.devpack.Hash160 createHash160FromByteString(ByteString s) {
             return new io.neow3j.devpack.Hash160(s);
         }
 
@@ -236,7 +250,7 @@ public class HashIntegrationTest {
             return new Hash256(buffer);
         }
 
-        public static Hash256 createHash256FromString(ByteString s) {
+        public static Hash256 createHash256FromByteString(ByteString s) {
             return new Hash256(s);
         }
 
@@ -256,6 +270,14 @@ public class HashIntegrationTest {
         public static Hash256 hash256FromStringLiteral() {
             return new Hash256(
                     StringLiteralHelper.hexToBytes("03b4af8d061b6b320cce6c63bc4ec7894dce107b000000000000000000000000"));
+        }
+
+        public static io.neow3j.devpack.Hash160 hash160FromString() {
+            return new io.neow3j.devpack.Hash160("0xcc5e4edd9f5f8dba8bb65734541df7a1c081c67b");
+        }
+
+        public static Hash256 hash256FromString() {
+            return new Hash256("0xcb30ea3c29e205e8b1233ac7fa7fa51284c40ab920a915353376014871752ca4");
         }
     }
 

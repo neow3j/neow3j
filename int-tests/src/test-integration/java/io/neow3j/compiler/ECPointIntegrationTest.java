@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.Runtime;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import org.junit.ClassRule;
@@ -83,6 +84,20 @@ public class ECPointIntegrationTest {
                 is(hexStringToByteArray(publicKey)));
     }
 
+    @Test
+    public void ecPointFromString() throws IOException {
+        String publicKey = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(publicKey));
+    }
+
+    @Test
+    public void witnessCheckWithECPointFromString() throws IOException {
+        ct.signWithDefaultAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
     static class ECPointIntegrationTestContract {
 
         public static ECPoint createECPointFromByteArray(ByteString b) {
@@ -121,6 +136,15 @@ public class ECPointIntegrationTest {
 
         public static ByteString ecPointAsByteString(ECPoint ecPoint) {
             return ecPoint.toByteString();
+        }
+
+        public static ECPoint ecPointFromString() {
+            return new ECPoint("0x03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
+        }
+
+        public static boolean witnessCheckWithECPointFromString() {
+            return Runtime.checkWitness(
+                    new ECPoint("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
         }
 
     }
