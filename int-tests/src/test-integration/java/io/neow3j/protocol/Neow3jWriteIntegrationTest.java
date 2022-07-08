@@ -1,5 +1,7 @@
 package io.neow3j.protocol;
 
+import io.neow3j.protocol.core.response.Diagnostics;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
@@ -29,6 +31,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -53,7 +56,8 @@ public class Neow3jWriteIntegrationTest {
     public void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
-        getNeow3j().openWallet(IntegrationTestHelper.NODE_WALLET_PATH, IntegrationTestHelper.NODE_WALLET_PASSWORD).send();
+        getNeow3j().openWallet(IntegrationTestHelper.NODE_WALLET_PATH, IntegrationTestHelper.NODE_WALLET_PASSWORD)
+                .send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
         Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", IntegrationTestHelper.NEO_HASH, getNeow3j());
     }
@@ -95,7 +99,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendFrom() throws IOException {
         NeoSendFrom sendFrom = getNeow3j()
                 .sendFrom(
-                        IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.COMMITTEE_HASH, IntegrationTestHelper.DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
+                        IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.COMMITTEE_HASH,
+                        IntegrationTestHelper.DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -107,7 +112,8 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
-        TransactionSendToken txSendToken = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, defaultAccountAddress());
+        TransactionSendToken txSendToken = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN,
+                defaultAccountAddress());
         NeoSendFrom sendFrom = getNeow3j()
                 .sendFrom(IntegrationTestHelper.COMMITTEE_HASH, txSendToken)
                 .send();
@@ -123,7 +129,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendMany() throws IOException {
         NeoSendMany sendMany = getNeow3j()
                 .sendMany(asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
+                                defaultAccountAddress()),
                         new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
                 .send();
 
@@ -140,7 +147,8 @@ public class Neow3jWriteIntegrationTest {
     public void testSendManyWithFrom() throws IOException {
         NeoSendMany response = getNeow3j()
                 .sendMany(IntegrationTestHelper.COMMITTEE_HASH, asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
+                                defaultAccountAddress()),
                         new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
                 .send();
 
@@ -154,10 +162,14 @@ public class Neow3jWriteIntegrationTest {
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT);
-        assertThat(neow3j.invokeFunction(
-                                IntegrationTestHelper.NEO_HASH, "balanceOf", asList(hash160(recipient2Hash160))).send()
-                        .getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(10));
+        InvocationResult invocationResult = neow3j.invokeFunctionDiagnostics(IntegrationTestHelper.NEO_HASH,
+                        "balanceOf", asList(hash160(recipient2Hash160))).send()
+                .getInvocationResult();
+        assertThat(invocationResult.getStack().get(0).getInteger().intValue(), is(10));
+
+        Diagnostics diagnostics = invocationResult.getDiagnostics();
+        assertThat(diagnostics.getInvokedContracts().getInvokedContracts(), hasSize(1));
+        assertThat(diagnostics.getStorageChanges(), hasSize(0));
     }
 
     @Test
@@ -175,7 +187,8 @@ public class Neow3jWriteIntegrationTest {
     @Test
     public void testSendToAddress() throws IOException {
         NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
+                .sendToAddress(IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.DEFAULT_ACCOUNT_HASH,
+                        BigInteger.TEN)
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();

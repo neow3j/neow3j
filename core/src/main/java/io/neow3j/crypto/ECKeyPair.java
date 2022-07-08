@@ -30,6 +30,7 @@ import java.util.Objects;
 
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
 import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
@@ -319,7 +320,7 @@ public class ECKeyPair {
          * @param publicKey the public key in hex format.
          */
         public ECPublicKey(String publicKey) {
-            this(hexStringToByteArray(publicKey));
+            this(hexStringToByteArray(cleanHexPrefix(publicKey)));
         }
 
         /**

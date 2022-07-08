@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.response.ContractNef;
 import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ContractStorageEntry;
+import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.response.InvocationResult;
@@ -1880,7 +1881,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
         InvocationResult expectedResult = new InvocationResult(
                 "10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52",
-                NeoVMStateType.FAULT, "2007390", null, asList(), emptyList(), null, null, null);
+                NeoVMStateType.FAULT, "2007390", null, asList(), null, asList(), null, null, null);
         assertThat(invokeFunction.getInvocationResult(), is(expectedResult));
     }
 
@@ -1907,6 +1908,136 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007390"));
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(0));
+    }
+
+    @Test
+    public void testInvokeFunction_diagnostics() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"wh8MC2NhbGxTeW1ib2xzDBQ35AiF8REp1Iy5N6DbcAjECghSDkFifVtS\",\n" +
+                        "        \"state\": \"HALT\",\n" +
+                        "        \"gasconsumed\": \"4845600\",\n" +
+                        "        \"exception\": null,\n" +
+                        "        \"notifications\": [],\n" +
+                        "        \"diagnostics\": {\n" +
+                        "            \"invokedcontracts\": {\n" +
+                        "                \"hash\": \"0x7df45ba2d3a0c0520ceef7a73f8d1c404cc59a48\",\n" +
+                        "                \"call\": [\n" +
+                        "                    {\n" +
+                        "                        \"hash\": \"0x0e52080ac40870dba037b98cd42911f18508e437\",\n" +
+                        "                        \"call\": [\n" +
+                        "                            {\n" +
+                        "                                \"hash\": \"0x0e52080ac40870dba037b98cd42911f18508e437\"\n" +
+                        "                            },\n" +
+                        "                            {\n" +
+                        "                                \"hash\": \"0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5\"\n" +
+                        "                            },\n" +
+                        "                            {\n" +
+                        "                                \"hash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\"\n" +
+                        "                            }\n" +
+                        "                        ]\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            },\n" +
+                        "            \"storagechanges\": [\n" +
+                        "                {\n" +
+                        "                    \"state\": \"Deleted\",\n" +
+                        "                    \"key\": \"BgAAAP8=\",\n" +
+                        "                    \"value\": \"DRZcmJnDi79ZkcXkewSTcljK7Gk=\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                    \"state\": \"Changed\",\n" +
+                        "                    \"key\": \"+v///xQNFlyYmcOLv1mRxeR7BJNyWMrsaQ==\",\n" +
+                        "                    \"value\": \"QQEhBQAb1mAS\"\n" +
+                        "                },\n" +
+                        "                {\n" +
+                        "                    \"state\": \"Added\",\n" +
+                        "                    \"key\": \"+v///xRjv+9gkFzYfFbaQGRkS+b3ro7EiA==\",\n" +
+                        "                    \"value\": \"QQEhAQo=\"\n" +
+                        "                }\n" +
+                        "            ]\n" +
+                        "        },\n" +
+                        "        \"stack\": [\n" +
+                        "            {\n" +
+                        "                \"type\": \"Array\",\n" +
+                        "                \"value\": [\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"ByteString\",\n" +
+                        "                        \"value\": \"TkVP\"\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"ByteString\",\n" +
+                        "                        \"value\": \"R0FT\"\n" +
+                        "                    },\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"ByteString\",\n" +
+                        "                        \"value\": \"TkVP\"\n" +
+                        "                    }\n" +
+                        "                ]\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoInvokeFunction neoInvokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        Diagnostics diagnostics = neoInvokeFunction.getInvocationResult().getDiagnostics();
+
+        Diagnostics.InvokedContract invokedContracts = diagnostics.getInvokedContracts();
+        Hash160 invokeFunctionScriptHash = new Hash160("0x7df45ba2d3a0c0520ceef7a73f8d1c404cc59a48");
+        assertThat(invokedContracts.getHash(), is(invokeFunctionScriptHash));
+
+        List<Diagnostics.InvokedContract> calls = invokedContracts.getInvokedContracts();
+        assertThat(calls, hasSize(1));
+        Hash160 calledContract = new Hash160("0x0e52080ac40870dba037b98cd42911f18508e437");
+        assertThat(calls.get(0).getHash(), is(calledContract));
+
+        List<Diagnostics.InvokedContract> nestedInvokedContracts = calls.get(0).getInvokedContracts();
+        assertThat(nestedInvokedContracts, hasSize(3));
+        assertThat(nestedInvokedContracts.get(0).getHash(), is(calledContract));
+        assertThat(nestedInvokedContracts.get(0).getInvokedContracts(), hasSize(0));
+        Hash160 neoToken = new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
+        assertThat(nestedInvokedContracts.get(1).getHash(), is(neoToken));
+        assertThat(nestedInvokedContracts.get(1).getInvokedContracts(), hasSize(0));
+        Hash160 gasToken = new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf");
+        assertThat(nestedInvokedContracts.get(2).getHash(), is(gasToken));
+        assertThat(nestedInvokedContracts.get(2).getInvokedContracts(), hasSize(0));
+
+        List<Diagnostics.StorageChange> storageChanges = diagnostics.getStorageChanges();
+        assertThat(storageChanges, hasSize(3));
+        Diagnostics.StorageChange storageChange1 = storageChanges.get(0);
+        Diagnostics.StorageChange expectedStorageChange1 = new Diagnostics.StorageChange("Deleted", "BgAAAP8=",
+                "DRZcmJnDi79ZkcXkewSTcljK7Gk=");
+        assertThat(storageChange1.getState(), is(expectedStorageChange1.getState()));
+        assertThat(storageChange1.getKey(), is(expectedStorageChange1.getKey()));
+        assertThat(storageChange1.getValue(), is(expectedStorageChange1.getValue()));
+        Diagnostics.StorageChange expectedStorageChange2 = new Diagnostics.StorageChange("Changed",
+                "+v///xQNFlyYmcOLv1mRxeR7BJNyWMrsaQ==", "QQEhBQAb1mAS");
+        Diagnostics.StorageChange storageChange2 = storageChanges.get(1);
+        assertThat(storageChange2.getState(), is(expectedStorageChange2.getState()));
+        assertThat(storageChange2.getKey(), is(expectedStorageChange2.getKey()));
+        assertThat(storageChange2.getValue(), is(expectedStorageChange2.getValue()));
+        Diagnostics.StorageChange expectedStorageChange3 = new Diagnostics.StorageChange("Added",
+                "+v///xRjv+9gkFzYfFbaQGRkS+b3ro7EiA==", "QQEhAQo=");
+        Diagnostics.StorageChange storageChange3 = storageChanges.get(2);
+        assertThat(storageChange3.getState(), is(expectedStorageChange3.getState()));
+        assertThat(storageChange3.getKey(), is(expectedStorageChange3.getKey()));
+        assertThat(storageChange3.getValue(), is(expectedStorageChange3.getValue()));
+
+        Diagnostics.InvokedContract calledContractCall = new Diagnostics.InvokedContract(calledContract);
+        Diagnostics.InvokedContract neoTokenCall = new Diagnostics.InvokedContract(neoToken);
+        Diagnostics.InvokedContract gasTokenCall = new Diagnostics.InvokedContract(gasToken);
+        List<Diagnostics.InvokedContract> call2 = asList(calledContractCall, neoTokenCall, gasTokenCall);
+        Diagnostics.InvokedContract call1 = new Diagnostics.InvokedContract(calledContract, call2);
+        Diagnostics.InvokedContract expectedInvokedContract =
+                new Diagnostics.InvokedContract(invokeFunctionScriptHash, asList(call1));
+
+        Diagnostics expectedDiagnostics = new Diagnostics(expectedInvokedContract,
+                asList(expectedStorageChange1, expectedStorageChange2, expectedStorageChange3));
+        assertThat(diagnostics, is(expectedDiagnostics));
     }
 
     @Test

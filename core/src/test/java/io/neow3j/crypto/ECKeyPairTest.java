@@ -19,6 +19,7 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertThrows;
 
 public class ECKeyPairTest {
 
@@ -53,6 +54,22 @@ public class ECKeyPairTest {
     }
 
     @Test
+    public void invalidSize() {
+        String pubKeyHex = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368"; // Only 32 bytes
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ECKeyPair.ECPublicKey(hexStringToByteArray(pubKeyHex)));
+        assertThat(thrown.getMessage(), is("Incorrect length for compressed encoding"));
+    }
+
+    @Test
+    public void cleanHexPrefix() {
+        String pubKeyHex = "0x03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
+        String expected = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(hexStringToByteArray(pubKeyHex));
+        assertThat(pubKey.getEncodedCompressedHex(), is(expected));
+    }
+
+    @Test
     public void serializeECPublicKey() {
         String encECPoint = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(
@@ -80,6 +97,13 @@ public class ECKeyPairTest {
                 "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296");
         ECKeyPair.ECPublicKey key = new ECKeyPair.ECPublicKey(data);
         assertThat(key.getSize(), is(33));
+    }
+
+    @Test
+    public void exportAsWIF() {
+        ECKeyPair keyPair = ECKeyPair.create(
+                hexStringToByteArray("c7134d6fd8e73d819e82755c64c93788d8db0961929e025a53363c4cc02a6962"));
+        assertThat(keyPair.exportAsWIF(), is("L3tgppXLgdaeqSGSFw1Go3skBiy8vQAM7YMXvTHsKQtE16PBncSU"));
     }
 
     @Test

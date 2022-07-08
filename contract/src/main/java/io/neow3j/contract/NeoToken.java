@@ -463,6 +463,14 @@ public class NeoToken extends FungibleToken {
             return Objects.equals(getPublicKey(), that.getPublicKey()) &&
                     Objects.equals(getVotes(), that.getVotes());
         }
+
+        @Override
+        public String toString() {
+            return "Candidate{" +
+                    "publicKey=" + publicKey +
+                    ", votes=" + votes +
+                    '}';
+        }
     }
 
 }
