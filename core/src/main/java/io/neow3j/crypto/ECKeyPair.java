@@ -34,7 +34,6 @@ import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static java.lang.String.format;
 
 /**
  * Elliptic Curve SECP-256r1 generated key pair.
@@ -346,11 +345,6 @@ public class ECKeyPair {
          * @param publicKey the public key.
          */
         public ECPublicKey(byte[] publicKey) {
-            if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE) {
-                throw new IllegalArgumentException(
-                        format("Public key must be %s bytes long but was %s bytes.", NeoConstants.PUBLIC_KEY_SIZE,
-                                publicKey.length));
-            }
             this.ecPoint = NeoConstants.secp256r1CurveParams().getCurve().decodePoint(publicKey);
         }
 
@@ -362,7 +356,7 @@ public class ECKeyPair {
          * @param publicKey the public key.
          */
         public ECPublicKey(BigInteger publicKey) {
-            this(toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE));
+            this(toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED));
         }
 
         /**
@@ -404,7 +398,7 @@ public class ECKeyPair {
         public void deserialize(BinaryReader reader) throws DeserializationException {
             try {
                 ecPoint = NeoConstants.secp256r1CurveParams().getCurve()
-                        .decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE));
+                        .decodePoint(reader.readBytes(NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED));
             } catch (IOException e) {
                 throw new DeserializationException();
             }
@@ -417,7 +411,7 @@ public class ECKeyPair {
 
         @Override
         public int getSize() {
-            return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE;
+            return this.ecPoint.isInfinity() ? 1 : NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED;
         }
 
         @Override
@@ -453,7 +447,7 @@ public class ECKeyPair {
 
         @Override
         public String toString() {
-            return "ECPublicKey{" + toHexStringNoPrefix(getEncoded(true)) + "}";
+            return "ECPublicKey{" + getEncodedCompressedHex() + "}";
         }
 
     }

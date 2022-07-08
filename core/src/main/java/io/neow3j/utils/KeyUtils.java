@@ -13,7 +13,7 @@ import static io.neow3j.constants.NeoConstants.secp256r1DomainParams;
 public class KeyUtils {
 
     public static byte[] publicKeyIntegerToByteArray(BigInteger publicKey) {
-        return Numeric.toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE);
+        return Numeric.toBytesPadded(publicKey, NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED);
     }
 
     public static byte[] privateKeyIntegerToByteArray(BigInteger privateKey) {

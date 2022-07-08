@@ -205,7 +205,7 @@ public class ManifestBuilder {
         // Contract hashes need a '0x' prefix. Public keys must be without '0x' prefix.
         if (hashOrPubKey.length() == 2 * NeoConstants.HASH160_SIZE) {
             hashOrPubKey = Numeric.prependHexPrefix(hashOrPubKey);
-        } else if (hashOrPubKey.length() == 2 * NeoConstants.PUBLIC_KEY_SIZE + 2) {
+        } else if (hashOrPubKey.length() == 2 * NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED + 2) {
             hashOrPubKey = Numeric.cleanHexPrefix(hashOrPubKey);
         }
         return hashOrPubKey;

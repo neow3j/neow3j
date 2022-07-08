@@ -45,11 +45,20 @@ public class ECKeyPairTest {
     }
 
     @Test
+    public void createECPublicKeyFromUncompressedECPoint() {
+        String ecPoint =
+                "04b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368165f4f7fb1c5862465543c06dd5a2aa414f6583f92a5cc3e1d4259df79bf6839c9";
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(hexStringToByteArray(ecPoint));
+        assertThat(pubKey.getEncodedCompressedHex(),
+                is("03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816"));
+    }
+
+    @Test
     public void invalidSize() {
         String pubKeyHex = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368"; // Only 32 bytes
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new ECKeyPair.ECPublicKey(hexStringToByteArray(pubKeyHex)));
-        assertThat(thrown.getMessage(), is("Public key must be 33 bytes long but was 32 bytes."));
+        assertThat(thrown.getMessage(), is("Incorrect length for compressed encoding"));
     }
 
     @Test
@@ -121,9 +130,13 @@ public class ECKeyPairTest {
     public void compareTo() {
         String encodedKey1 = "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816";
         String encodedKey2 = "036b17d1f2e12c4247f8bce6e563a440f277037d812deb33a0f4a13945d898c296";
+        String encodedKey1Uncompressed =
+                "04b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368165f4f7fb1c5862465543c06dd5a2aa414f6583f92a5cc3e1d4259df79bf6839c9";
         ECKeyPair.ECPublicKey key1 = new ECKeyPair.ECPublicKey(encodedKey1);
         ECKeyPair.ECPublicKey key2 = new ECKeyPair.ECPublicKey(encodedKey2);
+        ECKeyPair.ECPublicKey key1FromUncompressed = new ECKeyPair.ECPublicKey(encodedKey1Uncompressed);
         assertThat(key1.compareTo(key2), is(1)); // x coord of key1 is larger than key2
+        assertThat(key1.compareTo(key1FromUncompressed), is(0));
     }
 
 }

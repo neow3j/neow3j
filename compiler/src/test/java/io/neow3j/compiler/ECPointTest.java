@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
 
@@ -51,7 +52,7 @@ public class ECPointTest {
     public void testInvalidECPointFromString() {
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new Compiler().compile(InvalidECPoint.class.getName()));
-        assertThat(thrown.getMessage(), is("Public key must be 33 bytes long but was 27 bytes."));
+        assertThat(thrown.getMessage(), containsString("Invalid point encoding"));
     }
 
     static class ECPointTestContract {
