@@ -6,7 +6,6 @@ import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.utils.Numeric;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.Ignore;
@@ -21,6 +20,7 @@ import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -205,7 +205,7 @@ public class HelperIntegrationTest {
         assertThat(response.getInvocationResult().getStack().get(0).getType(),
                 is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(Numeric.hexStringToByteArray("01020304")));
+                is(hexStringToByteArray("01020304")));
     }
 
     @Test
@@ -282,15 +282,24 @@ public class HelperIntegrationTest {
     }
 
     @Test
-    @Ignore("This doesn't work yet because with neo3-preview3 the byte array parameter is not "
-            + "a Buffer StackItem on the neo-vm (but a ByteString). The reverse method therefore "
-            + "fails because it doesn't operate on ByteString. Test again with neo3-preview4.")
+    @Ignore("This doesn't work because the byte array parameter is not a Buffer stack item on the NeoVM (but a " +
+            "ByteString). The reverse method therefore fails because it doesn't operate on ByteStrings. Test this " +
+            "again once that case can be handled, e.g., with a compiler configuration.")
     public void reverseByteArray() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("010203040506"));
         assertThat(response.getInvocationResult().getStack().get(0).getType(),
                 is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(Numeric.hexStringToByteArray("060504030201")));
+                is(hexStringToByteArray("060504030201")));
+    }
+
+    @Test
+    public void reverseByteArrayWithConversionToBuffer() throws IOException {
+        String hexString = "68656c6c6f"; // hello
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(hexString));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
+                is(hexStringToByteArray("6f6c6c6568")));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("olleh"));
     }
 
     @Test
@@ -447,7 +456,14 @@ public class HelperIntegrationTest {
         }
 
         public static byte[] reverseByteArray(byte[] b) {
-            return Helper.reverse(b);
+            Helper.reverse(b);
+            return b;
+        }
+
+        public static byte[] reverseByteArrayWithConversionToBuffer(ByteString b) {
+            byte[] buffer = b.toByteArray();
+            Helper.reverse(buffer);
+            return buffer;
         }
 
         public static int sqrt(int x) {
