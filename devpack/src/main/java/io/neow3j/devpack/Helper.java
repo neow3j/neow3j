@@ -281,14 +281,12 @@ public class Helper {
     public static native String last(String source, int n);
 
     /**
-     * Returns a reversed copy of the given bytes. Example: [0a,0b,0c,0d,0e]: [0e,0d,0c,0b,0a]
+     * Reverses the given bytes in place. Example: [0a,0b,0c,0d,0e]: [0e,0d,0c,0b,0a]
      *
      * @param source the bytes to reverse.
-     * @return the reversed bytes.
      */
-    @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.REVERSEITEMS)
-    public static native byte[] reverse(byte[] source);
+    public static native void reverse(byte[] source);
 
     /**
      * Returns the square root of the given number.
