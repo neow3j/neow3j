@@ -646,7 +646,7 @@ public class ObjectsConverter implements Converter {
 
     private static boolean isCallToStringValueOf(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode &&
-                ((MethodInsnNode) insn).owner.equals(Type.getInternalName(String.class)) &&
+                ((MethodInsnNode) insn).owner.equals(getInternalName(String.class)) &&
                 ((MethodInsnNode) insn).name.equals(VALUEOF_METHOD_NAME);
     }
 
