@@ -275,4 +275,10 @@ public class NumericTest {
         assertFalse(Numeric.isValidHexString("0x123456789abcdeg"));
     }
 
+    @Test
+    public void testByteToHex() {
+        assertThat(Numeric.toHexString((byte) 0x61), is("0x61"));
+        assertThat(Numeric.toHexStringNoPrefix((byte) 0x61), is("61"));
+    }
+
 }
