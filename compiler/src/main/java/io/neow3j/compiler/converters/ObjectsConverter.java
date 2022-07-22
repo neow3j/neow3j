@@ -58,6 +58,7 @@ public class ObjectsConverter implements Converter {
 
     private static final String APPEND_METHOD_NAME = "append";
     private static final String TOSTRING_METHOD_NAME = "toString";
+    private static final String VALUEOF_METHOD_NAME = "valueOf";
 
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
@@ -510,8 +511,60 @@ public class ObjectsConverter implements Converter {
     private static AbstractInsnNode handleStringConcatenation(TypeInsnNode typeInsnNode, NeoMethod neoMethod,
             CompilationUnit compUnit) throws IOException {
 
-        // Skip to the next instruction after DUP and INVOKESPECIAL.
-        AbstractInsnNode insn = typeInsnNode.getNext().getNext().getNext();
+        // Skip to the next instruction after DUP
+        AbstractInsnNode insn = typeInsnNode.getNext().getNext();
+        // Check whether the ctor StringBuilder() or StringBuilder(String str) is used.
+        if (isCallToCtor(insn, getInternalName(StringBuilder.class))) {
+            // The empty StringBuilder ctor is used in this concatenation: StringBuilder().
+            // Skip to the next instruction after StringBuilder ctor.
+            insn = insn.getNext();
+            return handleStringBuilderCtorNoArg(insn, neoMethod, compUnit);
+        }
+        // The StringBuilder ctor with a String argument is used in this concatenation: StringBuilder(String str).
+        return handleStringBuilderCtorStringArg(insn, neoMethod, compUnit);
+    }
+
+    private static AbstractInsnNode handleStringBuilderCtorStringArg(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
+
+        boolean isFirstCall = true;
+        boolean isAfterStringBuilderInit = false;
+        while (insn != null) {
+            // Skip ctor of StringBuilder if not yet skipped.
+            if (!isAfterStringBuilderInit && isCallToCtor(insn, getInternalName(StringBuilder.class))) {
+                isAfterStringBuilderInit = true;
+                insn = insn.getNext();
+                continue;
+            }
+            // The first value to append might be followed by a call to String.valueOf() which should be ignored.
+            if (isCallToStringValueOf(insn) && isFirstCall) {
+                insn = insn.getNext();
+                continue;
+            }
+            if (isCallToStringBuilderAppend(insn)) {
+                throwIfNotStringType(insn.getPrevious());
+                neoMethod.addInstruction(new NeoInstruction(OpCode.CAT));
+                insn = insn.getNext();
+                continue;
+            }
+            if (isCallToStringBuilderToString(insn)) {
+                neoMethod.addInstruction(new NeoInstruction(OpCode.CONVERT,
+                        new byte[]{StackItemType.BYTE_STRING.byteValue()}));
+                break; // End of string concatenation.
+            }
+            throwIfIsCallToAnyStringBuilderMethod(insn, neoMethod);
+            insn = handleInsn(insn, neoMethod, compUnit);
+            insn = insn.getNext();
+        }
+        if (insn == null) {
+            throw new CompilerException(neoMethod, "Expected to find ScriptBuilder.toString() but reached end of " +
+                    "method.");
+        }
+        return insn;
+    }
+
+    private static AbstractInsnNode handleStringBuilderCtorNoArg(AbstractInsnNode insn, NeoMethod neoMethod,
+            CompilationUnit compUnit) throws IOException {
 
         boolean isFirstCall = true;
         while (insn != null) {
@@ -529,10 +582,7 @@ public class ObjectsConverter implements Converter {
                         new byte[]{StackItemType.BYTE_STRING.byteValue()}));
                 break; // End of string concatenation.
             }
-            if (isCallToAnyStringBuilderMethod(insn)) {
-                throw new CompilerException(neoMethod, format("Only 'append()' and 'toString()' are supported for " +
-                        "StringBuilder, but '%s' was called", ((MethodInsnNode) insn).name));
-            }
+            throwIfIsCallToAnyStringBuilderMethod(insn, neoMethod);
             insn = handleInsn(insn, neoMethod, compUnit);
             insn = insn.getNext();
         }
@@ -562,6 +612,13 @@ public class ObjectsConverter implements Converter {
         }
     }
 
+    private static void throwIfIsCallToAnyStringBuilderMethod(AbstractInsnNode insn, NeoMethod neoMethod) {
+        if (isCallToAnyStringBuilderMethod(insn)) {
+            throw new CompilerException(neoMethod, format("Only 'append()' and 'toString()' are supported for " +
+                    "StringBuilder, but '%s' was called", ((MethodInsnNode) insn).name));
+        }
+    }
+
     private static boolean isNonArrayStringOrCharType(String desc) {
         Type returnType = Type.getMethodType(desc).getReturnType();
         String internalReturnTypeName = returnType.getInternalName();
@@ -585,6 +642,12 @@ public class ObjectsConverter implements Converter {
     private static boolean isCallToAnyStringBuilderMethod(AbstractInsnNode insn) {
         return insn instanceof MethodInsnNode
                 && ((MethodInsnNode) insn).owner.equals(Type.getInternalName(StringBuilder.class));
+    }
+
+    private static boolean isCallToStringValueOf(AbstractInsnNode insn) {
+        return insn instanceof MethodInsnNode &&
+                ((MethodInsnNode) insn).owner.equals(getInternalName(String.class)) &&
+                ((MethodInsnNode) insn).name.equals(VALUEOF_METHOD_NAME);
     }
 
     private static AbstractInsnNode convertStructConstructorCall(TypeInsnNode typeInsnNode, MethodNode ctorMethod,
