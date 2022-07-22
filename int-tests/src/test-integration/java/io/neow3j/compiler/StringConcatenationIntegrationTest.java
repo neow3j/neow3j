@@ -1,22 +1,32 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.contracts.NeoToken;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.ContractParameter;
+import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
+import io.neow3j.utils.Await;
+import io.neow3j.wallet.Account;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
 import java.io.IOException;
+import java.io.InputStream;
 
+import static io.neow3j.transaction.AccountSigner.none;
+import static io.neow3j.types.ContractParameter.string;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
-public class StringConcatenationTest {
+public class StringConcatenationIntegrationTest {
 
     @Rule
     public TestName testName = new TestName();
@@ -24,19 +34,66 @@ public class StringConcatenationTest {
     @ClassRule
     public static ContractTestRule ct = new ContractTestRule(StringConcatenation.class.getName());
 
+    // This test checks the correct transpilation of a .class that uses the ctor StringBuilder(String str).
+    @Test
+    public void testStringConcatenation_StringBuilderOneArg() throws Throwable {
+        InputStream resourceAsStream = StringConcatenationIntegrationTest.class
+                .getResourceAsStream("/compiler/StringConcatenationContract_StringBuilderOneArg.class");
+
+        CompilationUnit compUnit = new Compiler().compile(resourceAsStream);
+        SmartContract sc = ct.deployContract(compUnit.getNefFile(), compUnit.getManifest());
+        Account acc = ct.getDefaultAccount();
+        String key = "mykey";
+        Hash256 txHash = sc.invokeFunction("putSomething", string(key), string("neow3j "))
+                .signers(none(acc))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
+        InvocationResult res = sc.callInvokeFunction("getSomething", asList(string(key))).getInvocationResult();
+        assertThat(res.getState(), is(NeoVMStateType.HALT));
+        assertThat(res.getStack(), hasSize(1));
+        assertThat(res.getStack().get(0).getString(), is("neow3j foohello"));
+    }
+
+    // This test checks the correct transpilation of a .class that uses the ctor StringBuilder(String str) that has a
+    // String.valueOf() call before initialising the StringBuilder, which should be ignored.
+    @Test
+    public void testStringConcatenation_StringBuilderOneArg_withValueOf() throws Throwable {
+        InputStream resourceAsStream = StringConcatenationIntegrationTest.class
+                .getResourceAsStream("/compiler/StringConcatenationContract_StringBuilderOneArg_withValueOf.class");
+
+        CompilationUnit compUnit = new Compiler().compile(resourceAsStream);
+        SmartContract sc = ct.deployContract(compUnit.getNefFile(), compUnit.getManifest());
+        Account acc = ct.getDefaultAccount();
+        String key = "somekey";
+        Hash256 txHash = sc.invokeFunction("putSomething", string(key), string("bar"))
+                .signers(none(acc))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
+        InvocationResult res = sc.callInvokeFunction("getSomething", asList(string(key))).getInvocationResult();
+        assertThat(res.getState(), is(NeoVMStateType.HALT));
+        assertThat(res.getStack(), hasSize(1));
+        assertThat(res.getStack().get(0).getString(), is("foobarhello"));
+    }
+
     @Test
     public void concatTwoStrings() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                ContractParameter.string("one"),
-                ContractParameter.string("two"));
+                string("one"),
+                string("two"));
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwo"));
     }
 
     @Test
     public void concatStringsFromMixedSources() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                ContractParameter.string("one"),
-                ContractParameter.string("two"),
+                string("one"),
+                string("two"),
                 ContractParameter.byteArray("4e656f")); // byte array representation of "Neo".
 
         assertThat(response.getInvocationResult().getStack().get(0).getString(),
@@ -46,7 +103,6 @@ public class StringConcatenationTest {
     @Test
     public void concatInStaticVariable() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-
         assertThat(response.getInvocationResult().getStack().get(0).getString(), is("onetwoNEO"));
     }
 
