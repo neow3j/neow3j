@@ -7,6 +7,7 @@ import io.neow3j.devpack.StorageContext;
 // this class are native, hence, do not contain an implementation.
 public class StringConcatenationContract {
 
+    private static StorageContext ctx;
 //    private static final StorageContext ctx = Storage.getStorageContext();
 
     public static native String getSomething(String key);
@@ -14,6 +15,7 @@ public class StringConcatenationContract {
 //        return Storage.getString(ctx, key) + "foo" + get();
 //    }
 
+    private static native String get();
 //    private static String get() {
 //        return "hello";
 //    }
