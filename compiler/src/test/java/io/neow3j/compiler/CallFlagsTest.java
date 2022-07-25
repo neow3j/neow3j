@@ -24,7 +24,8 @@ public class CallFlagsTest {
         SortedMap<Integer, NeoInstruction> insns = neoMethod.getInstructions();
 
         assertThat(insns.get(3).getOpcode(), is(OpCode.LDARG0));
-        assertThat(insns.get(7).getOpcode(), is(OpCode.PUSH15)); // CallFlags All
+        assertThat(insns.get(4).getOpcode(), is(OpCode.NEWARRAY0));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.PUSH15)); // CallFlags All
     }
 
     @Test
@@ -34,17 +35,20 @@ public class CallFlagsTest {
         SortedMap<Integer, NeoInstruction> insns1 = neoMethod1.getInstructions();
 
         assertThat(insns1.get(3).getOpcode(), is(OpCode.LDARG0));
-        assertThat(insns1.get(7).getOpcode(), is(OpCode.PUSH5)); // CallFlags ReadOnly
-        assertThat(insns1.get(9).getOpcode(), is(OpCode.PUSHDATA1));
-        assertThat(insns1.get(9).getOperand(), is("getReadOnlyValue".getBytes()));
+        assertThat(insns1.get(4).getOpcode(), is(OpCode.NEWARRAY0));
+        assertThat(insns1.get(5).getOpcode(), is(OpCode.SWAP));
+        assertThat(insns1.get(6).getOpcode(), is(OpCode.PUSH5)); // CallFlags ReadOnly
+        assertThat(insns1.get(8).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns1.get(8).getOperand(), is("getReadOnlyValue".getBytes()));
 
         NeoMethod neoMethod2 = compUnit.getNeoModule().getSortedMethods().get(1);
         SortedMap<Integer, NeoInstruction> insns2 = neoMethod2.getInstructions();
 
         assertThat(insns2.get(3).getOpcode(), is(OpCode.LDARG0));
-        assertThat(insns2.get(7).getOpcode(), is(OpCode.PUSH9)); // CallFlags ReadStates and AllowNotify
-        assertThat(insns2.get(9).getOpcode(), is(OpCode.PUSHDATA1));
-        assertThat(insns2.get(9).getOperand(), is("allowReadAndNotifyMethod".getBytes()));
+        assertThat(insns2.get(4).getOpcode(), is(OpCode.NEWARRAY0));
+        assertThat(insns2.get(6).getOpcode(), is(OpCode.PUSH9)); // CallFlags ReadStates and AllowNotify
+        assertThat(insns2.get(8).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns2.get(8).getOperand(), is("allowReadAndNotifyMethod".getBytes()));
     }
 
     static class TestDefaultCallFlagsContract {
