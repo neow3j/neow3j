@@ -80,6 +80,12 @@ public class List<T> {
     public native void remove(int index);
 
     /**
+     * Reverses this list in place. Example: ["hello",2,3,4,5]: [5,4,3,2,"hello"]
+     */
+    @Instruction(opcode = OpCode.REVERSEITEMS)
+    public native void reverse();
+
+    /**
      * Removes all elements from this list.
      */
     @Instruction(opcode = OpCode.CLEARITEMS)

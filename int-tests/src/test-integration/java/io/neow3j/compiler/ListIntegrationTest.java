@@ -20,6 +20,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
 public class ListIntegrationTest {
@@ -154,6 +155,18 @@ public class ListIntegrationTest {
         assertThat(list.get(2).getMap().get(key).getString(), is("world"));
     }
 
+    @Test
+    public void reverseList() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        List<StackItem> list = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(list, hasSize(5));
+        assertThat(list.get(0).getInteger().intValue(), is(4));
+        assertThat(list.get(1).getString(), is("three"));
+        assertThat(list.get(2).getInteger().intValue(), is(2));
+        assertThat(list.get(3).getInteger().intValue(), is(1));
+        assertThat(list.get(4).getInteger().intValue(), is(5));
+    }
+
     static class ListTestContract {
 
         public static io.neow3j.devpack.List<String> createStringListWithOneEntry() {
@@ -213,6 +226,17 @@ public class ListIntegrationTest {
             Map<String, String> map = new Map<>();
             map.put("hello", "world");
             list.add(map);
+            return list;
+        }
+
+        public static io.neow3j.devpack.List<Object> reverseList() {
+            io.neow3j.devpack.List<Object> list = new io.neow3j.devpack.List<>();
+            list.add(true);
+            list.add(2);
+            list.add("three");
+            list.add(4);
+            list.reverse();
+            list.add(5);
             return list;
         }
 
