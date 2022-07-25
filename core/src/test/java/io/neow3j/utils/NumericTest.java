@@ -149,6 +149,9 @@ public class NumericTest {
 
         thrown = assertThrows(IllegalArgumentException.class, () -> Numeric.hexStringToByteArray("0x123"));
         assertThat(thrown.getMessage(), is("Given value is not a valid hexadecimal string."));
+
+        thrown = assertThrows(IllegalArgumentException.class, () -> Numeric.hexStringToByteArray("0x12az"));
+        assertThat(thrown.getMessage(), is("Given value is not a valid hexadecimal string."));
     }
 
     @Test
