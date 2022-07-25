@@ -44,7 +44,6 @@ import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
 import static io.neow3j.script.OpCode.DROP;
 import static io.neow3j.script.OpCode.DUP;
-import static io.neow3j.script.OpCode.NEWARRAY;
 import static io.neow3j.script.OpCode.ROT;
 import static io.neow3j.script.OpCode.SETITEM;
 import static io.neow3j.script.OpCode.SWAP;
@@ -418,7 +417,7 @@ public class MethodsConverter implements Converter {
 
         int paramCount = Type.getArgumentTypes(calledAsmMethod.desc).length;
         callingNeoMethod.addInstruction(buildPushNumberInstruction(BigInteger.valueOf(paramCount)));
-        callingNeoMethod.addInstruction(new NeoInstruction(NEWARRAY));
+        callingNeoMethod.addNewArrayInstruction();
 
         for (int index = paramCount - 1; index >= 0; index--) {
             callingNeoMethod.addInstruction(new NeoInstruction(DUP));

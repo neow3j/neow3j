@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.annotations.MethodSignature;
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.script.OpCode;
+import io.neow3j.types.StackItemType;
 import io.neow3j.utils.ArrayUtils;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
@@ -609,6 +610,19 @@ public class NeoMethod {
     }
 
     /**
+     * @return true if the opcode in the last instruction is {@link OpCode#PUSH0}. False, otherwise.
+     */
+    public boolean lastInstructionIsPush0() {
+        OpCode opcode;
+        try {
+            opcode = getLastInstruction().getOpcode();
+        } catch (CompilerException ignore) {
+            return false;
+        }
+        return OpCode.PUSH0.equals(opcode);
+    }
+
+    /**
      * Serializes this method to a byte array, by serializing all its instructions ordered by instruction address.
      *
      * @return the byte array.
@@ -811,6 +825,30 @@ public class NeoMethod {
 
     private boolean containsThisParam(List<LocalVariableNode> locVars) {
         return locVars.stream().anyMatch(v -> v.name.equals(THIS_KEYWORD));
+    }
+
+    /**
+     * Adds {@link OpCode#NEWARRAY_T} with the provided {@link StackItemType} as operand to the instructions. If the
+     * last instruction is {@link OpCode#PUSH0}, it is replaced with the {@link OpCode#NEWARRAY0}.
+     */
+    public void addNewArrayInstruction(StackItemType type) {
+        if (lastInstructionIsPush0()) {
+            replaceLastInstruction(new NeoInstruction(OpCode.NEWARRAY0));
+        } else {
+            addInstruction(new NeoInstruction(OpCode.NEWARRAY_T, new byte[]{type.byteValue()}));
+        }
+    }
+
+    /**
+     * Adds {@link OpCode#NEWARRAY} to the instructions. If the last instruction is {@link OpCode#PUSH0}, it is
+     * replaced with the {@link OpCode#NEWARRAY0}.
+     */
+    public void addNewArrayInstruction() {
+        if (lastInstructionIsPush0()) {
+            replaceLastInstruction(new NeoInstruction(OpCode.NEWARRAY0));
+        } else {
+            addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+        }
     }
 
     private static class TryCatchFinallyBlock {
