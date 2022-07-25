@@ -138,11 +138,20 @@ public class NumericTest {
     @Test
     public void testHexStringToByteArray() {
         assertThat(Numeric.hexStringToByteArray(""), is(new byte[]{}));
-        assertThat(Numeric.hexStringToByteArray("0"), is(new byte[]{0}));
-        assertThat(Numeric.hexStringToByteArray("1"), is(new byte[]{0x1}));
         assertThat(Numeric.hexStringToByteArray(HEX_RANGE_STRING), is(HEX_RANGE_ARRAY));
+    }
 
-        assertThat(Numeric.hexStringToByteArray("0x123"), is(new byte[]{0x1, 0x23}));
+    @Test
+    public void testInvalidHexToByteArray() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> Numeric.hexStringToByteArray("0"));
+        assertThat(thrown.getMessage(), is("Given value is not a valid hexadecimal string."));
+
+        thrown = assertThrows(IllegalArgumentException.class, () -> Numeric.hexStringToByteArray("0x123"));
+        assertThat(thrown.getMessage(), is("Given value is not a valid hexadecimal string."));
+
+        thrown = assertThrows(IllegalArgumentException.class, () -> Numeric.hexStringToByteArray("0x12az"));
+        assertThat(thrown.getMessage(), is("Given value is not a valid hexadecimal string."));
     }
 
     @Test
@@ -273,6 +282,12 @@ public class NumericTest {
         assertFalse(Numeric.isValidHexString("1g"));
         assertFalse(Numeric.isValidHexString("0x1g"));
         assertFalse(Numeric.isValidHexString("0x123456789abcdeg"));
+    }
+
+    @Test
+    public void testByteToHex() {
+        assertThat(Numeric.toHexString((byte) 0x61), is("0x61"));
+        assertThat(Numeric.toHexStringNoPrefix((byte) 0x61), is("61"));
     }
 
 }

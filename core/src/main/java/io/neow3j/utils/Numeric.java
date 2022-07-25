@@ -229,6 +229,7 @@ public final class Numeric {
     }
 
     public static byte[] hexStringToByteArray(String input) {
+        checkAndThrowIsValidHexString(input);
         String cleanInput = cleanHexPrefix(input);
 
         int len = cleanInput.length();
@@ -276,12 +277,12 @@ public final class Numeric {
     }
 
     public static String hexToString(String input) {
-        return new String(Numeric.hexStringToByteArray(input));
+        return new String(hexStringToByteArray(input));
     }
 
     public static BigInteger hexToInteger(String input) {
         String reverse = reverseHexString(input);
-        return Numeric.toBigInt(reverse);
+        return toBigInt(reverse);
     }
 
     public static String reverseHexString(String input) {
