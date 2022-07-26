@@ -108,11 +108,7 @@ public class ArraysConverter implements Converter {
             TypeInsnNode typeInsn = (TypeInsnNode) insn;
             stackItemType = mapTypeToStackItemType(Type.getObjectType(typeInsn.desc));
         }
-        if (stackItemType == StackItemType.ANY) {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
-        } else {
-            neoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY_T, new byte[]{stackItemType.byteValue()}));
-        }
+        neoMethod.addNewArrayInstruction(stackItemType);
     }
 
     private AbstractInsnNode handleNewByteArray(AbstractInsnNode insn, NeoMethod neoMethod) {

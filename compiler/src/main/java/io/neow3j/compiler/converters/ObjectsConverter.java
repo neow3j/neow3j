@@ -675,7 +675,7 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         addPushNumber(fieldSize, callingNeoMethod);
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.NEWARRAY));
+        callingNeoMethod.addNewArrayInstruction();
         // TODO: Determine when to use NEWSTRUCT.
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.DUP));
         // After the JVM NEW and DUP, arguments that will be given to the INVOKESPECIAL call can

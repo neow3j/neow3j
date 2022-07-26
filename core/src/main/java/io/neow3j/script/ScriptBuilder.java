@@ -325,7 +325,6 @@ public class ScriptBuilder {
         return this;
     }
 
-
     public ScriptBuilder pack() {
         opCode(OpCode.PACK);
         return this;
