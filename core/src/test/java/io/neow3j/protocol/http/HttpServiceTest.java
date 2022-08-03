@@ -30,21 +30,20 @@ import java.util.concurrent.TimeoutException;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class HttpServiceTest {
 
     private static final Logger LOG = LoggerFactory.getLogger(HttpServiceTest.class);
 
-    private HttpService httpService = new HttpService();
+    private final HttpService httpService = new HttpService();
 
     @Test
     public void testAddHeader() {
         String headerName = "customized_header0";
         String headerValue = "customized_value0";
         httpService.addHeader(headerName, headerValue);
-        assertTrue(httpService.getHeaders().get(headerName).equals(headerValue));
+        assertEquals(httpService.getHeaders().get(headerName), headerValue);
     }
 
     @Test
@@ -61,8 +60,8 @@ public class HttpServiceTest {
 
         httpService.addHeaders(headersToAdd);
 
-        assertTrue(httpService.getHeaders().get(headerName1).equals(headerValue1));
-        assertTrue(httpService.getHeaders().get(headerName2).equals(headerValue2));
+        assertEquals(httpService.getHeaders().get(headerName1), headerValue1);
+        assertEquals(httpService.getHeaders().get(headerName2), headerValue2);
     }
 
     @Test
@@ -71,7 +70,7 @@ public class HttpServiceTest {
         Response response = new Response.Builder()
                 .code(400)
                 .message("")
-                .body(ResponseBody.create(null, content))
+                .body(ResponseBody.create(content, null))
                 .request(new okhttp3.Request.Builder()
                         .url(HttpService.DEFAULT_URL)
                         .build())
@@ -97,8 +96,7 @@ public class HttpServiceTest {
         } catch (ClientConnectionException e) {
             assertEquals(
                     e.getMessage(),
-                    "Invalid response received: "
-                            + response.code() + "; " + content);
+                    "Invalid response received: " + response.code() + "; " + content);
             return;
         }
 
@@ -106,21 +104,19 @@ public class HttpServiceTest {
     }
 
     @Test
-    public void testAsyncWithExternalExecutor() throws ExecutionException, InterruptedException {
-
+    public void testAsyncWithExternalExecutor() {
         TestExecutorService executor = new TestExecutorService();
 
         String content = "200";
         Response response = new Response.Builder()
                 .code(200)
                 .message("")
-                .body(ResponseBody.create(null, content))
+                .body(ResponseBody.create(content, null))
                 .request(new okhttp3.Request.Builder()
                         .url(HttpService.DEFAULT_URL)
                         .build())
                 .protocol(Protocol.HTTP_1_1)
                 .build();
-
 
         OkHttpClient httpClient = Mockito.mock(OkHttpClient.class);
         Mockito.when(httpClient.newCall(Mockito.any()))
@@ -233,7 +229,7 @@ public class HttpServiceTest {
         public boolean isCalled() {
             return isCalled;
         }
-    }
 
+    }
 
 }

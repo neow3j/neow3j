@@ -5,7 +5,6 @@ testSets {
 }
 
 dependencies {
-
     testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
             project(':compiler'),
             project(':contract'),
