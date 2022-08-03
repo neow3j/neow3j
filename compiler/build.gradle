@@ -1,7 +1,6 @@
 description 'neow3j: JVM Compiler to NeoVM'
 
 dependencies {
-
     compile "org.ow2.asm:asm-tree:$asmVersion",
             project(':contract')
 

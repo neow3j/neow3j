@@ -6,11 +6,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.Request;
 import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
 import okio.Buffer;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 
-import java.io.IOException;
-
+import static io.neow3j.protocol.http.HttpService.JSON_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertNotNull;
@@ -55,12 +56,13 @@ public abstract class RequestTester {
         private RequestBody requestBody;
 
         @Override
-        public okhttp3.Response intercept(Chain chain) throws IOException {
+        public okhttp3.@NotNull Response intercept(Chain chain) {
 
             Request request = chain.request();
             this.requestBody = request.body();
 
             okhttp3.Response response = new okhttp3.Response.Builder()
+                    .body(ResponseBody.create("{}", JSON_MEDIA_TYPE))
                     .request(chain.request())
                     .protocol(Protocol.HTTP_2)
                     .code(200)
@@ -73,5 +75,7 @@ public abstract class RequestTester {
         public RequestBody getRequestBody() {
             return requestBody;
         }
+
     }
+
 }

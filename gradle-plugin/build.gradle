@@ -30,7 +30,6 @@ pluginBundle {
             displayName = 'Gradle plugin for neow3j compiler'
         }
     }
-
 }
 
 // from:
@@ -54,6 +53,8 @@ dependencies {
     implementation project(':compiler'),
             project(':contract'),
             gradleApi()
+
     testImplementation gradleTestKit()
+
     testRuntime files(createClasspathManifest)
 }

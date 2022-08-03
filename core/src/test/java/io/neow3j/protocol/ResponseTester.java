@@ -7,6 +7,7 @@ import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.ResponseBody;
+import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 
 import java.io.IOException;
@@ -56,14 +57,14 @@ public abstract class ResponseTester {
         }
 
         @Override
-        public okhttp3.Response intercept(Chain chain) throws IOException {
+        public okhttp3.@NotNull Response intercept(@NotNull Chain chain) {
 
             if (jsonResponse == null) {
                 throw new UnsupportedOperationException("Response has not been configured");
             }
 
             okhttp3.Response response = new okhttp3.Response.Builder()
-                    .body(ResponseBody.create(JSON_MEDIA_TYPE, jsonResponse))
+                    .body(ResponseBody.create(jsonResponse, JSON_MEDIA_TYPE))
                     .request(chain.request())
                     .protocol(Protocol.HTTP_2)
                     .code(200)
@@ -72,5 +73,7 @@ public abstract class ResponseTester {
 
             return response;
         }
+
     }
+
 }

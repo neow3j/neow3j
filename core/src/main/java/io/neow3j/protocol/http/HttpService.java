@@ -35,8 +35,8 @@ public class HttpService extends Service {
     private static final Logger log = LoggerFactory.getLogger(HttpService.class);
     private final String url;
     private final boolean includeRawResponses;
-    private OkHttpClient httpClient;
-    private HashMap<String, String> headers = new HashMap<>();
+    private final OkHttpClient httpClient;
+    private final HashMap<String, String> headers = new HashMap<>();
 
     /**
      * Create an {@link HttpService} instance.
@@ -255,15 +255,14 @@ public class HttpService extends Service {
     private static void configureLogging(OkHttpClient.Builder builder) {
         if (log.isDebugEnabled()) {
             HttpLoggingInterceptor logging = new HttpLoggingInterceptor(log::debug);
-            logging.setLevel(HttpLoggingInterceptor.Level.BODY);
+            logging.level(HttpLoggingInterceptor.Level.BODY);
             builder.addInterceptor(logging);
         }
     }
 
     @Override
     protected InputStream performIO(String request) throws IOException {
-
-        RequestBody requestBody = RequestBody.create(JSON_MEDIA_TYPE, request);
+        RequestBody requestBody = RequestBody.create(request, JSON_MEDIA_TYPE);
         Headers headers = buildHeaders();
 
         okhttp3.Request httpRequest = new okhttp3.Request.Builder()
@@ -297,7 +296,7 @@ public class HttpService extends Service {
 
             BufferedSource source = responseBody.source();
             source.request(Long.MAX_VALUE); // Buffer the entire body
-            Buffer buffer = source.buffer();
+            Buffer buffer = source.getBuffer();
 
             long size = buffer.size();
             if (size > Integer.MAX_VALUE) {
