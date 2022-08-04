@@ -30,6 +30,7 @@ import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
 import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexString;
 import static java.util.Arrays.asList;
 
 /**
@@ -254,9 +255,28 @@ public class SmartContract {
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
+        return callFunctionAndTraverseIterator(mapper, function, DEFAULT_ITERATOR_COUNT, params);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
+     * {@code maxIteratorResultItems} stack items mapped with the provided unwrap function.
+     * <p>
+     * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     *
+     * @param mapper   the function to apply on the stack items in the iterator.
+     * @param function the function to call.
+     * @param function the maximal number of items to return.
+     * @param params   the contract parameters to include in the call.
+     * @return the mapped iterator items.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
+            int maxIteratorResultItems, ContractParameter... params) throws IOException {
 
         Iterator<T> iterator = callFunctionReturningIterator(mapper, function, params);
-        List<T> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
+        List<T> iteratorItems = iterator.traverse(maxIteratorResultItems);
         iterator.terminateSession();
         return iteratorItems;
     }
@@ -280,6 +300,35 @@ public class SmartContract {
         List<StackItem> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
         iterator.terminateSession();
         return iteratorItems;
+    }
+
+    /**
+     * Sends an {@code invokescript} RPC call. The script that is built calls a contract method that is expected to
+     * return an iterator. The script then traverses this iterator and adds the read items to an array which is
+     * returned once the iterator is completely traversed or the array reaches the size of
+     * {@code maxIteratorResultItems}.
+     * <p>
+     * Use this to retrieve iterator values in interaction with an RPC server that has sessions disabled.
+     *
+     * @param method                 the method to call.
+     * @param params                 the contract parameters to include in the call.
+     * @param maxIteratorResultItems the maximal number of iterator result items to include in the array. This value
+     *                               must not exceed NeoVM limits.
+     * @param signers                the list of signers for this request.
+     * @return a list of stack items of the returned iterator.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
+     */
+    public List<StackItem> callFunctionAndUnwrapIterator(String method, List<ContractParameter> params,
+            int maxIteratorResultItems, Signer... signers) throws UnexpectedReturnTypeException, IOException {
+
+        byte[] script = ScriptBuilder.buildContractCallAndUnwrapIterator(scriptHash, method, params,
+                maxIteratorResultItems);
+
+        InvocationResult invocationResult = neow3j.invokeScript(toHexString(script), signers).send()
+                .getInvocationResult();
+        throwIfFaultState(invocationResult);
+        return invocationResult.getStack().get(0).getList();
     }
 
     /**
