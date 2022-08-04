@@ -36,13 +36,15 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends an OpCode to the script.
+     * Appends OpCodes to the script in the order provided.
      *
-     * @param opCode the OpCode to append.
+     * @param opCodes the OpCodes to append.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder opCode(OpCode opCode) {
-        writeByte(opCode.getCode());
+    public ScriptBuilder opCode(OpCode... opCodes) {
+        for (OpCode o : opCodes) {
+            writeByte(o.getCode());
+        }
         return this;
     }
 
