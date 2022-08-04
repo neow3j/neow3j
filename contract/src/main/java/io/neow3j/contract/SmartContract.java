@@ -206,9 +206,9 @@ public class SmartContract {
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public <T> Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
+    public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
             throws IOException {
-        return (Iterator<StackItem>) callFunctionReturningIterator(i -> (T) i, function, params);
+        return callFunctionReturningIterator(i -> i, function, params);
     }
 
     /**
@@ -221,6 +221,7 @@ public class SmartContract {
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
+     * @param <T>      the type the stack items are mapped to by the mapper function when traversing the iterator.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -250,6 +251,7 @@ public class SmartContract {
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
+     * @param <T>      the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -265,10 +267,11 @@ public class SmartContract {
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
      *
-     * @param mapper   the function to apply on the stack items in the iterator.
-     * @param function the function to call.
-     * @param function the maximal number of items to return.
-     * @param params   the contract parameters to include in the call.
+     * @param mapper                 the function to apply on the stack items in the iterator.
+     * @param function               the function to call.
+     * @param maxIteratorResultItems the maximal number of items to return.
+     * @param params                 the contract parameters to include in the call.
+     * @param <T>                    the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -303,14 +306,14 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokescript} RPC call. The script that is built calls a contract method that is expected to
+     * Sends an {@code invokescript} RPC call. The script that is built calls a contract function that is expected to
      * return an iterator. The script then traverses this iterator and adds the read items to an array which is
      * returned once the iterator is completely traversed or the array reaches the size of
      * {@code maxIteratorResultItems}.
      * <p>
      * Use this to retrieve iterator values in interaction with an RPC server that has sessions disabled.
      *
-     * @param method                 the method to call.
+     * @param function               the function to call.
      * @param params                 the contract parameters to include in the call.
      * @param maxIteratorResultItems the maximal number of iterator result items to include in the array. This value
      *                               must not exceed NeoVM limits.
@@ -319,10 +322,10 @@ public class SmartContract {
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
      */
-    public List<StackItem> callFunctionAndUnwrapIterator(String method, List<ContractParameter> params,
+    public List<StackItem> callFunctionAndUnwrapIterator(String function, List<ContractParameter> params,
             int maxIteratorResultItems, Signer... signers) throws UnexpectedReturnTypeException, IOException {
 
-        byte[] script = ScriptBuilder.buildContractCallAndUnwrapIterator(scriptHash, method, params,
+        byte[] script = ScriptBuilder.buildContractCallAndUnwrapIterator(scriptHash, function, params,
                 maxIteratorResultItems);
 
         InvocationResult invocationResult = neow3j.invokeScript(toHexString(script), signers).send()
