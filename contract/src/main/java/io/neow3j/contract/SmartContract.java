@@ -30,6 +30,7 @@ import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
 import static io.neow3j.utils.Numeric.reverseHexString;
+import static io.neow3j.utils.Numeric.toHexString;
 import static java.util.Arrays.asList;
 
 /**
@@ -199,15 +200,18 @@ public class SmartContract {
      * {@link InteropInterfaceStackItem} as a return type.
      * <p>
      * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items.
+     * <p>
+     * In order to traverse the returned iterator, sessions need to be enabled on the Neo node. If sessions are
+     * disabled on the Neo node, use {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public <T> Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
+    public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
             throws IOException {
-        return (Iterator<StackItem>) callFunctionReturningIterator(i -> (T) i, function, params);
+        return callFunctionReturningIterator(i -> i, function, params);
     }
 
     /**
@@ -216,10 +220,14 @@ public class SmartContract {
      * <p>
      * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items with
      * provided mapper applied to each item.
+     * <p>
+     * In order to traverse the returned iterator, sessions need to be enabled on the Neo node. If sessions are
+     * disabled on the Neo node, use {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
+     * @param <T>      the type the stack items are mapped to by the mapper function when traversing the iterator.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -245,18 +253,45 @@ public class SmartContract {
      * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items mapped with the provided unwrap function.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
+     * @param <T>      the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
+        return callFunctionAndTraverseIterator(mapper, function, DEFAULT_ITERATOR_COUNT, params);
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting an
+     * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
+     * {@code maxIteratorResultItems} stack items mapped with the provided unwrap function.
+     * <p>
+     * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
+     *
+     * @param mapper                 the function to apply on the stack items in the iterator.
+     * @param function               the function to call.
+     * @param maxIteratorResultItems the maximal number of items to return.
+     * @param params                 the contract parameters to include in the call.
+     * @param <T>                    the type the stack items are mapped to by the mapper function.
+     * @return the mapped iterator items.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
+            int maxIteratorResultItems, ContractParameter... params) throws IOException {
 
         Iterator<T> iterator = callFunctionReturningIterator(mapper, function, params);
-        List<T> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
+        List<T> iteratorItems = iterator.traverse(maxIteratorResultItems);
         iterator.terminateSession();
         return iteratorItems;
     }
@@ -267,6 +302,9 @@ public class SmartContract {
      * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -280,6 +318,32 @@ public class SmartContract {
         List<StackItem> iteratorItems = iterator.traverse(DEFAULT_ITERATOR_COUNT);
         iterator.terminateSession();
         return iteratorItems;
+    }
+
+    /**
+     * Calls {@code function} of this contract and expects an iterator as the return value. That iterator is then
+     * traversed and its entries are put in an array which is returned. Note, that this all happens on the NeoVM.
+     * Thus, this method is useful for Neo nodes that don't have iterator sessions enabled.
+     *
+     * @param function               the function to call.
+     * @param params                 the contract parameters to include in the call.
+     * @param maxIteratorResultItems the maximal number of iterator result items to include in the array. This value
+     *                               must not exceed NeoVM limits.
+     * @param signers                the list of signers for this request.
+     * @return a list of stack items of the returned iterator.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
+     */
+    public List<StackItem> callFunctionAndUnwrapIterator(String function, List<ContractParameter> params,
+            int maxIteratorResultItems, Signer... signers) throws UnexpectedReturnTypeException, IOException {
+
+        byte[] script = ScriptBuilder.buildContractCallAndUnwrapIterator(scriptHash, function, params,
+                maxIteratorResultItems);
+
+        InvocationResult invocationResult = neow3j.invokeScript(toHexString(script), signers).send()
+                .getInvocationResult();
+        throwIfFaultState(invocationResult);
+        return invocationResult.getStack().get(0).getList();
     }
 
     /**

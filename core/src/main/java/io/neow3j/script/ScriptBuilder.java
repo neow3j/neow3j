@@ -36,13 +36,15 @@ public class ScriptBuilder {
     }
 
     /**
-     * Appends an OpCode to the script.
+     * Appends OpCodes to the script in the order provided.
      *
-     * @param opCode the OpCode to append.
+     * @param opCodes the OpCodes to append.
      * @return this ScriptBuilder object.
      */
-    public ScriptBuilder opCode(OpCode opCode) {
-        writeByte(opCode.getCode());
+    public ScriptBuilder opCode(OpCode... opCodes) {
+        for (OpCode o : opCodes) {
+            writeByte(o.getCode());
+        }
         return this;
     }
 
@@ -420,6 +422,98 @@ public class ScriptBuilder {
                 .pushInteger(nefCheckSum)
                 .pushData(contractName)
                 .toArray();
+    }
+
+    /**
+     * Builds a script that calls a contract method with the provided parameters and {@link CallFlags#ALL} where the
+     * return value is expected to be an iterator. The iterator is then traversed and its values are added to an array.
+     * <p>
+     * Use this to retrieve iterator values in interaction with an RPC server that has sessions disabled.
+     *
+     * @param contractHash           the script hash of the contract to call.
+     * @param method                 the method to call.
+     * @param params                 the parameters that will be used in the call. Need to be in correct order.
+     * @param maxIteratorResultItems the maximal number of iterator result items to include in the array. This value
+     *                               must not exceed NeoVM limits.
+     * @return the script.
+     */
+    public static byte[] buildContractCallAndUnwrapIterator(Hash160 contractHash, String method,
+            List<ContractParameter> params, int maxIteratorResultItems) {
+
+        return buildContractCallAndUnwrapIterator(contractHash, method, params, CallFlags.ALL,
+                maxIteratorResultItems);
+    }
+
+    /**
+     * Builds a script that calls a contract method with the provided parameters where the return value is expected
+     * to be an iterator. The iterator is then traversed and its values are added to an array.
+     * <p>
+     * Use this to retrieve iterator values in interaction with an RPC server that has sessions disabled.
+     * <p>
+     * Thanks to Anna Shaleva and Roman Khimov for the
+     * <a href="https://github.com/nspcc-dev/neo-go/blob/d4292ed5326e11aaa9fa53fe35459acd6a0e3239/pkg/smartcontract/entry.go#L21">implementation in neo-go</a>
+     * on which this method is based on.
+     *
+     * @param contractHash           the script hash of the contract to call.
+     * @param method                 the method to call.
+     * @param params                 the parameters that will be used in the call. Need to be in correct order.
+     * @param callFlags              the call flags to use for the contract call.
+     * @param maxIteratorResultItems the maximal number of iterator result items to include in the array. This value
+     *                               must not exceed NeoVM limits.
+     * @return the script.
+     */
+    public static byte[] buildContractCallAndUnwrapIterator(Hash160 contractHash, String method,
+            List<ContractParameter> params, CallFlags callFlags, int maxIteratorResultItems) {
+
+        ScriptBuilder b = new ScriptBuilder();                   // Stack state after opcode execution (top to bottom).
+        b.pushInteger(maxIteratorResultItems);                   // Stack: maxIt
+        b.contractCall(contractHash, method, params, callFlags); // Stack: iterator, maxIt
+        // Push an empty array to fill with the iterator result items.
+        b.opCode(OpCode.NEWARRAY0);                              // Stack: empty array, iterator, maxIt
+
+        // ### Start of iterator traversal cycle ###
+        BigInteger iteratorTraverseCycleStartOffset = BigInteger.valueOf(b.stream.size());
+        // Copy the iterator to the top of the stack.
+        b.opCode(OpCode.OVER);                                   // Stack: iterator, array, iterator, maxIt
+        // Pops the iterator and pushes true or false (whether the iterator has a next value).
+        b.sysCall(InteropService.SYSTEM_ITERATOR_NEXT);          // Stack: boolean, array, iterator, maxIt
+
+        // Jump to end of program if iterator has no next value. Operand is set once the offset at cycle end is known.
+        BigInteger jmpIfNotOffset = BigInteger.valueOf(b.stream.size());
+        b.opCode(OpCode.JMPIFNOT, new byte[]{0x00});             // Stack: array, iterator, maxIt
+
+        // Duplicate the array and
+        b.opCode(OpCode.DUP,                                     // Stack: array, array, iterator, maxIt
+                OpCode.PUSH2, OpCode.PICK);                      // Stack: iterator, array, array, iterator, maxIt
+        b.sysCall(InteropService.SYSTEM_ITERATOR_VALUE);         // Stack: iteratorItem, array, array, iterator, maxIt
+        b.opCode(OpCode.APPEND,                                  // Stack: array, iterator, maxIt
+                OpCode.DUP,                                      // Stack: array, array, iterator, maxIt
+                OpCode.SIZE,                                     // Stack: arraySize, array, iterator, maxIt
+                OpCode.PUSH3, OpCode.PICK,                       // Stack: maxIt, arraySize, array, iterator, maxIt
+                OpCode.GE);                                      // Stack: arraysize >= maxIt, array, iterator, maxIt
+
+        // Jump to end of cycle if array holds the defined maximal number of iterator result items.
+        // Operand is set once the offset at cycle end is known.
+        BigInteger jmpIfMaxReachedOffset = BigInteger.valueOf(b.stream.size());
+        b.opCode(OpCode.JMPIF, new byte[]{0x00});                // Stack: array, iterator, maxIt
+
+        // Jump to start of iterator traversal cycle.
+        BigInteger jmpOffset = BigInteger.valueOf(b.stream.size());
+        byte jmpBytesToCycleStart = iteratorTraverseCycleStartOffset.subtract(jmpOffset).byteValue();
+        b.opCode(OpCode.JMP, new byte[]{jmpBytesToCycleStart});  // Stack: array, iterator, maxIt
+
+        // ### End of traversal cycle ###
+        // Remove the iterator and maxIteratorResultItems.
+        BigInteger loadResultOffset = BigInteger.valueOf(b.stream.size());
+        b.opCode(OpCode.NIP,                                     // Stack: array, maxIt
+                OpCode.NIP);                                     // Stack: array
+
+        // Fill in operands for the jump opcodes.
+        byte[] bytes = b.toArray();
+        bytes[jmpIfNotOffset.add(BigInteger.ONE).byteValue()] = loadResultOffset.subtract(jmpIfNotOffset).byteValue();
+        bytes[jmpIfMaxReachedOffset.add(BigInteger.ONE).byteValue()] =
+                loadResultOffset.subtract(jmpIfMaxReachedOffset).byteValue();
+        return bytes;
     }
 
 }

@@ -830,6 +830,11 @@ public class NeoMethod {
     /**
      * Adds {@link OpCode#NEWARRAY_T} with the provided {@link StackItemType} as operand to the instructions. If the
      * last instruction is {@link OpCode#PUSH0}, it is replaced with the {@link OpCode#NEWARRAY0}.
+     * <p>
+     * The array is filled with default values based on the stack item type provided. If the NeoVM does not specify
+     * default values for a type the array is filled with null values.
+     *
+     * @param type the type used to initialise the array.
      */
     public void addNewArrayInstruction(StackItemType type) {
         if (lastInstructionIsPush0()) {

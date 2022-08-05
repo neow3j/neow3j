@@ -28,7 +28,9 @@ import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertTrue;
 
@@ -60,6 +62,28 @@ public class DivisibleNFTIntegrationTest {
         List<StackItem> iter = ct.callAndTraverseIterator(testName, byteArrayFromString("io/neow3j/test"));
         assertThat(iter.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
         assertThat(iter.get(1).getAddress(), is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+    }
+
+    @Test
+    public void testOwnerOfWithoutSessions() throws IOException {
+        List<StackItem> iteratorArray = ct.getContract()
+                .callFunctionAndUnwrapIterator("testOwnerOf", asList(byteArrayFromString("io/neow3j/test")), 1000);
+
+        assertThat(iteratorArray, hasSize(2));
+        assertThat(iteratorArray.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
+        assertThat(iteratorArray.get(1).getAddress(), is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+
+        iteratorArray = ct.getContract()
+                .callFunctionAndUnwrapIterator("testOwnerOf", asList(byteArrayFromString("io/neow3j/test")), 2);
+
+        assertThat(iteratorArray, hasSize(2));
+        assertThat(iteratorArray.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
+        assertThat(iteratorArray.get(1).getAddress(), is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+
+        iteratorArray = ct.getContract()
+                .callFunctionAndUnwrapIterator("testOwnerOf", asList(byteArrayFromString("io/neow3j/test")), 1);
+        assertThat(iteratorArray, hasSize(1));
+        assertThat(iteratorArray.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
     }
 
     @Test

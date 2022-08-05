@@ -387,6 +387,16 @@ public class SmartContractTest {
     }
 
     @Test
+    public void testCallFunctionAndUnwrapIterator() throws IOException {
+        setUpWireMockForCall("invokescript", "invokescript_ownerOf_array.json");
+        List<StackItem> iteratorArray = someContract.callFunctionAndUnwrapIterator("ownerOf", asList(), 20);
+
+        assertThat(iteratorArray, hasSize(2));
+        assertThat(iteratorArray.get(0).getAddress(), Matchers.is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
+        assertThat(iteratorArray.get(1).getAddress(), Matchers.is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+    }
+
+    @Test
     public void callInvokeFunction_missingFunction() {
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> neoContract.callInvokeFunction("",
