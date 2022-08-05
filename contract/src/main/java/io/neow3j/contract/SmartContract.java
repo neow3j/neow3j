@@ -200,6 +200,9 @@ public class SmartContract {
      * {@link InteropInterfaceStackItem} as a return type.
      * <p>
      * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items.
+     * <p>
+     * In order to traverse the returned iterator, sessions need to be enabled on the Neo node. If sessions are
+     * disabled on the Neo node, use {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -217,6 +220,9 @@ public class SmartContract {
      * <p>
      * Traverse the returned iterator with {@link Iterator#traverse(int)} to retrieve the iterator items with
      * provided mapper applied to each item.
+     * <p>
+     * In order to traverse the returned iterator, sessions need to be enabled on the Neo node. If sessions are
+     * disabled on the Neo node, use {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
@@ -247,6 +253,9 @@ public class SmartContract {
      * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items mapped with the provided unwrap function.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param mapper   the function to apply on the stack items in the iterator.
      * @param function the function to call.
@@ -266,6 +275,9 @@ public class SmartContract {
      * {@code maxIteratorResultItems} stack items mapped with the provided unwrap function.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param mapper                 the function to apply on the stack items in the iterator.
      * @param function               the function to call.
@@ -290,6 +302,9 @@ public class SmartContract {
      * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
+     * <p>
+     * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
+     * {@link SmartContract#callFunctionAndUnwrapIterator(String, List, int, Signer...)}.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -306,12 +321,9 @@ public class SmartContract {
     }
 
     /**
-     * Sends an {@code invokescript} RPC call. The script that is built calls a contract function that is expected to
-     * return an iterator. The script then traverses this iterator and adds the read items to an array which is
-     * returned once the iterator is completely traversed or the array reaches the size of
-     * {@code maxIteratorResultItems}.
-     * <p>
-     * Use this to retrieve iterator values in interaction with an RPC server that has sessions disabled.
+     * Calls {@code function} of this contract and expects an iterator as the return value. That iterator is then
+     * traversed and its entries are put in an array which is returned. Note, that this all happens on the NeoVM.
+     * Thus, this method is useful for Neo nodes that don't have iterator sessions enabled.
      *
      * @param function               the function to call.
      * @param params                 the contract parameters to include in the call.
