@@ -67,6 +67,13 @@ public class DivisibleNFTIntegrationTest {
     @Test
     public void testOwnerOfWithoutSessions() throws IOException {
         List<StackItem> iteratorArray = ct.getContract()
+                .callFunctionAndUnwrapIterator("testOwnerOf", asList(byteArrayFromString("io/neow3j/test")), 1000);
+
+        assertThat(iteratorArray, hasSize(2));
+        assertThat(iteratorArray.get(0).getAddress(), is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
+        assertThat(iteratorArray.get(1).getAddress(), is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+
+        iteratorArray = ct.getContract()
                 .callFunctionAndUnwrapIterator("testOwnerOf", asList(byteArrayFromString("io/neow3j/test")), 2);
 
         assertThat(iteratorArray, hasSize(2));
