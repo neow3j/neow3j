@@ -36,6 +36,7 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ContractManagementIntegrationTest {
@@ -56,17 +58,24 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void getContract() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(new Hash160(neoTokenHash())));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(new Hash160(neoTokenHash())));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-5)); // ID
         assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
-        assertThat(reverseHexString(array.get(2).getHexString()),
-                is(NeoToken.SCRIPT_HASH.toString())); // contract hash
-        // nef
-        assertThat(array.get(3).getHexString(), not(isEmptyString()));
-        // manifest
-        assertThat(array.get(4).getList(), notNullValue());
+        assertThat(reverseHexString(array.get(2).getHexString()), is(NeoToken.SCRIPT_HASH.toString())); // contract hash
+        assertThat(array.get(3).getHexString(), not(isEmptyString())); // nef
+        assertThat(array.get(4).getList(), notNullValue()); // manifest
+    }
+
+    @Test
+    public void hasMethod() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                hash160(NeoToken.SCRIPT_HASH), string("balanceOf"), integer(1));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+
+        response = ct.callInvokeFunction(testName,
+                hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(1));
+        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
@@ -267,6 +276,10 @@ public class ContractManagementIntegrationTest {
 
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
             return new ContractManagement().getContract(contractHash);
+        }
+
+        public static boolean hasMethod(io.neow3j.devpack.Hash160 contractHash, String method, int paramCount) {
+            return new ContractManagement().hasMethod(contractHash, method, paramCount);
         }
 
         public static boolean[] checkManifestValues(io.neow3j.devpack.Hash160 contractHash) {
