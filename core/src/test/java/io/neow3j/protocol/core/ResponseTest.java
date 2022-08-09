@@ -3419,6 +3419,7 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testGetNep11Balances() {
+        Assert.fail("'GetNep11Balances' response not yet verified.");
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
@@ -3427,30 +3428,36 @@ public class ResponseTest extends ResponseTester {
                         "        \"balance\": [\n" +
                         "            {\n" +
                         "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
+                        "                \"name\": \"FunnyCats\",\n" +
+                        "                \"symbol\": \"FCS\",\n" +
+                        "                \"decimals\": \"0\",\n" +
                         "                \"tokens\": [\n" +
                         "                    {\n" +
                         "                        \"tokenid\": \"1\",\n" +
-                        "                        \"amount\": 251600,\n" +
+                        "                        \"amount\": \"1\",\n" +
                         "                        \"lastupdatedblock\": 12345\n" +
                         "                    },\n" +
                         "                    {\n" +
                         "                        \"tokenid\": \"2\",\n" +
-                        "                        \"amount\": 211122,\n" +
+                        "                        \"amount\": \"1\",\n" +
                         "                        \"lastupdatedblock\": 123456\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
                         "            {\n" +
                         "                \"assethash\": \"1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3\",\n" +
+                        "                \"name\": \"CuteNeoKittens\",\n" +
+                        "                \"symbol\": \"CNKS\",\n" +
+                        "                \"decimals\": \"4\",\n" +
                         "                \"tokens\": [\n" +
                         "                    {\n" +
-                        "                        \"tokenid\": \"1\",\n" +
-                        "                        \"amount\": 543211,\n" +
+                        "                        \"tokenid\": \"4\",\n" +
+                        "                        \"amount\": \"10000\",\n" +
                         "                        \"lastupdatedblock\": 12345\n" +
                         "                    },\n" +
                         "                    {\n" +
-                        "                        \"tokenid\": \"2\",\n" +
-                        "                        \"amount\": 112345,\n" +
+                        "                        \"tokenid\": \"10\",\n" +
+                        "                        \"amount\": \"6500\",\n" +
                         "                        \"lastupdatedblock\": 654321\n" +
                         "                    }\n" +
                         "                ]\n" +
@@ -3462,35 +3469,58 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetNep11Balances getNep11Balances = deserialiseResponse(NeoGetNep11Balances.class);
-        assertThat(getNep11Balances.getBalances().getBalances(), is(notNullValue()));
-        assertThat(getNep11Balances.getBalances().getBalances(), hasSize(2));
-        assertThat(getNep11Balances.getBalances().getBalances(),
+        List<NeoGetNep11Balances.Nep11Balance> nep11Balances = getNep11Balances.getBalances().getBalances();
+        assertThat(nep11Balances, is(notNullValue()));
+        assertThat(nep11Balances, hasSize(2));
+        assertThat(nep11Balances,
                 containsInAnyOrder(
                         new NeoGetNep11Balances.Nep11Balance(
                                 new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8"),
+                                "FunnyCats",
+                                "FCS",
+                                "0",
                                 asList(
-                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", BigInteger.valueOf(251600L), 12345L),
-                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", BigInteger.valueOf(211122L), 123456L)
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", "1", 12345L),
+                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", "1", 123456L)
                                 )
                         ),
                         new NeoGetNep11Balances.Nep11Balance(
                                 new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3"),
+                                "CuteNeoKittens",
+                                "CNKS",
+                                "4",
                                 asList(
-                                        new Nep11Token("1", BigInteger.valueOf(543211L), 12345L),
-                                        new Nep11Token("2", BigInteger.valueOf(112345L), 654321L)
+                                        new Nep11Token("4", "10000", 12345L),
+                                        new Nep11Token("10", "6500", 654321L)
                                 )
                         )
                 ));
 
         // First Entry
-        assertThat(getNep11Balances.getBalances().getBalances().get(0).getAssetHash(),
-                is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
-        assertThat(getNep11Balances.getBalances().getBalances().get(0).getTokens().get(0).getAmount(),
-                is(BigInteger.valueOf(251600L)));
+        NeoGetNep11Balances.Nep11Balance firstBalance = nep11Balances.get(0);
+        assertThat(firstBalance.getAssetHash(), is(new Hash160("a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8")));
+        assertThat(firstBalance.getName(), is("FunnyCats"));
+        assertThat(firstBalance.getSymbol(), is("FCS"));
+        assertThat(firstBalance.getDecimals(), is("0"));
+        assertThat(firstBalance.getTokens().get(0).getTokenId(), is("1"));
+        assertThat(firstBalance.getTokens().get(0).getAmount(), is("1"));
+        assertThat(firstBalance.getTokens().get(0).getLastUpdatedBlock(), is(12345L));
+        assertThat(firstBalance.getTokens().get(1).getTokenId(), is("2"));
+        assertThat(firstBalance.getTokens().get(1).getAmount(), is("1"));
+        assertThat(firstBalance.getTokens().get(1).getLastUpdatedBlock(), is(123456L));
 
         // Second Entry
-        assertThat(getNep11Balances.getBalances().getBalances().get(1).getTokens().get(1).getLastUpdatedBlock(),
-                is(654321L));
+        NeoGetNep11Balances.Nep11Balance secondBalance = nep11Balances.get(1);
+        assertThat(secondBalance.getAssetHash(), is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
+        assertThat(secondBalance.getName(), is("CuteNeoKittens"));
+        assertThat(secondBalance.getSymbol(), is("CNKS"));
+        assertThat(secondBalance.getDecimals(), is("4"));
+        assertThat(secondBalance.getTokens().get(0).getTokenId(), is("4"));
+        assertThat(secondBalance.getTokens().get(0).getAmount(), is("10000"));
+        assertThat(secondBalance.getTokens().get(0).getLastUpdatedBlock(), is(12345L));
+        assertThat(secondBalance.getTokens().get(1).getTokenId(), is("10"));
+        assertThat(secondBalance.getTokens().get(1).getAmount(), is("6500"));
+        assertThat(secondBalance.getTokens().get(1).getLastUpdatedBlock(), is(654321L));
 
         assertThat(getNep11Balances.getBalances().getAddress(), is(notNullValue()));
         assertThat(getNep11Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
