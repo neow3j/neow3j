@@ -16,27 +16,27 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class TokenBalances<K extends TokenBalance> {
 
+        @JsonProperty("address")
+        private String address;
+
         @JsonProperty("balance")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<K> balances;
 
-        @JsonProperty("address")
-        private String address;
-
         public TokenBalances() {
         }
 
-        public TokenBalances(List<K> balances, String address) {
-            this.balances = balances;
+        public TokenBalances(String address, List<K> balances) {
             this.address = address;
-        }
-
-        public List<K> getBalances() {
-            return balances;
+            this.balances = balances;
         }
 
         public String getAddress() {
             return address;
+        }
+
+        public List<K> getBalances() {
+            return balances;
         }
 
         @Override
@@ -48,13 +48,13 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
                 return false;
             }
             TokenBalances<?> that = (TokenBalances<?>) o;
-            return Objects.equals(balances, that.balances) &&
-                    Objects.equals(address, that.address);
+            return Objects.equals(address, that.address) &&
+                    Objects.equals(balances, that.balances);
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(balances, address);
+            return Objects.hash(address, balances);
         }
 
     }

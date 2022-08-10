@@ -22,7 +22,7 @@ public class NeoGetNep17Balances extends Response<NeoGetNep17Balances.Nep17Balan
         }
 
         public Nep17Balances(List<Nep17Balance> balances, String address) {
-            super(balances, address);
+            super(address, balances);
         }
 
     }

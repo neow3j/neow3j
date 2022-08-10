@@ -694,11 +694,11 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testValidateAddress() throws Exception {
-        neow3j.validateAddress("AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i").send();
+        neow3j.validateAddress("NTzVAPBpnUUCvrA6tFPxBHGge8Kyw8igxX").send();
 
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"validateaddress\"," +
-                "\"params\":[\"AQVh2pG732YvtNaxEGkQUei3YA4cvo7d2i\"]," +
+                "\"params\":[\"NTzVAPBpnUUCvrA6tFPxBHGge8Kyw8igxX\"]," +
                 "\"id\":1}");
     }
 

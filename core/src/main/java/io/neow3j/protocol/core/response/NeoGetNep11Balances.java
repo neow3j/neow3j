@@ -21,8 +21,8 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
         public Nep11Balances() {
         }
 
-        public Nep11Balances(List<Nep11Balance> balances, String address) {
-            super(balances, address);
+        public Nep11Balances(String address, List<Nep11Balance> balances) {
+            super(address, balances);
         }
 
     }

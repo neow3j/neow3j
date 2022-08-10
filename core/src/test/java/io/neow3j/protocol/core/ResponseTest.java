@@ -2818,12 +2818,12 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testGetNep17Balances() {
-        Assert.fail("'GetNep17Balances' response not yet verified.");
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
+                        "        \"address\": \"NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3\",\n" +
                         "        \"balance\": [\n" +
                         "            {\n" +
                         "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
@@ -2841,13 +2841,16 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"100000000\",\n" +
                         "                \"lastupdatedblock\": 251600\n" +
                         "            }\n" +
-                        "        ],\n" +
-                        "        \"address\": \"AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w\"\n" +
+                        "        ]\n" +
                         "    }\n" +
                         "}"
         );
 
         NeoGetNep17Balances getNep17Balances = deserialiseResponse(NeoGetNep17Balances.class);
+
+        assertThat(getNep17Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep17Balances.getBalances().getAddress(), is("NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3"));
+
         List<NeoGetNep17Balances.Nep17Balance> balanceList = getNep17Balances.getBalances().getBalances();
         assertThat(balanceList, is(notNullValue()));
         assertThat(balanceList, hasSize(2));
@@ -2888,9 +2891,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(secondBalance.getAssetHash(), is(new Hash160("1aada0032aba1ef6d1f07bbd8bec1d85f5380fb3")));
         assertThat(secondBalance.getAmount(), is("100000000"));
         assertThat(secondBalance.getLastUpdatedBlock(), is(BigInteger.valueOf(251600L)));
-
-        assertThat(getNep17Balances.getBalances().getAddress(), is(notNullValue()));
-        assertThat(getNep17Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
     }
 
     // ApplicationLogs
@@ -3419,12 +3419,12 @@ public class ResponseTest extends ResponseTester {
 
     @Test
     public void testGetNep11Balances() {
-        Assert.fail("'GetNep11Balances' response not yet verified.");
         buildResponse(
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
+                        "        \"address\": \"NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3\",\n" +
                         "        \"balance\": [\n" +
                         "            {\n" +
                         "                \"assethash\": \"a48b6e1291ba24211ad11bb90ae2a10bf1fcd5a8\",\n" +
@@ -3462,13 +3462,16 @@ public class ResponseTest extends ResponseTester {
                         "                    }\n" +
                         "                ]\n" +
                         "            }\n" +
-                        "        ],\n" +
-                        "        \"address\": \"AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w\"\n" +
+                        "        ]\n" +
                         "    }\n" +
                         "}"
         );
 
         NeoGetNep11Balances getNep11Balances = deserialiseResponse(NeoGetNep11Balances.class);
+
+        assertThat(getNep11Balances.getBalances().getAddress(), is(notNullValue()));
+        assertThat(getNep11Balances.getBalances().getAddress(), is("NXXazKH39yNFWWZF5MJ8tEN98VYHwzn7g3"));
+
         List<NeoGetNep11Balances.Nep11Balance> nep11Balances = getNep11Balances.getBalances().getBalances();
         assertThat(nep11Balances, is(notNullValue()));
         assertThat(nep11Balances, hasSize(2));
@@ -3521,9 +3524,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(secondBalance.getTokens().get(1).getTokenId(), is("10"));
         assertThat(secondBalance.getTokens().get(1).getAmount(), is("6500"));
         assertThat(secondBalance.getTokens().get(1).getLastUpdatedBlock(), is(654321L));
-
-        assertThat(getNep11Balances.getBalances().getAddress(), is(notNullValue()));
-        assertThat(getNep11Balances.getBalances().getAddress(), is("AY6eqWjsUFCzsVELG7yG72XDukKvC34p2w"));
     }
 
     @Test
