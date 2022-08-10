@@ -71,6 +71,7 @@ public class ContractManagement extends SmartContract {
      * @param method       the method.
      * @param paramCount   the number of parameters.
      * @return true if the method exists. False otherwise.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public boolean hasMethod(Hash160 contractHash, String method, int paramCount) throws IOException {
         return callFunctionReturningBool(HAS_METHOD, hash160(contractHash), string(method), integer(paramCount));

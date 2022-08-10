@@ -32,7 +32,7 @@ public class ContractManagement extends ContractInterface {
      * @param contractHash the contract hash.
      * @param method       the method.
      * @param paramCount   the number of parameters.
-     * @return
+     * @return true if the method exists. False otherwise.
      */
     public native boolean hasMethod(Hash160 contractHash, String method, int paramCount);
 
