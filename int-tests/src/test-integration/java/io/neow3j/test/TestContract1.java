@@ -9,6 +9,7 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.ManifestExtra;
 import io.neow3j.devpack.annotations.OnDeployment;
 
+@SuppressWarnings("unchecked")
 @ManifestExtra(key = "name", value = "ExampleContractOne")
 public class TestContract1 {
 

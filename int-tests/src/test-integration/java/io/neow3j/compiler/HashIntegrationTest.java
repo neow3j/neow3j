@@ -6,10 +6,11 @@ import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash160;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.List;
@@ -22,16 +23,21 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
 public class HashIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(HashIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(HashIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void getZeroHash160() throws IOException {
@@ -279,6 +285,7 @@ public class HashIntegrationTest {
         public static Hash256 hash256FromString() {
             return new Hash256("0xcb30ea3c29e205e8b1233ac7fa7fa51284c40ab920a915353376014871752ca4");
         }
+
     }
 
 }

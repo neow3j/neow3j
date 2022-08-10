@@ -6,10 +6,11 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,14 +26,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class ByteStringIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
             ByteStringIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void createByteStringFromString() throws IOException {
@@ -55,12 +61,10 @@ public class ByteStringIntegrationTest {
     @Test
     public void getElementsOfByteString() throws IOException {
         ContractParameter byteString = byteArray("00010203");
-        InvocationResult res = ct.callInvokeFunction(testName, byteString, integer(0))
-                .getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction(testName, byteString, integer(0)).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(0));
 
-        res = ct.callInvokeFunction(testName, byteString, integer(3))
-                .getInvocationResult();
+        res = ct.callInvokeFunction(testName, byteString, integer(3)).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(3));
     }
 
@@ -157,16 +161,15 @@ public class ByteStringIntegrationTest {
         InvocationResult res = ct.callInvokeFunction(testName, s).getInvocationResult();
         StackItem item = res.getStack().get(0);
         assertThat(item.getType(), is(StackItemType.BYTE_STRING));
-        byte[] concatenated = concatenate(
-                "hello number ".getBytes(), reverseArray(BigInteger.valueOf(456).toByteArray()));
+        byte[] concatenated = concatenate("hello number ".getBytes(),
+                reverseArray(BigInteger.valueOf(456).toByteArray()));
         assertThat(item.getHexString(), is(toHexStringNoPrefix(concatenated)));
     }
 
     @Test
     public void getRangeOfByteString() throws IOException {
         ContractParameter s = byteArray("0001020304");
-        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2), integer(3))
-                .getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2), integer(3)).getInvocationResult();
         StackItem item = res.getStack().get(0);
         assertThat(item.getType(), is(StackItemType.BYTE_STRING));
         assertThat(item.getHexString(), is("020304"));
@@ -175,8 +178,7 @@ public class ByteStringIntegrationTest {
     @Test
     public void takeNFirstBytesOfByteString() throws IOException {
         ContractParameter s = byteArray("0001020304");
-        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2))
-                .getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2)).getInvocationResult();
         StackItem item = res.getStack().get(0);
         assertThat(item.getType(), is(StackItemType.BYTE_STRING));
         assertThat(item.getHexString(), is("0001"));
@@ -185,8 +187,7 @@ public class ByteStringIntegrationTest {
     @Test
     public void takeNLastBytesOfByteString() throws IOException {
         ContractParameter s = byteArray("0001020304");
-        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2))
-                .getInvocationResult();
+        InvocationResult res = ct.callInvokeFunction(testName, s, integer(2)).getInvocationResult();
         StackItem item = res.getStack().get(0);
         assertThat(item.getType(), is(StackItemType.BYTE_STRING));
         assertThat(item.getHexString(), is("0304"));

@@ -3,22 +3,21 @@ package io.neow3j.compiler;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
 public class RelationalOperatorsTest {
-
-    @Rule
-    public TestName testName = new TestName();
 
     // These are the names of the methods inside of the smart contract under test.
     private final static String INTEGERS_MTHD_NAME = "integers";
@@ -26,9 +25,15 @@ public class RelationalOperatorsTest {
     private final static String BOOLEANS_MTHD_NAME = "booleans";
     private static final String STRINGS_MTHD_NAME = "strings";
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            RelationalOperators.class.getName());
+    private String testName;
+
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(RelationalOperators.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void unequalSmallIntegers() throws IOException {
@@ -167,6 +172,7 @@ public class RelationalOperatorsTest {
             b[1] = s1 != s2;
             return b;
         }
-    }
-}
 
+    }
+
+}

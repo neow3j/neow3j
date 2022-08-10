@@ -6,10 +6,11 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 
@@ -19,38 +20,38 @@ import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class ContractIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ContractIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(ContractIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void callWithoutArguments() throws IOException {
         NeoInvokeFunction resp = ct.callInvokeFunction("call",
                 hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(CallFlags.All));
-        assertThat(resp.getInvocationResult().getStack().get(0).getString(),
-                is("NEO"));
+        assertThat(resp.getInvocationResult().getStack().get(0).getString(), is("NEO"));
     }
 
     @Test
     public void callWithArgument() throws IOException {
         NeoInvokeFunction resp =
-                ct.callInvokeFunction("call", hash160(NeoToken.SCRIPT_HASH), string(
-                        "balanceOf"), integer(CallFlags.All),
-                        hash160(ct.getCommittee().getScriptHash()));
-        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(100_000_000));
+                ct.callInvokeFunction("call", hash160(NeoToken.SCRIPT_HASH), string("balanceOf"),
+                        integer(CallFlags.All), hash160(ct.getCommittee().getScriptHash()));
+        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(), is(100_000_000));
     }
 
     @Test
     public void getCallFlags() throws IOException {
         NeoInvokeFunction resp = ct.callInvokeFunction(testName);
-        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(15)); // CallFlag ALL
+        assertThat(resp.getInvocationResult().getStack().get(0).getInteger().intValue(), is(15)); // CallFlag ALL
     }
 
     @Test
@@ -78,5 +79,7 @@ public class ContractIntegrationTest {
         public static byte getCallFlags() {
             return Contract.getCallFlags();
         }
+
     }
+
 }

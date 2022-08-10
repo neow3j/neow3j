@@ -5,9 +5,10 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -18,14 +19,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class TokenIntegrationTest {
 
     private static Token token;
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         Neow3j neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);

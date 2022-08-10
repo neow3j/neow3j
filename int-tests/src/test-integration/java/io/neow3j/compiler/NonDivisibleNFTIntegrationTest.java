@@ -7,11 +7,12 @@ import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.contracts.NonDivisibleNonFungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 
@@ -19,15 +20,20 @@ import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class NonDivisibleNFTIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(NonDivisibleNFTTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(NonDivisibleNFTTestContract.class.getName());
 
-    @BeforeClass
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
+
+    @BeforeAll
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNonDivisibleNFT.class.getName());
         ct.setHash(sc.getScriptHash());

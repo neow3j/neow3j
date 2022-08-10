@@ -19,9 +19,10 @@ import io.neow3j.utils.Files;
 import io.neow3j.wallet.Account;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,8 +32,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.types.ContractParameter.byteArray;
@@ -44,11 +43,12 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@Testcontainers
 public class NameServiceIntegrationTest {
 
     private static final String RESOURCE_DIR = "contract/";
@@ -69,10 +69,10 @@ public class NameServiceIntegrationTest {
     private static final String NAMESERVICE_NEF = RESOURCE_DIR + "NameService.nef";
     private static final String NAMESERVICE_MANIFEST = RESOURCE_DIR + "NameService.manifest.json";
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());

@@ -10,9 +10,10 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.File;
 import java.math.BigInteger;
@@ -32,6 +33,7 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class ContractManagementIntegrationTest {
 
     private static final String RESOURCE_DIR = "contract";
@@ -43,10 +45,10 @@ public class ContractManagementIntegrationTest {
     private static ContractManagement contractManagement;
 
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);

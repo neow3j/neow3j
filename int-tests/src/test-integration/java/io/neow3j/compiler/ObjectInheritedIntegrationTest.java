@@ -22,10 +22,11 @@ import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.test.TestProperties;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -37,18 +38,22 @@ import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // Test methods on devpack classes that are inherited from `Object`.
+@Testcontainers
 public class ObjectInheritedIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct =
-            new ContractTestRule(ObjectInheritedIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(ObjectInheritedIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void blockEquals() throws IOException {

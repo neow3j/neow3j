@@ -17,10 +17,11 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -33,12 +34,13 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time but allows the
 // tests to make changes without interfering with each other.
+@Testcontainers
 public class Neow3jWriteIntegrationTest {
 
     // wif KzreXMT3AtLEYpqpZB9VPiw7RB75T3jGZ6cY6pv9QY2Sjqihv7M8
@@ -49,10 +51,10 @@ public class Neow3jWriteIntegrationTest {
 
     private static Neow3j neow3j;
 
-    @Rule
-    public NeoTestContainer neoTestContainer = new NeoTestContainer();
+    @Container
+    public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @Before
+    @BeforeEach
     public void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
@@ -83,7 +85,7 @@ public class Neow3jWriteIntegrationTest {
         assertThat(hash, is(new Hash256("0xda5a53a79ac399e07c6eea366c192a4942fa930d6903ffc10b497f834a538fee")));
     }
 
-    @Ignore("Future work, act as a consensus to submit blocks.")
+    @Disabled("Future work, act as a consensus to submit blocks.")
     @Test
     public void testSubmitBlock() throws IOException {
         NeoSubmitBlock submitBlock = getNeow3j()

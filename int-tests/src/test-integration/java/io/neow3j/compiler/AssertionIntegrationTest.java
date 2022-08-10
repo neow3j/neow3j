@@ -7,10 +7,11 @@ import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.wallet.Account;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 
@@ -23,18 +24,23 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
 public class AssertionIntegrationTest {
 
     private static final String NEOVM_FAILED_ASSERT_MESSAGE = "ASSERT is executed with false result.";
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(AssertionTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(AssertionTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void testAssertion() throws IOException {
@@ -62,18 +68,13 @@ public class AssertionIntegrationTest {
     @Test
     public void testWitnessCheck() throws Throwable {
         Account a = Account.fromWIF("L4NH7MLEdnX6u8vGx1qTLnuE9Aa5ovKcrVtUQfhyksqcAwZ4Xfto");
-        NeoInvokeFunction response = ct.getContract().callInvokeFunction(
-                testName.getMethodName(),
-                asList(hash160(a)),
-                calledByEntry(Account.create()));
+        NeoInvokeFunction response = ct.getContract()
+                .callInvokeFunction(testName, asList(hash160(a)), calledByEntry(Account.create()));
         InvocationResult result = response.getInvocationResult();
         assertTrue(result.hasStateFault());
         assertThat(result.getException(), is(NEOVM_FAILED_ASSERT_MESSAGE));
 
-        response = ct.getContract().callInvokeFunction(
-                testName.getMethodName(),
-                asList(hash160(a)),
-                calledByEntry(a));
+        response = ct.getContract().callInvokeFunction(testName, asList(hash160(a)), calledByEntry(a));
         result = response.getInvocationResult();
         assertThat(result.getState(), is(NeoVMStateType.HALT));
     }

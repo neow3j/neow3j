@@ -26,14 +26,12 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
-import org.junit.jupiter.api.extension.AfterEachCallback;
-import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.ExtensionContext;
-import org.junit.rules.TestName;
-import org.junit.rules.TestRule;
-import org.junit.runner.Description;
-import org.junit.runners.model.Statement;
 import org.testcontainers.containers.ContainerState;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -55,10 +53,10 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
-public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
+@Testcontainers
+public class ContractTestExtension implements AfterAllCallback, BeforeAllCallback {
 
     private NeoTestContainer neoTestContainer;
     private String fullyQualifiedClassName;
@@ -77,15 +75,15 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     private static final String SET_HASH = "setHash";
     private static final int DEFAULT_ITERATOR_COUNT = 100;
 
-    public ContractTestRule(String fullyQualifiedName) {
+    public ContractTestExtension(String fullyQualifiedName) {
         this.fullyQualifiedClassName = fullyQualifiedName;
     }
 
-    public ContractTestRule() {
+    public ContractTestExtension() {
     }
 
     @Override
-    public void beforeEach(ExtensionContext context) {
+    public void beforeAll(ExtensionContext context) {
         neoTestContainer = new NeoTestContainer();
         try {
             neoTestContainer.start();
@@ -93,7 +91,6 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
             if (fullyQualifiedClassName != null) {
                 contract = deployContract(fullyQualifiedClassName);
                 waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
-                System.out.println();
             }
         } catch (Throwable e) {
             throw new RuntimeException(e);
@@ -101,23 +98,20 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     @Override
-    public void afterEach(ExtensionContext context) {
+    public void afterAll(ExtensionContext context) {
         neoTestContainer.stop();
     }
 
     public void setUp(String containerURL) throws Throwable {
         defaultAccount = Account.fromWIF(defaultAccountWIF());
-        committee = Account.createMultiSigAccount(
-                asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
+        committee = Account.createMultiSigAccount(asList(defaultAccount.getECKeyPair().getPublicKey()), 1);
         client1 = Account.fromWIF(client1AccountWIF());
         client2 = Account.fromWIF(client2AccountWIF());
         neow3j = Neow3j.build(new HttpService(containerURL, true));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
     }
 
-    public SmartContract deployContract(NefFile nef, ContractManifest manifest)
-            throws Throwable {
-
+    public SmartContract deployContract(NefFile nef, ContractManifest manifest) throws Throwable {
         Transaction tx = new ContractManagement(neow3j)
                 .deploy(nef, manifest)
                 .signers(AccountSigner.calledByEntry(committee))
@@ -186,15 +180,19 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     /**
-     * Does an {@code invokefunction} JSON-RPC to the setup contract, the function with the current
-     * test's name, and the given parameters.
+     * Does an {@code invokefunction} JSON-RPC to the setup contract, the function with the current test's name, and
+     * the given parameters.
      *
-     * @param params The parameters to provide to the function call.
-     * @return The result of the call.
+     * @param testInfo the test method information.
+     * @param params   the parameters to provide to the function call.
+     * @return the result of the call.
      * @throws IOException if something goes wrong in the communication with the neo-node.
      */
-    public NeoInvokeFunction callInvokeFunction(TestName testName, ContractParameter... params) throws IOException {
-        return callInvokeFunction(testName.getMethodName(), params);
+    public NeoInvokeFunction callInvokeFunction(TestInfo testInfo, ContractParameter... params) throws IOException {
+        return callInvokeFunction(
+                testInfo.getTestMethod().orElseThrow(() -> new IllegalArgumentException("Could not get test method."))
+                        .getName(),
+                params);
     }
 
     /**
@@ -216,10 +214,6 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
                     AccountSigner.global(defaultAccount.getScriptHash()));
         }
         return contract.callInvokeFunction(function, asList(params));
-    }
-
-    public List<StackItem> callAndTraverseIterator(TestName testName, ContractParameter... params) throws IOException {
-        return callAndTraverseIterator(testName.getMethodName(), params);
     }
 
     public List<StackItem> callAndTraverseIterator(String function, ContractParameter... params) throws IOException {
@@ -253,20 +247,7 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the function with the
-     * name of the current test method, with the given parameters.
-     *
-     * @param testName the function to invoke.
-     * @param params   the parameters to pass with the function call.
-     * @return the hash of the sent transaction.
-     */
-    public Hash256 invokeFunction(TestName testName, ContractParameter... params) throws Throwable {
-        return invokeFunction(testName.getMethodName(), params);
-    }
-
-    /**
-     * Transfers the given amount of GAS to the {@code to} account. The amount is taken from the
-     * committee account.
+     * Transfers the given amount of GAS to the {@code to} account. The amount is taken from the committee account.
      *
      * @param to     The receiving account.
      * @param amount The amount to transfer.
@@ -284,14 +265,13 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     /**
-     * Transfers the given amount of NEO to the {@code to} account. The amount is taken from the
-     * committee account.
+     * Transfers the given amount of NEO to the {@code to} account. The amount is taken from the committee account.
      *
      * @param to     The receiving account.
      * @param amount The amount to transfer.
      * @return the hash of the transfer transaction.
-     * @throws Throwable if an error occurs when communicating the neo-node, or when
-     *                   constructing the transaction object.
+     * @throws Throwable if an error occurs when communicating the neo-node, or when constructing the transaction
+     *                   object.
      */
     public Hash256 transferNeo(Hash160 to, BigInteger amount) throws Throwable {
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(neow3j);
@@ -303,8 +283,10 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the given function, with
-     * the given parameters.
+     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
+     * parameters.
+     * <p>
+     * The transaction sender is either the committee or the default account. The provided signers are appended.
      *
      * @param function The function to invoke.
      * @param params   The parameters to pass with the function call.
@@ -312,21 +294,6 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
      */
     public Hash256 invokeFunction(String function, ContractParameter... params) throws Throwable {
         return invokeFunction(function, asList(params));
-    }
-
-    /**
-     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
-     * parameters.
-     * <p>
-     * The transaction sender is either the committee or the default account. The provided signers are appended.
-     *
-     * @param testName the function to invoke.
-     * @param params   the parameters to pass with the function call.
-     * @return the hash of the sent transaction.
-     */
-    public Hash256 invokeFunction(TestName testName, List<ContractParameter> params, Signer... additionalSigners)
-            throws Throwable {
-        return invokeFunction(testName.getMethodName(), params, additionalSigners);
     }
 
     /**
@@ -375,20 +342,6 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
     }
 
     /**
-     * Builds and sends a transaction that invokes the contract under test, the function with the
-     * name of the current test method, with the given parameters. Sleeps until the transaction is
-     * included in a block.
-     * <p>
-     * The transaction sender is either the committee or the default account.
-     *
-     * @param params The parameters to pass with the function call.
-     * @return the hash of the transaction.
-     */
-    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, ContractParameter... params) throws Throwable {
-        return invokeFunctionAndAwaitExecution(testName.getMethodName(), params);
-    }
-
-    /**
      * Builds and sends a transaction that invokes the contract under test, the given function, with
      * the given parameters. Sleeps until the transaction is included in a block.
      * <p>
@@ -400,23 +353,6 @@ public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
      */
     public Hash256 invokeFunctionAndAwaitExecution(String function, ContractParameter... params) throws Throwable {
         Hash256 txHash = invokeFunction(function, params);
-        waitUntilTransactionIsExecuted(txHash, neow3j);
-        return txHash;
-    }
-
-    /**
-     * Builds and sends a transaction that invokes the contract under test, the given function, with the given
-     * parameters. Sleeps until the transaction is included in a block.
-     * <p>
-     * The transaction sender is either the committee or the default account. The provided signers are appended.
-     *
-     * @param testName the function to invoke.
-     * @param params   the parameters to pass with the function call.
-     * @return the hash of the transaction.
-     */
-    public Hash256 invokeFunctionAndAwaitExecution(TestName testName, List<ContractParameter> params,
-            Signer... additionalSigners) throws Throwable {
-        Hash256 txHash = invokeFunction(testName.getMethodName(), params, additionalSigners);
         waitUntilTransactionIsExecuted(txHash, neow3j);
         return txHash;
     }

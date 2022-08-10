@@ -3,10 +3,11 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,14 +18,19 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class SwitchCaseIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
             SwitchCaseIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void switchWithString() throws IOException {
@@ -321,4 +327,5 @@ public class SwitchCaseIntegrationTest {
         }
 
     }
+
 }

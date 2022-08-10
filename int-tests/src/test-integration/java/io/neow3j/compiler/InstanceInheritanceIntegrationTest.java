@@ -11,10 +11,11 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.util.List;
@@ -27,13 +28,17 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class InstanceInheritanceIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(InstanceInheritanceContract.class.getName());
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(InstanceInheritanceContract.class.getName());
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void testStructMultiInheritance() throws IOException {
