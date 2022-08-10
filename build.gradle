@@ -8,8 +8,8 @@ buildscript {
     ext.asmVersion = '9.3'
 
     // test dependencies
-    ext.equalsverifierVersion = '3.10'
-    ext.junitVersion = '4.13'
+    ext.equalsverifierVersion = '3.10.1'
+    ext.junitVersion = '4.13.2'
     ext.junitBenchmarkVersion = '0.7.2'
     ext.logbackVersion = '1.2.11'
     ext.jetbrainsAnnotationsVersion = '23.0.0'
@@ -127,9 +127,13 @@ subprojects {
     }
 
     dependencies {
-        testImplementation "junit:junit:$junitVersion",
+        testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
                 "org.mockito:mockito-core:$mockitoVersion",
                 "org.hamcrest:hamcrest-all:$hamcrestVersion"
+    }
+
+    test {
+        useJUnitPlatform()
     }
 
     task javadocsJar(type: Jar) {
@@ -233,7 +237,7 @@ subprojects {
             manifest.from jar.manifest
             archiveClassifier = 'all'
 
-            from (javadocsJar, sourcesJar, javadocsJar, testsJar, jar)
+            from(javadocsJar, sourcesJar, javadocsJar, testsJar, jar)
 
             from("${buildDir}/libs") {
                 include '*.jar.asc'
