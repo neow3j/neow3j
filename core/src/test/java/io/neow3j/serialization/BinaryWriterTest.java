@@ -1,23 +1,25 @@
 package io.neow3j.serialization;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
-
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import org.junit.Before;
-import org.junit.Test;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class BinaryWriterTest {
 
     private ByteArrayOutputStream outStream;
     private BinaryWriter writer;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         this.outStream = new ByteArrayOutputStream();
         this.writer = new BinaryWriter(outStream);
@@ -42,14 +44,10 @@ public class BinaryWriterTest {
     @Test
     public void failWritingUInt32NotInRange() {
         long uint = (long) Math.pow(2, 32);
-        assertThrows(IllegalArgumentException.class, () -> {
-            writer.writeUInt32(uint);
-        });
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt32(uint));
 
         long negativeUint = -1L;
-        assertThrows(IllegalArgumentException.class, () -> {
-            writer.writeUInt32(negativeUint);
-        });
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt32(negativeUint));
     }
 
     @Test

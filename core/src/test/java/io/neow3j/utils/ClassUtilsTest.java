@@ -7,12 +7,11 @@ import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
-import static org.hamcrest.core.IsNull.nullValue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import org.hamcrest.Matchers;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class ClassUtilsTest {
 

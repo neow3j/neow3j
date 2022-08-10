@@ -7,4 +7,5 @@ public class TestSmartContract {
     public static String getPlatform() {
         return Runtime.getPlatform();
     }
+
 }

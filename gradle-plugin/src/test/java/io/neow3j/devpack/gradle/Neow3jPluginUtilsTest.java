@@ -2,7 +2,7 @@ package io.neow3j.devpack.gradle;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.compiler.DebugInfo;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import static io.neow3j.devpack.gradle.Neow3jPluginUtils.DEBUG_JSON_SUFFIX;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEFDBGNFO_SUFFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class Neow3jPluginUtilsTest {
 
@@ -52,6 +52,7 @@ public class Neow3jPluginUtilsTest {
         if (entries.hasMoreElements()) {
             fail("Zip file contained more than one entry.");
         }
+
     }
 
 }

@@ -26,6 +26,9 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.rules.TestName;
 import org.junit.rules.TestRule;
 import org.junit.runner.Description;
@@ -52,9 +55,10 @@ import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 
-public class ContractTestRule implements TestRule {
+public class ContractTestRule implements AfterEachCallback, BeforeEachCallback {
 
     private NeoTestContainer neoTestContainer;
     private String fullyQualifiedClassName;
@@ -81,24 +85,24 @@ public class ContractTestRule implements TestRule {
     }
 
     @Override
-    public Statement apply(Statement base, Description description) {
-        return new Statement() {
-            @Override
-            public void evaluate() throws Throwable {
-                neoTestContainer = new NeoTestContainer();
-                try {
-                    neoTestContainer.start();
-                    setUp(neoTestContainer.getNodeUrl());
-                    if (fullyQualifiedClassName != null) {
-                        contract = deployContract(fullyQualifiedClassName);
-                        waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
-                    }
-                    base.evaluate();
-                } finally {
-                    neoTestContainer.stop();
-                }
+    public void beforeEach(ExtensionContext context) {
+        neoTestContainer = new NeoTestContainer();
+        try {
+            neoTestContainer.start();
+            setUp(neoTestContainer.getNodeUrl());
+            if (fullyQualifiedClassName != null) {
+                contract = deployContract(fullyQualifiedClassName);
+                waitUntilContractIsDeployed(getContract().getScriptHash(), neow3j);
+                System.out.println();
             }
-        };
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void afterEach(ExtensionContext context) {
+        neoTestContainer.stop();
     }
 
     public void setUp(String containerURL) throws Throwable {

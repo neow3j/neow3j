@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.annotations.SupportedStandard;
 import io.neow3j.devpack.annotations.SupportedStandard.SupportedStandards;
 import io.neow3j.devpack.constants.NeoStandard;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class SupportedStandardsTest {
 

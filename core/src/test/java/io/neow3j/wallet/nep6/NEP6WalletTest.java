@@ -1,34 +1,31 @@
 package io.neow3j.wallet.nep6;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.ScryptParams;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.wallet.Wallet;
 import io.neow3j.wallet.nep6.NEP6Contract.NEP6Parameter;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URL;
 
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NEP6WalletTest {
 
     @Test
     public void testReadWallet() throws IOException {
-        URL nep6WalletFile = Thread.currentThread()
-                .getContextClassLoader().getResource("wallet/wallet.json");
+        URL nep6WalletFile = Thread.currentThread().getContextClassLoader().getResource("wallet/wallet.json");
         ObjectMapper mapper = new ObjectMapper();
         NEP6Wallet w = mapper.readValue(nep6WalletFile, NEP6Wallet.class);
         assertEquals(w.getName(), "Wallet");
         assertEquals(w.getVersion(), Wallet.CURRENT_VERSION);
-        assertEquals(w.getScrypt(),
-                new ScryptParams(NEP2.N_STANDARD, NEP2.P_STANDARD, NEP2.R_STANDARD));
+        assertEquals(w.getScrypt(), new ScryptParams(NEP2.N_STANDARD, NEP2.P_STANDARD, NEP2.R_STANDARD));
         assertEquals(w.getAccounts().size(), 2);
 
         // Account 1
@@ -61,4 +58,5 @@ public class NEP6WalletTest {
         assertEquals(p2.getParamName(), "signature");
         assertEquals(p2.getParamType(), ContractParameterType.SIGNATURE);
     }
+
 }

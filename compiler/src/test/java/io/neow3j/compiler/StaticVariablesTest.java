@@ -9,7 +9,7 @@ import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.events.Event1Arg;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 

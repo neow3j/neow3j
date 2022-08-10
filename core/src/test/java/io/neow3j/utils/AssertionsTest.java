@@ -1,6 +1,8 @@
 package io.neow3j.utils;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AssertionsTest {
 
@@ -9,8 +11,8 @@ public class AssertionsTest {
         Assertions.verifyPrecondition(true, "");
     }
 
-    @Test(expected = RuntimeException.class)
+    @Test
     public void testVerifyPreconditionFailure() {
-        Assertions.verifyPrecondition(false, "");
+        assertThrows(RuntimeException.class, () -> Assertions.verifyPrecondition(false, ""));
     }
 }

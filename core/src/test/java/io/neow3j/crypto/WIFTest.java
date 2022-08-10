@@ -1,12 +1,12 @@
 package io.neow3j.crypto;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class WIFTest {
 

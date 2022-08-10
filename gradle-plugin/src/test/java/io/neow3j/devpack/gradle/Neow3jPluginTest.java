@@ -2,11 +2,11 @@ package io.neow3j.devpack.gradle;
 
 import org.gradle.api.Project;
 import org.gradle.testfixtures.ProjectBuilder;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Neow3jPluginTest {
 

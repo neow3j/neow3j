@@ -1,16 +1,19 @@
 package io.neow3j.types;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContractParameterTypeTest {
 
     private ContractParameterType contractParameterType;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         this.contractParameterType = ContractParameterType.STRING;
     }
@@ -30,9 +33,9 @@ public class ContractParameterTypeTest {
         assertThat(ContractParameterType.valueOf((byte) 0x13), is(ContractParameterType.STRING));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testValueOf_NotFound() {
-        ContractParameterType.valueOf((byte) 0xab);
+        assertThrows(IllegalArgumentException.class, () -> ContractParameterType.valueOf((byte) 0xab));
     }
 
     @Test
@@ -40,9 +43,9 @@ public class ContractParameterTypeTest {
         assertThat(ContractParameterType.fromJsonValue("String"), is(ContractParameterType.STRING));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testFromJsonValue_NotFound() {
-        ContractParameterType.fromJsonValue("Anything");
+        assertThrows(IllegalArgumentException.class, () -> ContractParameterType.fromJsonValue("Anything"));
     }
 
 }

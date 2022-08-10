@@ -8,20 +8,22 @@ import okhttp3.OkHttpClient;
 import okhttp3.Protocol;
 import okhttp3.ResponseBody;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.IOException;
 
 import static io.neow3j.protocol.http.HttpService.JSON_MEDIA_TYPE;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class ResponseTester {
 
     private HttpService neow3jService;
     private OkHttpClient okHttpClient;
     private ResponseInterceptor responseInterceptor;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         responseInterceptor = new ResponseInterceptor();
         okHttpClient = new OkHttpClient.Builder()

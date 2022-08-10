@@ -9,7 +9,7 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,10 +19,11 @@ import static io.neow3j.constants.NeoConstants.VERIFICATION_SCRIPT_SIZE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VerificationScriptTest {
 
@@ -132,25 +133,22 @@ public class VerificationScriptTest {
         assertEquals(127, new VerificationScript(script).getSigningThreshold());
     }
 
-    @Test(expected = ScriptFormatException.class)
+    @Test
     public void throwOnInvalidScriptFormat1() {
-        VerificationScript script = new VerificationScript(
-                Numeric.hexStringToByteArray("0123456789abcdef"));
-        script.getPublicKeys();
+        VerificationScript script = new VerificationScript(Numeric.hexStringToByteArray("0123456789abcdef"));
+        assertThrows(ScriptFormatException.class, script::getPublicKeys);
     }
 
-    @Test(expected = ScriptFormatException.class)
+    @Test
     public void throwOnInvalidScriptFormat2() {
-        VerificationScript script = new VerificationScript(
-                Numeric.hexStringToByteArray("0123456789abcdef"));
-        script.getSigningThreshold();
+        VerificationScript script = new VerificationScript(Numeric.hexStringToByteArray("0123456789abcdef"));
+        assertThrows(ScriptFormatException.class, script::getSigningThreshold);
     }
 
-    @Test(expected = ScriptFormatException.class)
+    @Test
     public void throwOnInvalidScriptFormat3() {
-        VerificationScript script = new VerificationScript(
-                Numeric.hexStringToByteArray("0123456789abcdef"));
-        script.getNrOfAccounts();
+        VerificationScript script = new VerificationScript(Numeric.hexStringToByteArray("0123456789abcdef"));
+        assertThrows(ScriptFormatException.class, script::getNrOfAccounts);
     }
 
     @Test

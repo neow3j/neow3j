@@ -18,43 +18,34 @@
 package io.neow3j.crypto;
 
 import io.neow3j.crypto.exceptions.AddressFormatException;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@RunWith(Parameterized.class)
 public class Base58DecodeTest {
 
-    private final String input;
-    private final byte[] expected;
-
-    public Base58DecodeTest(String input, byte[] expected) {
-        this.input = input;
-        this.expected = expected;
+    private static Stream<Arguments> parameters() {
+        return Stream.of(
+                Arguments.of(new Object[]{"JxF12TrwUP45BMd", "Hello World".getBytes()}),
+                Arguments.of(new Object[]{"1", new byte[1]}),
+                Arguments.of(new Object[]{"1111", new byte[4]})
+        );
     }
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> parameters() {
-        return Arrays.asList(new Object[][]{
-                {"JxF12TrwUP45BMd", "Hello World".getBytes()},
-                {"1", new byte[1]},
-                {"1111", new byte[4]}
-        });
-    }
-
-    @Test
-    public void testDecode() {
+    @ParameterizedTest
+    @MethodSource("parameters")
+    public void testDecode(String input, byte[] expected) {
         byte[] actualBytes = Base58.decode(input);
-        assertArrayEquals(input, actualBytes, expected);
+        assertArrayEquals(actualBytes, expected);
     }
 
     @Test

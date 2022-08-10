@@ -9,13 +9,15 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import okio.Buffer;
 import org.jetbrains.annotations.NotNull;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
 
 import static io.neow3j.protocol.http.HttpService.JSON_MEDIA_TYPE;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class RequestTester {
 
     private OkHttpClient httpClient;
@@ -23,7 +25,7 @@ public abstract class RequestTester {
 
     private RequestInterceptor requestInterceptor;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         requestInterceptor = new RequestInterceptor();
         httpClient = new OkHttpClient.Builder()

@@ -8,7 +8,7 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEve
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.StackItemType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,4 +78,5 @@ public class ListTest {
         }
 
     }
+
 }

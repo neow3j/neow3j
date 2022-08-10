@@ -1,13 +1,14 @@
 package io.neow3j.compiler;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
+import org.junit.jupiter.api.Test;
+
 import java.io.IOException;
 import java.util.List;
-import org.junit.Test;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SafeMethodTest {
 
@@ -40,6 +41,5 @@ public class SafeMethodTest {
         }
 
     }
-
 
 }

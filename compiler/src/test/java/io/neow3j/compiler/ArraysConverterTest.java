@@ -1,14 +1,14 @@
 package io.neow3j.compiler;
 
 import io.neow3j.script.OpCode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
 import static io.neow3j.types.StackItemType.BUFFER_CODE;
 import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ArraysConverterTest {
 

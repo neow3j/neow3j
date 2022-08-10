@@ -26,18 +26,21 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.mockito.stubbing.OngoingStubbing;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JsonRpc2_0RxTest {
 
     private Neow3j neow3j;
 
     private Neow3jService neow3jService;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         neow3jService = mock(Neow3jService.class);
         neow3j = Neow3j.build(neow3jService, new Neow3jConfig()
@@ -250,7 +253,7 @@ public class JsonRpc2_0RxTest {
     }
 
     @Test
-    @Ignore("Ignored due to a missing feature. "
+    @Disabled("Ignored due to a missing feature. "
         + "A feature to buffer blocks that come out of order should be implemented on neow3j lib.")
     public void testCatchUpToLatestAndSubscribeToNewBlockObservable_NotContinuousBlocks()
         throws Exception {

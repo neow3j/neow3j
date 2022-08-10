@@ -1,9 +1,5 @@
 package io.neow3j.wallet;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
-import static com.github.tomakehurst.wiremock.client.WireMock.post;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
-
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import java.io.File;
@@ -35,4 +31,5 @@ public class WalletTestHelper {
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();
     }
+
 }
