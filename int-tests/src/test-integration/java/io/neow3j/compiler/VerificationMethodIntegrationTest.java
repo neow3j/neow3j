@@ -9,14 +9,12 @@ import io.neow3j.transaction.AccountSigner;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Collections.singletonList;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@Testcontainers
 public class VerificationMethodIntegrationTest {
 
     @RegisterExtension

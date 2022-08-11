@@ -14,13 +14,11 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@Testcontainers
 public class StaticVariablesIntegrationTest {
 
     private String testName;

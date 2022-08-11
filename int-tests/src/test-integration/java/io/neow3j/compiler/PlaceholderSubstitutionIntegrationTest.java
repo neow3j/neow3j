@@ -8,7 +8,6 @@ import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.events.Event1Arg;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +15,6 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-@Testcontainers
 public class PlaceholderSubstitutionIntegrationTest {
 
     @RegisterExtension
