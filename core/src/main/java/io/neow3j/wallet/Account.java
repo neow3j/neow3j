@@ -15,7 +15,6 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
-import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.exceptions.AccountStateException;
 import io.neow3j.wallet.nep6.NEP6Account;

@@ -491,7 +491,7 @@ public class TransactionBuilderTest {
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(
                         ContractSigner.global(contractHash, string("iamgroot"), integer(2)),
-                        AccountSigner.calledByEntry(Account.create()))
+                        calledByEntry(Account.create()))
                 .validUntilBlock(1000); // Setting explicitly so that no RPC call is necessary.
         Transaction tx = b.sign();
 
@@ -682,7 +682,6 @@ public class TransactionBuilderTest {
                 Base64.encode(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL),
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
 
         NeoInvokeScript response = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
@@ -696,8 +695,6 @@ public class TransactionBuilderTest {
                 SCRIPT_INVOKEFUNCTION_NEO_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
         String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
-        ECKeyPair senderPair = ECKeyPair.create(hexStringToByteArray(privateKey));
-        Account sender = new Account(senderPair);
 
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> new TransactionBuilder(neow).callInvokeScript());
@@ -855,7 +852,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testSetFirstSigner_feeOnlyPresent() {
-        Signer s1 = AccountSigner.none(account1);
+        Signer s1 = none(account1);
         Signer s2 = calledByEntry(account2);
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
@@ -1087,7 +1084,7 @@ public class TransactionBuilderTest {
 
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray(failingScript))
-                .signers(AccountSigner.none(a));
+                .signers(none(a));
 
         InvocationResult result = b.callInvokeScript().getInvocationResult();
         assertTrue(result.hasStateFault());

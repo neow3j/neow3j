@@ -3,7 +3,6 @@ package io.neow3j.wallet;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.matching.RegexPattern;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -27,7 +26,6 @@ public class WalletTestHelper {
 
     public static String loadFile(String fileName) throws IOException {
         String absFileName = WalletTestHelper.class.getResource(fileName).getFile();
-        FileInputStream inStream = new FileInputStream(new File(absFileName));
         return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8)
                 .reduce((a, b) -> a + b).get();
     }
