@@ -23,15 +23,8 @@ public class RelationalOperatorsTest {
     private final static String BOOLEANS_MTHD_NAME = "booleans";
     private static final String STRINGS_MTHD_NAME = "strings";
 
-    private String testName;
-
     @RegisterExtension
     public static ContractTestExtension ct = new ContractTestExtension(RelationalOperators.class.getName());
-
-    @BeforeEach
-    void init(TestInfo testInfo) {
-        testName = testInfo.getTestMethod().get().getName();
-    }
 
     @Test
     public void unequalSmallIntegers() throws IOException {

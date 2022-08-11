@@ -4,9 +4,7 @@ import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.utils.Numeric;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
@@ -16,16 +14,9 @@ import static org.hamcrest.Matchers.is;
 
 public class DeploymentMethodIntegrationTest {
 
-    private String testName;
-
     @RegisterExtension
     public static ContractTestExtension ct = new ContractTestExtension(
             DeploymentMethodIntegrationTestContract.class.getName());
-
-    @BeforeEach
-    void init(TestInfo testInfo) {
-        testName = testInfo.getTestMethod().get().getName();
-    }
 
     @Test
     public void deployingContractWithDeployMethod() throws Throwable {
