@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.contract.GasToken;
 import io.neow3j.contract.NeoToken;

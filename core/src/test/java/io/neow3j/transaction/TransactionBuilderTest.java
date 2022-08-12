@@ -694,7 +694,6 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json",
                 SCRIPT_INVOKEFUNCTION_NEO_SYMBOL,
                 "[\"721e1376b75fe93889023d47832c160fcc5d4a06\"]"); // witness (sender script hash)
-        String privateKey = "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3";
 
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> new TransactionBuilder(neow).callInvokeScript());
