@@ -4,10 +4,10 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -20,38 +20,35 @@ import static org.hamcrest.Matchers.is;
 
 public class StringLiteralHelperIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            StringLiterals.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(StringLiterals.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void addressToScriptHashInMethod() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        String littleEndianScriptHash = Numeric.reverseHexString(
-                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(littleEndianScriptHash));
+        String littleEndianScriptHash = Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93");
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(littleEndianScriptHash));
     }
 
     @Test
     public void addressToScriptHashInStaticVariableInitialization() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        String littleEndianScriptHash = Numeric.reverseHexString(
-                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(littleEndianScriptHash));
+        String littleEndianScriptHash = Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93");
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(littleEndianScriptHash));
     }
 
     @Test
     public void addressToScriptHashInLocalVariable() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        String littleEndianScriptHash = Numeric.reverseHexString(
-                "0f46dc4287b70117ce8354924b5cb3a47215ad93");
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is(littleEndianScriptHash));
+        String littleEndianScriptHash = Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93");
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is(littleEndianScriptHash));
     }
 
     @Test
@@ -143,6 +140,7 @@ public class StringLiteralHelperIntegrationTest {
             int integer = stringToInt("1000000000000000000000000000000");
             return integer;
         }
-    }
-}
 
+    }
+
+}

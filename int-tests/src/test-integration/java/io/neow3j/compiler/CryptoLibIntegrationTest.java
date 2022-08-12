@@ -8,10 +8,10 @@ import io.neow3j.devpack.constants.NamedCurve;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.wallet.Account;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 
@@ -25,16 +25,21 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class CryptoLibIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(CryptoLibIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
+            CryptoLibIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void sha256() throws IOException {
@@ -119,6 +124,7 @@ public class CryptoLibIntegrationTest {
         public static Hash160 getHash() {
             return new CryptoLib().getHash();
         }
+
     }
 
 }

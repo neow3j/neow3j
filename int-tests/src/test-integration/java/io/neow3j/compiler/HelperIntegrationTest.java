@@ -6,12 +6,11 @@ import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import org.junit.Assert;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -24,19 +23,23 @@ import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class HelperIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            HelperIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(HelperIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
-    public void assertTrue() throws IOException {
+    public void testAssertTrue() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
 
@@ -56,34 +59,27 @@ public class HelperIntegrationTest {
     @Test
     public void toByteArrayFromByte() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(new byte[]{8}));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(), is(new byte[]{8}));
     }
 
     @Test
     public void toByteArrayFromString() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("hello, world!"));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("hello, world!"));
     }
 
     @Test
     public void toByteArrayFromInteger() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(new BigInteger("12345678901234567890")));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("d20a1feb8ca954ab00"));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is("d20a1feb8ca954ab00"));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(new BigInteger("12345678901234567890")));
 
         response = ct.callInvokeFunction(testName, integer(new BigInteger("-12345678901234567890")));
-        assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
-                is("2ef5e0147356ab54ff"));
+        assertThat(response.getInvocationResult().getStack().get(0).getHexString(), is("2ef5e0147356ab54ff"));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
                 is(new BigInteger("-12345678901234567890")));
     }
@@ -92,15 +88,11 @@ public class HelperIntegrationTest {
     public void asByte() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(-128));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-128));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-128));
 
         response = ct.callInvokeFunction(testName, integer(127));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(127));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(127));
 
         response = ct.callInvokeFunction(testName, integer(128));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -112,24 +104,16 @@ public class HelperIntegrationTest {
     @Test
     public void asSignedByte() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(127));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(127));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(127));
 
         response = ct.callInvokeFunction(testName, integer(128));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-128));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-128));
 
         response = ct.callInvokeFunction(testName, integer(255));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-1));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-1));
 
         response = ct.callInvokeFunction(testName, integer(0));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(0));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
 
         response = ct.callInvokeFunction(testName, integer(-1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -140,32 +124,20 @@ public class HelperIntegrationTest {
 
     @Test
     public void toInt() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0x80}));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-128));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0x80}));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-128));
 
         response = ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0xff, (byte) 0x80}));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(-32513));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(-32513));
 
         response = ct.callInvokeFunction(testName, byteArray(new byte[]{}));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(0));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
 
         response = ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0xff, 0}));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(255));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(255));
 
-        response =
-                ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0xfb, (byte) 0xa6, 0}));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(42747));
+        response = ct.callInvokeFunction(testName, byteArray(new byte[]{(byte) 0xfb, (byte) 0xa6, 0}));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(42747));
     }
 
     @Test
@@ -178,18 +150,14 @@ public class HelperIntegrationTest {
 
     @Test
     public void byteArrayToString() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, byteArray("68656c6c6f2c20776f726c6421"));
-        assertThat(
-                response.getInvocationResult().getStack().get(0).getString(),
-                is("hello, world!"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("68656c6c6f2c20776f726c6421"));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("hello, world!"));
     }
 
     @Test
     public void within() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, integer(1), integer(0), integer(3));
-        Assert.assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1), integer(0), integer(3));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         response = ct.callInvokeFunction(testName, integer(1), integer(2), integer(3));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
@@ -200,10 +168,8 @@ public class HelperIntegrationTest {
 
     @Test
     public void concatByteArray() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, byteArray("0102"), byteArray("0304"));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("0102"), byteArray("0304"));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(hexStringToByteArray("01020304")));
     }
@@ -212,8 +178,7 @@ public class HelperIntegrationTest {
     public void rangeOfByteArray() throws IOException {
         NeoInvokeFunction response =
                 ct.callInvokeFunction(testName, byteArray("010203040506"), integer(1), integer(4));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{0x02, 0x03, 0x04, 0x05}));
     }
@@ -221,22 +186,16 @@ public class HelperIntegrationTest {
     @Test
     public void rangeOfByteString() throws IOException {
         NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello, world!"), integer(1),
-                        integer(4));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BYTE_STRING));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("ello"));
+                ct.callInvokeFunction(testName, string("hello, world!"), integer(1), integer(4));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("ello"));
     }
 
     @Test
     public void takeFromByteArray() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, byteArray("010203040506"), integer(2));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(new byte[]{0x01, 0x02}));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(2));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(), is(new byte[]{0x01, 0x02}));
 
         response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(-1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -244,12 +203,9 @@ public class HelperIntegrationTest {
 
     @Test
     public void takeFromByteString() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"),
-                integer(7));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BYTE_STRING));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("hello, "));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"), integer(7));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("hello, "));
 
         response = ct.callInvokeFunction(testName, string("hello, world!"), integer(-1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -257,12 +213,9 @@ public class HelperIntegrationTest {
 
     @Test
     public void lastFromByteArray() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("010203040506"),
-                integer(2));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(new byte[]{0x05, 0x06}));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(2));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(), is(new byte[]{0x05, 0x06}));
 
         response = ct.callInvokeFunction(testName, byteArray("010203040506"), integer(-1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
@@ -270,25 +223,21 @@ public class HelperIntegrationTest {
 
     @Test
     public void lastFromByteString() throws IOException {
-        NeoInvokeFunction response =
-                ct.callInvokeFunction(testName, string("hello, world!"), integer(7));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BYTE_STRING));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is(" world!"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"), integer(7));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is(" world!"));
 
         response = ct.callInvokeFunction(testName, string("hello, world!"), integer(-1));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
     }
 
     @Test
-    @Ignore("This doesn't work because the byte array parameter is not a Buffer stack item on the NeoVM (but a " +
+    @Disabled("This doesn't work because the byte array parameter is not a Buffer stack item on the NeoVM (but a " +
             "ByteString). The reverse method therefore fails because it doesn't operate on ByteStrings. Test this " +
             "again once that case can be handled, e.g., with a compiler configuration.")
     public void reverseByteArray() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("010203040506"));
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(hexStringToByteArray("060504030201")));
     }
@@ -308,8 +257,7 @@ public class HelperIntegrationTest {
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(2));
 
         response = ct.callInvokeFunction(testName, integer(40401));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(201));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(201));
 
         response = ct.callInvokeFunction(testName, integer(10));
         assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(3));
@@ -349,8 +297,7 @@ public class HelperIntegrationTest {
                         integer(3),
                         integer(3));
 
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{0x04, 0x05, 0x06, 0x00, 0x00, 0x00}));
     }
@@ -366,8 +313,7 @@ public class HelperIntegrationTest {
                         integer(10),
                         integer(3));
 
-        assertThat(response.getInvocationResult().getStack().get(0).getType(),
-                is(StackItemType.BUFFER));
+        assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
         assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
                 is(new byte[]{
                         0x00, 0x00, 0x00, 0x00,
@@ -381,7 +327,7 @@ public class HelperIntegrationTest {
 
     static class HelperIntegrationTestContract {
 
-        public static void assertTrue(boolean bool) {
+        public static void testAssertTrue(boolean bool) {
             Helper.assertTrue(bool);
         }
 

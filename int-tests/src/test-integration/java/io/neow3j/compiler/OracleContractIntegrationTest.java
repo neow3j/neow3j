@@ -1,7 +1,7 @@
 package io.neow3j.compiler;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.contract.GasToken;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.RoleManagement;
@@ -24,10 +24,10 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.reactivex.disposables.Disposable;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -54,14 +54,20 @@ import static org.hamcrest.Matchers.notNullValue;
 
 public class OracleContractIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(wireMockConfig().dynamicHttpsPort());
+    @RegisterExtension
+    static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicHttpsPort())
+            .build();
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(OracleContractIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(OracleContractIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void getHash() throws IOException {
@@ -106,8 +112,8 @@ public class OracleContractIntegrationTest {
         // Setup WireMock
         String json = "{ \"jsonrpc\": \"2.0\", \"id\": 1, \"result\": 1000 }";
         JsonNode jsonNode = ObjectMapperFactory.getObjectMapper().readTree(json);
-        int port = wireMockRule.httpsPort();
-        wireMockRule.stubFor(get(urlEqualTo("/io/neow3j/test")).willReturn(aResponse()
+        int port = wireMockExtension.getHttpsPort();
+        wireMockExtension.stubFor(get(urlEqualTo("/io/neow3j/test")).willReturn(aResponse()
                 .withStatus(200)
                 .withJsonBody(jsonNode)));
 
@@ -168,6 +174,7 @@ public class OracleContractIntegrationTest {
         public static void callback(String url, String userdata, int code, String result) {
             callbackEvent.fire(url, userdata, code, result);
         }
+
     }
 
 }

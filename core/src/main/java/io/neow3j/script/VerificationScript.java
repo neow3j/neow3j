@@ -10,7 +10,6 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.ScriptFormatException;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.ArrayUtils;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.ArrayList;

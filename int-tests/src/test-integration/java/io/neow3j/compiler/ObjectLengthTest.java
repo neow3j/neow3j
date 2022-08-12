@@ -3,10 +3,10 @@ package io.neow3j.compiler;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Numeric;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -19,12 +19,15 @@ import static org.hamcrest.Matchers.is;
 
 public class ObjectLengthTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ObjectLengthTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(ObjectLengthTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void lengthOfTwoStrings() throws IOException {
@@ -69,5 +72,5 @@ public class ObjectLengthTest {
         }
 
     }
-}
 
+}

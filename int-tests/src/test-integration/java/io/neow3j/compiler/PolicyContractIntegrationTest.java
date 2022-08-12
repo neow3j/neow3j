@@ -8,10 +8,10 @@ import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Numeric;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -22,20 +22,24 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PolicyContractIntegrationTest {
-
-    @Rule
-    public TestName testName = new TestName();
 
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
     public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
     public static final int DEFAULT_STORAGE_PRICE = 100000;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(PolicyContractIntegrationTestContract.class.getName());
+    private String testName;
+
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(PolicyContractIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void setAndGetFeePerByte() throws IOException {
@@ -151,6 +155,7 @@ public class PolicyContractIntegrationTest {
             prices[1] = policyContract.getStoragePrice();
             return prices;
         }
+
     }
 
 }

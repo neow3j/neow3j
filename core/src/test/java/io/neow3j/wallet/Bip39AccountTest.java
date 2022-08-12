@@ -1,13 +1,13 @@
 package io.neow3j.wallet;
 
+import io.neow3j.crypto.ECKeyPair;
+import org.junit.jupiter.api.Test;
+
 import static io.neow3j.wallet.Bip39Account.fromBip39Mnemonic;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-
-import io.neow3j.crypto.ECKeyPair;
-import org.junit.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class Bip39AccountTest {
 

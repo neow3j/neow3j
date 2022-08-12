@@ -5,9 +5,9 @@ import io.neow3j.utils.Numeric;
 import org.bouncycastle.asn1.x9.X9ECParameters;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -15,8 +15,8 @@ import java.nio.ByteBuffer;
 
 import static io.neow3j.crypto.Bip32ECKeyPair.HARDENED_BIT;
 import static io.neow3j.crypto.Hash.sha256;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * BIP-32 implementation test.
@@ -66,12 +66,12 @@ public class Bip32Test {
         return ser.array();
     }
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         setUpMock();
     }
 
-    @AfterClass
+    @AfterAll
     public static void cleanUp() {
         cleanUpMock();
     }

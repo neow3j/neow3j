@@ -4,8 +4,10 @@ import io.neow3j.devpack.Account;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 
@@ -20,24 +22,27 @@ import static org.hamcrest.Matchers.is;
 
 public class AccountIntegrationTest {
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            AccountIntegrationTestContract.class.getName());
+    private String testName;
+
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(AccountIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void createStandardAccount() throws IOException {
-        NeoInvokeFunction res = ct.callInvokeFunction("createStandardAccount",
-                publicKey(defaultAccountPublicKey()));
-        assertThat(res.getInvocationResult().getStack().get(0).getAddress(),
-                is(defaultAccountAddress()));
+        NeoInvokeFunction res = ct.callInvokeFunction(testName, publicKey(defaultAccountPublicKey()));
+        assertThat(res.getInvocationResult().getStack().get(0).getAddress(), is(defaultAccountAddress()));
     }
 
     @Test
     public void createMultiSigAccount() throws IOException {
-        NeoInvokeFunction res = ct.callInvokeFunction("createMultiSigAccount",
-                integer(1), array(publicKey(defaultAccountPublicKey())));
-        assertThat(res.getInvocationResult().getStack().get(0).getAddress(),
-                is(committeeAccountAddress()));
+        NeoInvokeFunction res = ct.callInvokeFunction(testName, integer(1),
+                array(publicKey(defaultAccountPublicKey())));
+        assertThat(res.getInvocationResult().getStack().get(0).getAddress(), is(committeeAccountAddress()));
     }
 
     static class AccountIntegrationTestContract {
@@ -51,4 +56,5 @@ public class AccountIntegrationTest {
         }
 
     }
+
 }

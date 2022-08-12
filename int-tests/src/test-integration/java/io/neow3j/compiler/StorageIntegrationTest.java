@@ -14,11 +14,12 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.StackItemType;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -37,18 +38,12 @@ import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("unchecked")
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class StorageIntegrationTest {
-
-    @Rule
-    public TestName testName = new TestName();
-
-    @ClassRule
-    public static ContractTestRule ct =
-            new ContractTestRule(StorageIntegrationTestContract.class.getName());
 
     private static final String STORE_DATA = "storeData";
     private static final String STORE_INT = "storeInteger";
@@ -82,9 +77,18 @@ public class StorageIntegrationTest {
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
     private static Hash256 hash256;
+    private String testName;
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(StorageIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
+
+    @BeforeAll
+    public void setUp() throws Throwable {
         ContractParameter key = byteArray(KEY1_HEX);
         ContractParameter data = byteArray(DATA1);
         hash256 = ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
@@ -153,7 +157,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash160ByByteArrayKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         Hash160 hash160 = Account.create().getScriptHash();
         ContractParameter data = hash160(hash160);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
@@ -164,7 +168,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash160ByByteStringKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         Hash160 hash160 = Account.create().getScriptHash();
         ContractParameter data = hash160(hash160);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
@@ -175,7 +179,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash160ByStringKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         Hash160 hash160 = Account.create().getScriptHash();
         ContractParameter data = hash160(hash160);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
@@ -186,7 +190,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash160ByIntegerKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         Hash160 hash160 = Account.create().getScriptHash();
         ContractParameter data = hash160(hash160);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
@@ -200,7 +204,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash256ByByteArrayKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         ContractParameter data = hash256(hash256);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
@@ -210,7 +214,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash256ByByteStringKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         ContractParameter data = hash256(hash256);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
@@ -220,7 +224,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash256ByStringKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         ContractParameter data = hash256(hash256);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
@@ -230,7 +234,7 @@ public class StorageIntegrationTest {
 
     @Test
     public void getHash256ByIntegerKey() throws Throwable {
-        ContractParameter key = byteArrayFromString(testName.getMethodName());
+        ContractParameter key = byteArrayFromString(testName);
         ContractParameter data = hash256(hash256);
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
         InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
@@ -1252,3 +1256,4 @@ public class StorageIntegrationTest {
     }
 
 }
+

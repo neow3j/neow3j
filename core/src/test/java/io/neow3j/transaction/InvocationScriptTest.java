@@ -8,7 +8,7 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
@@ -21,8 +21,8 @@ import static io.neow3j.script.OpCode.PUSHDATA2;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InvocationScriptTest {
 

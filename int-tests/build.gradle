@@ -6,9 +6,14 @@ testSets {
 
 dependencies {
     testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
+            "org.testcontainers:junit-jupiter:$testcontainersVersion",
             project(':compiler'),
             project(':contract'),
             project(':devpack'),
             project(':devpack-test'),
             project(':test-tools')
+}
+
+integrationTest {
+    useJUnitPlatform()
 }

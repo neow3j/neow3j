@@ -5,7 +5,7 @@ import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,16 +25,15 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.stringContainsInOrder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StackItemTest extends ResponseTester {
 
-    private final static String BYTESTRING_JSON =
-            "{\"type\":\"ByteString\",\"value\":\"V29vbG9uZw==\"}";
+    private final static String BYTESTRING_JSON = "{\"type\":\"ByteString\",\"value\":\"V29vbG9uZw==\"}";
 
     @Test
     public void throwOnCastingToMapFromIllegalType() throws IOException {
@@ -527,15 +526,13 @@ public class StackItemTest extends ResponseTester {
     @Test
     public void throwExceptionOnGetAddressFromByteArrayWithIllegalAddress() {
         ByteStringStackItem item = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
-        assertThrows(IllegalArgumentException.class.getSimpleName(), StackItemCastException.class,
-                item::getAddress);
+        assertThrows(StackItemCastException.class, item::getAddress);
     }
 
     @Test
     public void throwExceptionOnGetIntegerFromEmptyByteArray() {
         ByteStringStackItem item = new ByteStringStackItem(new byte[]{});
-        assertThrows(NumberFormatException.class.getSimpleName(), StackItemCastException.class,
-                item::getInteger);
+        assertThrows(StackItemCastException.class, item::getInteger);
     }
 
     @Test

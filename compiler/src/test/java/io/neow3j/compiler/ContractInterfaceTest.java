@@ -5,7 +5,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.script.OpCode;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.SortedMap;
@@ -16,7 +16,7 @@ import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ContractInterfaceTest {
 

@@ -1,28 +1,25 @@
 package io.neow3j.crypto;
 
 import org.bouncycastle.util.encoders.Hex;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.Arrays;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.runners.Parameterized.Parameters;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link MnemonicUtils} utility class.
  */
-@RunWith(Parameterized.class)
 public class MnemonicUtilsTest {
 
     /**
@@ -35,66 +32,51 @@ public class MnemonicUtilsTest {
     private static final URL SAMPLE_FILE = MnemonicUtilsTest.class.getResource("/mnemonics/test-vectors.txt");
 
     /**
-     * Loads the test vectors into a in-memory list and feed them one after another to
-     * our parameterized tests.
+     * Loads the test vectors into a in-memory list and feed them one after another to our parameterized tests.
+     * <p>
+     * Test vectors are split by "###" and consist of the initial entropy, the mnemonic sequence and the binary seed
+     * on separate lines.
+     * <p>
+     * The initial entropy should be used to generate mnemonic and seed. The read mnemonic is the expected outcome
+     * when generating the mnemonic from initial entropy. Finally, the binary seed is the expected seed based on the
+     * calculated mnemonic and default passphrase.
      *
-     * @return Collection of test vectors in which each vector is an array containing
-     * initial entropy, expected mnemonic and expected seed.
+     * @return Collection of test vectors in which each vector is an array containing initial entropy, expected
+     * mnemonic and expected seed.
      * @throws IOException Shouldn't happen!
      */
-    @Parameters
-    public static Collection<Object[]> data() throws IOException, URISyntaxException {
+    private static Stream<Arguments> data() throws IOException, URISyntaxException {
         String data = Files.lines(Paths.get(SAMPLE_FILE.toURI())).collect(Collectors.joining("\n"));
-        String[] each = data.split("###");
+        String[] mnemonicSets = data.split("###");
 
-        List<Object[]> parameters = new ArrayList<>();
-        for (String part : each) {
-            parameters.add(part.trim().split("\n"));
-        }
-
-        return parameters;
+        return Arrays.stream(mnemonicSets)
+                .map(String::trim)
+                .map(trimmed -> trimmed.split("\n"))
+                .map(Arguments::of);
     }
 
-    /**
-     * The initial entropy for the current test vector. This entropy should be used
-     * to generate mnemonic and seed.
-     */
-    private byte[] initialEntropy;
-
-    /**
-     * Expected mnemonic for the given {@link #initialEntropy}.
-     */
-    private String mnemonic;
-
-    /**
-     * Expected seed based on the calculated {@link #mnemonic} and default passphrase.
-     */
-    private byte[] seed;
-
-    public MnemonicUtilsTest(String initialEntropy, String mnemonic, String seed) {
-        this.initialEntropy = Hex.decode(initialEntropy);
-        this.mnemonic = mnemonic;
-        this.seed = Hex.decode(seed);
-    }
-
-    @Test
-    public void generateMnemonicShouldGenerateExpectedMnemonicWords() {
-        String actualMnemonic = MnemonicUtils.generateMnemonic(initialEntropy);
+    @ParameterizedTest
+    @MethodSource("data")
+    public void generateMnemonicShouldGenerateExpectedMnemonicWords(String initialEntropy, String mnemonic) {
+        String actualMnemonic = MnemonicUtils.generateMnemonic(Hex.decode(initialEntropy));
 
         assertEquals(mnemonic, actualMnemonic);
     }
 
-    @Test
-    public void generateSeedShouldGenerateExpectedSeeds() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void generateSeedShouldGenerateExpectedSeeds(String initialEntropy, String mnemonic, String seed) {
         byte[] actualSeed = MnemonicUtils.generateSeed(mnemonic, "TREZOR");
 
-        assertArrayEquals(seed, actualSeed);
+        assertArrayEquals(Hex.decode(seed), actualSeed);
     }
 
-    @Test
-    public void generateEntropyShouldGenerateExpectedEntropy() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void generateEntropyShouldGenerateExpectedEntropy(String initialEntropy, String mnemonic, String seed) {
         byte[] actualEntropy = MnemonicUtils.generateEntropy(mnemonic);
 
-        assertArrayEquals(initialEntropy, actualEntropy);
+        assertArrayEquals(Hex.decode(initialEntropy), actualEntropy);
     }
+
 }

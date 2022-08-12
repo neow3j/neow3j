@@ -2,13 +2,13 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.annotations.Trust;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class PlaceholderSubstitutionTest {
 

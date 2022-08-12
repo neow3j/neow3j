@@ -25,9 +25,10 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -38,10 +39,11 @@ import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Testcontainers
 public class TransactionBuilderIntegrationTest {
 
     private static final String TEST_SCRIPT = toHexStringNoPrefix(new ScriptBuilder()
@@ -50,10 +52,10 @@ public class TransactionBuilderIntegrationTest {
 
     protected static Neow3j neow3j;
 
-    @ClassRule
+    @Container
     public static NeoTestContainer container = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(container.getNodeUrl()));
         Await.waitUntilBlockCountIsGreaterThanZero(neow3j);

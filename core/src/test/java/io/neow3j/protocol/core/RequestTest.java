@@ -23,7 +23,7 @@ import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Date;

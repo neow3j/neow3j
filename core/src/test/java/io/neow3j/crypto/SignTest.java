@@ -4,7 +4,7 @@ import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.security.SignatureException;
 
@@ -18,8 +18,8 @@ import static io.neow3j.utils.Numeric.toHexString;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SignTest {
 

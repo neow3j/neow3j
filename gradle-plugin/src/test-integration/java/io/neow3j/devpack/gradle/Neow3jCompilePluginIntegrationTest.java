@@ -1,5 +1,13 @@
 package io.neow3j.devpack.gradle;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.gradle.testkit.runner.BuildResult;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
 import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
 import static org.gradle.testkit.runner.TaskOutcome.FAILED;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
@@ -10,13 +18,6 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import org.gradle.testkit.runner.BuildResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 public class Neow3jCompilePluginIntegrationTest {
 

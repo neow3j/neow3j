@@ -4,7 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import io.neow3j.protocol.Neow3j;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 public class GasTokenTest {
 

@@ -1,7 +1,7 @@
 package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
-import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
@@ -13,9 +13,10 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,7 +25,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.options;
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.constants.NeoConstants.MAX_MANIFEST_SIZE;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
@@ -40,9 +41,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContractManagementTest {
 
     private static final Hash160 CONTRACTMANAGEMENT_SCRIPTHASH =
@@ -56,13 +58,15 @@ public class ContractManagementTest {
 
     private Account account1;
 
-    @Rule
-    public WireMockRule wireMockRule = new WireMockRule(options().dynamicPort());
+    @RegisterExtension
+    static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort())
+            .build();
 
-    @Before
+    @BeforeAll
     public void setUp() {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
-        int port = wireMockRule.port();
+        int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
         neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
                 new Neow3jConfig().setNetworkMagic(769));

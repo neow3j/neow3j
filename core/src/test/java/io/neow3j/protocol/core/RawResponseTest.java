@@ -2,7 +2,7 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.response.NeoGetVersion;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;

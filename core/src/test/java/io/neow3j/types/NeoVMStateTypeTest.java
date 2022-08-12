@@ -1,17 +1,19 @@
 package io.neow3j.types;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NeoVMStateTypeTest {
 
     private NeoVMStateType neoVMStateType;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         this.neoVMStateType = NeoVMStateType.HALT;
     }

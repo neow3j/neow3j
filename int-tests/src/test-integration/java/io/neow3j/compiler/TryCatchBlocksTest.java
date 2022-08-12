@@ -3,10 +3,10 @@ package io.neow3j.compiler;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.NeoVMStateType;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,19 +14,22 @@ import java.util.List;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TryCatchBlocksTest {
 
     private static final String NEOVM_FAILED_ASSERT_MESSAGE = "ASSERT is executed with false result.";
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            TryCatchBlocks.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(TryCatchBlocks.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void hitExceptionInTryCatchBlock() throws IOException {

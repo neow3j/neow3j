@@ -39,8 +39,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
     final static String DEPLOY_CTX_STORE_KEY = "contracts";
 
     private Neow3j neow3j;
-    private DeployContext deployCtx = new DeployContext();
-    private TestBlockchain chain;
+    private final DeployContext deployCtx = new DeployContext();
+    private final TestBlockchain chain;
 
     public ContractTestExtension() {
         chain = new NeoExpressTestContainer();
@@ -338,8 +338,8 @@ public class ContractTestExtension implements BeforeAllCallback, AfterAllCallbac
      */
     public static class GenesisAccount {
 
-        private Account multiSigAccount;
-        private Account[] signerAccounts;
+        private final Account multiSigAccount;
+        private final Account[] signerAccounts;
 
         public GenesisAccount(Account multiSigAccount, Account[] signerAccounts) {
             this.multiSigAccount = multiSigAccount;

@@ -8,9 +8,10 @@ import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigInteger;
 
@@ -26,15 +27,16 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class FungibleTokenIntegrationTest {
 
     private static Neow3j neow3j;
     private static FungibleToken fungibleToken;
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);

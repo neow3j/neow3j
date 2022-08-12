@@ -9,8 +9,9 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.utils.Numeric;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -26,13 +27,14 @@ import static java.util.Arrays.copyOfRange;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isOneOf;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ScriptBuilderTest extends TestBinaryUtils {
 
     private ScriptBuilder builder;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         this.builder = new ScriptBuilder();
     }

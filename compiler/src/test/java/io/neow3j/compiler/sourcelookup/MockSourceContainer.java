@@ -14,4 +14,5 @@ public class MockSourceContainer implements ISourceContainer {
     public File findSourceFile(String name) {
         return fileToReturn;
     }
+
 }

@@ -9,9 +9,10 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -29,15 +30,16 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 
+@Testcontainers
 public class RoleManagementIntegrationTest {
 
     private static Neow3j neow3j;
     private static RoleManagement roleManagement;
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);

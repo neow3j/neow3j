@@ -7,9 +7,10 @@ import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.StackItemType;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -28,13 +29,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 
+@Testcontainers
 public class SmartContractIntegrationTest {
 
     private static Neow3j neow3j;
     private static NeoToken neoToken;
 
-    private static final Account candidate1Acc =
-            Account.fromWIF("KxYQMD3vjyehMh2fXDKtdvVjnatppLSHzbbZPUc1GFQ1xKy6aHW6");
+    private static final Account candidate1Acc = Account.fromWIF(
+            "KxYQMD3vjyehMh2fXDKtdvVjnatppLSHzbbZPUc1GFQ1xKy6aHW6");
     private static final Account candidate2Acc =
             Account.fromWIF("KyaCDA83aiUNMByMdC5vFa5C2diEpG1PCui5fWbeWbsdUushX78p");
 
@@ -46,10 +48,10 @@ public class SmartContractIntegrationTest {
     private static final NeoToken.Candidate candidate2 =
             new NeoToken.Candidate(candidate2Acc.getECKeyPair().getPublicKey(), candidate2Votes);
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);

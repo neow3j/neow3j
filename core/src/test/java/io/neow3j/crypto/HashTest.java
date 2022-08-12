@@ -1,7 +1,7 @@
 package io.neow3j.crypto;
 
 import io.neow3j.utils.Numeric;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,4 +58,5 @@ public class HashTest {
         final String result = Hash.ripemd160(hexStringToHash);
         assertThat(result, is(expected));
     }
+
 }

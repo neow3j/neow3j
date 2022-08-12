@@ -6,29 +6,32 @@ import static io.neow3j.test.TestProperties.defaultAccountPrivateKey;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.utils.AddressUtils;
 import io.neow3j.utils.Numeric;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class WalletUtilsTest {
 
     private File tempDir;
 
-    @Before
+    @BeforeAll
     public void setUp() throws Exception {
         tempDir = createTempDir();
     }
 
-    @After
+    @AfterAll
     public void tearDown() {
         for (File file : tempDir.listFiles()) {
             file.delete();

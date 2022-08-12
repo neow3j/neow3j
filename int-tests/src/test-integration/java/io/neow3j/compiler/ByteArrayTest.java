@@ -3,10 +3,10 @@ package io.neow3j.compiler;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.StackItemType;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 
@@ -18,12 +18,15 @@ import static org.hamcrest.Matchers.is;
 
 public class ByteArrayTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            ByteArrayTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(ByteArrayTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void constructEmptyArray() throws IOException {
@@ -46,8 +49,7 @@ public class ByteArrayTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         StackItem result = response.getInvocationResult().getStack().get(0);
         assertThat(result.getType(), is(StackItemType.BUFFER));
-        assertThat(result.getByteArray(), is(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
-                0x07, 0x08, 0x09}));
+        assertThat(result.getByteArray(), is(new byte[]{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09}));
     }
 
     @Test
@@ -106,5 +108,7 @@ public class ByteArrayTest {
             b[0] = 1;
             return b;
         }
+
     }
+
 }

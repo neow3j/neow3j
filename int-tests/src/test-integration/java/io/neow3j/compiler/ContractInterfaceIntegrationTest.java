@@ -15,10 +15,10 @@ import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -32,16 +32,21 @@ import static io.neow3j.utils.Numeric.reverseHexString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractInterfaceIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(ContractInterfaceIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
+            ContractInterfaceIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void callSymbolOfFungibleToken() throws IOException {
@@ -104,8 +109,7 @@ public class ContractInterfaceIntegrationTest {
 
         assertThat(exec.getNotifications().get(1).getContract(), is(GasToken.SCRIPT_HASH));
         assertThat(exec.getNotifications().get(1).getEventName(), is("Transfer"));
-        assertThat(exec.getNotifications().get(1).getState().getList().get(0).getType(),
-                is(StackItemType.ANY));
+        assertThat(exec.getNotifications().get(1).getState().getList().get(0).getType(), is(StackItemType.ANY));
         assertNull(exec.getNotifications().get(1).getState().getList().get(0).getValue());
         assertThat(exec.getNotifications().get(1).getState().getList().get(1).getAddress(),
                 is(ct.getCommittee().getAddress()));

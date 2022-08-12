@@ -23,10 +23,10 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.List;
@@ -45,16 +45,21 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractManagementIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(ContractManagementIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
+            ContractManagementIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void getContract() throws IOException {
@@ -73,15 +78,13 @@ public class ContractManagementIntegrationTest {
                 hash160(NeoToken.SCRIPT_HASH), string("balanceOf"), integer(1));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
-        response = ct.callInvokeFunction(testName,
-                hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(1));
+        response = ct.callInvokeFunction(testName, hash160(NeoToken.SCRIPT_HASH), string("symbol"), integer(1));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
     public void checkManifestValues() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(new Hash160(neoTokenHash())));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(new Hash160(neoTokenHash())));
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertTrue(array.get(0).getBoolean());
         assertTrue(array.get(1).getBoolean());
@@ -109,8 +112,7 @@ public class ContractManagementIntegrationTest {
 
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
-        NeoGetContractState result =
-                ct.getNeow3j().getContractState(contractHash).send();
+        NeoGetContractState result = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(result.getContractState(), notNullValue());
     }
 
@@ -135,8 +137,7 @@ public class ContractManagementIntegrationTest {
 
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
-        NeoGetContractState result =
-                ct.getNeow3j().getContractState(contractHash).send();
+        NeoGetContractState result = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(result.getContractState(), notNullValue());
     }
 
@@ -154,14 +155,12 @@ public class ContractManagementIntegrationTest {
                 asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
-                ct.getNeow3j());
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
 
         // Check zero updates have been performed
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 compUnit.getNefFile().getCheckSumAsInteger(), compUnit.getManifest().getName());
-        NeoGetContractState contractState =
-                ct.getNeow3j().getContractState(contractHash).send();
+        NeoGetContractState contractState = ct.getNeow3j().getContractState(contractHash).send();
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
@@ -201,8 +200,7 @@ public class ContractManagementIntegrationTest {
                 asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
-        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),
-                ct.getNeow3j());
+        Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
 
         // Check zero updates have been performed
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
@@ -211,8 +209,7 @@ public class ContractManagementIntegrationTest {
         assertThat(contractState.getContractState().getUpdateCounter(), is(0));
 
         // Compile updated version of contract
-        compUnit = new Compiler().compile(
-                ContractManagementIntegrationTestContractUpdatedWithData.class.getName());
+        compUnit = new Compiler().compile(ContractManagementIntegrationTestContractUpdatedWithData.class.getName());
         String manifestString = ObjectMapperFactory.getObjectMapper()
                 .writeValueAsString(compUnit.getManifest());
 

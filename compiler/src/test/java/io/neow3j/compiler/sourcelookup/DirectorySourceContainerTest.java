@@ -5,7 +5,7 @@ import io.neow3j.compiler.Compiler;
 import io.neow3j.compiler.DebugInfo;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.annotations.Struct;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;

@@ -6,7 +6,7 @@ import io.neow3j.devpack.annotations.OnNEP11Payment;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
@@ -17,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class OnNEP11PaymentMethodTest {
 
@@ -111,4 +111,5 @@ public class OnNEP11PaymentMethodTest {
         }
 
     }
+
 }

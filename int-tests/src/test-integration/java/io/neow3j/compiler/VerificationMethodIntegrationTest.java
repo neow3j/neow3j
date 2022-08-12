@@ -6,27 +6,22 @@ import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.protocol.core.response.NeoInvokeContractVerify;
 import io.neow3j.transaction.AccountSigner;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Collections.singletonList;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class VerificationMethodIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
-
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
             VerificationMethodIntegrationTestContract.class.getName());
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Throwable {
         // The RPC method invokecontractverify requires an open wallet on the neo-node.
         ct.getNeow3j().openWallet("wallet.json", "neo").send();

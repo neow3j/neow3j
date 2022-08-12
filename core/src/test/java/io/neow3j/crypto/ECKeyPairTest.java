@@ -6,8 +6,8 @@ import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
 import org.bouncycastle.math.ec.ECPoint;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 
@@ -18,12 +18,12 @@ import static io.neow3j.test.TestProperties.defaultAccountScriptHash;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ECKeyPairTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         addBouncyCastle();
     }

@@ -13,10 +13,10 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -35,16 +35,20 @@ import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ArraysConverterIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
             ArraysConverterIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void createStringArrayWithTwoEntries() throws IOException {
@@ -113,14 +117,13 @@ public class ArraysConverterIntegrationTest {
         List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
         assertThat(arrayStackItem.get(0).getInteger().intValue(), is(1));
         assertThat(arrayStackItem.get(1).getString(), is("hello, world!"));
-        assertThat(arrayStackItem.get(2).getHexString(),
-                is(Hash160.ZERO.toString()));
+        assertThat(arrayStackItem.get(2).getHexString(), is(Hash160.ZERO.toString()));
     }
 
     @Test
     public void variableLengthParam() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1),
-                array(integer(10), integer(23), integer(100), integer(42)));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1), array(integer(10), integer(23),
+                integer(100), integer(42)));
         int sum = response.getInvocationResult().getStack().get(0).getInteger().intValue();
         assertThat(sum, is(186));
     }
@@ -144,24 +147,20 @@ public class ArraysConverterIntegrationTest {
 
     @Test
     public void stringVarArgs() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                array(string("hello, "), string("world!")));
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is("hello, world!"));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, array(string("hello, "), string("world!")));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is("hello, world!"));
     }
 
     @Test
     public void multiArrayInit() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(new byte[]{1, 2, 3, 4, 5, 6}));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(), is(new byte[]{1, 2, 3, 4, 5, 6}));
     }
 
     @Test
     public void multiArrayThreeDimensions() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(),
-                is(new byte[]{1, 3, 8, 12, 6}));
+        assertThat(response.getInvocationResult().getStack().get(0).getByteArray(), is(new byte[]{1, 3, 8, 12, 6}));
     }
 
     @Test

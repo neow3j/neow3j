@@ -4,10 +4,10 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Crypto;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
 
@@ -15,16 +15,19 @@ import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.publicKey;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class CryptoIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(
-            CryptoIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(CryptoIntegrationTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void checkSig() throws Throwable {
@@ -68,6 +71,7 @@ public class CryptoIntegrationTest {
         public static boolean checkMultiSig(ECPoint[] pubKeys, ByteString[] signatures) {
             return Crypto.checkMultisig(pubKeys, signatures);
         }
+
     }
 
 }

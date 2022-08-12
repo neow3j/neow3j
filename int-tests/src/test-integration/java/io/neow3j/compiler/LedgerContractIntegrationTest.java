@@ -25,11 +25,12 @@ import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.NeoVMStateType;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -44,22 +45,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class LedgerContractIntegrationTest {
 
     private static NeoBlock blockOfDeployTx;
     private static io.neow3j.types.Hash256 preparedTx;
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(LedgerContractIntegrationTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(
+            LedgerContractIntegrationTestContract.class.getName());
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
+
+    @BeforeAll
+    public void setUp() throws Throwable {
         blockOfDeployTx = ct.getNeow3j().getBlock(ct.getBlockHashOfDeployTx(), true).send().getBlock();
         preparedTx = prepareTxWithWitnessRuleSigner();
     }
@@ -450,6 +457,7 @@ public class LedgerContractIntegrationTest {
         public static Hash160 getHash() {
             return ledgerContract.getHash();
         }
+
     }
 
 }

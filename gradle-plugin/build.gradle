@@ -54,7 +54,8 @@ dependencies {
             project(':contract'),
             gradleApi()
 
-    testImplementation gradleTestKit()
+    testImplementation "junit:junit:$junitVersion",
+            gradleTestKit()
 
     testRuntime files(createClasspathManifest)
 }

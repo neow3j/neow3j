@@ -39,12 +39,12 @@ public class ModuleTest {
     private static final String ALICE_SKEY = "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5";
 
     @RegisterExtension
-    private static ContractTestExtension ext = new ContractTestExtension(new NeoExpressTestContainer());
+    private static final ContractTestExtension ext = new ContractTestExtension(new NeoExpressTestContainer());
 
     private static Neow3j neow3j;
     private static SmartContract sc1;
     private static SmartContract sc2;
-    private static Account deployer = new Account(ECKeyPair.create(hexStringToByteArray(ALICE_SKEY)));
+    private static final Account deployer = new Account(ECKeyPair.create(hexStringToByteArray(ALICE_SKEY)));
 
     @DeployConfig(TestContract1.class)
     public static DeployConfiguration config1() {

@@ -5,10 +5,12 @@ dependencies {
             "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
+
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
             "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "org.slf4j:slf4j-api:$slf4jVersion",
             "org.awaitility:awaitility:$awaitility"
+
     testImplementation "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion",
             "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",

@@ -17,40 +17,30 @@
 
 package io.neow3j.crypto;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collection;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(Parameterized.class)
 public class Base58EncodeTest {
 
-    private byte[] input;
-    private String expected;
-
-    public Base58EncodeTest(byte[] input, String expected) {
-        this.input = input;
-        this.expected = expected;
+    private static Stream<Arguments> data() {
+        return Stream.of(
+                Arguments.of(new Object[]{"Hello World".getBytes(), "JxF12TrwUP45BMd"}),
+                Arguments.of(new Object[]{BigInteger.valueOf(3471844090L).toByteArray(), "16Ho7Hs"}),
+                Arguments.of(new Object[]{new byte[1], "1"}),
+                Arguments.of(new Object[]{new byte[7], "1111111"}),
+                Arguments.of(new Object[]{new byte[0], ""})
+        );
     }
 
-    @Parameterized.Parameters
-    public static Collection<Object[]> parameters() {
-        return Arrays.asList(new Object[][]{
-                {"Hello World".getBytes(), "JxF12TrwUP45BMd"},
-                {BigInteger.valueOf(3471844090L).toByteArray(), "16Ho7Hs"},
-                {new byte[1], "1"},
-                {new byte[7], "1111111"},
-                {new byte[0], ""}
-        });
-    }
-
-    @Test
-    public void testEncode() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testEncode(byte[] input, String expected) {
         assertEquals(expected, Base58.encode(input));
     }
 

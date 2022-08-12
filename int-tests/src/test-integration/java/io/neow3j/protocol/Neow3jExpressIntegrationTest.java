@@ -17,11 +17,12 @@ import io.neow3j.transaction.Transaction;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestMethodOrder;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -35,9 +36,10 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
+@TestMethodOrder(MethodOrderer.MethodName.class)
+@Testcontainers
 public class Neow3jExpressIntegrationTest {
 
     private static final String RESOURCE_DIR = "core/";
@@ -49,14 +51,14 @@ public class Neow3jExpressIntegrationTest {
 
     protected static Neow3jExpress neow3jExpress;
 
-    @ClassRule
+    @Container
     public static NeoExpressTestContainer container = new NeoExpressTestContainer()
             .withSecondsPerBlock(1)
             .withConfigFile(NeoExpressTestContainer.DEFAULT_NEOXP_CONFIG)
             .withBatchFile(BATCH_SOURCE)
             .withNefAndManifestFiles(NEF_FILE_SOURCE, MANIFEST_FILE_SOURCE);
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() {
         neow3jExpress = Neow3jExpress.build(new HttpService(container.getNodeUrl()));
     }

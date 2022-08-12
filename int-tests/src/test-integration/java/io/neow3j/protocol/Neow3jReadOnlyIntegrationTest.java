@@ -42,10 +42,11 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -90,13 +91,14 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // This test class uses a static container which is started once for the whole class and reused in every test.
 // Therefore, only tests that don't need a new and clean blockchain should be added here.
+@Testcontainers
 public class Neow3jReadOnlyIntegrationTest {
 
     // Hashes of the transactions that are sent before all tests.
@@ -137,10 +139,10 @@ public class Neow3jReadOnlyIntegrationTest {
 
     protected static Neow3j neow3j;
 
-    @ClassRule
+    @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
-    @BeforeClass
+    @BeforeAll
     public static void setUp() throws Exception {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         // open the wallet for JSON-RPC calls
@@ -1054,7 +1056,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
-    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    @Disabled("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers() throws IOException {
 //        NeoGetNep17Transfers.Nep17Transfers nep17Transfers = getNeow3j()
 //                .getNep17Transfers(COMMITTEE_HASH)
@@ -1085,7 +1087,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
-    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    @Disabled("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers_Date() throws IOException {
 //        Calendar calendar = Calendar.getInstance();
 //        calendar.add(Calendar.HOUR_OF_DAY, -1);
@@ -1103,7 +1105,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
-    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    @Disabled("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Transfers_DateFromTo() throws IOException {
 //        Calendar from = Calendar.getInstance();
 //        from.add(Calendar.HOUR_OF_DAY, -1);
@@ -1123,7 +1125,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
-    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    @Disabled("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Balances() throws IOException {
 //        Nep17Balances balances = getNeow3j()
 //                .getNep17Balances(COMMITTEE_HASH)
@@ -1145,7 +1147,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     // TODO: 04.12.21 see https://github.com/neow3j/neow3j/issues/690
-    @Ignore("See: https://github.com/neow3j/neow3j/issues/690")
+    @Disabled("See: https://github.com/neow3j/neow3j/issues/690")
     public void testGetNep11Attributes() throws IOException {
 
     }

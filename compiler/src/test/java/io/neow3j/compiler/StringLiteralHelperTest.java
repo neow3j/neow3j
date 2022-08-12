@@ -6,14 +6,14 @@ import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.contracts.NeoToken;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.stringContainsInOrder;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class StringLiteralHelperTest {
 

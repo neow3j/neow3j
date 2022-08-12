@@ -1,7 +1,7 @@
 package io.neow3j.utils;
 
 import io.neow3j.protocol.Neow3jConfig;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.neow3j.crypto.Hash.sha256AndThenRipemd160;
 import static io.neow3j.utils.AddressUtils.addressToScriptHash;
@@ -11,10 +11,10 @@ import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class AddressUtilsTest {
 

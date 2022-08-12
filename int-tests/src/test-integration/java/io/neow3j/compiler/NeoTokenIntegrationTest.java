@@ -18,11 +18,12 @@ import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Await;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
-import org.junit.BeforeClass;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -37,29 +38,27 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NeoTokenIntegrationTest {
 
     private static io.neow3j.contract.NeoToken neoToken;
     private static BigInteger client1NeoFunded;
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(NeoTokenTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(NeoTokenTestContract.class.getName());
 
-    @BeforeClass
-    public static void setUp() throws Throwable {
-//<<<<<<< HEAD
-//        Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
-//        Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
-//        Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
-//        Await.waitUntilTransactionIsExecuted(neoTxHash, ct.getNeow3j());
-//=======
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
+
+    @BeforeAll
+    public void setUp() throws Throwable {
         neoToken = new io.neow3j.contract.NeoToken(ct.getNeow3j());
         Hash256 fundHash1 = ct.transferGas(ct.getDefaultAccount().getScriptHash(), new BigInteger("1000000000"));
         Hash256 fundHash2 = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
@@ -71,7 +70,6 @@ public class NeoTokenIntegrationTest {
         Await.waitUntilTransactionIsExecuted(fundHash2, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(fundHash3, ct.getNeow3j());
         Await.waitUntilTransactionIsExecuted(fundHash4, ct.getNeow3j());
-//>>>>>>> main
     }
 
     @Test
@@ -350,6 +348,7 @@ public class NeoTokenIntegrationTest {
             neoToken.vote(voter, publicKey);
             return neoToken.getAccountState(voter);
         }
+
     }
 
 }

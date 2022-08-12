@@ -3,7 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.StackItemType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;

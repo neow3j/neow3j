@@ -7,10 +7,10 @@ import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.FungibleToken;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.utils.Numeric;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 
@@ -20,43 +20,42 @@ import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class FungibleTokenTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(FungibleTokenTestContract.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(FungibleTokenTestContract.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     @Test
     public void callSymbolMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getString(),
-                is(NeoToken.SYMBOL));
+        assertThat(response.getInvocationResult().getStack().get(0).getString(), is(NeoToken.SYMBOL));
     }
 
     @Test
     public void callDecimalsMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                is(NeoToken.DECIMALS));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(NeoToken.DECIMALS));
     }
 
     @Test
     public void callTotalSupplyMethodOfFungibleToken() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger(),
-                is(NeoToken.TOTAL_SUPPLY));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger(), is(NeoToken.TOTAL_SUPPLY));
     }
 
     @Test
     public void callBalanceOfMethodOfFungibleToken() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(ct.getCommittee().getScriptHash()));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(),
-                greaterThan(0));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(ct.getCommittee().getScriptHash()));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), greaterThan(0));
     }
 
     @Test
@@ -104,6 +103,7 @@ public class FungibleTokenTest {
         public static Hash160 getHash() {
             return token.getHash();
         }
+
     }
 
 }

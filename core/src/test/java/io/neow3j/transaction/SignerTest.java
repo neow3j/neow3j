@@ -17,8 +17,9 @@ import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -35,10 +36,11 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class SignerTest {
 
     private Account acc;
@@ -48,7 +50,7 @@ public class SignerTest {
     private ECPublicKey groupPubKey1;
     private ECPublicKey groupPubKey2;
 
-    @Before
+    @BeforeAll
     public void setUp() {
         acc = Account.fromWIF("Kzt94tAAiZSgH7Yt4i25DW6jJFprZFPSqTgLr5dWmWgKDKCjXMfZ");
         accScriptHash = acc.getScriptHash();

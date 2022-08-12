@@ -5,7 +5,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.script.OpCode;
 import io.neow3j.types.ContractParameterType;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,8 +16,8 @@ import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class HashTest {
 

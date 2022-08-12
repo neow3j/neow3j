@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
 import static io.neow3j.contract.ContractUtils.loadContractManifestFile;
@@ -38,12 +38,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractUtilsTest {
 
-    private final static String TESTCONTRACT_WITH_TOKENS_FILE =
-            "/contracts/TestContractWithMethodTokens.nef";
+    private final static String TESTCONTRACT_WITH_TOKENS_FILE = "/contracts/TestContractWithMethodTokens.nef";
 
     @Test
     public void testWriteContractManifestFile() throws Exception {

@@ -11,10 +11,10 @@ import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TestName;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,11 +28,15 @@ import static org.hamcrest.Matchers.is;
 
 public class StringConcatenationIntegrationTest {
 
-    @Rule
-    public TestName testName = new TestName();
+    private String testName;
 
-    @ClassRule
-    public static ContractTestRule ct = new ContractTestRule(StringConcatenation.class.getName());
+    @RegisterExtension
+    public static ContractTestExtension ct = new ContractTestExtension(StringConcatenation.class.getName());
+
+    @BeforeEach
+    void init(TestInfo testInfo) {
+        testName = testInfo.getTestMethod().get().getName();
+    }
 
     // This test checks the correct transpilation of a .class that uses the ctor StringBuilder(String str).
     @Test

@@ -9,7 +9,6 @@ import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.IOUtils;
 import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 import java.util.ArrayList;
