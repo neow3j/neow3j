@@ -15,12 +15,15 @@ import org.junit.ClassRule;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
+import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
 import static io.neow3j.contract.SmartContract.calcContractHash;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
@@ -31,6 +34,8 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractManagementIntegrationTest {
 
@@ -108,6 +113,13 @@ public class ContractManagementIntegrationTest {
                 neow3j.getContractState(contractHash).send().getContractState();
         assertThat(contractState.getManifest(), is(manifest));
         assertThat(contractState.getNef().getScript(), is(Base64.encode(nef.getScript())));
+    }
+
+    @Test
+    public void testHasMethod() throws IOException {
+        assertTrue(contractManagement.hasMethod(GAS_HASH, "transfer", 4));
+        assertTrue(contractManagement.hasMethod(NEO_HASH, "getAccountState", 1));
+        assertFalse(contractManagement.hasMethod(NEO_HASH, "mint", 3));
     }
 
 }

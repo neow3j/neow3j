@@ -41,6 +41,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class ContractManagementTest {
 
@@ -98,6 +99,14 @@ public class ContractManagementTest {
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
                 is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testHasMethod() throws IOException {
+        setUpWireMockForInvokeFunction("hasMethod", "invocationresult_boolean_true.json");
+
+        ContractManagement contractManagement = new ContractManagement(neow3j);
+        assertTrue(contractManagement.hasMethod(NeoToken.SCRIPT_HASH, "symbol", 0));
     }
 
     @Test

@@ -15,6 +15,7 @@ import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoFindStates;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
+import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators.Validator;
@@ -343,8 +344,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef1.getChecksum(), is(1110259869L));
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef1.getChecksum(), is(3443651689L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -352,18 +353,17 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getSupportedStandards(), hasSize(0));
 
         ContractABI abi1 = manifest1.getAbi();
-        assertThat(abi1.getMethods(), hasSize(8));
-        assertThat(abi1.getMethods().get(7).getName(), is("update"));
-        assertThat(abi1.getMethods().get(7).getParameters(), hasSize(3));
-        assertThat(abi1.getMethods().get(7).getReturnType(), is(ContractParameterType.VOID));
-        assertThat(abi1.getMethods().get(7).getOffset(), is(49));
-        assertFalse(abi1.getMethods().get(7).isSafe());
+        assertThat(abi1.getMethods(), hasSize(9));
+        assertThat(abi1.getMethods().get(8).getName(), is("update"));
+        assertThat(abi1.getMethods().get(8).getParameters(), hasSize(3));
+        assertThat(abi1.getMethods().get(8).getReturnType(), is(ContractParameterType.VOID));
+        assertThat(abi1.getMethods().get(8).getOffset(), is(56));
+        assertFalse(abi1.getMethods().get(8).isSafe());
         assertThat(abi1.getEvents(), hasSize(3));
         assertThat(abi1.getEvents().get(1).getName(), is("Update"));
         assertThat(abi1.getEvents().get(1).getParameters(), hasSize(1));
         assertThat(abi1.getEvents().get(1).getParameters().get(0).getName(), is("Hash"));
-        assertThat(abi1.getEvents().get(1).getParameters().get(0).getType(),
-                is(ContractParameterType.HASH160));
+        assertThat(abi1.getEvents().get(1).getParameters().get(0).getType(), is(ContractParameterType.HASH160));
 
         assertThat(manifest1.getPermissions(), hasSize(1));
         assertThat(manifest1.getPermissions().get(0).getContract(), is("*"));
@@ -403,8 +403,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(event.getName(), is("OracleRequest"));
         assertThat(event.getParameters(), hasSize(4));
         assertThat(event.getParameters().get(3).getName(), is("Filter"));
-        assertThat(event.getParameters().get(3).getType(),
-                is(ContractParameterType.STRING));
+        assertThat(event.getParameters().get(3).getType(), is(ContractParameterType.STRING));
 
         assertThat(manifest8.getPermissions(), hasSize(1));
         assertThat(manifest8.getPermissions().get(0).getContract(), is("*"));
@@ -1024,22 +1023,31 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNep17Balances() throws IOException {
-        Nep17Balances balances = getNeow3j()
+        Nep17Balances nep17Balances = getNeow3j()
                 .getNep17Balances(COMMITTEE_HASH)
                 .send()
                 .getBalances();
 
-        assertNotNull(balances);
-        assertThat(balances.getAddress(), is(committeeAccountAddress()));
-        assertNotNull(balances.getBalances());
-        assertThat(balances.getBalances(), hasSize(2));
-        assertThat(balances.getBalances().get(0).getAssetHash(), is(GAS_HASH));
-        assertNotNull(balances.getBalances().get(0).getAmount());
-        assertThat(balances.getBalances().get(0).getLastUpdatedBlock(),
-                is(greaterThanOrEqualTo(new BigInteger("0"))));
-        assertThat(balances.getBalances().get(1).getAssetHash(), is(NEO_HASH));
-        assertNotNull(balances.getBalances().get(1).getAmount());
-        assertNotNull(balances.getBalances().get(1).getLastUpdatedBlock());
+        assertNotNull(nep17Balances);
+        assertThat(nep17Balances.getAddress(), is(committeeAccountAddress()));
+
+        List<NeoGetNep17Balances.Nep17Balance> balanceList = nep17Balances.getBalances();
+        assertNotNull(balanceList);
+        assertThat(balanceList, hasSize(2));
+
+        assertThat(balanceList.get(0).getAssetHash(), is(GAS_HASH));
+        assertThat(balanceList.get(0).getName(), is("GasToken"));
+        assertThat(balanceList.get(0).getSymbol(), is("GAS"));
+        assertThat(balanceList.get(0).getDecimals(), is("8"));
+        assertNotNull(balanceList.get(0).getAmount());
+        assertThat(balanceList.get(0).getLastUpdatedBlock(), is(greaterThanOrEqualTo(BigInteger.ZERO)));
+
+        assertThat(balanceList.get(1).getAssetHash(), is(NEO_HASH));
+        assertThat(balanceList.get(1).getName(), is("NeoToken"));
+        assertThat(balanceList.get(1).getSymbol(), is("NEO"));
+        assertThat(balanceList.get(1).getDecimals(), is("0"));
+        assertNotNull(balanceList.get(1).getAmount());
+        assertThat(balanceList.get(1).getLastUpdatedBlock(), is(greaterThanOrEqualTo(BigInteger.ZERO)));
     }
 
     // TokenTracker: Nep11

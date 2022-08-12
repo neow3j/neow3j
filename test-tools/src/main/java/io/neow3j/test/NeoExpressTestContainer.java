@@ -171,7 +171,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String getNodeUrl() {
-        return "http://" + this.getContainerIpAddress() + ":" + this.getMappedPort(EXPOSED_JSONRPC_PORT);
+        return "http://" + this.getHost() + ":" + this.getMappedPort(EXPOSED_JSONRPC_PORT);
     }
 
     /**

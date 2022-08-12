@@ -27,6 +27,16 @@ public class ContractManagement extends ContractInterface {
     public native Contract getContract(Hash160 hash);
 
     /**
+     * Checks if a method exists in a contract.
+     *
+     * @param contractHash the contract hash.
+     * @param method       the method.
+     * @param paramCount   the number of parameters.
+     * @return true if the method exists. False otherwise.
+     */
+    public native boolean hasMethod(Hash160 contractHash, String method, int paramCount);
+
+    /**
      * Deploys a new contract with the given NEF file and manifest.
      *
      * @param nefFile  the NEF file of the contract to deploy.

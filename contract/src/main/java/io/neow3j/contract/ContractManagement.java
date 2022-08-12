@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import static io.neow3j.types.ContractParameter.byteArray;
+import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static java.lang.String.format;
 
 /**
@@ -26,6 +28,7 @@ public class ContractManagement extends SmartContract {
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
+    private static final String HAS_METHOD = "hasMethod";
     private static final String DEPLOY = "deploy";
 
     /**
@@ -59,6 +62,19 @@ public class ContractManagement extends SmartContract {
      */
     public TransactionBuilder setMinimumDeploymentFee(BigInteger minimumFee) {
         return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, integer(minimumFee));
+    }
+
+    /**
+     * Checks if a method exists in a contract.
+     *
+     * @param contractHash the contract hash.
+     * @param method       the method.
+     * @param paramCount   the number of parameters.
+     * @return true if the method exists. False otherwise.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public boolean hasMethod(Hash160 contractHash, String method, int paramCount) throws IOException {
+        return callFunctionReturningBool(HAS_METHOD, hash160(contractHash), string(method), integer(paramCount));
     }
 
     /**

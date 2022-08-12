@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
-import java.math.BigInteger;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,14 +21,23 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
         public Nep11Balances() {
         }
 
-        public Nep11Balances(List<Nep11Balance> balances, String address) {
-            super(balances, address);
+        public Nep11Balances(String address, List<Nep11Balance> balances) {
+            super(address, balances);
         }
 
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Nep11Balance extends NeoGetTokenBalances.TokenBalance {
+
+        @JsonProperty("name")
+        private String name;
+
+        @JsonProperty("symbol")
+        private String symbol;
+
+        @JsonProperty("decimals")
+        private String decimals;
 
         @JsonProperty("tokens")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -38,9 +46,24 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
         public Nep11Balance() {
         }
 
-        public Nep11Balance(Hash160 assetHash, List<Nep11Token> tokens) {
+        public Nep11Balance(Hash160 assetHash, String name, String symbol, String decimals, List<Nep11Token> tokens) {
             super(assetHash);
+            this.name = name;
+            this.symbol = symbol;
+            this.decimals = decimals;
             this.tokens = tokens;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getSymbol() {
+            return symbol;
+        }
+
+        public String getDecimals() {
+            return decimals;
         }
 
         public List<Nep11Token> getTokens() {
@@ -59,12 +82,16 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
                 return false;
             }
             Nep11Balance that = (Nep11Balance) o;
-            return Objects.equals(tokens, that.tokens);
+            return Objects.equals(getAssetHash(), that.getAssetHash()) &&
+                    Objects.equals(getName(), that.getName()) &&
+                    Objects.equals(getSymbol(), that.getSymbol()) &&
+                    Objects.equals(getDecimals(), that.getDecimals()) &&
+                    Objects.equals(getTokens(), that.getTokens());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(super.hashCode(), tokens);
+            return Objects.hash(super.hashCode(), getName(), getSymbol(), getDecimals(), getTokens());
         }
 
         public static class Nep11Token {
@@ -73,7 +100,7 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
             private String tokenId;
 
             @JsonProperty("amount")
-            private BigInteger amount;
+            private String amount;
 
             @JsonProperty("lastupdatedblock")
             private Long lastUpdatedBlock;
@@ -81,7 +108,7 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
             public Nep11Token() {
             }
 
-            public Nep11Token(String tokenId, BigInteger amount, Long lastUpdatedBlock) {
+            public Nep11Token(String tokenId, String amount, Long lastUpdatedBlock) {
                 this.tokenId = tokenId;
                 this.amount = amount;
                 this.lastUpdatedBlock = lastUpdatedBlock;
@@ -91,7 +118,7 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
                 return tokenId;
             }
 
-            public BigInteger getAmount() {
+            public String getAmount() {
                 return amount;
             }
 
@@ -108,14 +135,14 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
                     return false;
                 }
                 Nep11Token that = (Nep11Token) o;
-                return Objects.equals(tokenId, that.tokenId) &&
-                        Objects.equals(amount, that.amount) &&
-                        Objects.equals(lastUpdatedBlock, that.lastUpdatedBlock);
+                return Objects.equals(getTokenId(), that.getTokenId()) &&
+                        Objects.equals(getAmount(), that.getAmount()) &&
+                        Objects.equals(getLastUpdatedBlock(), that.getLastUpdatedBlock());
             }
 
             @Override
             public int hashCode() {
-                return Objects.hash(tokenId, amount, lastUpdatedBlock);
+                return Objects.hash(getTokenId(), getAmount(), getLastUpdatedBlock());
             }
         }
 
