@@ -23,3 +23,22 @@ dependencies {
 integrationTest {
     useJUnitPlatform()
 }
+
+//task downloadLibZip(type: Download) {
+//    src "https://github.com/neow3j/neofs-api-shared-lib/releases/download/$neofsSharedLibVersion/libneofs-all.zip"
+//    dest new File(temporaryDir, 'libneofs-all.zip')
+//    onlyIfModified true
+//}
+//
+//task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
+//    from zipTree(downloadLibZip.dest)
+//    into sourceSets.integrationTest.output.resourcesDir
+//}
+//
+//task downloadAndUnzipLibIfDoesntExist() {
+//    // execute downloadAndUnzipLib here, but only if files are not there
+////    assert file(sourceSets.main.output.resourcesDir + "$neofsSharedLibVersion" + ".txt").exists()
+//    downloadAndUnzipLib
+//}
+//
+//tasks.integrationTest.dependsOn(downloadAndUnzipLib)
