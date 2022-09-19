@@ -1,3 +1,7 @@
+plugins {
+    id "de.undercouch.download" version "4.1.2"
+}
+
 description 'neow3j: Integration Tests'
 
 testSets {
@@ -5,13 +9,15 @@ testSets {
 }
 
 dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
-            "org.testcontainers:junit-jupiter:$testcontainersVersion",
-            project(':compiler'),
+    testImplementation project(':compiler'),
             project(':contract'),
             project(':devpack'),
             project(':devpack-test'),
-            project(':test-tools')
+            project(':neofs'),
+            project(':test-tools'),
+            "org.testcontainers:junit-jupiter:$testcontainersVersion",
+            "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
+            'com.google.protobuf:protobuf-java-util:3.21.5'
 }
 
 integrationTest {
