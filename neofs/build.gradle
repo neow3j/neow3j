@@ -1,0 +1,37 @@
+description 'NeoFS Java API'
+
+repositories {
+    mavenLocal()
+}
+
+dependencies {
+    compile project(":core")
+
+    implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
+            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion",
+            "io.grpc:grpc-protobuf:$grpcProtobufVersion",
+            "net.java.dev.jna:jna-platform:$jnaVersion",
+            "io.neow3j:neofs-api-java:$neofsApiJavaVersion"
+}
+
+configurations {
+    testArtifacts.extendsFrom testRuntime
+}
+
+artifacts {
+    testArtifacts testJar
+}
+
+// Todo: build task of this module should depend on the download tasks below
+// Todo: Include all the .so files inside the jar (might be automatically done, but need to check)
+
+//task downloadLibZip(type: Download) {
+//    src "https://github.com/neow3j/neofs-api-shared-lib/releases/download/$neofsSharedLibVersion/libneofs-all.zip"
+//    dest new File(temporaryDir, 'libneofs-all.zip')
+//    onlyIfModified true
+//}
+
+//task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
+//    from zipTree(downloadLibZip.dest)
+//    into sourceSets.main.output.resourcesDir
+//}
