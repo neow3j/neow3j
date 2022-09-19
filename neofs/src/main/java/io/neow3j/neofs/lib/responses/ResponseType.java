@@ -11,9 +11,10 @@ public enum ResponseType {
     ENDPOINT("main.EndpointResponse"),
     // Container
     CONTAINER("container.Container"),
+    CONTAINER_ID("cid.ID"),
 
     STRING("string"),
-    ERROR("*error"),
+    ERROR("error"),
     NIL("nil");
 
     private final String type;

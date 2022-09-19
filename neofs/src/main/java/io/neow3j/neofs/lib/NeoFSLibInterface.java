@@ -2,6 +2,7 @@ package io.neow3j.neofs.lib;
 
 import com.sun.jna.Library;
 import io.neow3j.neofs.lib.responses.PointerResponse;
+import io.neow3j.neofs.lib.responses.StringResponse;
 
 public interface NeoFSLibInterface extends Library {
 
@@ -26,7 +27,7 @@ public interface NeoFSLibInterface extends Library {
     //endregion netmap
     //region container
 
-//    StringResponse PutContainer(String clientId, String container);
+    StringResponse PutContainer(String clientId, String container);
 
 //    PointerResponse GetContainer(String clientId, String containerId);
 

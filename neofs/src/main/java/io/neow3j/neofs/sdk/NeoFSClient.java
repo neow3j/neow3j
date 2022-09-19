@@ -2,6 +2,7 @@ package io.neow3j.neofs.sdk;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.google.protobuf.util.JsonFormat;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
@@ -135,20 +136,24 @@ public class NeoFSClient {
     //endregion netmap
     //region container
 
-    // Todo: Create Container
-//    /**
-//     * Creates a container.
-//     *
-//     * @param container the container.
-//     * @return the container id.
-//     * @throws InvalidProtocolBufferException if the container protobuf type cannot be converted to JSON format.
-//     */
-//    public String createContainer(neo.fs.v2.container.Types.Container container) throws Exception {
-//        StringResponse response = nativeLib.PutContainer(clientId, JsonFormat.printer().print(container));
-//        System.out.println(response.responseType);
-//        throwIfUnexpectedResponseType(response, STRING_RESPONSE_TYPE);
-//        return response.value;
-//    }
+    /**
+     * Creates a container.
+     * <p>
+     * The provided container must contain an ownerId.
+     *
+     * @param container the container.
+     * @return the container id.
+     * @throws InvalidProtocolBufferException  if the container protobuf type cannot be converted to JSON format.
+     * @throws NeoFSLibraryError               if the shared library returns an error.
+     * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
+     */
+    public String createContainer(neo.fs.v2.container.Types.Container container)
+            throws InvalidProtocolBufferException, NeoFSLibraryError, UnexpectedResponseTypeException {
+        String containerJson = JsonFormat.printer().print(container);
+        StringResponse response = nativeLib.PutContainer(clientId, containerJson);
+        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
+        return response.value;
+    }
 
     // Todo: Get Container
 //    /**
