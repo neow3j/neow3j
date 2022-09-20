@@ -155,23 +155,22 @@ public class NeoFSClient {
         return response.value;
     }
 
-    // Todo: Get Container
-//    /**
-//     * Gets a container with {@code containerId}.
-//     *
-//     * @param containerId the container id.
-//     * @return the container.
-//     * @throws InvalidProtocolBufferException  if the response bytes cannot be converted to the container protobuf
-//     type.
-//     * @throws UnexpectedResponseTypeException if the response type is unexpected.
-//     */
-//    public neo.fs.v2.container.Types.Container getContainer(String containerId)
-//            throws InvalidProtocolBufferException, UnexpectedResponseTypeException {
-//        PointerResponse response = nativeLib.GetContainer(clientId, containerId);
-//        System.out.println(response.responseType);
-//        throwIfUnexpectedResponseType(response, CONTAINER_RESPONSE_TYPE);
-//        return neo.fs.v2.container.Types.Container.parseFrom(getResponseBytes(response));
-//    }
+    /**
+     * Gets the container with {@code containerId}.
+     *
+     * @param containerId the container id.
+     * @return the container.
+     * @throws NeoFSLibraryError               if the shared library returns an error.
+     * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
+     * @throws InvalidProtocolBufferException  if the response bytes cannot be converted to the container protobuf
+     *                                         type.
+     */
+    public neo.fs.v2.container.Types.Container getContainer(String containerId)
+            throws NeoFSLibraryError, UnexpectedResponseTypeException, InvalidProtocolBufferException {
+        PointerResponse response = nativeLib.GetContainer(clientId, containerId);
+        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER);
+        return neo.fs.v2.container.Types.Container.parseFrom(getResponseBytes(response));
+    }
 
     // Todo: Delete Container
 //    /**

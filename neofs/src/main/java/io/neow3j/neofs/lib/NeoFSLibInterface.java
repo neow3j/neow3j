@@ -29,7 +29,7 @@ public interface NeoFSLibInterface extends Library {
 
     StringResponse PutContainer(String clientId, String container);
 
-//    PointerResponse GetContainer(String clientId, String containerId);
+    PointerResponse GetContainer(String clientId, String containerId);
 
 //    PointerResponse DeleteContainer(String clientId, String containerId);
 
