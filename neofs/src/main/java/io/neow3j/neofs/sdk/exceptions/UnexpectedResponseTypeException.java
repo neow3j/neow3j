@@ -9,12 +9,16 @@ import static java.lang.String.format;
 
 public class UnexpectedResponseTypeException extends Exception {
 
+    public UnexpectedResponseTypeException(String message) {
+        super(message);
+    }
+
     public UnexpectedResponseTypeException(String expectedType, String actualType) {
-        super(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
+        this(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
     }
 
     public UnexpectedResponseTypeException(ResponseType expectedType, ResponseType actualType) {
-        super(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
+        this(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
     }
 
     public UnexpectedResponseTypeException(StringResponse response, String expectedType) {

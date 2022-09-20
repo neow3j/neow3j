@@ -19,6 +19,7 @@ import neo.fs.v2.netmap.Types;
 
 import java.io.IOException;
 
+import static io.neow3j.neofs.lib.NeoFSLibUtils.getBoolean;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
 
 public class NeoFSClient {
@@ -172,24 +173,16 @@ public class NeoFSClient {
         return neo.fs.v2.container.Types.Container.parseFrom(getResponseBytes(response));
     }
 
-    // Todo: Delete Container
-//    /**
-//     * Deletes a container with {@code containerId}.
-//     *
-//     * @param containerId the container id.
-//     * @throws ResponseException               if an error occured in the shared-lib.
-//     * @throws UnexpectedResponseTypeException if the response was of an unexpected type.
-//     */
-//    public void deleteContainer(String containerId) throws ResponseException, UnexpectedResponseTypeException {
-//        PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
-//        String responseType = response.responseType;
-//        if (response.isType(ERROR)) {
-//            throw new ResponseException(response);
-//        }
-//        if (!response.isType(NIL)) {
-//            throw new UnexpectedResponseTypeException(responseType, NIL);
-//        }
-//    }
+    /**
+     * Deletes a container with {@code containerId}.
+     *
+     * @param containerId the container id.
+     */
+    public boolean deleteContainer(String containerId) throws NeoFSLibraryError, UnexpectedResponseTypeException {
+        PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
+        throwIfUnexpectedResponseType(response, ResponseType.BOOLEAN);
+        return getBoolean(response);
+    }
 
     // Todo: List Containers
 //    public List<String> listContainer(ECKeyPair.ECPublicKey ownerPubKey) {

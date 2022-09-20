@@ -15,7 +15,7 @@ public enum ResponseType {
 
     STRING("string"),
     ERROR("error"),
-    NIL("nil");
+    BOOLEAN("bool");
 
     private final String type;
 
