@@ -12,6 +12,7 @@ import org.junit.jupiter.api.TestInstance;
 import java.util.Date;
 
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -53,31 +54,19 @@ public class ContainerIntegrationTest {
         assertFalse(containerId.isEmpty());
     }
 
-//    @Test
-//    public void testCreateAndGetContainer() throws Exception {
-//        String containerId = neoFSClient.createContainer(createSimpleContainer(account));
-//        System.out.println("containerId: " + containerId);
-//        assertNotNull(containerId);
-//        assertFalse(containerId.isEmpty());
-//
-//        System.out.println("start getting container");
-//        Types.Container container = neoFSClient.getContainer(containerId);
-//        System.out.println("stop getting container");
-//        Types.Container expected = Types.Container.newBuilder()
-//                .setOwnerId(NeoFSHelper.createOwnerId(account))
-//                .setBasicAcl(532660223)
-//                .setPlacementPolicy(neo.fs.v2.netmap.Types.PlacementPolicy.newBuilder()
-//                        .setContainerBackupFactor(0)
-//                        .addReplicas(neo.fs.v2.netmap.Types.Replica.newBuilder()
-//                                .setCount(0)
-//                                .build())
-//                        .build())
-//                .addAttributes(Types.Container.Attribute.newBuilder()
-//                        .setKey("CreatedAt")
-//                        .setValue(new Date().toString())
-//                        .build())
-//                .build();
-//        assertEquals(expected, container);
-//    }
+    @Test
+    public void testCreateAndGetContainer() throws Exception {
+        Types.Container simpleContainer = createSimpleContainer(account);
+        String containerId = neoFSClient.createContainer(simpleContainer);
+
+        // Todo: Implement class that handles waiting until request is persisted.
+        Thread.sleep(1000);
+
+        assertNotNull(containerId);
+        assertFalse(containerId.isEmpty());
+
+        Types.Container container = neoFSClient.getContainer(containerId);
+        assertEquals(simpleContainer, container);
+    }
 
 }
