@@ -35,7 +35,7 @@ public interface NeoFSLibInterface extends Library {
 
 //    PointerResponse DeleteContainerWithinSession(String clientId, String containerId, String sessionToken);
 
-//    PointerResponse ListContainer(String clientId, String ownerPubKeyEncodedCompressedHex);
+    PointerResponse ListContainer(String clientId, String ownerPubKeyEncodedCompressedHex);
 
 //    PointerResponse SetExtendedACL(String clientId, String table);
 

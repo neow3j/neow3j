@@ -18,6 +18,8 @@ import io.neow3j.wallet.Account;
 import neo.fs.v2.netmap.Types;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getBoolean;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
@@ -29,6 +31,7 @@ public class NeoFSClient {
     private final NeoFSLib neoFSLib;
 
     private final ObjectMapper mapper = new ObjectMapper();
+    private final int CONTAINER_ID_LENGTH = 44;
 
     public NeoFSClient(NeoFSLib lib, String clientId) {
         this.neoFSLib = lib;
@@ -184,13 +187,23 @@ public class NeoFSClient {
         return getBoolean(response);
     }
 
-    // Todo: List Containers
-//    public List<String> listContainer(ECKeyPair.ECPublicKey ownerPubKey) {
-//        PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
-//        byte[] responseBytes = getResponseBytes(response);
-//        String responseString = new String(responseBytes);
-//        return null;
-//    }
+    /**
+     * Gets the {@code containerId}s of the containers that are owned by the provided public key.
+     *
+     * @param ownerPubKey the owner public key.
+     * @return the ids of the owned container.
+     */
+    public List<String> listContainers(ECKeyPair.ECPublicKey ownerPubKey) {
+        // Todo: Consider using the protobuf type for ContainerIDs and providing helper method to retrieve string
+        //  values.
+        PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
+        int n = response.length / CONTAINER_ID_LENGTH;
+        ArrayList<String> list = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            list.add(new String(response.value.getByteArray(i * CONTAINER_ID_LENGTH, CONTAINER_ID_LENGTH)));
+        }
+        return list;
+    }
 
     //endregion container
     //region object
