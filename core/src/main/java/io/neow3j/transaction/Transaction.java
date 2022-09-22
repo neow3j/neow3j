@@ -10,6 +10,7 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
@@ -283,9 +284,9 @@ public class Transaction extends NeoSerializable {
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
      * @return the Neo node's response.
-     * @throws IOException                       if a problem in communicating with the Neo node occurs.
      * @throws TransactionConfigurationException if the number of signers and witnesses on the transaction are not
      *                                           equal.
+     * @throws IOException                       if a problem in communicating with the Neo node occurs.
      */
     public NeoSendRawTransaction send() throws IOException {
         if (getSigners().size() != getWitnesses().size()) {
@@ -333,17 +334,14 @@ public class Transaction extends NeoSerializable {
      * If the application log could not be fetched, {@code null} is returned.
      *
      * @return the application log.
+     * @throws IOException if something goes wrong in the communication with the neo-node.
+     * @throws RpcResponseErrorException if the Neo node returns an error.
      */
-    public NeoApplicationLog getApplicationLog() {
+    public NeoApplicationLog getApplicationLog() throws IOException {
         if (blockCountWhenSent == null) {
             throw new IllegalStateException("Cannot get the application log before transaction has been sent.");
         }
-        NeoApplicationLog applicationLog = null;
-        try {
-            applicationLog = neow3j.getApplicationLog(getTxId()).send().getApplicationLog();
-        } catch (IOException ignore) {
-        }
-        return applicationLog;
+        return neow3j.getApplicationLog(getTxId()).send().getApplicationLog();
     }
 
     @Override
