@@ -20,6 +20,7 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators.Validator;
 import io.neow3j.protocol.core.response.NeoGetPeers.Peers;
+import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetStateHeight.StateHeight;
 import io.neow3j.protocol.core.response.NeoGetStateRoot.StateRoot;
 import io.neow3j.protocol.core.response.NeoGetUnclaimedGas.GetUnclaimedGas;
@@ -1219,15 +1220,12 @@ public class Neow3jReadOnlyIntegrationTest {
                     .getStateRoot()
                     .getRootHash();
 
-            proof = getNeow3j().getProof(rootHash, NEO_HASH, NEXT_VALIDATORS_PREFIX)
-                    .send()
-                    .getProof();
-
-            if (proof == null) {
-                localRootIndex += 1;
-            } else {
+            NeoGetProof response = getNeow3j().getProof(rootHash, NEO_HASH, NEXT_VALIDATORS_PREFIX).send();
+            if (!response.hasError()) {
+                proof = response.getProof();
                 break;
             }
+            localRootIndex++;
         }
         assertNotNull(proof);
     }
