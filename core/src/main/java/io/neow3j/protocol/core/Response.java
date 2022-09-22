@@ -3,7 +3,7 @@ package io.neow3j.protocol.core;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import io.neow3j.protocol.deserializer.KeepAsJsonDeserialzier;
-import io.neow3j.protocol.exceptions.ErrorResponseException;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 /**
  * JSON-RPC response type.
@@ -38,6 +38,7 @@ public class Response<T> {
     }
 
     public T getResult() {
+        throwOnError();
         return result;
     }
 
@@ -65,9 +66,9 @@ public class Response<T> {
         this.rawResponse = rawResponse;
     }
 
-    public void throwOnError() throws ErrorResponseException {
+    public void throwOnError() {
         if (hasError()) {
-            throw new ErrorResponseException(error);
+            throw new RpcResponseErrorException(error);
         }
     }
 
@@ -138,5 +139,16 @@ public class Response<T> {
             result = 31 * result + (getData() != null ? getData().hashCode() : 0);
             return result;
         }
+
+        @Override
+        public String toString() {
+            return "Error{" +
+                    "code=" + getCode() +
+                    ", message='" + getMessage() + '\'' +
+                    ", data='" + getData() + '\'' +
+                    "}";
+        }
+
     }
+
 }
