@@ -1033,7 +1033,6 @@ public class TransactionBuilderTest {
                 .sign();
         tx.send();
 
-        tx.getApplicationLog();
         assertThrows(RpcResponseErrorException.class, tx::getApplicationLog);
     }
 
