@@ -53,7 +53,7 @@ public class RawResponseDeserializer
         return streamToString(inputSource);
     }
 
-    private String streamToString(InputStream input) throws IOException {
+    private String streamToString(InputStream input) {
         return new Scanner(input, StandardCharsets.UTF_8.name()).useDelimiter("\\Z").next();
     }
 

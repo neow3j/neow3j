@@ -128,7 +128,6 @@ public class JsonRpc2_0Rx {
 
         return catchUpToLatestAndSubscribeToNewBlocksObservable(getLatestBlockNumber(), fullTransactionObjects,
                 pollingInterval);
-
     }
 
     private static List<Transaction> toTransactions(NeoGetBlock neoGetBlock) {

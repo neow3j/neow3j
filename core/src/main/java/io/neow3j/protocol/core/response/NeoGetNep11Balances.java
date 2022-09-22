@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash160;
 
 import java.util.List;
@@ -11,6 +12,10 @@ import java.util.Objects;
 
 public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances.Nep11Balances> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public Nep11Balances getBalances() {
         return getResult();
     }

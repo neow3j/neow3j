@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 
@@ -9,6 +10,10 @@ import java.util.List;
 
 public class NeoGetNep17Transfers extends NeoGetTokenTransfers<NeoGetNep17Transfers.Nep17Transfers> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public Nep17Transfers getNep17Transfers() {
         return getResult();
     }

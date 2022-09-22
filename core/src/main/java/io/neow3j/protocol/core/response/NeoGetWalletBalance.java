@@ -5,11 +5,16 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.protocol.core.Response;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.util.Objects;
 
 public class NeoGetWalletBalance extends Response<NeoGetWalletBalance.Balance> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public Balance getWalletBalance() {
         return getResult();
     }

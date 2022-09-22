@@ -3,12 +3,17 @@ package io.neow3j.protocol.core.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.protocol.core.Response;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.math.BigInteger;
 import java.util.Objects;
 
 public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public NeoVersion getVersion() {
         return getResult();
     }
