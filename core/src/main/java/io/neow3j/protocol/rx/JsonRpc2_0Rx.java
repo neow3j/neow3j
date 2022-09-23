@@ -1,19 +1,16 @@
 package io.neow3j.protocol.rx;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.polling.BlockIndexPolling;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.Transaction;
-import io.neow3j.protocol.core.polling.BlockPolling;
 import io.neow3j.utils.Observables;
 import io.reactivex.Observable;
 import io.reactivex.Scheduler;
-import io.reactivex.disposables.Disposables;
 import io.reactivex.schedulers.Schedulers;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -45,22 +42,34 @@ public class JsonRpc2_0Rx {
         );
     }
 
-    public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
-            boolean fullTransactionObjects) {
-        return replayBlocksObservable(startBlock, endBlock, fullTransactionObjects, true);
+    /**
+     * Creates an observable that emits new blocks as they are produced by the Neo blockchain. The observable
+     * polls the Neo node in the given {@code pollingInterval} to check for the latest block and emits all
+     * blocks since the last time it polled.
+     *
+     * @param pollingInterval The polling interval in milliseconds.
+     * @return the block index observable.
+     */
+    public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects, long pollingInterval) {
+        return blockIndexObservable(pollingInterval)
+                .flatMap(blockIndex -> neow3j.getBlock(blockIndex, fullTransactionObjects).observable());
     }
 
+    /**
+     * Creates an observable that emits blocks starting at {@code startBlockNumber} up to {@code endBlock} and then
+     * stops.
+     *
+     * @param startBlock             The block index at which to start.
+     * @param endBlock               The block index at which to stop.
+     * @param fullTransactionObjects If the full transactions objects should be included in the blocks.
+     * @param ascending              If the blocks should be emitted in ascending or descending order.
+     * @return the block index observable.
+     */
     public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending) {
-        // We use a scheduler to ensure this Observable runs asynchronously for users to be consistent with the other
-        // Observables.
         return replayBlocksObservableSync(startBlock, endBlock, fullTransactionObjects, ascending)
+                // We use a scheduler to run this Observable asynchronously
                 .subscribeOn(scheduler);
-    }
-
-    private Observable<NeoGetBlock> replayBlocksObservableSync(BigInteger startBlock, BigInteger endBlock,
-            boolean fullTransactionObjects) {
-        return replayBlocksObservableSync(startBlock, endBlock, fullTransactionObjects, true);
     }
 
     private Observable<NeoGetBlock> replayBlocksObservableSync(BigInteger startBlockNumber, BigInteger endBlockNumber,
@@ -75,47 +84,65 @@ public class JsonRpc2_0Rx {
         }
     }
 
-    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects,
-            Observable<NeoGetBlock> onCompleteObservable) {
-        // We use a scheduler to ensure this Observable runs asynchronously for users to be
-        // consistent with the other Observables
+    /**
+     * Creates an observable that emits blocks starting at {@code startBlockNumber} up to the most recent block and
+     * continues emitting according {@code onCaughtUpObservable} after that (e.g., stops if {@code
+     * onCaughtUpObservable} is {@code Observable.empty()}).
+     *
+     * @param startBlockIdx          The block index at which to start catching up.
+     * @param fullTransactionObjects If the full transactions objects should be included in the blocks.
+     * @param onCaughtUpObservable   The observable to use after it caught up.
+     * @return the block observable.
+     */
+    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlockIdx,
+            boolean fullTransactionObjects, Observable<NeoGetBlock> onCaughtUpObservable) {
+
         return catchUpToLatestBlockObservableSync(
-                startBlock, fullTransactionObjects, onCompleteObservable)
+                startBlockIdx, fullTransactionObjects, onCaughtUpObservable)
+                // We use a scheduler to run this Observable asynchronously
                 .subscribeOn(scheduler);
     }
 
-    public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock,
-            boolean fullTransactionObjects) {
-        return catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, Observable.empty());
-    }
+    private Observable<NeoGetBlock> catchUpToLatestBlockObservableSync(BigInteger startBlockIdx,
+            boolean fullTransactionObjects, Observable<NeoGetBlock> onCaughtUpObservable) {
 
-    private Observable<NeoGetBlock> catchUpToLatestBlockObservableSync(BigInteger startBlockNumber,
-            boolean fullTransactionObjects, Observable<NeoGetBlock> onCompleteObservable) {
-
-        BigInteger latestBlockNumber;
+        BigInteger latestBlockIdx;
         try {
-            latestBlockNumber = getLatestBlockNumber();
+            latestBlockIdx = getLatestBlockIdx();
         } catch (IOException e) {
             return Observable.error(e);
         }
 
-        if (startBlockNumber.compareTo(latestBlockNumber) > -1) {
-            return onCompleteObservable;
+        if (startBlockIdx.compareTo(latestBlockIdx) > -1) {
+            return onCaughtUpObservable;
         } else {
             return Observable.concat(
-                    replayBlocksObservableSync(startBlockNumber, latestBlockNumber, fullTransactionObjects),
+                    replayBlocksObservableSync(startBlockIdx, latestBlockIdx, fullTransactionObjects, true),
                     Observable.defer(() -> catchUpToLatestBlockObservableSync(
-                            latestBlockNumber.add(BigInteger.ONE),
+                            latestBlockIdx.add(BigInteger.ONE),
                             fullTransactionObjects,
-                            onCompleteObservable)));
+                            onCaughtUpObservable)));
         }
     }
 
     public Observable<Transaction> catchUpToLatestTransactionObservable(BigInteger startBlock) {
         return catchUpToLatestBlockObservable(startBlock, true, Observable.empty())
-                .flatMapIterable(JsonRpc2_0Rx::toTransactions);
+                .flatMapIterable(b -> b.getBlock().getTransactions());
     }
 
+    /**
+     * Creates an observable that emits blocks starting at {@code startBlockNumber} up to the most recent block and
+     * continues emitting blocks that are newly created on the Neo blockchain. The new blocks are pulled every
+     * {@code pollingInterval}.
+     *
+     * Do not use {@code retry(...)} on this observable because it will not only resubscribe to the new blocks but
+     * also replay the blocks since {@code startBlock}.
+     *
+     * @param startBlock             The block index at which to start catching up.
+     * @param fullTransactionObjects If the full transactions objects should be included in the blocks.
+     * @param pollingInterval        The polling interval in milliseconds.
+     * @return the block observable.
+     */
     public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger startBlock,
             boolean fullTransactionObjects, long pollingInterval) {
 
@@ -123,24 +150,7 @@ public class JsonRpc2_0Rx {
                 blockObservable(fullTransactionObjects, pollingInterval));
     }
 
-    public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects, long pollingInterval) {
-        return neoBlockObservable(pollingInterval)
-                .flatMap(blockIndex ->
-                        neow3j.getBlock(blockIndex, fullTransactionObjects).observable());
-    }
-
-    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects, long pollingInterval)
-            throws IOException {
-
-        return catchUpToLatestAndSubscribeToNewBlocksObservable(getLatestBlockNumber(), fullTransactionObjects,
-                pollingInterval);
-    }
-
-    private static List<Transaction> toTransactions(NeoGetBlock neoGetBlock) {
-        return new ArrayList<>(neoGetBlock.getBlock().getTransactions());
-    }
-
-    private BigInteger getLatestBlockNumber() throws IOException {
+    private BigInteger getLatestBlockIdx() throws IOException {
         return neow3j.getBlockCount().send().getBlockCount().subtract(BigInteger.ONE);
     }
 
