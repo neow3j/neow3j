@@ -31,12 +31,18 @@ public class JsonRpc2_0Rx {
         this.scheduler = Schedulers.from(scheduledExecutorService);
     }
 
-    public Observable<BigInteger> neoBlockObservable(long pollingInterval) {
-        return Observable.create(subscriber -> {
-            BlockPolling blockPolling = new BlockPolling(neow3j, subscriber::onNext);
-            blockPolling.run(scheduledExecutorService, pollingInterval);
-            subscriber.setDisposable(Disposables.fromAction(blockPolling::cancel));
-        });
+    /**
+     * Creates an observable that emits new block index as they are produced by the Neo blockchain. The observable
+     * polls the Neo node in the given {@code pollingInterval} to check for the latest block index and emits all
+     * indexes since the last time it polled.
+     *
+     * @param pollingInterval The polling interval in milliseconds.
+     * @return the block index observable.
+     */
+    public Observable<BigInteger> blockIndexObservable(long pollingInterval) {
+        return Observable.create(subscriber ->
+                new BlockIndexPolling().run(neow3j, subscriber, scheduledExecutorService, pollingInterval)
+        );
     }
 
     public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
