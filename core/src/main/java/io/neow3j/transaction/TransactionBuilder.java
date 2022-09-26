@@ -6,6 +6,7 @@ import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
@@ -281,6 +282,7 @@ public class TransactionBuilder {
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the Neo node.
+     * @throws RpcResponseErrorException         if the Neo node returns an error.
      * @throws Throwable                         a custom exception if one was set to be thrown in the case the
      *                                           sender cannot cover the transaction fees.
      */
@@ -440,7 +442,9 @@ public class TransactionBuilder {
      * successful {@code invokescript} call.
      *
      * @return the call's response.
-     * @throws IOException if something goes wrong when communicating with the Neo node.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the Neo node.
+     * @throws RpcResponseErrorException         if the Neo node returns an error.
      */
     public NeoInvokeScript callInvokeScript() throws IOException {
         if (signers == null || script.length == 0) {
@@ -464,6 +468,7 @@ public class TransactionBuilder {
      * @return the signed transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the Neo node.
+     * @throws RpcResponseErrorException         if the Neo node returns an error.
      * @throws Throwable                         a custom exception if one was set to be thrown in the case the
      *                                           sender cannot cover the transaction fees.
      */
@@ -525,8 +530,7 @@ public class TransactionBuilder {
      * @param exceptionSupplier the exception supplier.
      * @return this transaction builder.
      */
-    public TransactionBuilder throwIfSenderCannotCoverFees(
-            Supplier<? extends Throwable> exceptionSupplier) {
+    public TransactionBuilder throwIfSenderCannotCoverFees(Supplier<? extends Throwable> exceptionSupplier) {
         if (consumer != null) {
             throw new IllegalStateException("Cannot handle a supplier for this case, since a consumer will be " +
                     "executed if the sender cannot cover the fees.");

@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.types.Hash160;
@@ -35,7 +36,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 // This test class spins up a new private net container for each test. This consumes a lot of time but allows the
@@ -180,7 +181,7 @@ public class Neow3jWriteIntegrationTest {
                 .sendMany(emptyList())
                 .send();
 
-        assertNull(sendMany.getSendMany());
+        assertThrows(RpcResponseErrorException.class, sendMany::getSendMany);
         assertNotNull(sendMany.getError());
         assertThat(sendMany.getError().getCode(), is(INVALID_PARAMS_CODE));
         assertThat(sendMany.getError().getMessage(), is(INVALID_PARAMS_MESSAGE));

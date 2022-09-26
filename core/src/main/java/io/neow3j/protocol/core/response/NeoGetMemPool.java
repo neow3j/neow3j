@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.protocol.core.Response;
 
@@ -12,6 +13,10 @@ import java.util.Objects;
 
 public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public NeoGetMemPool.MemPoolDetails getMemPoolDetails() {
         return getResult();
     }
