@@ -8,7 +8,7 @@ public enum ResponseType {
     DECIMAL("accounting.Decimal"),
     // Netmap
     NETWORK("netmap.NetworkInfo"),
-    ENDPOINT("main.EndpointResponse"),
+    ENDPOINT("netmap.EndpointResponse"),
     // Container
     CONTAINER("container.Container"),
     CONTAINER_ID("cid.ID"),

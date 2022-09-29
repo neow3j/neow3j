@@ -18,8 +18,8 @@ import java.util.List;
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -100,16 +100,11 @@ public class ContainerIntegrationTest {
     }
 
     @Test
-    public void testListContainers() throws NeoFSLibraryError, InvalidProtocolBufferException,
-            UnexpectedResponseTypeException {
-
+    public void testListContainers() throws InvalidProtocolBufferException {
         List<String> ids = neoFSClient.listContainers(account.getECKeyPair().getPublicKey());
 
         assertThat(ids, hasSize(greaterThanOrEqualTo(1)));
-        assertThat(ids.get(0), is(firstContainerId));
-
-        Types.Container container = neoFSClient.getContainer(ids.get(0));
-        assertThat(container, is(firstContainer));
+        assertThat(ids, hasItem(firstContainerId));
     }
 
 }
