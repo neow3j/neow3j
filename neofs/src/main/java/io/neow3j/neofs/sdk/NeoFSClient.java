@@ -3,6 +3,7 @@ package io.neow3j.neofs.sdk;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.util.JsonFormat;
+import io.neow3j.crypto.Base58;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
@@ -31,7 +32,7 @@ public class NeoFSClient {
     private final NeoFSLib neoFSLib;
 
     private final ObjectMapper mapper = new ObjectMapper();
-    private final int CONTAINER_ID_LENGTH = 44;
+    private final int CONTAINER_ID_LENGTH = 32;
 
     public NeoFSClient(NeoFSLib lib, String clientId) {
         this.neoFSLib = lib;
@@ -193,14 +194,16 @@ public class NeoFSClient {
      * @param ownerPubKey the owner public key.
      * @return the ids of the owned container.
      */
-    public List<String> listContainers(ECKeyPair.ECPublicKey ownerPubKey) {
+    public List<String> listContainers(ECKeyPair.ECPublicKey ownerPubKey)
+            throws InvalidProtocolBufferException {
         // Todo: Consider using the protobuf type for ContainerIDs and providing helper method to retrieve string
         //  values.
         PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
         int n = response.length / CONTAINER_ID_LENGTH;
         ArrayList<String> list = new ArrayList<>();
         for (int i = 0; i < n; i++) {
-            list.add(new String(response.value.getByteArray(i * CONTAINER_ID_LENGTH, CONTAINER_ID_LENGTH)));
+            String idBytes = Base58.encode(response.value.getByteArray(i * CONTAINER_ID_LENGTH, CONTAINER_ID_LENGTH));
+            list.add(idBytes);
         }
         return list;
     }
