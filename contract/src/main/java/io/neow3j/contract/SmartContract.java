@@ -97,6 +97,7 @@ public class SmartContract {
      * @return the string returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public String callFunctionReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
@@ -119,6 +120,7 @@ public class SmartContract {
      * @return the integer returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as an integer.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public BigInteger callFunctionReturningInt(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
@@ -145,6 +147,7 @@ public class SmartContract {
      * @return the boolean returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a boolean.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public boolean callFunctionReturningBool(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
@@ -176,6 +179,7 @@ public class SmartContract {
      * @return the script hash returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as script hash.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public Hash160 callFunctionReturningScriptHash(String function, ContractParameter... params) throws IOException {
         InvocationResult result = callInvokeFunction(function, asList(params)).getInvocationResult();
@@ -208,6 +212,7 @@ public class SmartContract {
      * @param params   the contract parameters to include in the call.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
             throws IOException {
@@ -230,6 +235,7 @@ public class SmartContract {
      * @param <T>      the type the stack items are mapped to by the mapper function when traversing the iterator.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> Iterator<T> callFunctionReturningIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
@@ -263,6 +269,7 @@ public class SmartContract {
      * @param <T>      the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
             ContractParameter... params) throws IOException {
@@ -286,6 +293,7 @@ public class SmartContract {
      * @param <T>                    the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
             int maxIteratorResultItems, ContractParameter... params) throws IOException {
@@ -310,6 +318,7 @@ public class SmartContract {
      * @param params   the contract parameters to include in the call.
      * @return the iterator.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public List<StackItem> callFunctionAndTraverseIterator(String function, ContractParameter... params)
             throws IOException {
@@ -333,6 +342,7 @@ public class SmartContract {
      * @return a list of stack items of the returned iterator.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public List<StackItem> callFunctionAndUnwrapIterator(String function, List<ContractParameter> params,
             int maxIteratorResultItems, Signer... signers) throws UnexpectedReturnTypeException, IOException {
