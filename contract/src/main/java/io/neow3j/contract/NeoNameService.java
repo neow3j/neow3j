@@ -400,7 +400,6 @@ public class NeoNameService extends NonFungibleToken {
         }
     }
 
-    // checks if a domain name is available
     void checkDomainNameAvailability(String name, boolean shouldBeAvailable) throws IOException {
         boolean isAvailable = isAvailable(name);
         if (shouldBeAvailable && !isAvailable) {

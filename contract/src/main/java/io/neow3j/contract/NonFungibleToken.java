@@ -22,7 +22,6 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.MAP;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
@@ -386,7 +385,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Map<String, String> properties(byte[] tokenId) throws IOException {
-        StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenId)))
+        StackItem item = callInvokeFunction(PROPERTIES, asList(byteArray(tokenId)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
             return deserializeProperties(item);

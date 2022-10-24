@@ -1,0 +1,57 @@
+{
+  "jsonrpc": "2.0",
+  "id": 124,
+  "result": {
+    "script": "DApuZW93M2oubmVvEcAfDApwcm9wZXJ0aWVzDBRzLMweZpjsgc5+GqjK12TCmd5HWUFifVtS",
+    "state": "HALT",
+    "gasconsumed": "6939600",
+    "exception": null,
+    "notifications": [],
+    "stack": [
+      {
+        "type": "Map",
+        "value": [
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "bmFtZQ=="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "bmVvdzNqLm5lbw=="
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "ZXhwaXJhdGlvbg=="
+            },
+            "value": {
+              "type": "Integer",
+              "value": "1698166908502"
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "YWRtaW4="
+            },
+            "value": {
+              "type": "Any"
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "aW1hZ2U="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "aHR0cHM6Ly9uZW8zLmF6dXJlZWRnZS5uZXQvaW1hZ2VzL25lb25zLnBuZw=="
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -93,7 +93,7 @@ public class NameServiceIntegrationTest {
 
     @BeforeAll
     public static void setUp() throws Throwable {
-        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
         Hash160 nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
@@ -271,13 +271,7 @@ public class NameServiceIntegrationTest {
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        boolean rootExists = false;
-        try {
-            // Any second-level domain name should still be available for the added root domain.
-            rootExists = nameService.isAvailable("neow3j.root");
-        } catch (IllegalArgumentException e) {
-            fail();
-        }
+        boolean rootExists = nameService.unwrapRoots().stream().anyMatch("root"::equals);
         assertTrue(rootExists);
     }
 
@@ -526,6 +520,9 @@ public class NameServiceIntegrationTest {
         String domain = "getallrecords.neo";
         registerDomainFromDefault(domain);
         setRecordFromDefault(domain, RecordType.CNAME, DOMAIN);
+
+        String record = nameService.getRecord(domain, RecordType.TXT);
+
         String txtRecord = "getAllRecordsTXT";
         setRecordFromDefault(domain, RecordType.TXT, txtRecord);
 

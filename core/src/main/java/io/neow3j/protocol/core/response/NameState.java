@@ -73,7 +73,7 @@ public class NameState {
         return "NameState{" +
                 "name='" + getName() + '\'' +
                 ", expiration=" + expiration +
-                ", admin='" + getAdmin().toAddress() +
+                ", admin=" + getAdmin().toAddress() +
                 "}";
     }
 
