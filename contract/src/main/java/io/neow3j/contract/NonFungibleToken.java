@@ -11,6 +11,7 @@ import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.MAP;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -46,7 +48,7 @@ public class NonFungibleToken extends Token {
         super(scriptHash, neow);
     }
 
-    // region Common methods
+    // region Token methods
 
     /**
      * Gets the total amount of NFTs owned by the {@code owner}.
@@ -63,6 +65,9 @@ public class NonFungibleToken extends Token {
         return callFunctionReturningInt(BALANCE_OF, hash160(owner));
     }
 
+    // endregion Token methods
+    // region NFT methods
+
     /**
      * Gets an iterator over the token ids of the tokens that are owned by the {@code owner}.
      *
@@ -71,10 +76,10 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<byte[]> tokensOf(Hash160 owner) throws IOException {
-        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS_OF, hash160(owner));
+        return callFunctionReturningIterator(StackItem::getByteArray, TOKENS_OF, hash160(owner));
     }
 
-    // endregion Common methods
+    // endregion NFT methods
     // region Non-divisible NFT methods
 
     /**
@@ -320,8 +325,7 @@ public class NonFungibleToken extends Token {
      */
     public Iterator<Hash160> ownersOf(byte[] tokenId) throws IOException {
         throwIfNonDivisibleNFT();
-        return callFunctionReturningIterator(i -> Hash160.fromAddress(((StackItem) i).getAddress()), OWNER_OF,
-                byteArray(tokenId));
+        return callFunctionReturningIterator(i -> Hash160.fromAddress(i.getAddress()), OWNER_OF, byteArray(tokenId));
     }
 
     private void throwIfNonDivisibleNFT() throws IOException {
@@ -366,7 +370,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<byte[]> tokens() throws IOException {
-        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS);
+        return callFunctionReturningIterator(StackItem::getByteArray, TOKENS);
     }
 
     /**
@@ -385,12 +389,27 @@ public class NonFungibleToken extends Token {
         StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenId)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            return item.getMap().entrySet().stream().collect(Collectors.toMap(
-                    e -> e.getKey().getString(),
-                    e -> e.getValue().getString()
-            ));
+            return deserializeProperties(item);
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
+    }
+
+    // Deserializes the properties into a map. Expects the values in the stack item map to be of type String. If a
+    // value is of type Any and its value is null, null is added to the map. In other cases, getString() might throw
+    // a StackItemCastException.
+    private Map<String, String> deserializeProperties(StackItem item) {
+        Map<String, String> map = new HashMap<>();
+        for (StackItem k : item.getMap().keySet()) {
+            StackItem valueStackItem = item.getMap().get(k);
+            String value;
+            if (valueStackItem.getType().equals(ANY) && valueStackItem.getValue() == null) {
+                value = null;
+            } else {
+                value = valueStackItem.getString();
+            }
+            map.put(k.getString(), value);
+        }
+        return map;
     }
 
     /**
