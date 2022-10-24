@@ -5,6 +5,9 @@ import io.neow3j.types.Hash160;
 
 import java.util.Objects;
 
+/**
+ * Represents the state of a Neo Name Service domain, i.e., the properties of a Neo Name Service NFT.
+ */
 public class NameState {
 
     @JsonProperty(value = "name", required = true)
@@ -67,7 +70,7 @@ public class NameState {
 
     @Override
     public String toString() {
-        return "Properties{" +
+        return "NameState{" +
                 "name='" + getName() + '\'' +
                 ", expiration=" + expiration +
                 ", admin='" + getAdmin().toAddress() +

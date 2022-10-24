@@ -99,6 +99,11 @@ public class NeoConstants {
      */
     public static final int MAX_MANIFEST_SIZE = 0xFFFF;
 
+    /**
+     *
+     */
+    public static final int MAX_ITERATOR_ITEMS_DEFAULT = 100;
+
     //endregion
 
 }
