@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
@@ -7,6 +8,7 @@ import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.devpack.annotations.Safe;
+import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
 import org.junit.jupiter.api.Test;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.compiler.Compiler.CLASS_VERSION_SUPPORTED;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -219,6 +222,23 @@ public class CompilerExceptionsTest {
                 containsString("Only the first dimension of a multi-dimensional array declaration can be defined,"));
     }
 
+    @Test
+    public void testInvalidInitContractInterface() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(InvalidInitializedContractInterfaceMultipleArgs.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString(format("can only be initialized with a %s type or", Hash160.class.getSimpleName())));
+    }
+
+    @Test
+    public void testInvalidInitContractInterface_noArgsInvalidCtor() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(
+                        InvalidInitializedContractInterfaceNoArgMultipleInsnInSuper.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("Expected a different node instruction type."));
+    }
+
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -380,6 +400,33 @@ public class CompilerExceptionsTest {
     static class MultiDimensionalArraySize {
         public static String[][] method() {
             return new String[10][4];
+        }
+    }
+
+    static class InvalidInitializedContractInterfaceNoArgMultipleInsnInSuper {
+        public static Hash160 test() {
+            return new InterfaceContractNoArgMultipleInsnInSuper().getHash();
+        }
+    }
+
+    static class InterfaceContractNoArgMultipleInsnInSuper extends ContractInterface {
+        public InterfaceContractNoArgMultipleInsnInSuper() {
+            super(new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
+        }
+    }
+
+    static class InvalidInitializedContractInterfaceMultipleArgs {
+        public static Hash160 test() {
+            return new InterfaceContractMultipleArgs("hash", "msg").getHash();
+        }
+    }
+
+    static class InterfaceContractMultipleArgs extends ContractInterface {
+        private static String msg;
+
+        public InterfaceContractMultipleArgs(String hash, String msg) {
+            super(hash);
+            this.msg = msg;
         }
     }
 
