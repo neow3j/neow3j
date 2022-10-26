@@ -43,7 +43,7 @@ public class TokenIntegrationTest {
     @Test
     public void testSymbol() throws IOException {
         String symbol = token.getSymbol();
-        MatcherAssert.assertThat(symbol, Matchers.is(GasToken.SYMBOL));
+        assertThat(symbol, Matchers.is(GasToken.SYMBOL));
     }
 
     @Test

@@ -52,8 +52,6 @@ public class NeoNameServiceTest {
             .options(wireMockConfig().dynamicPort())
             .build();
 
-    private Neow3j neow3j;
-
     private Account account1;
     private Account account2;
 
@@ -89,7 +87,7 @@ public class NeoNameServiceTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
         account2 = Account.fromWIF(TestProperties.client1AccountWIF());
         nameService = new NeoNameService(Hash160.ZERO, neow3j);

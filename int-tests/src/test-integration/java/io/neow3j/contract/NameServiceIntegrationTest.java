@@ -8,7 +8,6 @@ import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.response.RecordState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
-import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -17,7 +16,6 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.Files;
 import io.neow3j.wallet.Account;
 import org.hamcrest.Matcher;
-import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -112,7 +110,7 @@ public class NameServiceIntegrationTest {
 
         Transaction tx = new ContractManagement(getNeow3j())
                 .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
-                .signers(AccountSigner.calledByEntry(COMMITTEE_ACCOUNT))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
                 asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
@@ -130,7 +128,7 @@ public class NameServiceIntegrationTest {
 
     private static void addRoot() throws Throwable {
         Transaction tx = nameService.addRoot(ROOT_DOMAIN)
-                .signers(AccountSigner.calledByEntry(COMMITTEE_ACCOUNT))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
                 asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
@@ -159,8 +157,7 @@ public class NameServiceIntegrationTest {
 
     private static void setAdmin(String domain, Account admin, Account owner) throws Throwable {
         Hash256 txHash = nameService.setAdmin(domain, admin.getScriptHash())
-                .signers(AccountSigner.calledByEntry(owner),
-                        AccountSigner.calledByEntry(admin))
+                .signers(calledByEntry(owner), calledByEntry(admin))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -262,7 +259,7 @@ public class NameServiceIntegrationTest {
     @Test
     public void testAddRoot() throws Throwable {
         Transaction tx = nameService.addRoot("root")
-                .signers(AccountSigner.calledByEntry(COMMITTEE_ACCOUNT))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
                 asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
@@ -301,7 +298,7 @@ public class NameServiceIntegrationTest {
         priceList.add(BigInteger.valueOf(120_00000000L));
         priceList.add(BigInteger.valueOf(40_00000000L));
         Transaction tx = nameService.setPrice(priceList)
-                .signers(AccountSigner.calledByEntry(COMMITTEE_ACCOUNT))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
                 asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
@@ -347,7 +344,7 @@ public class NameServiceIntegrationTest {
         assertTrue(availableBeforeRegistration);
 
         Hash256 txHash = nameService.register(domain, DEFAULT_ACCOUNT.getScriptHash())
-                .signers(AccountSigner.calledByEntry(DEFAULT_ACCOUNT))
+                .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -369,7 +366,7 @@ public class NameServiceIntegrationTest {
         assertThat(expirationBefore, greaterThan(lessThanInOneYear));
 
         Hash256 txHash = nameService.renew(domain)
-                .signers(AccountSigner.calledByEntry(DEFAULT_ACCOUNT))
+                .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -397,7 +394,7 @@ public class NameServiceIntegrationTest {
         int renewYears = 9;
 
         Hash256 txHash = nameService.renew(domain, renewYears)
-                .signers(AccountSigner.calledByEntry(DEFAULT_ACCOUNT))
+                .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -432,7 +429,7 @@ public class NameServiceIntegrationTest {
         assertThat(thrown.getMessage(), containsString("The vm exited"));
 
         Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
-                .signers(AccountSigner.calledByEntry(CLIENT_1), AccountSigner.calledByEntry(CLIENT_2))
+                .signers(calledByEntry(CLIENT_1), calledByEntry(CLIENT_2))
                 .sign()
                 .send()
                 .getSendRawTransaction()
@@ -440,7 +437,7 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         NameState nameState = nameService.getNameState(domain);
-        MatcherAssert.assertThat(nameState.getAdmin(), Matchers.is(CLIENT_2.getScriptHash()));
+        assertThat(nameState.getAdmin(), Matchers.is(CLIENT_2.getScriptHash()));
 
         // Now as admin, client2 should be able to set a record.
         setRecord(domain, RecordType.A, A_RECORD, CLIENT_2);
@@ -571,7 +568,7 @@ public class NameServiceIntegrationTest {
         assertThat(textRecordForDelete, is(txtRecordVal));
 
         Hash256 txHash = nameService.deleteRecord(domain, RecordType.TXT)
-                .signers(AccountSigner.calledByEntry(DEFAULT_ACCOUNT))
+                .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
                 .getSendRawTransaction()

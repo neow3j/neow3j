@@ -10,25 +10,7 @@ import java.math.BigInteger;
 
 public class NeoConstants {
 
-    //region Cryptography
-
-    public static ECDomainParameters secp256r1DomainParams() {
-        return new ECDomainParameters(
-                secp256r1CurveParams().getCurve(), secp256r1CurveParams().getG(),
-                secp256r1CurveParams().getN(), secp256r1CurveParams().getH());
-    }
-
-    public static X9ECParameters secp256r1CurveParams() {
-        return CustomNamedCurves.getByName("secp256r1");
-    }
-
-    public static BigInteger secp256r1HalfCurveOrder() {
-        return secp256r1CurveParams().getN().shiftRight(1);
-    }
-
-    //endregion
-
-    //region Accounts, Addresses, Keys
+    // region Accounts, Addresses, Keys
 
     /**
      * The maximum number of public keys that can take part in a multi-signature address. Taken from
@@ -70,9 +52,9 @@ public class NeoConstants {
      */
     public static final int VERIFICATION_SCRIPT_SIZE = 40;
 
-    //endregion
+    // endregion
 
-    //region Transactions & Contracts
+    // region Transactions & Contracts
 
     /**
      * The current version used for Neo transaction.
@@ -104,6 +86,24 @@ public class NeoConstants {
      */
     public static final int MAX_ITERATOR_ITEMS_DEFAULT = 100;
 
-    //endregion
+    // endregion
+
+    // region Cryptography
+
+    public static ECDomainParameters secp256r1DomainParams() {
+        return new ECDomainParameters(
+                secp256r1CurveParams().getCurve(), secp256r1CurveParams().getG(),
+                secp256r1CurveParams().getN(), secp256r1CurveParams().getH());
+    }
+
+    public static X9ECParameters secp256r1CurveParams() {
+        return CustomNamedCurves.getByName("secp256r1");
+    }
+
+    public static BigInteger secp256r1HalfCurveOrder() {
+        return secp256r1CurveParams().getN().shiftRight(1);
+    }
+
+    // endregion
 
 }
