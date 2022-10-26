@@ -61,12 +61,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 @Testcontainers
 public class NameServiceIntegrationTest {
-
-    private static final String RESOURCE_DIR = "contract/";
 
     private static Neow3j neow3j;
     private static NeoNameService nameService;
@@ -82,6 +79,7 @@ public class NameServiceIntegrationTest {
     private static final long ONE_YEAR = 365L * 24 * 3600 * 1000;
     private static final long TEN_MINUTES = 10 * 3600 * 1000;
 
+    private static final String RESOURCE_DIR = "contract/";
     private static final String NAMESERVICE_NEF = RESOURCE_DIR + "NameService.nef";
     private static final String NAMESERVICE_MANIFEST = RESOURCE_DIR + "NameService.manifest.json";
 
@@ -520,8 +518,6 @@ public class NameServiceIntegrationTest {
         String domain = "getallrecords.neo";
         registerDomainFromDefault(domain);
         setRecordFromDefault(domain, RecordType.CNAME, DOMAIN);
-
-        String record = nameService.getRecord(domain, RecordType.TXT);
 
         String txtRecord = "getAllRecordsTXT";
         setRecordFromDefault(domain, RecordType.TXT, txtRecord);
