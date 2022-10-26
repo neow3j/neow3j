@@ -1,23 +1,26 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;
+import io.neow3j.devpack.Map;
 
 /**
- * Represents a NameService interface. Initialize this class with a {@link Hash160} to create an "interface" to a
- * NameService contract contract on the Neo blockchain.
- * <p>
- * When this class is extended, the constructor of the extending class must take exactly one parameter of type
- * {@link Hash160} or a constant {@link String} and pass it to the {@code super()} call without any additional logic.
- * <p>
- * This interface is based on an implemented
- * <a href="https://github.com/neo-project/non-native-contracts/blob/c4035e9d458c903fd76a08fb53e6f338c2f69dc4/src/NameService/NameService.cs">NNS</a>
- * contract.
+ * Represents an interface to the official NeoNameService smart contract.
  */
 public class NeoNameService extends NonDivisibleNonFungibleToken {
 
     /**
+     * Initializes an interface to the official NeoNameService smart contract.
+     */
+    public NeoNameService() {
+        super("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
+    }
+
+    /**
      * Initializes an interface to a NeoNameService smart contract.
+     * <p>
+     * For the official NeoNameService smart contract use {@link NeoNameService#NeoNameService()}.
      * <p>
      * Use this constructor only with a constant script hash.
      *
@@ -44,6 +47,11 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param root the root domain to add.
      */
     public native void addRoot(String root);
+
+    /**
+     * @return an iterator to iterate over all roots.
+     */
+    public native Iterator<String> roots();
 
     /**
      * Sets the fees required to register or renew a domain name based on its length.
@@ -88,6 +96,15 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
     public native int renew(String name);
 
     /**
+     * Extends the validity of the domain name.
+     *
+     * @param name  the domain name.
+     * @param years the number of years to renew this domain name. Has to be in the range of 1 to 10.
+     * @return the expiration time in milliseconds.
+     */
+    public native int renew(String name, int years);
+
+    /**
      * Sets the administrator of a domain name.
      *
      * @param name  the domain name.
@@ -114,6 +131,14 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
     public native String getRecord(String name, int type);
 
     /**
+     * Gets an iterator to iterate over all records of the given domain name.
+     *
+     * @param name the domain name.
+     * @return an iterator to get all records of the domain name.
+     */
+    public native Iterator<String> getAllRecords(String name);
+
+    /**
      * Deletes a data type for the domain name.
      *
      * @param name the domain name.
@@ -129,5 +154,33 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @return the resolved domain name.
      */
     public native String resolve(String name, int type);
+
+    /**
+     * Gets the owner of the domain name.
+     *
+     * @param name the domain name.
+     * @return the owner of the domain name.
+     */
+    public native Hash160 ownerOf(String name);
+
+    /**
+     * Gets the properties of the domain name.
+     *
+     * @param name the domain name.
+     * @return the properties of the domain name.
+     */
+    public native Map<String, Object> properties(String name);
+
+    /**
+     * Transfers the domain name.
+     *
+     * @param to   the hash of the receiver.
+     * @param name the domain name to transfer.
+     * @param data optional data. This data is passed to the {@code onNEP11Payment} method, if the receiver is a
+     *             deployed contract.
+     * @return true if the transfer is successful. False otherwise, e.g., if the receiver is a contract and does not
+     * accept the token in its {@code onNEP11Payment} method.
+     */
+    public native boolean transfer(Hash160 to, String name, Object data);
 
 }
