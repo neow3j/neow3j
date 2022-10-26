@@ -77,7 +77,7 @@ public class NameServiceIntegrationTest {
     private static final String TXT_RECORD = "textrecord";
     private static final String AAAA_RECORD = "3001:2:3:4:5:6:7:8";
     private static final long ONE_YEAR = 365L * 24 * 3600 * 1000;
-    private static final long TEN_MINUTES = 10 * 3600 * 1000;
+    private static final long ONE_DAY = 24 * 3600 * 1000;
 
     private static final String RESOURCE_DIR = "contract/";
     private static final String NAMESERVICE_NEF = RESOURCE_DIR + "NameService.nef";
@@ -93,9 +93,10 @@ public class NameServiceIntegrationTest {
     public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
+
         Hash160 nameServiceHash = deployNameServiceContract();
         nameService = new NeoNameService(nameServiceHash, getNeow3j());
-        // Make a transaction that can be used for the tests
+
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         addRoot();
         registerDomainFromDefault(DOMAIN);
@@ -361,10 +362,10 @@ public class NameServiceIntegrationTest {
     public void testRenew() throws Throwable {
         String domain = "renew.neo";
         registerDomainFromDefault(domain);
-        long inOneYear = getNowInMilliSeconds() + ONE_YEAR;
-        long lessThanInOneYear = inOneYear - TEN_MINUTES;
+        long moreThanInOneYear = getNowInMilliSeconds() + ONE_YEAR + ONE_DAY;
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR - ONE_DAY;
         Long expirationBefore = nameService.getNameState(domain).getExpiration();
-        assertThat(expirationBefore, lessThanOrEqualTo(inOneYear));
+        assertThat(expirationBefore, lessThanOrEqualTo(moreThanInOneYear));
         assertThat(expirationBefore, greaterThan(lessThanInOneYear));
 
         Hash256 txHash = nameService.renew(domain)
@@ -377,7 +378,7 @@ public class NameServiceIntegrationTest {
 
         Long expirationAfter = nameService.getNameState(domain).getExpiration();
         long inTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR;
-        long lessThanInTwoYears = inTwoYears - TEN_MINUTES;
+        long lessThanInTwoYears = inTwoYears - ONE_DAY;
         assertThat(expirationAfter, lessThanOrEqualTo(inTwoYears));
         assertThat(expirationAfter, greaterThan(lessThanInTwoYears));
     }
@@ -388,9 +389,10 @@ public class NameServiceIntegrationTest {
         registerDomainFromDefault(domain);
         Long expirationBeforeRenew = nameService.getNameState(domain).getExpiration();
 
-        long inOneYear = getNowInMilliSeconds() + ONE_YEAR;
-        assertThat(expirationBeforeRenew, lessThanOrEqualTo(inOneYear));
-        assertThat(expirationBeforeRenew, greaterThan(inOneYear - TEN_MINUTES));
+        long moreThanInOneYear = getNowInMilliSeconds() + ONE_YEAR + ONE_DAY;
+        long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR - ONE_DAY;
+        assertThat(expirationBeforeRenew, lessThanOrEqualTo(moreThanInOneYear));
+        assertThat(expirationBeforeRenew, greaterThan(lessThanInOneYear));
 
         int renewYears = 9;
 
