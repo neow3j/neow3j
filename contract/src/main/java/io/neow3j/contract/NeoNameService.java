@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.InvocationResult;
@@ -30,7 +31,6 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 
 /**
@@ -63,13 +63,15 @@ public class NeoNameService extends NonFungibleToken {
     private static final String PROPERTIES = "properties";
 
     /**
-     * Constructs a new {@code NeoNameService} contract that uses the given {@link Neow3j} instance for invocations.
+     * Initializes an interface to a NeoNameService smart contract.
+     * <p>
+     * Uses the given {@link Neow3j} instance for invocations.
      *
      * @param scriptHash the script hash of the name service contract.
-     * @param neow       the {@link Neow3j} instance to use for invocations.
+     * @param neow3j     the {@link Neow3j} instance to use for invocations.
      */
-    public NeoNameService(Hash160 scriptHash, Neow3j neow) {
-        super(scriptHash, neow);
+    public NeoNameService(Hash160 scriptHash, Neow3j neow3j) {
+        super(scriptHash, neow3j);
     }
 
     /**
@@ -109,8 +111,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return the owner of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Hash160 ownerOf(String name) throws IOException {
-        return ownerOf(name.getBytes(UTF_8));
+    public Hash160 ownerOf(NNSName name) throws IOException {
+        return ownerOf(name.getBytes());
     }
 
     /**
@@ -120,7 +122,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return the properties of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Map<String, String> properties(String name) throws IOException {
+    public Map<String, String> properties(NNSName name) throws IOException {
         return properties(name.getBytes());
     }
 
@@ -137,7 +139,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Account from, Hash160 to, String name) throws IOException {
+    public TransactionBuilder transfer(Account from, Hash160 to, NNSName name) throws IOException {
         return transfer(from, to, name, null);
     }
 
@@ -158,10 +160,10 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder transfer(Account from, Hash160 to, String name, ContractParameter data)
+    public TransactionBuilder transfer(Account from, Hash160 to, NNSName name, ContractParameter data)
             throws IOException {
         checkDomainNameAvailability(name, false);
-        return transfer(from, to, name.getBytes(UTF_8), data);
+        return transfer(from, to, name.getBytes(), data);
     }
 
     // endregion NEP-11 Methods
@@ -243,8 +245,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return true if the domain name is available, false otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public boolean isAvailable(String name) throws IOException {
-        return callFunctionReturningBool(IS_AVAILABLE, string(name));
+    public boolean isAvailable(NNSName name) throws IOException {
+        return callFunctionReturningBool(IS_AVAILABLE, string(name.getName()));
     }
 
     /**
@@ -256,9 +258,9 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder register(String name, Hash160 owner) throws IOException {
+    public TransactionBuilder register(NNSName name, Hash160 owner) throws IOException {
         checkDomainNameAvailability(name, true);
-        return invokeFunction(REGISTER, string(name), hash160(owner));
+        return invokeFunction(REGISTER, string(name.getName()), hash160(owner));
     }
 
     /**
@@ -271,9 +273,9 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder renew(String name) throws IOException {
+    public TransactionBuilder renew(NNSName name) throws IOException {
         checkDomainNameAvailability(name, false);
-        return invokeFunction(RENEW, string(name));
+        return invokeFunction(RENEW, string(name.getName()));
     }
 
     /**
@@ -285,12 +287,12 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder renew(String name, int years) throws IOException {
+    public TransactionBuilder renew(NNSName name, int years) throws IOException {
         if (years < 1 || years > 10) {
             throw new IllegalArgumentException("Domain names can only be renewed by at least 1, and at most 10 years.");
         }
         checkDomainNameAvailability(name, false);
-        return invokeFunction(RENEW, string(name), integer(years));
+        return invokeFunction(RENEW, string(name.getName()), integer(years));
     }
 
     /**
@@ -304,9 +306,9 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder setAdmin(String name, Hash160 admin) throws IOException {
+    public TransactionBuilder setAdmin(NNSName name, Hash160 admin) throws IOException {
         checkDomainNameAvailability(name, false);
-        return invokeFunction(SET_ADMIN, string(name), hash160(admin));
+        return invokeFunction(SET_ADMIN, string(name.getName()), hash160(admin));
     }
 
     /**
@@ -319,8 +321,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public TransactionBuilder setRecord(String name, RecordType type, String data) {
-        return invokeFunction(SET_RECORD, string(name), integer(type.byteValue()), string(data));
+    public TransactionBuilder setRecord(NNSName name, RecordType type, String data) {
+        return invokeFunction(SET_RECORD, string(name.getName()), integer(type.byteValue()), string(data));
     }
 
     /**
@@ -331,15 +333,15 @@ public class NeoNameService extends NonFungibleToken {
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public String getRecord(String name, RecordType type) throws IOException {
+    public String getRecord(NNSName name, RecordType type) throws IOException {
         try {
-            return callFunctionReturningString(GET_RECORD, string(name), integer(type.byteValue()));
+            return callFunctionReturningString(GET_RECORD, string(name.getName()), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException e) {
             throw new IllegalArgumentException(
-                    format("Could not get a record of type '%s' for the domain name '%s'.", type, name));
+                    format("Could not get a record of type '%s' for the domain name '%s'.", type, name.getName()));
         } catch (InvocationFaultStateException e) {
             throw new IllegalArgumentException(
-                    format("The domain name '%s' might not be registered or is in an invalid format.", name));
+                    format("The domain name '%s' might not be registered or is in an invalid format.", name.getName()));
         }
     }
 
@@ -350,8 +352,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return all records of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public Iterator<RecordState> getAllRecords(String name) throws IOException {
-        return callFunctionReturningIterator(RecordState::fromStackItem, GET_ALL_RECORDS, string(name));
+    public Iterator<RecordState> getAllRecords(NNSName name) throws IOException {
+        return callFunctionReturningIterator(RecordState::fromStackItem, GET_ALL_RECORDS, string(name.getName()));
     }
 
     /**
@@ -360,15 +362,15 @@ public class NeoNameService extends NonFungibleToken {
      * Use this method if sessions are disabled on the Neo node.
      * <p>
      * This method returns at most {@link NeoConstants#MAX_ITERATOR_ITEMS_DEFAULT} values. If there are more values,
-     * connect to a Neo node that supports sessions and use {@link NeoNameService#getAllRecords(String)} )}.
+     * connect to a Neo node that supports sessions and use {@link NeoNameService#getAllRecords(NNSName)} )}.
      *
-     * @param domain the domain name.
+     * @param name the domain name.
      * @return all records of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<RecordState> unwrapAllRecords(String domain) throws IOException {
-        return callFunctionAndUnwrapIterator(GET_ALL_RECORDS, asList(string(domain)), MAX_ITERATOR_ITEMS_DEFAULT)
-                .stream().map(RecordState::fromStackItem).collect(Collectors.toList());
+    public List<RecordState> unwrapAllRecords(NNSName name) throws IOException {
+        return callFunctionAndUnwrapIterator(GET_ALL_RECORDS, asList(string(name.getName())),
+                MAX_ITERATOR_ITEMS_DEFAULT).stream().map(RecordState::fromStackItem).collect(Collectors.toList());
     }
 
     /**
@@ -379,8 +381,8 @@ public class NeoNameService extends NonFungibleToken {
      * @param type the record type.
      * @return a transaction builder.
      */
-    public TransactionBuilder deleteRecord(String name, RecordType type) {
-        return invokeFunction(DELETE_RECORD, string(name), integer(type.byteValue()));
+    public TransactionBuilder deleteRecord(NNSName name, RecordType type) {
+        return invokeFunction(DELETE_RECORD, string(name.getName()), integer(type.byteValue()));
     }
 
     /**
@@ -392,21 +394,21 @@ public class NeoNameService extends NonFungibleToken {
      * @throws IOException                     if there was a problem fetching information from the Neo node.
      * @throws UnresolvableDomainNameException if the domain name could not be resolved by the NeoNameService contract.
      */
-    public String resolve(String name, RecordType type) throws IOException, UnresolvableDomainNameException {
+    public String resolve(NNSName name, RecordType type) throws IOException, UnresolvableDomainNameException {
         try {
-            return callFunctionReturningString(RESOLVE, string(name), integer(type.byteValue()));
+            return callFunctionReturningString(RESOLVE, string(name.getName()), integer(type.byteValue()));
         } catch (UnexpectedReturnTypeException | InvocationFaultStateException e) {
-            throw new UnresolvableDomainNameException(name);
+            throw new UnresolvableDomainNameException(name.getName());
         }
     }
 
-    void checkDomainNameAvailability(String name, boolean shouldBeAvailable) throws IOException {
+    void checkDomainNameAvailability(NNSName name, boolean shouldBeAvailable) throws IOException {
         boolean isAvailable = isAvailable(name);
         if (shouldBeAvailable && !isAvailable) {
-            throw new IllegalArgumentException(format("The domain name '%s' is already taken.", name));
+            throw new IllegalArgumentException(format("The domain name '%s' is already taken.", name.getName()));
         }
         if (!shouldBeAvailable && isAvailable) {
-            throw new IllegalArgumentException(format("The domain name '%s' is not registered.", name));
+            throw new IllegalArgumentException(format("The domain name '%s' is not registered.", name.getName()));
         }
     }
 
@@ -419,8 +421,8 @@ public class NeoNameService extends NonFungibleToken {
      * @return the state of the domain name as {@link NameState}.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public NameState getNameState(String name) throws IOException {
-        return getNameState(name.getBytes(UTF_8));
+    public NameState getNameState(NNSName name) throws IOException {
+        return getNameState(name.getBytes());
     }
 
     /**
