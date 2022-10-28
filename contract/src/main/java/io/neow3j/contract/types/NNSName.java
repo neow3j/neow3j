@@ -1,6 +1,7 @@
 package io.neow3j.contract.types;
 
 import io.neow3j.contract.exceptions.InvalidNeoNameException;
+import io.neow3j.contract.exceptions.InvalidNeoNameServiceRootException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -46,7 +47,6 @@ public class NNSName {
     }
 
     // region validity checks
-
     // Note: The following checks are based on the official NNS smart contract.
 
     static boolean isValidNNSName(String name, boolean allowMultipleFragments) {
@@ -107,5 +107,38 @@ public class NNSName {
     }
 
     // endregion
+
+    /**
+     * Represents a NeoNameService root.
+     */
+    public static class NNSRoot {
+
+        private final String root;
+
+        /**
+         * Creates a NNS root and checks its validity.
+         *
+         * @param root the root.
+         * @throws InvalidNeoNameServiceRootException if the format of the provided root is invalid.
+         */
+        public NNSRoot(String root) throws InvalidNeoNameServiceRootException {
+            if (!isValidNNSRoot(root)) {
+                throw new InvalidNeoNameServiceRootException(root);
+            }
+            this.root = root;
+        }
+
+        /**
+         * @return the root.
+         */
+        public String getRoot() {
+            return root;
+        }
+
+        private static boolean isValidNNSRoot(String root) {
+            return checkFragment(root, true);
+        }
+
+    }
 
 }

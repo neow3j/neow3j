@@ -1,8 +1,11 @@
 package io.neow3j.contract;
 
+import io.neow3j.contract.exceptions.InvalidNeoNameException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.response.RecordState;
@@ -66,10 +69,6 @@ public class NameServiceIntegrationTest {
     private static Neow3j neow3j;
     private static NeoNameService nameService;
 
-    private static final String ROOT_DOMAIN = "eth";
-    private static final String NEO_DOMAIN = "neo.neo";
-    private static final String NGD_DOMAIN = "ngd.neo";
-    private static final String DOMAIN = "neow3j.neo";
     private static final String A_RECORD = "157.0.0.1";
     private static final String CNAME_RECORD = "cnamerecord.neow3j.neo";
     private static final String TXT_RECORD = "textrecord";
@@ -84,21 +83,32 @@ public class NameServiceIntegrationTest {
     private static final Account ALICE = Account.create();
     private static final Account BOB = Account.create();
 
+    private static NNSName.NNSRoot ethRoot;
+    private static NNSName neoDomain;
+    private static NNSName ngdDomain;
+    private static NNSName neow3jDomain;
+
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
     public static void setUp() throws Throwable {
-        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
+        ethRoot = new NNSName.NNSRoot("eth");
+        neoDomain = new NNSName("neo.neo");
+        ngdDomain = new NNSName("ngd.neo");
+        neow3jDomain = new NNSName("neow3j.neo");
+
+        HttpService httpService = new HttpService(neoTestContainer.getNodeUrl(), true);
+        neow3j = Neow3j.build(httpService);
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
 
         Hash160 nameServiceHash = deployNameServiceContract();
-        nameService = new NeoNameService(nameServiceHash, getNeow3j());
+        neow3j = Neow3j.build(httpService, new Neow3jConfig().setNNSResolver(nameServiceHash));
+        nameService = new NeoNameService(getNeow3j());
 
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         addRoot();
-        registerDomainFromDefault(DOMAIN);
-        setRecordFromDefault(DOMAIN, RecordType.A, A_RECORD);
+        registerDomainFromDefault(neow3jDomain);
         fundAccountsWithGas(neow3j, BigDecimal.valueOf(50), ALICE, BOB);
     }
 
@@ -127,7 +137,7 @@ public class NameServiceIntegrationTest {
     }
 
     private static void addRoot() throws Throwable {
-        Transaction tx = nameService.addRoot(ROOT_DOMAIN)
+        Transaction tx = nameService.addRoot(ethRoot)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
@@ -137,12 +147,12 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void registerDomainFromDefault(String domain) throws Throwable {
-        register(domain, DEFAULT_ACCOUNT);
+    private static void registerDomainFromDefault(NNSName nnsName) throws Throwable {
+        register(nnsName, DEFAULT_ACCOUNT);
     }
 
-    private static void register(String domain, Account owner) throws Throwable {
-        Hash256 txHash = nameService.register(domain, owner.getScriptHash())
+    private static void register(NNSName nnsName, Account owner) throws Throwable {
+        Hash256 txHash = nameService.register(nnsName, owner.getScriptHash())
                 .signers(calledByEntry(owner))
                 .sign()
                 .send()
@@ -151,12 +161,12 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void setAdminFromDefault(String domain, Account admin) throws Throwable {
-        setAdmin(domain, admin, DEFAULT_ACCOUNT);
+    private static void setAdminFromDefault(NNSName nnsName, Account admin) throws Throwable {
+        setAdmin(nnsName, admin, DEFAULT_ACCOUNT);
     }
 
-    private static void setAdmin(String domain, Account admin, Account owner) throws Throwable {
-        Hash256 txHash = nameService.setAdmin(domain, admin.getScriptHash())
+    private static void setAdmin(NNSName nnsName, Account admin, Account owner) throws Throwable {
+        Hash256 txHash = nameService.setAdmin(nnsName, admin.getScriptHash())
                 .signers(calledByEntry(owner), calledByEntry(admin))
                 .sign()
                 .send()
@@ -165,12 +175,12 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void setRecordFromDefault(String domain, RecordType type, String data) throws Throwable {
-        setRecord(domain, type, data, DEFAULT_ACCOUNT);
+    private static void setRecordFromDefault(NNSName nnsName, RecordType type, String data) throws Throwable {
+        setRecord(nnsName, type, data, DEFAULT_ACCOUNT);
     }
 
-    private static void setRecord(String domain, RecordType type, String data, Account signer) throws Throwable {
-        Hash256 txHash = nameService.setRecord(domain, type, data)
+    private static void setRecord(NNSName nnsName, RecordType type, String data, Account signer) throws Throwable {
+        Hash256 txHash = nameService.setRecord(nnsName, type, data)
                 .signers(calledByEntry(signer))
                 .sign()
                 .send()
@@ -198,14 +208,14 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testOwnerOf() throws IOException {
-        assertThat(nameService.ownerOf(DOMAIN), is(DEFAULT_ACCOUNT.getScriptHash()));
+        assertThat(nameService.ownerOf(neow3jDomain), is(DEFAULT_ACCOUNT.getScriptHash()));
     }
 
     @Test
     public void testProperties() throws IOException {
-        Map<String, String> map = nameService.properties(DOMAIN);
+        Map<String, String> map = nameService.properties(neow3jDomain);
 
-        assertThat(map.get("name"), is(DOMAIN));
+        assertThat(map.get("name"), is(neow3jDomain.getName()));
         assertThat(new BigInteger(map.get("expiration")), greaterThan(BigInteger.valueOf(getNowInMilliSeconds())));
         assertNull(map.get("admin"));
         assertThat(map.get("image"), is("https://neo3.azureedge.net/images/neons.png"));
@@ -213,15 +223,15 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testTokens() throws IOException {
-        List<byte[]> list = nameService.tokens().traverse(10);
-        assertThat(list, hasItem(DOMAIN.getBytes()));
+        List<byte[]> list = nameService.tokens().traverse(50);
+        assertThat(list, hasItem(neow3jDomain.getBytes()));
     }
 
     @Test
     public void testTokensOf() throws Throwable {
-        String testTokenOf1 = "testtokensof1.neo";
-        String testTokenOf2 = "testtokensof2.neo";
-        String testTokenOf3 = "testtokensof3.neo";
+        NNSName testTokenOf1 = new NNSName("testtokensof1.neo");
+        NNSName testTokenOf2 = new NNSName("testtokensof2.neo");
+        NNSName testTokenOf3 = new NNSName("testtokensof3.neo");
         register(testTokenOf1, ALICE);
         register(testTokenOf2, ALICE);
         register(testTokenOf3, ALICE);
@@ -237,7 +247,7 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testTransfer() throws Throwable {
-        String domainForTransfer = "transfer.neo";
+        NNSName domainForTransfer = new NNSName("transfer.neo");
         registerDomainFromDefault(domainForTransfer);
         Hash160 ownerBefore = nameService.ownerOf(domainForTransfer);
         assertThat(ownerBefore, is(DEFAULT_ACCOUNT.getScriptHash()));
@@ -258,7 +268,7 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testAddRoot() throws Throwable {
-        Transaction tx = nameService.addRoot("root")
+        Transaction tx = nameService.addRoot(new NNSName.NNSRoot("root"))
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
@@ -327,23 +337,23 @@ public class NameServiceIntegrationTest {
     }
 
     @Test
-    public void testIsAvailable() throws IOException {
+    public void testIsAvailable() throws IOException, InvalidNeoNameException {
         // Note: neo.neo and ngd.neo are hard coded and set in the deployment of the NameService contract.
-        boolean isAvailable = nameService.isAvailable(NGD_DOMAIN);
+        boolean isAvailable = nameService.isAvailable(ngdDomain);
         assertFalse(isAvailable);
-        isAvailable = nameService.isAvailable(NEO_DOMAIN);
+        isAvailable = nameService.isAvailable(neoDomain);
         assertFalse(isAvailable);
-        isAvailable = nameService.isAvailable("available.neo");
+        isAvailable = nameService.isAvailable(new NNSName("available.neo"));
         assertTrue(isAvailable);
     }
 
     @Test
     public void testRegister() throws Throwable {
-        String domain = "register.neo";
-        boolean availableBeforeRegistration = nameService.isAvailable(domain);
+        NNSName nnsName = new NNSName("register.neo");
+        boolean availableBeforeRegistration = nameService.isAvailable(nnsName);
         assertTrue(availableBeforeRegistration);
 
-        Hash256 txHash = nameService.register(domain, DEFAULT_ACCOUNT.getScriptHash())
+        Hash256 txHash = nameService.register(nnsName, DEFAULT_ACCOUNT.getScriptHash())
                 .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
@@ -351,21 +361,21 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        boolean availableAfterRegistration = nameService.isAvailable(domain);
+        boolean availableAfterRegistration = nameService.isAvailable(nnsName);
         assertFalse(availableAfterRegistration);
     }
 
     @Test
     public void testRenew() throws Throwable {
-        String domain = "renew.neo";
-        registerDomainFromDefault(domain);
+        NNSName nnsName = new NNSName("renew.neo");
+        registerDomainFromDefault(nnsName);
         long moreThanInOneYear = getNowInMilliSeconds() + ONE_YEAR + ONE_DAY;
         long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR - ONE_DAY;
-        Long expirationBefore = nameService.getNameState(domain).getExpiration();
+        Long expirationBefore = nameService.getNameState(nnsName).getExpiration();
         assertThat(expirationBefore, lessThanOrEqualTo(moreThanInOneYear));
         assertThat(expirationBefore, greaterThan(lessThanInOneYear));
 
-        Hash256 txHash = nameService.renew(domain)
+        Hash256 txHash = nameService.renew(nnsName)
                 .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
@@ -373,7 +383,7 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        Long expirationAfter = nameService.getNameState(domain).getExpiration();
+        Long expirationAfter = nameService.getNameState(nnsName).getExpiration();
         long inTwoYears = getNowInMilliSeconds() + 2 * ONE_YEAR;
         long lessThanInTwoYears = inTwoYears - ONE_DAY;
         assertThat(expirationAfter, lessThanOrEqualTo(inTwoYears));
@@ -382,9 +392,9 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testRenew_years() throws Throwable {
-        String domain = "renewyears.neo";
-        registerDomainFromDefault(domain);
-        Long expirationBeforeRenew = nameService.getNameState(domain).getExpiration();
+        NNSName nnsName = new NNSName("renewyears.neo");
+        registerDomainFromDefault(nnsName);
+        Long expirationBeforeRenew = nameService.getNameState(nnsName).getExpiration();
 
         long moreThanInOneYear = getNowInMilliSeconds() + ONE_YEAR + ONE_DAY;
         long lessThanInOneYear = getNowInMilliSeconds() + ONE_YEAR - ONE_DAY;
@@ -393,7 +403,7 @@ public class NameServiceIntegrationTest {
 
         int renewYears = 9;
 
-        Hash256 txHash = nameService.renew(domain, renewYears)
+        Hash256 txHash = nameService.renew(nnsName, renewYears)
                 .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
@@ -401,7 +411,7 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        Long expirationAfterRenew = nameService.getNameState(domain).getExpiration();
+        Long expirationAfterRenew = nameService.getNameState(nnsName).getExpiration();
 
         long renewedExpiration = expirationBeforeRenew + renewYears * ONE_YEAR;
         assertThat(expirationAfterRenew, is(renewedExpiration));
@@ -411,24 +421,24 @@ public class NameServiceIntegrationTest {
     public void testRenew_invalidYears() {
         Matcher<String> expectedMatcher = containsString("can only be renewed by at least 1, and at most 10 years.");
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> nameService.renew(DOMAIN, 0));
+                () -> nameService.renew(neow3jDomain, 0));
         assertThat(thrown.getMessage(), expectedMatcher);
 
-        thrown = assertThrows(IllegalArgumentException.class, () -> nameService.renew(DOMAIN, 11));
+        thrown = assertThrows(IllegalArgumentException.class, () -> nameService.renew(neow3jDomain, 11));
         assertThat(thrown.getMessage(), expectedMatcher);
     }
 
     @Test
     public void testSetAdmin() throws Throwable {
-        String domain = "admin.neo";
-        register(domain, CLIENT_1);
+        NNSName nnsName = new NNSName("admin.neo");
+        register(nnsName, CLIENT_1);
 
         // setRecord should throw an exception, since client2 should not be able to create a record.
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
-                () -> setRecord(domain, RecordType.A, A_RECORD, CLIENT_2));
+                () -> setRecord(nnsName, RecordType.A, A_RECORD, CLIENT_2));
         assertThat(thrown.getMessage(), containsString("The vm exited"));
 
-        Hash256 txHash = nameService.setAdmin(domain, CLIENT_2.getScriptHash())
+        Hash256 txHash = nameService.setAdmin(nnsName, CLIENT_2.getScriptHash())
                 .signers(calledByEntry(CLIENT_1), calledByEntry(CLIENT_2))
                 .sign()
                 .send()
@@ -436,138 +446,133 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        NameState nameState = nameService.getNameState(domain);
+        NameState nameState = nameService.getNameState(nnsName);
         assertThat(nameState.getAdmin(), Matchers.is(CLIENT_2.getScriptHash()));
 
         // Now as admin, client2 should be able to set a record.
-        setRecord(domain, RecordType.A, A_RECORD, CLIENT_2);
-        String aRecord = nameService.getRecord(domain, RecordType.A);
+        setRecord(nnsName, RecordType.A, A_RECORD, CLIENT_2);
+        String aRecord = nameService.getRecord(nnsName, RecordType.A);
         assertThat(aRecord, is(A_RECORD));
     }
 
     @Test
     public void testCheckDomainNameAvailability() throws Throwable {
-        String notRegisteredName = "notregistered.neo";
-        String registeredName = "registered.neo";
+        NNSName notRegisteredName = new NNSName("notregistered.neo");
+        NNSName registeredName = new NNSName("registered.neo");
         registerDomainFromDefault(registeredName);
 
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> nameService.checkDomainNameAvailability(notRegisteredName, false));
-        assertThat(thrown.getMessage(), is(format("The domain name '%s' is not registered.", notRegisteredName)));
+        assertThat(thrown.getMessage(),
+                is(format("The domain name '%s' is not registered.", notRegisteredName.getName())));
 
         thrown = assertThrows(IllegalArgumentException.class,
                 () -> nameService.checkDomainNameAvailability(registeredName, true));
-        assertThat(thrown.getMessage(), is(format("The domain name '%s' is already taken.", registeredName)));
+        assertThat(thrown.getMessage(), is(format("The domain name '%s' is already taken.", registeredName.getName())));
     }
 
     @Test
     public void testSetRecord_A() throws Throwable {
-        setRecordFromDefault(DOMAIN, RecordType.A, A_RECORD);
-        String aRecord = nameService.getRecord(DOMAIN, RecordType.A);
+        setRecordFromDefault(neow3jDomain, RecordType.A, A_RECORD);
+        String aRecord = nameService.getRecord(neow3jDomain, RecordType.A);
         assertThat(aRecord, is(A_RECORD));
     }
 
     @Test
     public void testSetRecord_CNAME() throws Throwable {
-        setRecordFromDefault(DOMAIN, RecordType.CNAME, CNAME_RECORD);
-        String cnameRecord = nameService.getRecord(DOMAIN, RecordType.CNAME);
+        setRecordFromDefault(neow3jDomain, RecordType.CNAME, CNAME_RECORD);
+        String cnameRecord = nameService.getRecord(neow3jDomain, RecordType.CNAME);
         assertThat(cnameRecord, is(CNAME_RECORD));
     }
 
     @Test
     public void testSetRecord_TXT() throws Throwable {
-        setRecordFromDefault(DOMAIN, RecordType.TXT, TXT_RECORD);
-        String txtRecord = nameService.getRecord(DOMAIN, RecordType.TXT);
+        setRecordFromDefault(neow3jDomain, RecordType.TXT, TXT_RECORD);
+        String txtRecord = nameService.getRecord(neow3jDomain, RecordType.TXT);
         assertThat(txtRecord, is(TXT_RECORD));
     }
 
     @Test
     public void testSetRecord_AAAA() throws Throwable {
-        setRecordFromDefault(DOMAIN, RecordType.AAAA, AAAA_RECORD);
-        String aaaaRecord = nameService.getRecord(DOMAIN, RecordType.AAAA);
+        setRecordFromDefault(neow3jDomain, RecordType.AAAA, AAAA_RECORD);
+        String aaaaRecord = nameService.getRecord(neow3jDomain, RecordType.AAAA);
         assertThat(aaaaRecord, is(AAAA_RECORD));
     }
 
     @Test
-    public void testGetRecord() throws IOException {
-        String ipv4 = nameService.getRecord(DOMAIN, RecordType.A);
-        assertThat(ipv4, is(A_RECORD));
-    }
-
-    @Test
-    public void testGetRecord_notRegistered() {
-        String domain = "getrecordnotregistered.neo";
+    public void testGetRecord_notRegistered() throws InvalidNeoNameException {
+        NNSName nnsName = new NNSName("getrecordnotregistered.neo");
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> nameService.getRecord(domain, RecordType.TXT));
+                () -> nameService.getRecord(nnsName, RecordType.TXT));
         assertThat(thrown.getMessage(), containsString(
-                format("The domain name '%s' might not be registered or", domain)));
+                format("The domain name '%s' might not be registered or", nnsName.getName())));
     }
 
     @Test
     public void testGetRecord_noRecordOfType() throws Throwable {
-        String domain = "getrecordnorecordoftype.neo";
-        registerDomainFromDefault(domain);
+        NNSName nnsName = new NNSName("getrecordnorecordoftype.neo");
+        registerDomainFromDefault(nnsName);
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> nameService.getRecord(domain, RecordType.TXT));
+                () -> nameService.getRecord(nnsName, RecordType.TXT));
         assertThat(thrown.getMessage(), containsString(format("Could not get a record of type '%s'", RecordType.TXT)));
     }
 
     @Test
     public void testGetAllRecords() throws Throwable {
-        String domain = "getallrecords.neo";
-        registerDomainFromDefault(domain);
-        setRecordFromDefault(domain, RecordType.CNAME, DOMAIN);
+        NNSName nnsName = new NNSName("getallrecords.neo");
+        registerDomainFromDefault(nnsName);
+        setRecordFromDefault(nnsName, RecordType.CNAME, neow3jDomain.getName());
 
         String txtRecord = "getAllRecordsTXT";
-        setRecordFromDefault(domain, RecordType.TXT, txtRecord);
+        setRecordFromDefault(nnsName, RecordType.TXT, txtRecord);
 
-        Iterator<RecordState> allRecordsIter = nameService.getAllRecords(domain);
+        Iterator<RecordState> allRecordsIter = nameService.getAllRecords(nnsName);
         List<RecordState> list = allRecordsIter.traverse(3);
 
         RecordState recordState1 = list.get(0);
-        assertThat(recordState1.getName(), is(domain));
+        assertThat(recordState1.getName(), is(nnsName.getName()));
         assertThat(recordState1.getRecordType(), is(RecordType.CNAME));
-        assertThat(recordState1.getData(), is(DOMAIN));
+        assertThat(recordState1.getData(), is(neow3jDomain.getName()));
 
         RecordState recordState2 = list.get(1);
-        assertThat(recordState2.getName(), is(domain));
+        assertThat(recordState2.getName(), is(nnsName.getName()));
         assertThat(recordState2.getRecordType(), is(RecordType.TXT));
         assertThat(recordState2.getData(), is(txtRecord));
     }
 
     @Test
     public void testUnwrapAllRecords() throws Throwable {
-        String domain = "unwrapallrecords.neo";
-        registerDomainFromDefault(domain);
-        setRecordFromDefault(domain, RecordType.CNAME, DOMAIN);
+        NNSName nnsName = new NNSName("unwrapallrecords.neo");
+        registerDomainFromDefault(nnsName);
+        setRecordFromDefault(nnsName, RecordType.CNAME, neow3jDomain.getName());
         String txtRecord = "unwrapAllRecordsTXT";
-        setRecordFromDefault(domain, RecordType.TXT, txtRecord);
+        setRecordFromDefault(nnsName, RecordType.TXT, txtRecord);
 
-        List<RecordState> allRecords = nameService.unwrapAllRecords(domain);
+        List<RecordState> allRecords = nameService.unwrapAllRecords(nnsName);
 
         RecordState recordState1 = allRecords.get(0);
-        assertThat(recordState1.getName(), is(domain));
+        assertThat(recordState1.getName(), is(nnsName.getName()));
         assertThat(recordState1.getRecordType(), is(RecordType.CNAME));
-        assertThat(recordState1.getData(), is(DOMAIN));
+        assertThat(recordState1.getData(), is(neow3jDomain.getName()));
 
         RecordState recordState2 = allRecords.get(1);
-        assertThat(recordState2.getName(), is(domain));
+        assertThat(recordState2.getName(), is(nnsName.getName()));
         assertThat(recordState2.getRecordType(), is(RecordType.TXT));
         assertThat(recordState2.getData(), is(txtRecord));
     }
 
     @Test
     public void testDeleteRecord() throws Throwable {
-        String domain = "deleterecord.neo";
-        registerDomainFromDefault(domain);
+        NNSName nnsName = new NNSName("deleterecord.neo");
+        registerDomainFromDefault(nnsName);
 
         String txtRecordVal = "textrecordfordelete";
-        setRecordFromDefault(domain, RecordType.TXT, txtRecordVal);
+        setRecordFromDefault(nnsName, RecordType.TXT, txtRecordVal);
 
-        String textRecordForDelete = nameService.getRecord(domain, RecordType.TXT);
+        String textRecordForDelete = nameService.getRecord(nnsName, RecordType.TXT);
         assertThat(textRecordForDelete, is(txtRecordVal));
 
-        Hash256 txHash = nameService.deleteRecord(domain, RecordType.TXT)
+        Hash256 txHash = nameService.deleteRecord(nnsName, RecordType.TXT)
                 .signers(calledByEntry(DEFAULT_ACCOUNT))
                 .sign()
                 .send()
@@ -575,15 +580,15 @@ public class NameServiceIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> nameService.getRecord(domain, RecordType.TXT));
+                () -> nameService.getRecord(nnsName, RecordType.TXT));
         assertThat(thrown.getMessage(), containsString("Could not get a record of type"));
     }
 
     @Test
     public void testSetAndResolveThirdLevelDomain() throws Throwable {
-        String secondLevelDomain = "setandresolvethirdleveldomain.neo";
+        NNSName secondLevelDomain = new NNSName("setandresolvethirdleveldomain.neo");
         registerDomainFromDefault(secondLevelDomain);
-        String thirdLevelDomain = "test." + secondLevelDomain;
+        NNSName thirdLevelDomain = new NNSName("test." + secondLevelDomain.getName());
 
         assertThrows(UnresolvableDomainNameException.class,
                 () -> nameService.resolve(secondLevelDomain, RecordType.TXT));
@@ -593,7 +598,7 @@ public class NameServiceIntegrationTest {
         assertThrows(UnresolvableDomainNameException.class,
                 () -> nameService.resolve(thirdLevelDomain, RecordType.TXT));
 
-        setRecordFromDefault(thirdLevelDomain, RecordType.CNAME, secondLevelDomain);
+        setRecordFromDefault(thirdLevelDomain, RecordType.CNAME, secondLevelDomain.getName());
 
         String resolved = nameService.resolve(thirdLevelDomain, RecordType.TXT);
         assertThat(resolved, is(address));
@@ -601,19 +606,19 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testGetNameState() throws Throwable {
-        String domain = "getnamestatewithbytes.neo";
-        registerDomainFromDefault(domain);
-        setAdminFromDefault(domain, CLIENT_1);
+        NNSName nnsName = new NNSName("getnamestatewithbytes.neo");
+        registerDomainFromDefault(nnsName);
+        setAdminFromDefault(nnsName, CLIENT_1);
 
-        NameState nameState = nameService.getNameState(domain.getBytes());
-        assertThat(nameState.getName(), is(domain));
+        NameState nameState = nameService.getNameState(nnsName);
+        assertThat(nameState.getName(), is(nnsName.getName()));
         assertThat(nameState.getAdmin(), is(CLIENT_1.getScriptHash()));
         assertThat(nameState.getExpiration(), greaterThan(getNowInMilliSeconds()));
 
-        NameState nameStateFromString = nameService.getNameState(domain);
+        NameState nameStateFromString = nameService.getNameState(nnsName);
         assertEquals(nameState, nameStateFromString);
     }
 
-    // endregion Custom NNS methods
+    // endregion
 
 }

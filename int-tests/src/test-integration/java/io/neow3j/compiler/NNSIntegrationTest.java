@@ -4,6 +4,7 @@ import io.neow3j.contract.ContractManagement;
 import io.neow3j.contract.NameServiceIntegrationTest;
 import io.neow3j.contract.NefFile;
 import io.neow3j.contract.SmartContract;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
@@ -63,14 +64,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NNSIntegrationTest {
 
-    private static final String ROOT_DOMAIN = "eth";
-    private static final String DOMAIN = "neow3j.neo";
-    private static final String A_RECORD = "157.0.0.1";
-    private static final long ONE_YEAR = 365L * 24 * 3600 * 1000;
-
     private static final String RESOURCE_DIR = "contract/";
     private static final String NAMESERVICE_NEF = RESOURCE_DIR + "NameService.nef";
     private static final String NAMESERVICE_MANIFEST = RESOURCE_DIR + "NameService.manifest.json";
+
+    private static final long ONE_YEAR = 365L * 24 * 3600 * 1000;
 
     private static final Account ALICE = Account.create();
     private static final Account BOB = Account.create();
@@ -90,14 +88,13 @@ public class NNSIntegrationTest {
     @BeforeAll
     public static void setUp() throws Throwable {
         io.neow3j.types.Hash160 nameServiceHash = deployNameServiceContract();
-        nameService = new io.neow3j.contract.NeoNameService(nameServiceHash, getNeow3j());
+        ct.updateNeow3jWithNewNNSResolver(nameServiceHash);
+        nameService = new io.neow3j.contract.NeoNameService(getNeow3j());
         ct.setHash(nameService.getScriptHash());
 
         // Make a transaction that can be used for the tests
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         addRoot();
-        registerDomainFromDefault(DOMAIN);
-        setRecordFromDefault(DOMAIN, RecordType.A, A_RECORD);
         fundAccountsWithGas(getNeow3j(), BigDecimal.valueOf(50), ALICE, BOB);
     }
 
@@ -126,7 +123,7 @@ public class NNSIntegrationTest {
     }
 
     private static void addRoot() throws Throwable {
-        Transaction tx = nameService.addRoot(ROOT_DOMAIN)
+        Transaction tx = nameService.addRoot(new NNSName.NNSRoot("eth"))
                 .signers(AccountSigner.calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
@@ -136,12 +133,12 @@ public class NNSIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void registerDomainFromDefault(String domain) throws Throwable {
-        register(domain, DEFAULT_ACCOUNT);
+    private static void registerDomainFromDefault(NNSName name) throws Throwable {
+        register(name, DEFAULT_ACCOUNT);
     }
 
-    private static void register(String domain, Account owner) throws Throwable {
-        Hash256 txHash = nameService.register(domain, owner.getScriptHash())
+    private static void register(NNSName nnsName, Account owner) throws Throwable {
+        Hash256 txHash = nameService.register(nnsName, owner.getScriptHash())
                 .signers(calledByEntry(owner))
                 .sign()
                 .send()
@@ -150,12 +147,12 @@ public class NNSIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void setAdminFromDefault(String domain, Account admin) throws Throwable {
-        setAdmin(domain, admin, DEFAULT_ACCOUNT);
+    private static void setAdminFromDefault(NNSName nnsName, Account admin) throws Throwable {
+        setAdmin(nnsName, admin, DEFAULT_ACCOUNT);
     }
 
-    private static void setAdmin(String domain, Account admin, Account owner) throws Throwable {
-        Hash256 txHash = nameService.setAdmin(domain, admin.getScriptHash())
+    private static void setAdmin(NNSName nnsName, Account admin, Account owner) throws Throwable {
+        Hash256 txHash = nameService.setAdmin(nnsName, admin.getScriptHash())
                 .signers(AccountSigner.calledByEntry(owner),
                         AccountSigner.calledByEntry(admin))
                 .sign()
@@ -165,12 +162,12 @@ public class NNSIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
-    private static void setRecordFromDefault(String domain, RecordType type, String data) throws Throwable {
-        setRecord(domain, type, data, DEFAULT_ACCOUNT);
+    private static void setRecordFromDefault(NNSName nnsName, RecordType type, String data) throws Throwable {
+        setRecord(nnsName, type, data, DEFAULT_ACCOUNT);
     }
 
-    private static void setRecord(String domain, RecordType type, String data, Account signer) throws Throwable {
-        Hash256 txHash = nameService.setRecord(domain, type, data)
+    private static void setRecord(NNSName nnsName, RecordType type, String data, Account signer) throws Throwable {
+        Hash256 txHash = nameService.setRecord(nnsName, type, data)
                 .signers(calledByEntry(signer))
                 .sign()
                 .send()
@@ -228,11 +225,14 @@ public class NNSIntegrationTest {
     }
 
     @Test
-    public void testIsAvailable() throws IOException {
-        InvocationResult result = ct.callInvokeFunction(testName, string("isavailable.neo")).getInvocationResult();
+    public void testIsAvailable() throws Throwable {
+        NNSName nnsName = new NNSName("isavailable.neo");
+        InvocationResult result = ct.callInvokeFunction(testName, string(nnsName.getName())).getInvocationResult();
         assertTrue(result.getStack().get(0).getBoolean());
 
-        result = ct.callInvokeFunction(testName, string(DOMAIN)).getInvocationResult();
+        registerDomainFromDefault(nnsName);
+
+        result = ct.callInvokeFunction(testName, string(nnsName.getName())).getInvocationResult();
         assertFalse(result.getStack().get(0).getBoolean());
     }
 
@@ -247,10 +247,10 @@ public class NNSIntegrationTest {
 
     @Test
     public void testRenew() throws Throwable {
-        String domain = "testrenew.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testrenew.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
-        Hash256 hash = ct.invokeFunctionAndAwaitExecution(testName, string(domain));
+        Hash256 hash = ct.invokeFunctionAndAwaitExecution(testName, string(nnsName.getName()));
         BigInteger expiration = getNeow3j().getApplicationLog(hash).send()
                 .getApplicationLog().getExecutions().get(0).getStack().get(0).getInteger();
         assertThat(expiration.longValue(), lessThan(getNowInMilliSeconds() + 2 * ONE_YEAR));
@@ -258,10 +258,10 @@ public class NNSIntegrationTest {
 
     @Test
     public void testRenewYears() throws Throwable {
-        String domain = "testrenewyears.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testrenewyears.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
-        Hash256 hash = ct.invokeFunctionAndAwaitExecution(testName, string(domain), integer(4));
+        Hash256 hash = ct.invokeFunctionAndAwaitExecution(testName, string(nnsName.getName()), integer(4));
         BigInteger expiration = getNeow3j().getApplicationLog(hash).send()
                 .getApplicationLog().getExecutions().get(0).getStack().get(0).getInteger();
         assertThat(expiration.longValue(), lessThan(getNowInMilliSeconds() + 5 * ONE_YEAR));
@@ -269,52 +269,53 @@ public class NNSIntegrationTest {
 
     @Test
     public void testSetAdmin() throws Throwable {
-        String domain = "setadmin.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("setadmin.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
         ct.signWithDefaultAccount();
-        ct.invokeFunctionAndAwaitExecution(testName, asList(string(domain), hash160(CLIENT_1)), global(CLIENT_1));
-        InvocationResult result = ct.callInvokeFunction("getAdmin", string(domain)).getInvocationResult();
+        ct.invokeFunctionAndAwaitExecution(testName, asList(string(nnsName.getName()), hash160(CLIENT_1)),
+                global(CLIENT_1));
+        InvocationResult result = ct.callInvokeFunction("getAdmin", string(nnsName.getName())).getInvocationResult();
 
         assertThat(result.getStack().get(0).getAddress(), is(CLIENT_1.getAddress()));
     }
 
     @Test
     public void testRecord() throws Throwable {
-        String domain = "testrecord.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testrecord.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
         String aRecord = "157.255.0.1";
-        setRecordFromDefault(domain, RecordType.A, aRecord);
-        InvocationResult result = ct.callInvokeFunction("getRecord", string(domain),
+        setRecordFromDefault(nnsName, RecordType.A, aRecord);
+        InvocationResult result = ct.callInvokeFunction("getRecord", string(nnsName.getName()),
                         integer(RecordType.A.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(aRecord));
 
         String cnameRecord = "hello.testrecord.neo";
-        setRecordFromDefault(domain, RecordType.CNAME, cnameRecord);
-        result = ct.callInvokeFunction("getRecord", string(domain),
+        setRecordFromDefault(nnsName, RecordType.CNAME, cnameRecord);
+        result = ct.callInvokeFunction("getRecord", string(nnsName.getName()),
                         integer(RecordType.CNAME.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(cnameRecord));
 
         String txtRecord = "txt-record";
-        setRecordFromDefault(domain, RecordType.TXT, txtRecord);
-        result = ct.callInvokeFunction("getRecord", string(domain),
+        setRecordFromDefault(nnsName, RecordType.TXT, txtRecord);
+        result = ct.callInvokeFunction("getRecord", string(nnsName.getName()),
                         integer(RecordType.TXT.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(txtRecord));
 
         String aaaaRecord = "2001:1db8:0::";
-        setRecordFromDefault(domain, RecordType.AAAA, aaaaRecord);
-        result = ct.callInvokeFunction("getRecord", string(domain),
+        setRecordFromDefault(nnsName, RecordType.AAAA, aaaaRecord);
+        result = ct.callInvokeFunction("getRecord", string(nnsName.getName()),
                         integer(RecordType.AAAA.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(aaaaRecord));
 
         // Test retrieving all records
         java.util.List<java.util.List<StackItem>> allRecords = ct.callAndTraverseIterator("getAllRecords",
-                        string(domain))
+                        string(nnsName.getName()))
                 .stream().map(StackItem::getList).collect(Collectors.toList());
 
         java.util.List<StackItem> aRecordRegistered = allRecords.get(0);
@@ -332,19 +333,20 @@ public class NNSIntegrationTest {
 
     @Test
     public void testDeleteRecord() throws Throwable {
-        String domain = "testdeleterecord.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testdeleterecord.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
         String aRecord = "157.255.0.1";
-        setRecordFromDefault(domain, RecordType.A, aRecord);
-        InvocationResult result = ct.callInvokeFunction("getRecord", string(domain),
+        setRecordFromDefault(nnsName, RecordType.A, aRecord);
+        InvocationResult result = ct.callInvokeFunction("getRecord", string(nnsName.getName()),
                         integer(RecordType.A.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(aRecord));
 
         ct.signWithDefaultAccount();
-        ct.invokeFunctionAndAwaitExecution("deleteRecord", string(domain), integer(RecordType.A.byteValue()));
-        result = ct.callInvokeFunction("getRecord", string(domain), integer(RecordType.A.byteValue()))
+        ct.invokeFunctionAndAwaitExecution("deleteRecord", string(nnsName.getName()),
+                integer(RecordType.A.byteValue()));
+        result = ct.callInvokeFunction("getRecord", string(nnsName.getName()), integer(RecordType.A.byteValue()))
                 .getInvocationResult();
 
         assertNull(result.getStack().get(0).getValue());
@@ -352,15 +354,15 @@ public class NNSIntegrationTest {
 
     @Test
     public void testResolveThirdLevelDomain() throws Throwable {
-        String domain = "testresolvethirdleveldomain.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testresolvethirdleveldomain.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
-        String thirdLevelDomain = "level." + domain;
+        NNSName thirdLevelNNSName = new NNSName("level." + nnsName.getName());
 
-        setRecordFromDefault(thirdLevelDomain, RecordType.CNAME, domain);
-        setRecordFromDefault(domain, RecordType.TXT, CLIENT_1.getAddress());
+        setRecordFromDefault(thirdLevelNNSName, RecordType.CNAME, nnsName.getName());
+        setRecordFromDefault(nnsName, RecordType.TXT, CLIENT_1.getAddress());
 
-        InvocationResult result = ct.callInvokeFunction("resolve", string(thirdLevelDomain),
+        InvocationResult result = ct.callInvokeFunction("resolve", string(thirdLevelNNSName.getName()),
                         integer(RecordType.TXT.byteValue()))
                 .getInvocationResult();
         assertThat(result.getStack().get(0).getString(), is(CLIENT_1.getAddress()));
@@ -368,11 +370,12 @@ public class NNSIntegrationTest {
 
     @Test
     public void testProperties() throws Throwable {
-        String domain = "testproperties.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("testproperties.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
-        setAdminFromDefault(domain, CLIENT_1);
-        InvocationResult result = ct.callInvokeFunction("properties", string(domain)).getInvocationResult();
+        setAdminFromDefault(nnsName, CLIENT_1);
+        InvocationResult result = ct.callInvokeFunction("properties", string(nnsName.getName()))
+                .getInvocationResult();
         java.util.Map<String, StackItem> propertiesMap = result.getStack().get(0).getMap()
                 .entrySet().stream().collect(Collectors.toMap(
                         e -> e.getKey().getString(),
@@ -382,21 +385,22 @@ public class NNSIntegrationTest {
         assertThat(propertiesMap.get("expiration").getInteger().longValue(),
                 lessThan(getNowInMilliSeconds() + ONE_YEAR));
         assertThat(propertiesMap.get("image").getString(), is("https://neo3.azureedge.net/images/neons.png"));
-        assertThat(propertiesMap.get("name").getString(), is(domain));
+        assertThat(propertiesMap.get("name").getString(), is(nnsName));
     }
 
     @Test
     public void testTransfer() throws Throwable {
-        String domain = "transfer.neo";
-        register(domain, DEFAULT_ACCOUNT);
+        NNSName nnsName = new NNSName("transfer.neo");
+        register(nnsName, DEFAULT_ACCOUNT);
 
-        InvocationResult result = ct.callInvokeFunction("ownerOf", string(domain)).getInvocationResult();
+        InvocationResult result = ct.callInvokeFunction("ownerOf", string(nnsName.getName()))
+                .getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(DEFAULT_ACCOUNT.getAddress()));
 
         ct.signWithDefaultAccount();
-        ct.invokeFunctionAndAwaitExecution("transfer", hash160(CLIENT_1), string(domain));
+        ct.invokeFunctionAndAwaitExecution("transfer", hash160(CLIENT_1), string(nnsName.getName()));
 
-        result = ct.callInvokeFunction("ownerOf", string(domain)).getInvocationResult();
+        result = ct.callInvokeFunction("ownerOf", string(nnsName.getName())).getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(CLIENT_1.getAddress()));
     }
 

@@ -175,11 +175,11 @@ public class NeoNameService extends NonFungibleToken {
      * <p>
      * Only committee members are allowed to add a new root domain.
      *
-     * @param root the new root domain.
+     * @param nnsRoot the new root domain.
      * @return a transaction builder.
      */
-    public TransactionBuilder addRoot(String root) {
-        return invokeFunction(ADD_ROOT, string(root));
+    public TransactionBuilder addRoot(NNSName.NNSRoot nnsRoot) {
+        return invokeFunction(ADD_ROOT, string(nnsRoot.getRoot()));
     }
 
     /**

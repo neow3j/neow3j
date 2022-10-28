@@ -1,13 +1,14 @@
 package io.neow3j.contract.types;
 
 import io.neow3j.contract.exceptions.InvalidNeoNameException;
+import io.neow3j.contract.exceptions.InvalidNeoNameServiceRootException;
 import org.junit.jupiter.api.Test;
-
-import java.nio.charset.StandardCharsets;
 
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -86,6 +87,20 @@ public class NNSNameTest {
         NNSName nnsName = new NNSName(name);
         assertThat(nnsName.getName(), is(name));
         assertThat(nnsName.getBytes(), is(name.getBytes(UTF_8)));
+    }
+
+    @Test
+    public void testRoot() throws InvalidNeoNameServiceRootException {
+        NNSName.NNSRoot root = new NNSName.NNSRoot("neo");
+        assertThat(root.getRoot(), is("neo"));
+    }
+
+    @Test
+    public void testRootInvalid() {
+        String invalidRoot = "rootrootrootroots"; // too long
+        InvalidNeoNameServiceRootException thrown = assertThrows(InvalidNeoNameServiceRootException.class,
+                () -> new NNSName.NNSRoot(invalidRoot));
+        assertThat(thrown.getMessage(), is(format("'%s' is not a valid NNS root.", invalidRoot)));
     }
 
 }

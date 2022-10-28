@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.contract.exceptions.InvalidNeoNameException;
+import io.neow3j.contract.exceptions.InvalidNeoNameServiceRootException;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
 import io.neow3j.contract.types.NNSName;
@@ -92,7 +93,7 @@ public class NeoNameServiceTest {
         Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
         account2 = Account.fromWIF(TestProperties.client1AccountWIF());
-        nameService = new NeoNameService(Hash160.ZERO, neow3j);
+        nameService = new NeoNameService(neow3j);
     }
 
     // region NEP-11 methods
@@ -213,7 +214,7 @@ public class NeoNameServiceTest {
     // region custom NNS methods
 
     @Test
-    public void addRoot() throws IOException {
+    public void addRoot() throws IOException, InvalidNeoNameServiceRootException {
         setUpWireMockForCall("invokescript", "nns_invokescript_addRoot.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
 
@@ -221,7 +222,7 @@ public class NeoNameServiceTest {
                 .contractCall(nameServiceHash, ADD_ROOT, asList(string("neow")))
                 .toArray();
 
-        TransactionBuilder b = nameService.addRoot("neow")
+        TransactionBuilder b = nameService.addRoot(new NNSName.NNSRoot("neow"))
                 .signers(calledByEntry(account1));
 
         assertThat(b.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
