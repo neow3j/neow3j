@@ -5,6 +5,7 @@ import io.neow3j.contract.NefFile;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
@@ -159,6 +160,11 @@ public class ContractTestExtension implements AfterAllCallback, BeforeAllCallbac
 
     public Account getClient2() {
         return client2;
+    }
+
+    public void updateNeow3jWithNewNNSResolver(Hash160 nnsResolver) {
+        Neow3jConfig config = new Neow3jConfig().setNNSResolver(nnsResolver);
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true), config);
     }
 
     public Neow3j getNeow3j() {

@@ -34,13 +34,15 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
 /**
- * Represents the official NeoNameService contract under the script hash
- * {@code 0x50ac1c37690cc2cfc594472833cf57505d5f46de} and provides methods to invoke its functions.
+ * Represents the official NeoNameService contract and provides methods to invoke its functions.
+ * <p>
+ * To set a specific script hash for this contract, see {@link io.neow3j.protocol.Neow3jConfig#setNNSResolver(Hash160)}.
+ * <p>
+ * By default the official NNS contract deployed on mainnet with the script hash
+ * {@code 0x50ac1c37690cc2cfc594472833cf57505d5f46de} is used.
  */
 @SuppressWarnings("unchecked")
 public class NeoNameService extends NonFungibleToken {
-
-    public static final Hash160 SCRIPT_HASH = new Hash160("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
 
     private static final String ADD_ROOT = "addRoot";
     private static final String ROOTS = "roots";
@@ -63,15 +65,18 @@ public class NeoNameService extends NonFungibleToken {
     private static final String PROPERTIES = "properties";
 
     /**
-     * Initializes an interface to a NeoNameService smart contract.
+     * Initializes an interface to the NeoNameService smart contract.
+     * <p>
+     * Uses the NNS script hash specified in the {@link io.neow3j.protocol.Neow3jConfig}. By default the official NNS
+     * smart contract deployed on mainnet with the script hash {@code 0x50ac1c37690cc2cfc594472833cf57505d5f46de} is
+     * used.
      * <p>
      * Uses the given {@link Neow3j} instance for invocations.
      *
-     * @param scriptHash the script hash of the name service contract.
-     * @param neow3j     the {@link Neow3j} instance to use for invocations.
+     * @param neow3j the {@link Neow3j} instance to use for invocations.
      */
-    public NeoNameService(Hash160 scriptHash, Neow3j neow3j) {
-        super(scriptHash, neow3j);
+    public NeoNameService(Neow3j neow3j) {
+        super(neow3j.getNNSResolver(), neow3j);
     }
 
     /**
@@ -89,6 +94,10 @@ public class NeoNameService extends NonFungibleToken {
     // region NEP-11 Methods
 
     /**
+     * Returns the symbol of the NeoNameService contract.
+     * <p>
+     * Doesn't require a call to the Neo node.
+     *
      * @return the symbol of the NeoNameService contract.
      */
     @Override
@@ -97,6 +106,10 @@ public class NeoNameService extends NonFungibleToken {
     }
 
     /**
+     * Returns the decimals of the NeoNameService contract.
+     * <p>
+     * Doesn't require a call to the Neo node.
+     *
      * @return the decimals of the NeoNameService contract.
      */
     @Override

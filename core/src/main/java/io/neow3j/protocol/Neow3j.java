@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.rx.Neow3jRx;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -109,6 +110,13 @@ public abstract class Neow3j implements Neo, Neow3jRx {
             config.setNetworkMagic(getVersion().send().getVersion().getProtocol().getNetwork());
         }
         return config.getNetworkMagic();
+    }
+
+    /**
+     * @return the NeoNameService resolver script hash that is configured in the {@link Neow3jConfig}.
+     */
+    public Hash160 getNNSResolver() {
+        return config.getNNSResolver();
     }
 
     /**
