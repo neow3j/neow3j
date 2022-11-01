@@ -629,6 +629,18 @@ public class ContractParameterTest {
         ContractParameter param2 = hash160(Hash160.ZERO);
         assertEquals(param1, param2);
 
+        param1 = new ContractParameter(null);
+        param2 = hash160(Hash160.ZERO);
+        assertNotEquals(param1, param2);
+
+        param1 = new ContractParameter(ContractParameterType.HASH160, null);
+        param2 = hash160(Hash160.ZERO);
+        assertNotEquals(param1, param2);
+
+        param1 = new ContractParameter(ContractParameterType.HASH160, null);
+        param2 = new ContractParameter(ContractParameterType.HASH160, null);
+        assertEquals(param1, param2);
+
         param1 = hash256(Hash256.ZERO);
         param2 = hash256(Hash256.ZERO);
         assertEquals(param1, param2);

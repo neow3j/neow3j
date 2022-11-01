@@ -428,8 +428,9 @@ public class ContractParameter {
      */
     public static ContractParameter publicKey(byte[] publicKey) {
         if (publicKey.length != NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED) {
-            throw new IllegalArgumentException("Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED +
-                    " bytes but was " + publicKey.length + " bytes.");
+            throw new IllegalArgumentException(
+                    "Public key argument must be " + NeoConstants.PUBLIC_KEY_SIZE_COMPRESSED +
+                            " bytes but was " + publicKey.length + " bytes.");
         }
         return new ContractParameter(PUBLIC_KEY, publicKey);
     }
@@ -459,7 +460,7 @@ public class ContractParameter {
             if (type.equals(BYTE_ARRAY) || type.equals(SIGNATURE) || type.equals(PUBLIC_KEY)) {
                 return Arrays.equals((byte[]) value, (byte[]) that.value);
             } else if (type.equals(HASH160) || type.equals(HASH256)) {
-                return getValue().toString().equals(that.getValue().toString());
+                return Objects.equals(getValue(), that.getValue());
             } else if (type.equals(ARRAY)) {
                 ContractParameter[] thatValue = (ContractParameter[]) that.getValue();
                 ContractParameter[] oValue = (ContractParameter[]) ((ContractParameter) o).getValue();
