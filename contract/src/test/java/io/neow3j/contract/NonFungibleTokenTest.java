@@ -2,7 +2,10 @@ package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import io.neow3j.contract.exceptions.InvalidNeoNameException;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -89,6 +92,33 @@ public class NonFungibleTokenTest {
         assertThat(((AccountSigner) b.getSigners().get(0)).getAccount(), is(account1));
 
         b = nfTestToken.transfer(account2.getScriptHash(), TOKEN_ID);
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(b.getSigners().size(), is(0));
+    }
+
+    @Test
+    public void testTransferNonDivisibleToNNS() throws IOException, InvalidNeoNameException,
+            UnresolvableDomainNameException {
+
+        setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
+        setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
+        setUpWireMockForInvokeFunction("resolve", "nns_resolve_typeTXT.json");
+
+        NNSName nnsName = new NNSName("neow3j.neo");
+        Hash160 recipient = Hash160.fromAddress("NTXJgQrqxnSFFqKe3oBejnnzjms61Yzb8r");
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
+                        asList(
+                                hash160(recipient),
+                                byteArray(TOKEN_ID),
+                                any(null)))
+                .toArray();
+
+        TransactionBuilder b = nfTestToken.transfer(account1, nnsName, TOKEN_ID);
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(((AccountSigner) b.getSigners().get(0)).getAccount(), is(account1));
+
+        b = nfTestToken.transfer(nnsName, TOKEN_ID);
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().size(), is(0));
     }
@@ -250,6 +280,36 @@ public class NonFungibleTokenTest {
 
         b = nfTestToken.transfer(account1.getScriptHash(), account2.getScriptHash(),
                 new BigInteger("25000"), TOKEN_ID);
+
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(b.getSigners().size(), is(0));
+    }
+
+    @Test
+    public void testTransferDivisibleToNNS()
+            throws IOException, InvalidNeoNameException, UnresolvableDomainNameException {
+        setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
+        setUpWireMockForInvokeFunction("resolve", "nns_resolve_typeTXT.json");
+
+        NNSName nnsName = new NNSName("neow3j.neo");
+        Hash160 recipient = Hash160.fromAddress("NTXJgQrqxnSFFqKe3oBejnnzjms61Yzb8r");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(NF_TOKEN_SCRIPT_HASH, TRANSFER,
+                        asList(
+                                hash160(account1.getScriptHash()),
+                                hash160(recipient),
+                                integer(25000), // 0.25
+                                byteArray(TOKEN_ID),
+                                any(null)))
+                .toArray();
+
+        TransactionBuilder b = nfTestToken.transfer(account1, nnsName, new BigInteger("25000"), TOKEN_ID);
+
+        assertThat(b.getScript(), is(expectedScript));
+        assertThat(((AccountSigner) b.getSigners().get(0)).getAccount(), is(account1));
+
+        b = nfTestToken.transfer(account1.getScriptHash(), nnsName, new BigInteger("25000"), TOKEN_ID);
 
         assertThat(b.getScript(), is(expectedScript));
         assertThat(b.getSigners().size(), is(0));

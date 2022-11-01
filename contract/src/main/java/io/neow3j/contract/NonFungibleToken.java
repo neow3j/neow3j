@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.ContractSigner;
@@ -161,6 +163,103 @@ public class NonFungibleToken extends Token {
     }
 
     /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The token owner is set as signer of the transaction. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    the account of the token owner.
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, byte[] tokenId)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, tokenId, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The token owner is set as a {@code calledByEntry} signer of the transaction. The returned builder is ready to
+     * be signed and sent.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    the account of the token owner.
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, byte[] tokenId, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+        throwIfSenderIsNotOwner(from.getScriptHash(), tokenId);
+        return transfer(to, tokenId, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(NNSName to, byte[] tokenId) throws IOException, UnresolvableDomainNameException {
+        return transfer(to, tokenId, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the owner is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(NNSName to, byte[] tokenId, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+        throwIfDivisibleNFT();
+        Hash160 toScriptHash = resolveNNSTextRecord(to);
+        return invokeFunction(TRANSFER, hash160(toScriptHash), byteArray(tokenId), data);
+    }
+
+    /**
      * Builds a script that invokes the transfer method on this non-fungible token.
      * <p>
      * This method is intended to be used for non-divisible NFTs only.
@@ -289,6 +388,94 @@ public class NonFungibleToken extends Token {
             ContractParameter data) throws IOException {
         throwIfNonDivisibleNFT();
         return invokeFunction(TRANSFER, hash160(from), hash160(to), integer(amount), byteArray(tokenId), data);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * The sender is set as signer of the transaction. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenID)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The sender is set as a {@code calledByEntry} signer of the transaction. The returned builder is ready to be
+     * signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException, UnresolvableDomainNameException {
+        return transfer(from.getScriptHash(), to, amount, tokenId, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenID)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException, UnresolvableDomainNameException {
+        throwIfNonDivisibleNFT();
+        Hash160 toScriptHash = resolveNNSTextRecord(to);
+        return invokeFunction(TRANSFER, hash160(from), hash160(toScriptHash), integer(amount), byteArray(tokenId),
+                data);
     }
 
     /**
