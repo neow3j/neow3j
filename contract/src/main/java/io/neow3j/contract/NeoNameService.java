@@ -332,7 +332,6 @@ public class NeoNameService extends NonFungibleToken {
      * @param type the record type.
      * @param data the corresponding data.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public TransactionBuilder setRecord(NNSName name, RecordType type, String data) {
         return invokeFunction(SET_RECORD, string(name.getName()), integer(type.byteValue()), string(data));

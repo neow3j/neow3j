@@ -403,7 +403,8 @@ public class NonFungibleToken extends Token {
      * @param amount  the fraction amount to transfer.
      * @param tokenID the token ID.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenID)
             throws IOException, UnresolvableDomainNameException {
@@ -425,7 +426,8 @@ public class NonFungibleToken extends Token {
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenId,
             ContractParameter data) throws IOException, UnresolvableDomainNameException {
@@ -446,7 +448,8 @@ public class NonFungibleToken extends Token {
      * @param amount  the fraction amount to transfer.
      * @param tokenID the token ID.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenID)
             throws IOException, UnresolvableDomainNameException {
@@ -468,7 +471,8 @@ public class NonFungibleToken extends Token {
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenId,
             ContractParameter data) throws IOException, UnresolvableDomainNameException {
