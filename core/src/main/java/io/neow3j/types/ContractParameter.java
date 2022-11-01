@@ -456,12 +456,10 @@ public class ContractParameter {
         }
         ContractParameter that = (ContractParameter) o;
         if (type == that.type && Objects.equals(name, that.name)) {
-            if (type.equals(BYTE_ARRAY) ||
-                    type.equals(SIGNATURE) ||
-                    type.equals(PUBLIC_KEY) ||
-                    type.equals(HASH160) ||
-                    type.equals(HASH256)) {
+            if (type.equals(BYTE_ARRAY) || type.equals(SIGNATURE) || type.equals(PUBLIC_KEY)) {
                 return Arrays.equals((byte[]) value, (byte[]) that.value);
+            } else if (type.equals(HASH160) || type.equals(HASH256)) {
+                return getValue().toString().equals(that.getValue().toString());
             } else if (type.equals(ARRAY)) {
                 ContractParameter[] thatValue = (ContractParameter[]) that.getValue();
                 ContractParameter[] oValue = (ContractParameter[]) ((ContractParameter) o).getValue();

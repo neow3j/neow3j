@@ -621,9 +621,35 @@ public class ContractParameterTest {
     @Test
     public void testEquals() {
         assertNotEquals("o", contractParameter);
-        assertThat(contractParameter.equals(string("value")), is(true));
+        assertEquals(contractParameter, string("value"));
         assertNotEquals(contractParameter, string("test"));
         assertNotEquals(contractParameter, integer(1));
+
+        ContractParameter param1 = hash160(Hash160.ZERO);
+        ContractParameter param2 = hash160(Hash160.ZERO);
+        assertEquals(param1, param2);
+
+        param1 = hash256(Hash256.ZERO);
+        param2 = hash256(Hash256.ZERO);
+        assertEquals(param1, param2);
+
+        param1 = hash256(Hash256.ZERO);
+        param2 = hash160(Hash160.ZERO);
+        assertNotEquals(param1, param2);
+
+        param1 = signature(
+                "01020304010203040102030401020304010203040102030401020304010203040102030401020304010203040102030401020304010203040102030401020304");
+        param2 = signature(
+                "01020304010203040102030401020304010203040102030401020304010203040102030401020304010203040102030401020304010203040102030401020304");
+        assertEquals(param1, param2);
+
+        param1 = publicKey("010203040102030401020304010203040102030401020304010203040102030401");
+        param2 = publicKey("010203040102030401020304010203040102030401020304010203040102030401");
+        assertEquals(param1, param2);
+    }
+
+    @Test
+    public void testEqualsHash160Parameter() {
     }
 
     @Test
