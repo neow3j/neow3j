@@ -4,8 +4,8 @@ import io.neow3j.contract.exceptions.InvalidNeoNameException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
 import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
+import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -18,7 +18,6 @@ import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
-import io.neow3j.utils.Files;
 import io.neow3j.wallet.Account;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -27,11 +26,9 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -44,7 +41,6 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
-import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -78,10 +74,6 @@ public class NameServiceIntegrationTest {
     private static final long ONE_YEAR = 365L * 24 * 3600 * 1000;
     private static final long ONE_DAY = 24 * 3600 * 1000;
 
-    private static final String RESOURCE_DIR = "contract/";
-    private static final String NAMESERVICE_NEF = RESOURCE_DIR + "NameService.nef";
-    private static final String NAMESERVICE_MANIFEST = RESOURCE_DIR + "NameService.manifest.json";
-
     private static final Account ALICE = Account.create();
     private static final Account BOB = Account.create();
 
@@ -100,53 +92,21 @@ public class NameServiceIntegrationTest {
         ngdDomain = new NNSName("ngd.neo");
         neow3jDomain = new NNSName("neow3j.neo");
 
-        HttpService httpService = new HttpService(neoTestContainer.getNodeUrl(), true);
-        neow3j = Neow3j.build(httpService);
+        neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
 
-        Hash160 nameServiceHash = deployNameServiceContract();
-        neow3j = Neow3j.build(httpService, new Neow3jConfig().setNNSResolver(nameServiceHash));
+        NeoNameServiceTestHelper.deployNNS(neow3j, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
+        NeoNameServiceTestHelper.addNNSRoot(neow3j, ethRoot, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
+        registerDomainFromDefault(neow3jDomain);
+
         nameService = new NeoNameService(getNeow3j());
 
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
-        addRoot();
-        registerDomainFromDefault(neow3jDomain);
         fundAccountsWithGas(neow3j, BigDecimal.valueOf(50), ALICE, BOB);
-    }
-
-    private static Hash160 deployNameServiceContract() throws Throwable {
-        URL r = NameServiceIntegrationTest.class.getClassLoader().getResource(NAMESERVICE_NEF);
-        byte[] nefBytes = Files.readBytes(new File(r.toURI()));
-        r = NameServiceIntegrationTest.class.getClassLoader().getResource(NAMESERVICE_MANIFEST);
-        byte[] manifestBytes = Files.readBytes(new File(r.toURI()));
-
-        Transaction tx = new ContractManagement(getNeow3j())
-                .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
-                .signers(calledByEntry(COMMITTEE_ACCOUNT))
-                .getUnsignedTransaction();
-        Witness multiSigWitness = createMultiSigWitness(
-                asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
-                COMMITTEE_ACCOUNT.getVerificationScript());
-        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
-
-        long checksum = NefFile.getCheckSumAsInteger(NefFile.computeChecksumFromBytes(nefBytes));
-        return SmartContract.calcContractHash(COMMITTEE_ACCOUNT.getScriptHash(), checksum, "NameService");
     }
 
     private static Neow3j getNeow3j() {
         return neow3j;
-    }
-
-    private static void addRoot() throws Throwable {
-        Transaction tx = nameService.addRoot(ethRoot)
-                .signers(calledByEntry(COMMITTEE_ACCOUNT))
-                .getUnsignedTransaction();
-        Witness multiSigWitness = createMultiSigWitness(
-                asList(Sign.signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
-                COMMITTEE_ACCOUNT.getVerificationScript());
-        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
     }
 
     private static void registerDomainFromDefault(NNSName nnsName) throws Throwable {

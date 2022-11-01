@@ -166,4 +166,13 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         return config.getMaxValidUntilBlockIncrement();
     }
 
+    /**
+     * Sets the NeoNameService script hash that should be used to resolve NNS domain names.
+     *
+     * @param nnsResolver the NNS resolver script hash.
+     */
+    public void setNNSResolver(Hash160 nnsResolver) {
+        config.setNNSResolver(nnsResolver);
+    }
+
 }
