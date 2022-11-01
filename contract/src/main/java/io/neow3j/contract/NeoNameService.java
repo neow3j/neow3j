@@ -187,6 +187,8 @@ public class NeoNameService extends NonFungibleToken {
      * based on this script.
      * <p>
      * Only the committee is allowed to add a new root domain.
+     * <p>
+     * Requires to be signed by the committee.
      *
      * @param nnsRoot the new root domain.
      * @return a transaction builder.
@@ -229,6 +231,8 @@ public class NeoNameService extends NonFungibleToken {
      * {@link TransactionBuilder} based on this script.
      * <p>
      * Only the committee is allowed to set the price.
+     * <p>
+     * Requires to be signed by the committee.
      *
      * @param priceList the prices for registering a domain. The index refers to the length of the domain. The value
      *                  at index 0 is used for domain names longer than the price list's highest index. Use -1 for
@@ -265,9 +269,11 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Creates a transaction script to register a new domain name and initializes a {@link TransactionBuilder} based
      * on this script.
+     * <p>
+     * Requires to be signed by the domain owner.
      *
      * @param name  the domain name.
-     * @param owner the address of the domain name owner.
+     * @param owner the address of the domain owner.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -327,6 +333,8 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Creates a transaction script to set the type of the specified domain name and the corresponding type data and
      * initializes a {@link TransactionBuilder} based on this script.
+     * <p>
+     * Requires to be signed by the domain owner or the domain admin.
      *
      * @param name the domain name.
      * @param type the record type.
@@ -388,6 +396,8 @@ public class NeoNameService extends NonFungibleToken {
     /**
      * Creates a transaction script to delete record data of a domain name initializes a {@link TransactionBuilder}
      * based on this script.
+     * <p>
+     * Requires to be signed by the domain owner or the domain admin.
      *
      * @param name the domain name.
      * @param type the record type.
