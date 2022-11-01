@@ -59,7 +59,7 @@ public class NeoNameServiceTest {
     private Account account2;
 
     private NeoNameService nameService;
-    private static final Hash160 nameServiceHash = Hash160.ZERO;
+    private static Hash160 nameServiceHash;
 
     private static final String TOTAL_SUPPLY = "totalSupply";
     private static final String SYMBOL = "symbol";
@@ -94,6 +94,7 @@ public class NeoNameServiceTest {
         account1 = Account.fromWIF(TestProperties.defaultAccountWIF());
         account2 = Account.fromWIF(TestProperties.client1AccountWIF());
         nameService = new NeoNameService(neow3j);
+        nameServiceHash = nameService.getScriptHash();
     }
 
     // region NEP-11 methods
@@ -544,39 +545,38 @@ public class NeoNameServiceTest {
     @Test
     public void resolve_typeA() throws IOException, UnresolvableDomainNameException,  InvalidNeoNameException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeA.json");
+        setUpWireMockForInvokeFunction(RESOLVE, "nns_resolve_typeA.json");
 
         String record = nameService.resolve(new NNSName("client1.neo"), RecordType.A);
-        assertThat(record, is("127.0.0.1"));
+        assertThat(record, is("157.0.0.1"));
     }
 
     @Test
     public void resolve_typeCNAME() throws IOException, UnresolvableDomainNameException,
              InvalidNeoNameException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeCNAME.json");
+        setUpWireMockForInvokeFunction(RESOLVE, "nns_resolve_typeCNAME.json");
 
         String record = nameService.resolve(new NNSName("client1.neo"), RecordType.CNAME);
-        assertThat(record, is("second.client1.neo"));
+        assertThat(record, is("neow3j.io"));
     }
 
     @Test
     public void resolve_typeTXT() throws IOException, UnresolvableDomainNameException,  InvalidNeoNameException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeTXT.json");
+        setUpWireMockForInvokeFunction(RESOLVE, "nns_resolve_typeTXT.json");
 
         String record = nameService.resolve(new NNSName("client1.neo"), RecordType.TXT);
-        assertThat(record, is("textRecord"));
+        assertThat(record, is("NTXJgQrqxnSFFqKe3oBejnnzjms61Yzb8r"));
     }
 
     @Test
-    public void resolve_typeAAAA() throws IOException, UnresolvableDomainNameException,
-             InvalidNeoNameException {
+    public void resolve_typeAAAA() throws IOException, UnresolvableDomainNameException, InvalidNeoNameException {
         setUpWireMockForInvokeFunction(IS_AVAILABLE, "invokefunction_returnFalse.json");
-        setUpWireMockForInvokeFunction(RESOLVE, "nns_getRecord_typeAAAA.json");
+        setUpWireMockForInvokeFunction(RESOLVE, "nns_resolve_typeAAAA.json");
 
         String record = nameService.resolve(new NNSName("client1.neo"), RecordType.AAAA);
-        assertThat(record, is("2001:0db8:0000:0000:0000:ff00:0042:8329"));
+        assertThat(record, is("3001:2:3:4:5:6:7:8"));
     }
 
     @Test
