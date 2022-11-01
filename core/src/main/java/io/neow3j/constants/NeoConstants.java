@@ -82,7 +82,7 @@ public class NeoConstants {
     public static final int MAX_MANIFEST_SIZE = 0xFFFF;
 
     /**
-     *
+     * The default maximum number of iterator items returned in an RPC response.
      */
     public static final int MAX_ITERATOR_ITEMS_DEFAULT = 100;
 

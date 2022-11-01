@@ -244,7 +244,7 @@ public class NeoNameServiceTest {
     public void testUnwrapRoots() throws IOException {
         setUpWireMockForCall("invokescript", "nns_unwrapRoots.json");
 
-        List<String> roots = nameService.unwrapRoots();
+        List<String> roots = nameService.getRootsUnwrapped();
         assertThat(roots.get(0), is("eth"));
         assertThat(roots.get(1), is("neo"));
     }
@@ -514,7 +514,7 @@ public class NeoNameServiceTest {
     @Test
     public void testUnwrapAllRecords() throws IOException,  InvalidNeoNameException {
         setUpWireMockForCall("invokescript", "nns_unwrapAllRecords.json");
-        List<RecordState> recordStates = nameService.unwrapAllRecords(new NNSName("test.neo"));
+        List<RecordState> recordStates = nameService.getAllRecordsUnwrapped(new NNSName("test.neo"));
 
         RecordState recordState1 = recordStates.get(0);
         assertThat(recordState1.getName(), is("unwrapallrecords.neo"));

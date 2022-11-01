@@ -183,10 +183,10 @@ public class NeoNameService extends NonFungibleToken {
     // region Custom Name Service Methods
 
     /**
-     * Creates a transaction script to add a root domain and initializes a {@link TransactionBuilder} based on this
-     * script.
+     * Creates a transaction script to add a root domain (like .neo) and initializes a {@link TransactionBuilder}
+     * based on this script.
      * <p>
-     * Only committee members are allowed to add a new root domain.
+     * Only the committee is allowed to add a new root domain.
      *
      * @param nnsRoot the new root domain.
      * @return a transaction builder.
@@ -199,7 +199,7 @@ public class NeoNameService extends NonFungibleToken {
      * Gets all existing roots.
      * <p>
      * This method requires sessions to be enabled on the Neo node. If sessions are disabled on the Neo node, use
-     * {@link NeoNameService#unwrapRoots()}.
+     * {@link NeoNameService#getRootsUnwrapped()}.
      *
      * @return the roots.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -219,7 +219,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return the roots.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<String> unwrapRoots() throws IOException {
+    public List<String> getRootsUnwrapped() throws IOException {
         return callFunctionAndUnwrapIterator(ROOTS, asList(), MAX_ITERATOR_ITEMS_DEFAULT)
                 .stream().map(StackItem::getString).collect(Collectors.toList());
     }
@@ -228,7 +228,7 @@ public class NeoNameService extends NonFungibleToken {
      * Creates a transaction script to set the prices for registering a domain and initializes a
      * {@link TransactionBuilder} based on this script.
      * <p>
-     * Only committee members are allowed to set the price.
+     * Only the committee is allowed to set the price.
      *
      * @param priceList the prices for registering a domain. The index refers to the length of the domain. The value
      *                  at index 0 is used for domain names longer than the price list's highest index. Use -1 for
@@ -380,7 +380,7 @@ public class NeoNameService extends NonFungibleToken {
      * @return all records of the domain name.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public List<RecordState> unwrapAllRecords(NNSName name) throws IOException {
+    public List<RecordState> getAllRecordsUnwrapped(NNSName name) throws IOException {
         return callFunctionAndUnwrapIterator(GET_ALL_RECORDS, asList(string(name.getName())),
                 MAX_ITERATOR_ITEMS_DEFAULT).stream().map(RecordState::fromStackItem).collect(Collectors.toList());
     }

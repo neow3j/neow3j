@@ -149,7 +149,7 @@ public class ObjectsConverter implements Converter {
         }
     }
 
-    // Expects the ctor to exactly contains only a super call with a constant string script hash value.
+    // Expects the ctor to exactly contain only a super call with a constant string script hash value.
     private AbstractInsnNode handleConstantContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
             AbstractInsnNode ctorInsn) {
 

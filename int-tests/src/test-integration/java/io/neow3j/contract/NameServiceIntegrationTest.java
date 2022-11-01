@@ -217,7 +217,7 @@ public class NameServiceIntegrationTest {
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
-        boolean rootExists = nameService.unwrapRoots().stream().anyMatch("root"::equals);
+        boolean rootExists = nameService.getRootsUnwrapped().stream().anyMatch("root"::equals);
         assertTrue(rootExists);
     }
 
@@ -233,7 +233,7 @@ public class NameServiceIntegrationTest {
 
     @Test
     public void testUnwrapRoots() throws IOException {
-        List<String> roots = nameService.unwrapRoots();
+        List<String> roots = nameService.getRootsUnwrapped();
         assertThat(roots.size(), isOneOf(2, 3));
         assertThat(roots.get(0), is("eth"));
         assertThat(roots.get(1), is("neo"));
@@ -488,7 +488,7 @@ public class NameServiceIntegrationTest {
         String txtRecord = "unwrapAllRecordsTXT";
         setRecordFromDefault(nnsName, RecordType.TXT, txtRecord);
 
-        List<RecordState> allRecords = nameService.unwrapAllRecords(nnsName);
+        List<RecordState> allRecords = nameService.getAllRecordsUnwrapped(nnsName);
 
         RecordState recordState1 = allRecords.get(0);
         assertThat(recordState1.getName(), is(nnsName.getName()));

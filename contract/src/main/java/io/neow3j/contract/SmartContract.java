@@ -256,7 +256,7 @@ public class SmartContract {
     /**
      * Sends an {@code invokefunction} RPC call to the given contract function expecting an
      * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
-     * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items mapped with the provided unwrap function.
+     * {@link SmartContract#DEFAULT_ITERATOR_COUNT} stack items mapped with the provided mapper function.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
      * <p>
@@ -279,7 +279,7 @@ public class SmartContract {
     /**
      * Sends an {@code invokefunction} RPC call to the given contract function expecting an
      * {@link InteropInterfaceStackItem} as a return type. Then, traverses the iterator to retrieve the first
-     * {@code maxIteratorResultItems} stack items mapped with the provided unwrap function.
+     * {@code maxIteratorResultItems} stack items mapped with the provided mapper function.
      * <p>
      * Consider that the returned list might be limited in size and not reveal all entries that exist in the iterator.
      * <p>
