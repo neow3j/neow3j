@@ -661,10 +661,6 @@ public class ContractParameterTest {
     }
 
     @Test
-    public void testEqualsHash160Parameter() {
-    }
-
-    @Test
     public void testHashCode() {
         int result = contractParameter.hashCode();
         assertNotEquals(0, result);
