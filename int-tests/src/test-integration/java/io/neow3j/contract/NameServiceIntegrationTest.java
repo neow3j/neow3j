@@ -8,8 +8,6 @@ import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
-import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.RecordState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
@@ -18,7 +16,6 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
@@ -42,8 +39,6 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
-import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -563,80 +558,6 @@ public class NameServiceIntegrationTest {
 
         NameState nameStateFromString = nameService.getNameState(nnsName);
         assertEquals(nameState, nameStateFromString);
-    }
-
-    // endregion
-    // region Transfer Token
-
-    @Test
-    public void testTransferTokenToNNSDomainName() throws Throwable {
-        NNSName nnsName = new NNSName("transfertonns.neo");
-        register(nnsName, CLIENT_2);
-        setRecord(nnsName, RecordType.TXT, CLIENT_2.getAddress(), CLIENT_2);
-
-        GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
-
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        NeoSendRawTransaction response = gasToken.transfer(CLIENT_1, nnsName, amount)
-                .sign()
-                .send();
-        Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
-
-        BigInteger balanceAfter = gasToken.getBalanceOf(CLIENT_2);
-        assertThat(balanceAfter, is(balanceBefore.add(amount)));
-    }
-
-    @Test
-    public void testTransferTokenToNNSDomainName_transferFromHashToFourthLevelDomainNNS() throws Throwable {
-        NNSName nnsName = new NNSName("transfertonnslevels.neo");
-        register(nnsName, CLIENT_2);
-        setRecord(nnsName, RecordType.TXT, CLIENT_2.getAddress(), CLIENT_2);
-        NNSName thirdLevelDomain = new NNSName("third." + nnsName.getName());
-        setRecord(thirdLevelDomain, RecordType.CNAME, nnsName.getName(), CLIENT_2);
-        NNSName fourthLevelDomain = new NNSName("fourth." + thirdLevelDomain.getName());
-        setRecord(fourthLevelDomain, RecordType.CNAME, thirdLevelDomain.getName(), CLIENT_2);
-
-        GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
-
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        NeoSendRawTransaction response = gasToken.transfer(CLIENT_1.getScriptHash(), fourthLevelDomain, amount)
-                .signers(calledByEntry(CLIENT_1))
-                .sign()
-                .send();
-        Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
-
-        BigInteger balanceAfter = gasToken.getBalanceOf(CLIENT_2);
-        assertThat(balanceAfter, is(balanceBefore.add(amount)));
-    }
-
-    @Test
-    public void testTransferTokenToNNSDomainName_noAddressInTxtRecord() throws Throwable {
-        NNSName nnsName = new NNSName("transfertonnsnoaddresstxtrecord.neo");
-        register(nnsName, CLIENT_2);
-        setRecord(nnsName, RecordType.TXT, "my name is jeff", CLIENT_2);
-
-        GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> gasToken.transfer(CLIENT_1, nnsName, amount));
-        assertThat(thrown.getMessage(), is("Not a valid NEO address."));
-    }
-
-    @Test
-    public void testTransferTokenToNNSDomainName_unresolvable() throws Throwable {
-        NNSName nnsName = new NNSName("transfertonnsunresolvable.neo");
-        register(nnsName, CLIENT_2);
-
-        GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        UnresolvableDomainNameException thrown = assertThrows(UnresolvableDomainNameException.class,
-                () -> gasToken.transfer(CLIENT_1, nnsName, amount));
-        assertThat(thrown.getMessage(),
-                is(format("The provided domain name '%s' could not be resolved.", nnsName.getName())));
     }
 
     // endregion

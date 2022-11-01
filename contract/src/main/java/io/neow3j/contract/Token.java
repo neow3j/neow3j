@@ -1,7 +1,10 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.RecordType;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
@@ -109,10 +112,8 @@ public class Token extends SmartContract {
             throw new IllegalArgumentException("The provided amount has too many decimal points. Make sure the " +
                     "decimals of the provided amount do not exceed the supported token decimals.");
         }
-
         BigInteger factor = BigInteger.TEN.pow(decimals);
         BigDecimal fractions = amount.multiply(new BigDecimal(factor));
-
         return fractions.toBigInteger();
     }
 
@@ -142,6 +143,12 @@ public class Token extends SmartContract {
      */
     public static BigDecimal toDecimals(BigInteger amount, int decimals) {
         return new BigDecimal(amount, decimals);
+    }
+
+    // Resolves the text record of a NNS domain name and returns its script hash.
+    protected Hash160 resolveNNSTextRecord(NNSName name) throws UnresolvableDomainNameException, IOException {
+        String resolvedAddress = new NeoNameService(neow3j).resolve(name, RecordType.TXT);
+        return Hash160.fromAddress(resolvedAddress);
     }
 
 }
