@@ -1,14 +1,11 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
-import io.neow3j.devpack.annotations.NativeContract;
-
-import static io.neow3j.devpack.constants.NativeContract.StdLibScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
  * Represents an interface to the native StdLib contract that provides useful functions.
  */
-@NativeContract
 public class StdLib extends ContractInterface {
 
     /**
@@ -16,8 +13,11 @@ public class StdLib extends ContractInterface {
      */
     public static final int MaxInputLength = 1024;
 
+    /**
+     * Initializes an interface to the native StdLib contract.
+     */
     public StdLib() {
-        super(StdLibScriptHash);
+        super(NativeContract.StdLibScriptHash);
     }
 
     /**

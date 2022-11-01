@@ -11,7 +11,11 @@ import io.neow3j.devpack.Map;
 public class NeoNameService extends NonDivisibleNonFungibleToken {
 
     /**
-     * Initializes an interface to the official NeoNameService smart contract.
+     * Initializes an interface to the official NeoNameService smart contract that is deployed on mainnet.
+     * <p>
+     * Use {@link NeoNameService#NeoNameService(Hash160)} or {@link NeoNameService#NeoNameService(String)} to
+     * initialise an interface to a NeoNameService contract with a different contract hash, e.g., when testing with
+     * testnet or a privatenet.
      */
     public NeoNameService() {
         super("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
@@ -20,7 +24,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
     /**
      * Initializes an interface to a NeoNameService smart contract.
      * <p>
-     * For the official NeoNameService smart contract use {@link NeoNameService#NeoNameService()}.
+     * For the official NeoNameService smart contract deployed on mainnet use {@link NeoNameService#NeoNameService()}.
      * <p>
      * Use this constructor only with a constant script hash.
      *
@@ -32,6 +36,8 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
 
     /**
      * Initializes an interface to a NeoNameService smart contract.
+     * <p>
+     * For the official NeoNameService smart contract deployed on mainnet use {@link NeoNameService#NeoNameService()}.
      *
      * @param contractHash the contract script hash.
      */

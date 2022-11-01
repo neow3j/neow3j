@@ -4,18 +4,18 @@ import io.neow3j.devpack.Block;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
-import io.neow3j.devpack.annotations.NativeContract;
-
-import static io.neow3j.devpack.constants.NativeContract.LedgerContractScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
  * Represents an interface to the native LedgerContract that stores all blocks and transactions.
  */
-@NativeContract
 public class LedgerContract extends ContractInterface {
 
+    /**
+     * Initializes an interface to the native LedgerContract.
+     */
     public LedgerContract() {
-        super(LedgerContractScriptHash);
+        super(NativeContract.LedgerContractScriptHash);
     }
 
     /**

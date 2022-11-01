@@ -2,19 +2,19 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.constants.NamedCurve;
-
-import static io.neow3j.devpack.constants.NativeContract.CryptoLibScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
  * Represents an interface to the native CryptoLib contract that provides cryptographic algorithms.
  */
-@NativeContract
 public class CryptoLib extends ContractInterface {
 
+    /**
+     * Initializes an interface to the native CryptoLib contract.
+     */
     public CryptoLib() {
-        super(CryptoLibScriptHash);
+        super(NativeContract.CryptoLibScriptHash);
     }
 
     /**

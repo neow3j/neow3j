@@ -3,19 +3,19 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
-import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
-
-import static io.neow3j.devpack.constants.NativeContract.NeoTokenScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
- * Represents an interface to the native NEO token contract.
+ * Represents an interface to the native NeoToken contract.
  */
-@NativeContract
 public class NeoToken extends FungibleToken {
 
+    /**
+     * Initializes an interface to the native NeoToken contract.
+     */
     public NeoToken() {
-        super(NeoTokenScriptHash);
+        super(NativeContract.NeoTokenScriptHash);
     }
 
     /**
