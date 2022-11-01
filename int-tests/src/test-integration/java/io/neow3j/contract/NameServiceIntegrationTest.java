@@ -92,14 +92,13 @@ public class NameServiceIntegrationTest {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl(), true));
         waitUntilBlockCountIsGreaterThanZero(getNeow3j());
 
-        NeoNameServiceTestHelper.deployNNS(neow3j, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
-        NeoNameServiceTestHelper.addNNSRoot(neow3j, ethRoot, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
+        NeoNameServiceTestHelper.deployNNS(getNeow3j(), COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
+        NeoNameServiceTestHelper.addNNSRoot(getNeow3j(), ethRoot, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
         nameService = new NeoNameService(getNeow3j());
 
-        registerDomainFromDefault(neow3jDomain);
+        fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2, ALICE, BOB);
 
-        fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
-        fundAccountsWithGas(neow3j, BigDecimal.valueOf(50), ALICE, BOB);
+        registerDomainFromDefault(neow3jDomain);
     }
 
     // region private helper methods
