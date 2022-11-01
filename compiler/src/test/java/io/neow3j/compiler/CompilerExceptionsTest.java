@@ -422,11 +422,9 @@ public class CompilerExceptionsTest {
     }
 
     static class InterfaceContractMultipleArgs extends ContractInterface {
-        private static String msg;
-
         public InterfaceContractMultipleArgs(String hash, String msg) {
             super(hash);
-            this.msg = msg;
+            Storage.get(Storage.getReadOnlyContext(), msg);
         }
     }
 

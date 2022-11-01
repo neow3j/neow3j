@@ -7,7 +7,6 @@ import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
-import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
@@ -65,7 +64,7 @@ public class NeoNameServiceTestHelper {
 
         Transaction tx = new ContractManagement(neow3j)
                 .invokeFunction("deploy", byteArray(nefBytes), byteArray(manifestBytes))
-                .signers(AccountSigner.calledByEntry(committee))
+                .signers(calledByEntry(committee))
                 .getUnsignedTransaction();
 
         Witness multiSigWitness = createMultiSigWitness(tx.getHashData(), committee, signingAccounts);
@@ -101,7 +100,7 @@ public class NeoNameServiceTestHelper {
 
         checkSigningAccountPresent(signingAccounts);
         Transaction tx = new NeoNameService(neow3j).addRoot(nnsRoot)
-                .signers(AccountSigner.calledByEntry(committee))
+                .signers(calledByEntry(committee))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(tx.getHashData(), committee, signingAccounts);
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();

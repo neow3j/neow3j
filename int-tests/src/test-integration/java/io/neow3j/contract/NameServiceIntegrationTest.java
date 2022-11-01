@@ -18,7 +18,6 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
@@ -388,7 +387,7 @@ public class NameServiceIntegrationTest {
         waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         NameState nameState = nameService.getNameState(nnsName);
-        assertThat(nameState.getAdmin(), Matchers.is(CLIENT_2.getScriptHash()));
+        assertThat(nameState.getAdmin(), is(CLIENT_2.getScriptHash()));
 
         // Now as admin, client2 should be able to set a record.
         setRecord(nnsName, RecordType.A, A_RECORD, CLIENT_2);

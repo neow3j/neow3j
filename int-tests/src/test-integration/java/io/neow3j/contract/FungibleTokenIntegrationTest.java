@@ -131,7 +131,7 @@ public class FungibleTokenIntegrationTest {
                 .sign()
                 .send();
         Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         BigInteger balanceAfter = gasToken.getBalanceOf(CLIENT_2);
         assertThat(balanceAfter, is(balanceBefore.add(amount)));
@@ -158,7 +158,7 @@ public class FungibleTokenIntegrationTest {
                 .sign()
                 .send();
         Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        waitUntilTransactionIsExecuted(txHash, getNeow3j());
 
         BigInteger balanceAfter = gasToken.getBalanceOf(CLIENT_2);
         assertThat(balanceAfter, is(balanceBefore.add(amount)));
