@@ -13,7 +13,7 @@ public class Token extends ContractInterface {
     /**
      * Initializes an interface to a token contract.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */

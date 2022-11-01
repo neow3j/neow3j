@@ -26,7 +26,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * <p>
      * For the official NeoNameService smart contract deployed on mainnet use {@link NeoNameService#NeoNameService()}.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */
