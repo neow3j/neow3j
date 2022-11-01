@@ -6,6 +6,7 @@ import io.neow3j.contract.NeoNameService;
 import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.RecordType;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static io.neow3j.contract.SmartContract.calcContractHash;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 
@@ -110,6 +112,65 @@ public class NeoNameServiceTestHelper {
         if (signingAccounts.length == 0) {
             throw new IllegalArgumentException("No signing account provided.");
         }
+    }
+
+    /**
+     * Registers a new second-level domain name.
+     *
+     * @param neow3j  the neow3j instance.
+     * @param nnsName the second-level domain name.
+     * @param owner   the owner of the domain name.
+     * @throws Throwable if something goes wrong when registering the domain name.
+     */
+    public static void register(Neow3j neow3j, NNSName nnsName, Account owner) throws Throwable {
+        Hash256 txHash = new NeoNameService(neow3j).register(nnsName, owner.getScriptHash())
+                .signers(calledByEntry(owner))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+    }
+
+    /**
+     * Sets a record for the domain name.
+     *
+     * @param neow3j  the neow3j instance.
+     * @param nnsName the domain name.
+     * @param type    the record type.
+     * @param data    the record data.
+     * @param signer  the transaction signer.
+     * @throws Throwable if something goes wrong when setting the record.
+     */
+    public static void setRecord(Neow3j neow3j, NNSName nnsName, RecordType type, String data, Account signer)
+            throws Throwable {
+
+        Hash256 txHash = new NeoNameService(neow3j).setRecord(nnsName, type, data)
+                .signers(calledByEntry(signer))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+    }
+
+    /**
+     * Sets the admin for the second-level domain name.
+     *
+     * @param neow3j  the neow3j instance.
+     * @param nnsName the second-level domain name.
+     * @param admin   the admin.
+     * @param owner   the owner.
+     * @throws Throwable if something goes wrong when setting the admin.
+     */
+    public static void setAdmin(Neow3j neow3j, NNSName nnsName, Account admin, Account owner) throws Throwable {
+        Hash256 txHash = new NeoNameService(neow3j).setAdmin(nnsName, admin.getScriptHash())
+                .signers(calledByEntry(owner), calledByEntry(admin))
+                .sign()
+                .send()
+                .getSendRawTransaction()
+                .getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
     }
 
 }

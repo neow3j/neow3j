@@ -13,7 +13,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
-import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
@@ -34,13 +33,11 @@ import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.AccountSigner.global;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -58,8 +55,6 @@ public class NNSIntegrationTest {
     private static final Account ALICE = Account.create();
     private static final Account BOB = Account.create();
 
-    private static io.neow3j.contract.NeoNameService nameService;
-
     private String testName;
 
     @RegisterExtension
@@ -75,11 +70,12 @@ public class NNSIntegrationTest {
         NeoNameServiceTestHelper.deployNNS(getNeow3j(), COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
         NeoNameServiceTestHelper.addNNSRoot(getNeow3j(), new NNSName.NNSRoot("eth"), COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
         ct.setHash(getNeow3j().getNNSResolver());
-        nameService = new io.neow3j.contract.NeoNameService(getNeow3j());
 
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         fundAccountsWithGas(getNeow3j(), BigDecimal.valueOf(50), ALICE, BOB);
     }
+
+    // region private helper methods
 
     private static Neow3j getNeow3j() {
         return ct.getNeow3j();
@@ -90,13 +86,7 @@ public class NNSIntegrationTest {
     }
 
     private static void register(NNSName nnsName, Account owner) throws Throwable {
-        Hash256 txHash = nameService.register(nnsName, owner.getScriptHash())
-                .signers(calledByEntry(owner))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.register(getNeow3j(), nnsName, owner);
     }
 
     private static void setAdminFromDefault(NNSName nnsName, Account admin) throws Throwable {
@@ -104,14 +94,7 @@ public class NNSIntegrationTest {
     }
 
     private static void setAdmin(NNSName nnsName, Account admin, Account owner) throws Throwable {
-        Hash256 txHash = nameService.setAdmin(nnsName, admin.getScriptHash())
-                .signers(AccountSigner.calledByEntry(owner),
-                        AccountSigner.calledByEntry(admin))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.setAdmin(getNeow3j(), nnsName, admin, owner);
     }
 
     private static void setRecordFromDefault(NNSName nnsName, RecordType type, String data) throws Throwable {
@@ -119,18 +102,14 @@ public class NNSIntegrationTest {
     }
 
     private static void setRecord(NNSName nnsName, RecordType type, String data, Account signer) throws Throwable {
-        Hash256 txHash = nameService.setRecord(nnsName, type, data)
-                .signers(calledByEntry(signer))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.setRecord(getNeow3j(), nnsName, type, data, signer);
     }
 
     private static long getNowInMilliSeconds() {
         return new Date().getTime();
     }
+
+    // endregion
 
     @Test
     public void testAddRoot() throws IOException {
@@ -337,7 +316,7 @@ public class NNSIntegrationTest {
         assertThat(propertiesMap.get("expiration").getInteger().longValue(),
                 lessThan(getNowInMilliSeconds() + ONE_YEAR));
         assertThat(propertiesMap.get("image").getString(), is("https://neo3.azureedge.net/images/neons.png"));
-        assertThat(propertiesMap.get("name").getString(), is(nnsName));
+        assertThat(propertiesMap.get("name").getString(), is(nnsName.getName()));
     }
 
     @Test

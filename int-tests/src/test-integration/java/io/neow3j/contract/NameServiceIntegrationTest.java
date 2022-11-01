@@ -8,6 +8,7 @@ import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
 import io.neow3j.protocol.core.response.NameState;
+import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.RecordState;
 import io.neow3j.protocol.http.HttpService;
@@ -41,6 +42,8 @@ import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.lang.String.format;
@@ -97,13 +100,15 @@ public class NameServiceIntegrationTest {
 
         NeoNameServiceTestHelper.deployNNS(neow3j, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
         NeoNameServiceTestHelper.addNNSRoot(neow3j, ethRoot, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
-        registerDomainFromDefault(neow3jDomain);
-
         nameService = new NeoNameService(getNeow3j());
+
+        registerDomainFromDefault(neow3jDomain);
 
         fundAccountsWithGas(getNeow3j(), DEFAULT_ACCOUNT, CLIENT_1, CLIENT_2);
         fundAccountsWithGas(neow3j, BigDecimal.valueOf(50), ALICE, BOB);
     }
+
+    // region private helper methods
 
     private static Neow3j getNeow3j() {
         return neow3j;
@@ -114,27 +119,11 @@ public class NameServiceIntegrationTest {
     }
 
     private static void register(NNSName nnsName, Account owner) throws Throwable {
-        Hash256 txHash = nameService.register(nnsName, owner.getScriptHash())
-                .signers(calledByEntry(owner))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.register(getNeow3j(), nnsName, owner);
     }
 
     private static void setAdminFromDefault(NNSName nnsName, Account admin) throws Throwable {
-        setAdmin(nnsName, admin, DEFAULT_ACCOUNT);
-    }
-
-    private static void setAdmin(NNSName nnsName, Account admin, Account owner) throws Throwable {
-        Hash256 txHash = nameService.setAdmin(nnsName, admin.getScriptHash())
-                .signers(calledByEntry(owner), calledByEntry(admin))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.setAdmin(getNeow3j(), nnsName, admin, DEFAULT_ACCOUNT);
     }
 
     private static void setRecordFromDefault(NNSName nnsName, RecordType type, String data) throws Throwable {
@@ -142,19 +131,14 @@ public class NameServiceIntegrationTest {
     }
 
     private static void setRecord(NNSName nnsName, RecordType type, String data, Account signer) throws Throwable {
-        Hash256 txHash = nameService.setRecord(nnsName, type, data)
-                .signers(calledByEntry(signer))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, getNeow3j());
+        NeoNameServiceTestHelper.setRecord(getNeow3j(), nnsName, type, data, signer);
     }
 
     private static long getNowInMilliSeconds() {
         return new Date().getTime();
     }
 
+    // endregion
     // region NEP-11 methods
 
     @Test
