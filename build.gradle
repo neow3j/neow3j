@@ -5,7 +5,7 @@ buildscript {
     ext.jacksonVersion = '2.13.4'
     ext.javaWebSocketVersion = '1.5.3'
     ext.jnaVersion = '5.12.1'
-    ext.neofsApiJavaVersion = '1.0-SNAPSHOT'
+    ext.neofsApiJavaVersion = '2.13.1'
     ext.neofsSharedLibVersion = 'v0.0.6'
     ext.okhttpVersion = '4.10.0'
     ext.protobufJavaUtilVersion = '3.21.5'
