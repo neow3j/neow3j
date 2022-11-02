@@ -70,10 +70,11 @@ public class NameState {
 
     @Override
     public String toString() {
+        String adminAddress = getAdmin() != null ? getAdmin().toAddress() : null;
         return "NameState{" +
-                "name='" + getName() + '\'' +
-                ", expiration=" + expiration +
-                ", admin=" + getAdmin().toAddress() +
+                "name=" + getName() +
+                ", expiration=" + getExpiration() +
+                ", admin=" + adminAddress +
                 "}";
     }
 

@@ -46,10 +46,15 @@ public class NNSName {
         return isValidNNSName(name, false);
     }
 
+    @Override
+    public String toString() {
+        return "NNSName{" + this.name + '}';
+    }
+
     // region validity checks
     // Note: The following checks are based on the official NNS smart contract.
 
-    static boolean isValidNNSName(String name, boolean allowMultipleFragments) {
+    protected static boolean isValidNNSName(String name, boolean allowMultipleFragments) {
         int length = name.length();
         if (length < 3 || length > 255) {
             return false;
@@ -137,6 +142,11 @@ public class NNSName {
 
         private static boolean isValidNNSRoot(String root) {
             return checkFragment(root, true);
+        }
+
+        @Override
+        public String toString() {
+            return "NNSRoot{" + this.root + '}';
         }
 
     }
