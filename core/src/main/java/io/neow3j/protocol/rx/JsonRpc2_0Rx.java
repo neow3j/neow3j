@@ -47,7 +47,9 @@ public class JsonRpc2_0Rx {
      * polls the Neo node in the given {@code pollingInterval} to check for the latest block and emits all
      * blocks since the last time it polled.
      *
-     * @param pollingInterval The polling interval in milliseconds.
+     * @param fullTransactionObjects Whether to get block information with all transaction objects or just the block
+     *                               header.
+     * @param pollingInterval        The polling interval in milliseconds.
      * @return the block index observable.
      */
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects, long pollingInterval) {
@@ -134,7 +136,7 @@ public class JsonRpc2_0Rx {
      * Creates an observable that emits blocks starting at {@code startBlockNumber} up to the most recent block and
      * continues emitting blocks that are newly created on the Neo blockchain. The new blocks are pulled every
      * {@code pollingInterval}.
-     *
+     * <p>
      * Do not use {@code retry(...)} on this observable because it will not only resubscribe to the new blocks but
      * also replay the blocks since {@code startBlock}.
      *
