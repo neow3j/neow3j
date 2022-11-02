@@ -2,9 +2,12 @@ package io.neow3j.neofs.lib;
 
 import com.sun.jna.Native;
 
-import java.net.URL;
+import java.io.File;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getArchNameForDarwin;
@@ -12,6 +15,8 @@ import static io.neow3j.neofs.lib.NeoFSLibUtils.getArchNameForLinux;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getArchNameForWindows;
 
 public class NeoFSLibLoader {
+
+    private static final String TEMPORARY_FILE_EXT = ".tmp";
 
     public static NeoFSLibInterface load() throws Exception {
         Path libPath = getLibPath();
@@ -55,8 +60,19 @@ public class NeoFSLibLoader {
 
         String libFileName = String.format("libneofs-%s-%s.so", platformName.get(), archName.get());
 
-        URL url = NeoFSLibLoader.class.getClassLoader().getResource("libs");
-        return Paths.get(Paths.get(url.toURI()).toString(), libFileName);
+        // Method .getResourceAsStream() must be used here since that it's not possible
+        // to find files within JARs with .getResource()
+        InputStream stream = NeoFSLibLoader.class.getClassLoader().getResourceAsStream("libs/" + libFileName);
+
+        File nativeLibTempFile = File.createTempFile(libFileName, TEMPORARY_FILE_EXT);
+        nativeLibTempFile.deleteOnExit();
+        nativeLibTempFile.setWritable(true);
+        nativeLibTempFile.setExecutable(true);
+
+        Path nativeLibTempFilePath = Paths.get(nativeLibTempFile.toURI());
+        Files.copy(stream, nativeLibTempFilePath, StandardCopyOption.REPLACE_EXISTING);
+
+        return nativeLibTempFilePath;
     }
 
 }
