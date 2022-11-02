@@ -2,7 +2,6 @@ package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import io.neow3j.contract.exceptions.InvalidNeoNameException;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
 import io.neow3j.contract.types.NNSName;
@@ -97,9 +96,7 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testTransferNonDivisibleToNNS() throws IOException, InvalidNeoNameException,
-            UnresolvableDomainNameException {
-
+    public void testTransferNonDivisibleToNNS() throws IOException, UnresolvableDomainNameException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_0.json");
         setUpWireMockForInvokeFunction("ownerOf", "nft_ownerof.json");
         setUpWireMockForInvokeFunction("resolve", "nns_resolve_typeTXT.json");
@@ -286,8 +283,7 @@ public class NonFungibleTokenTest {
     }
 
     @Test
-    public void testTransferDivisibleToNNS()
-            throws IOException, InvalidNeoNameException, UnresolvableDomainNameException {
+    public void testTransferDivisibleToNNS() throws IOException, UnresolvableDomainNameException {
         setUpWireMockForInvokeFunction("decimals", "nft_decimals_5.json");
         setUpWireMockForInvokeFunction("resolve", "nns_resolve_typeTXT.json");
 

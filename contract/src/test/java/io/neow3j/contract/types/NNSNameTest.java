@@ -17,13 +17,12 @@ public class NNSNameTest {
     @Test
     public void testInvalidName() {
         String invalidName = "neo..neo";
-        InvalidNeoNameException thrown = assertThrows(InvalidNeoNameException.class,
-                () -> new NNSName(invalidName));
+        InvalidNeoNameException thrown = assertThrows(InvalidNeoNameException.class, () -> new NNSName(invalidName));
         assertThat(thrown.getMessage(), is(format("'%s' is not a valid NNS name.", invalidName)));
     }
 
     @Test
-    public void testSecondLevelDomain() throws InvalidNeoNameException {
+    public void testSecondLevelDomain() {
         assertFalse(new NNSName("third.level.neo").isSecondLevelDomain());
         assertTrue(new NNSName("level.neo").isSecondLevelDomain());
     }
@@ -80,7 +79,7 @@ public class NNSNameTest {
     }
 
     @Test
-    public void testGetBytes() throws InvalidNeoNameException {
+    public void testGetBytes() {
         String name = "neow3j.neo";
         NNSName nnsName = new NNSName(name);
         assertThat(nnsName.getName(), is(name));
@@ -88,7 +87,7 @@ public class NNSNameTest {
     }
 
     @Test
-    public void testRoot() throws InvalidNeoNameServiceRootException {
+    public void testRoot() {
         NNSName.NNSRoot root = new NNSName.NNSRoot("neo");
         assertThat(root.getRoot(), is("neo"));
     }

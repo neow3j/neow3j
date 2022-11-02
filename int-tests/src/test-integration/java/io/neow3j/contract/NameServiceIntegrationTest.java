@@ -1,6 +1,5 @@
 package io.neow3j.contract;
 
-import io.neow3j.contract.exceptions.InvalidNeoNameException;
 import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
 import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.Sign;
@@ -24,7 +23,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Date;
@@ -276,7 +274,7 @@ public class NameServiceIntegrationTest {
     }
 
     @Test
-    public void testIsAvailable() throws IOException, InvalidNeoNameException {
+    public void testIsAvailable() throws IOException {
         // Note: neo.neo and ngd.neo are hard coded and set in the deployment of the NameService contract.
         boolean isAvailable = nameService.isAvailable(ngdDomain);
         assertFalse(isAvailable);
@@ -439,7 +437,7 @@ public class NameServiceIntegrationTest {
     }
 
     @Test
-    public void testGetRecord_notRegistered() throws InvalidNeoNameException {
+    public void testGetRecord_notRegistered() {
         NNSName nnsName = new NNSName("getrecordnotregistered.neo");
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> nameService.getRecord(nnsName, RecordType.TXT));

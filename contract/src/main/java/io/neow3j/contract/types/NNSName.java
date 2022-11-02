@@ -18,7 +18,7 @@ public class NNSName {
      * @param name the domain name.
      * @throws InvalidNeoNameException if the format of the provided name is invalid.
      */
-    public NNSName(String name) throws InvalidNeoNameException {
+    public NNSName(String name) {
         if (!isValidNNSName(name, true)) {
             throw new InvalidNeoNameException(name);
         }
@@ -121,7 +121,7 @@ public class NNSName {
          * @param root the root.
          * @throws InvalidNeoNameServiceRootException if the format of the provided root is invalid.
          */
-        public NNSRoot(String root) throws InvalidNeoNameServiceRootException {
+        public NNSRoot(String root) {
             if (!isValidNNSRoot(root)) {
                 throw new InvalidNeoNameServiceRootException(root);
             }
