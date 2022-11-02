@@ -3,19 +3,19 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.annotations.NativeContract;
-
-import static io.neow3j.devpack.constants.NativeContract.ContractManagementScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
  * Represents an interface to the native ContractManagement contract that is used to manage all deployed smart
  * contracts.
  */
-@NativeContract
 public class ContractManagement extends ContractInterface {
 
+    /**
+     * Initializes an interface to the native ContractManagement contract.
+     */
     public ContractManagement() {
-        super(ContractManagementScriptHash);
+        super(NativeContract.ContractManagementScriptHash);
     }
 
     /**

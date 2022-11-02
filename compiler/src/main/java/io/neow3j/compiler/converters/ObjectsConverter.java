@@ -13,7 +13,6 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.devpack.annotations.NativeContract;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.script.InteropService;
@@ -119,8 +118,8 @@ public class ObjectsConverter implements Converter {
         MethodNode methodNode = getMethodNode((MethodInsnNode) insn, ownerClassNode).get();
         Type[] cTorArgTypes = Type.getType(methodNode.desc).getArgumentTypes();
         int cTorParamLength = cTorArgTypes.length;
-        if (hasAnnotations(ownerClassNode, NativeContract.class)) {
-            return handleNativeContractHash(neoMethod, ownerClassNode, insn);
+        if (cTorParamLength == 0) {
+            return handleConstantContractHash(neoMethod, ownerClassNode, insn);
         }
         if (cTorParamLength == 1) {
             if (getInternalName(Hash160.class).equals(cTorArgTypes[0].getInternalName())) {
@@ -150,15 +149,16 @@ public class ObjectsConverter implements Converter {
         }
     }
 
-    private AbstractInsnNode handleNativeContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
+    // Expects the ctor to exactly contain only a super call with a constant string script hash value.
+    private AbstractInsnNode handleConstantContractHash(NeoMethod neoMethod, ClassNode ownerClassNode,
             AbstractInsnNode ctorInsn) {
 
         MethodNode methodNode = getMethodNode((MethodInsnNode) ctorInsn, ownerClassNode).orElseThrow(
                 () -> new CompilerException("Could not get method node from ctor instruction."));
         AbstractInsnNode abstractInsnNode = methodNode.instructions.get(3);
         if (abstractInsnNode.getType() != AbstractInsnNode.LDC_INSN) {
-            throw new CompilerException(format("Expected %s type node but found %s type.", AbstractInsnNode.LDC_INSN,
-                    abstractInsnNode.getType()));
+            throw new CompilerException(format("Expected a different node instruction type. Expected %s, but was %s.",
+                    AbstractInsnNode.LDC_INSN, abstractInsnNode.getType()));
         }
         LdcInsnNode cstNode = (LdcInsnNode) abstractInsnNode;
         io.neow3j.types.Hash160 scriptHash = new io.neow3j.types.Hash160((String) cstNode.cst);

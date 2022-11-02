@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.rx.Neow3jRx;
+import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -112,6 +113,13 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
+     * @return the NeoNameService resolver script hash that is configured in the {@link Neow3jConfig}.
+     */
+    public Hash160 getNNSResolver() {
+        return config.getNNSResolver();
+    }
+
+    /**
      * Gets the executor service used for polling new blocks from the Neo node.
      * <p>
      * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads as CPUs available
@@ -156,6 +164,15 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public long getMaxValidUntilBlockIncrement() {
         return config.getMaxValidUntilBlockIncrement();
+    }
+
+    /**
+     * Sets the NeoNameService script hash that should be used to resolve NNS domain names.
+     *
+     * @param nnsResolver the NNS resolver script hash.
+     */
+    public void setNNSResolver(Hash160 nnsResolver) {
+        config.setNNSResolver(nnsResolver);
     }
 
 }

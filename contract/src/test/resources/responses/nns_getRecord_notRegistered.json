@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 120,
+  "result": {
+    "script": "IAwaZ2V0cmVjb3Jkbm90cmVnaXN0ZXJlZC5uZW8SwB8MCWdldFJlY29yZAwUcyzMHmaY7IHOfhqoytdkwpneR1lBYn1bUg==",
+    "state": "FAULT",
+    "gasconsumed": "20144220",
+    "exception": "One of the identified items was in an invalid format.",
+    "notifications": [],
+    "stack": []
+  }
+}

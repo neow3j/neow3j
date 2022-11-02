@@ -3,8 +3,6 @@ package io.neow3j.contract;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
@@ -43,7 +41,7 @@ public class TokenIntegrationTest {
     @Test
     public void testSymbol() throws IOException {
         String symbol = token.getSymbol();
-        MatcherAssert.assertThat(symbol, Matchers.is(GasToken.SYMBOL));
+        assertThat(symbol, is(GasToken.SYMBOL));
     }
 
     @Test

@@ -42,7 +42,7 @@
       },
       {
         "name": "properties",
-        "offset": 190,
+        "offset": 184,
         "safe": true,
         "returntype": "Map",
         "parameters": [
@@ -54,7 +54,7 @@
       },
       {
         "name": "balanceOf",
-        "offset": 293,
+        "offset": 341,
         "safe": true,
         "returntype": "Integer",
         "parameters": [
@@ -66,14 +66,14 @@
       },
       {
         "name": "tokens",
-        "offset": 408,
+        "offset": 453,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": []
       },
       {
         "name": "tokensOf",
-        "offset": 457,
+        "offset": 494,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": [
@@ -85,7 +85,7 @@
       },
       {
         "name": "transfer",
-        "offset": 569,
+        "offset": 600,
         "safe": false,
         "returntype": "Boolean",
         "parameters": [
@@ -105,7 +105,7 @@
       },
       {
         "name": "update",
-        "offset": 1100,
+        "offset": 1121,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -121,7 +121,7 @@
       },
       {
         "name": "addRoot",
-        "offset": 1178,
+        "offset": 1291,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -133,14 +133,14 @@
       },
       {
         "name": "roots",
-        "offset": 1504,
+        "offset": 1725,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": []
       },
       {
         "name": "setPrice",
-        "offset": 1540,
+        "offset": 1757,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -152,7 +152,7 @@
       },
       {
         "name": "getPrice",
-        "offset": 1735,
+        "offset": 1952,
         "safe": true,
         "returntype": "Integer",
         "parameters": [
@@ -164,7 +164,7 @@
       },
       {
         "name": "isAvailable",
-        "offset": 1800,
+        "offset": 2017,
         "safe": true,
         "returntype": "Boolean",
         "parameters": [
@@ -176,7 +176,7 @@
       },
       {
         "name": "register",
-        "offset": 2133,
+        "offset": 2405,
         "safe": false,
         "returntype": "Boolean",
         "parameters": [
@@ -192,7 +192,7 @@
       },
       {
         "name": "renew",
-        "offset": 2752,
+        "offset": 3113,
         "safe": false,
         "returntype": "Integer",
         "parameters": [
@@ -203,8 +203,24 @@
         ]
       },
       {
+        "name": "renew",
+        "offset": 3123,
+        "safe": false,
+        "returntype": "Integer",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "years",
+            "type": "Integer"
+          }
+        ]
+      },
+      {
         "name": "setAdmin",
-        "offset": 2987,
+        "offset": 3697,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -220,7 +236,7 @@
       },
       {
         "name": "setRecord",
-        "offset": 3190,
+        "offset": 3921,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -240,7 +256,7 @@
       },
       {
         "name": "getRecord",
-        "offset": 4554,
+        "offset": 5877,
         "safe": true,
         "returntype": "String",
         "parameters": [
@@ -256,7 +272,7 @@
       },
       {
         "name": "getAllRecords",
-        "offset": 4782,
+        "offset": 6201,
         "safe": true,
         "returntype": "InteropInterface",
         "parameters": [
@@ -268,7 +284,7 @@
       },
       {
         "name": "deleteRecord",
-        "offset": 4868,
+        "offset": 6281,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -284,7 +300,7 @@
       },
       {
         "name": "resolve",
-        "offset": 5069,
+        "offset": 6565,
         "safe": true,
         "returntype": "String",
         "parameters": [
@@ -300,7 +316,7 @@
       },
       {
         "name": "_deploy",
-        "offset": 5389,
+        "offset": 7152,
         "safe": false,
         "returntype": "Void",
         "parameters": [
@@ -313,6 +329,13 @@
             "type": "Boolean"
           }
         ]
+      },
+      {
+        "name": "_initialize",
+        "offset": 7514,
+        "safe": false,
+        "returntype": "Void",
+        "parameters": []
       }
     ],
     "events": [
@@ -334,6 +357,40 @@
           {
             "name": "tokenId",
             "type": "ByteArray"
+          }
+        ]
+      },
+      {
+        "name": "SetAdmin",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "oldAdmin",
+            "type": "Hash160"
+          },
+          {
+            "name": "newAdmin",
+            "type": "Hash160"
+          }
+        ]
+      },
+      {
+        "name": "Renew",
+        "parameters": [
+          {
+            "name": "name",
+            "type": "String"
+          },
+          {
+            "name": "oldExpiration",
+            "type": "Integer"
+          },
+          {
+            "name": "newExpiration",
+            "type": "Integer"
           }
         ]
       }
@@ -377,8 +434,8 @@
   ],
   "trusts": [],
   "extra": {
-    "Author": "Erik Zhang",
-    "Email": "erik@neo.org",
+    "Author": "The Neo Project",
+    "Email": "dev@neo.org",
     "Description": "Neo Name Service"
   }
 }

@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.ContractSigner;
 import io.neow3j.transaction.TransactionBuilder;
@@ -97,7 +99,7 @@ public class FungibleToken extends Token {
      * The {@code from} account is set as a signer of the transaction.
      *
      * @param from   the sender account.
-     * @param to     the address of the recipient.
+     * @param to     the script hash of the recipient.
      * @param amount the amount to transfer in token fractions.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -132,8 +134,8 @@ public class FungibleToken extends Token {
      * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
      * {@link ContractSigner} in case the {@code from} address is a contract.
      *
-     * @param from   the sender hash.
-     * @param to     the hash of the recipient.
+     * @param from   the script hash of the sender.
+     * @param to     the script hash of the recipient.
      * @param amount the amount to transfer in token fractions.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -148,7 +150,7 @@ public class FungibleToken extends Token {
      * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
      * {@link ContractSigner} in case the {@code from} address is a contract.
      *
-     * @param from   the sender account.
+     * @param from   the script hash of the sender.
      * @param to     the script hash of the recipient.
      * @param amount the amount to transfer in token fractions.
      * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
@@ -177,5 +179,98 @@ public class FungibleToken extends Token {
     public byte[] buildTransferScript(Hash160 from, Hash160 to, BigInteger amount, ContractParameter data) {
         return buildInvokeFunctionScript(TRANSFER, hash160(from), hash160(to), integer(amount), data);
     }
+
+    // region transfer using NNS
+
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The {@code from} account is set as a signer of the transaction.
+     *
+     * @param from   the sender account.
+     * @param to     the NNS domain name to resolve.
+     * @param amount the amount to transfer in token fractions.
+     * @return a transaction builder ready for signing.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, null);
+    }
+
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The {@code from} account is set as a signer of the transaction.
+     * <p>
+     * Only use this method when the recipient is a deployed smart contract to avoid unnecessary additional fees.
+     * Otherwise, use the method without a contract parameter for data.
+     *
+     * @param from   the sender account.
+     * @param to     the NNS domain name to resolve.
+     * @param amount the amount to transfer in token fractions.
+     * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
+     * @return a transaction builder ready for signing.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from.getScriptHash(), to, amount, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     *
+     * @param from   the sender hash.
+     * @param to     the NNS domain name to resolve.
+     * @param amount the amount to transfer in token fractions.
+     * @return a transaction builder.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, null);
+    }
+
+    /**
+     * Creates a transfer transaction.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     *
+     * @param from   the sender account.
+     * @param to     the NNS domain name to resolve.
+     * @param amount the amount to transfer in token fractions.
+     * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
+     * @return a transaction builder ready for signing.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+
+        Hash160 toScriptHash = resolveNNSTextRecord(to);
+        return transfer(from, toScriptHash, amount, data);
+    }
+
+    // endregion
 
 }

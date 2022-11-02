@@ -16,7 +16,7 @@ public class NonDivisibleNonFungibleToken extends NonFungibleToken {
     /**
      * Initializes an interface to a non-divisible non-fungible smart contract.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */

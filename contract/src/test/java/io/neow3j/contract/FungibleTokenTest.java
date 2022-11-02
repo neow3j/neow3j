@@ -2,6 +2,7 @@ package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
@@ -88,8 +89,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         // 1. Option: Sender is an account
-        Transaction tx = gasToken.transfer(
-                        account1, RECIPIENT_SCRIPT_HASH, new BigInteger("100000000"))
+        Transaction tx = gasToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("100000000"))
                 .getUnsignedTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
@@ -145,5 +145,45 @@ public class FungibleTokenTest {
                 () -> neoToken.transfer(account1, RECIPIENT_SCRIPT_HASH, new BigInteger("-2")));
         assertThat(thrown.getMessage(), is("The amount must be greater than or equal to 0."));
     }
+
+    // region transfer with NNS recipient
+
+    @Test
+    public void transferToNNSName() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
+        setUpWireMockForInvokeFunction("balanceOf", "invokefunction_balanceOf_300000000.json");
+        setUpWireMockForInvokeFunction("resolve", "nns_resolve_typeTXT.json");
+
+        int amount = 3_00000000;
+        NNSName nnsName = new NNSName("neow3j.neo");
+        Hash160 recipient = Hash160.fromAddress("NTXJgQrqxnSFFqKe3oBejnnzjms61Yzb8r");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), "transfer",
+                        asList(hash160(account1.getScriptHash()),
+                                hash160(recipient),
+                                integer(amount),
+                                any(null)))
+                .toArray();
+
+        // 1. Option: Sender is an account
+        Transaction tx = gasToken.transfer(account1, nnsName, BigInteger.valueOf(amount))
+                .getUnsignedTransaction();
+
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(((AccountSigner) tx.getSigners().get(0)).getAccount(), is(account1));
+
+        // 2. Option: Sender is a script hash
+        TransactionBuilder builder = gasToken.transfer(account1.getScriptHash(), nnsName,
+                BigInteger.valueOf(3_00000000));
+
+        assertThat(builder.getScript(), is(expectedScript));
+        assertThat(builder.getSigners().size(), is(0));
+    }
+
+    // endregion
 
 }

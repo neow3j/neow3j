@@ -1,0 +1,58 @@
+{
+  "jsonrpc": "2.0",
+  "id": 147,
+  "result": {
+    "script": "DBlnZXRuYW1lc3RhdGV3aXRoYnl0ZXMubmVvEcAfDApwcm9wZXJ0aWVzDBRzLMweZpjsgc5+GqjK12TCmd5HWUFifVtS",
+    "state": "HALT",
+    "gasconsumed": "6939600",
+    "exception": null,
+    "notifications": [],
+    "stack": [
+      {
+        "type": "Map",
+        "value": [
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "bmFtZQ=="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "Z2V0bmFtZXN0YXRld2l0aGJ5dGVzLm5lbw=="
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "ZXhwaXJhdGlvbg=="
+            },
+            "value": {
+              "type": "Integer",
+              "value": "1698165160330"
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "YWRtaW4="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "Y7/vYJBc2HxW2kBkZEvm966OxIg="
+            }
+          },
+          {
+            "key": {
+              "type": "ByteString",
+              "value": "aW1hZ2U="
+            },
+            "value": {
+              "type": "ByteString",
+              "value": "aHR0cHM6Ly9uZW8zLmF6dXJlZWRnZS5uZXQvaW1hZ2VzL25lb25zLnBuZw=="
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

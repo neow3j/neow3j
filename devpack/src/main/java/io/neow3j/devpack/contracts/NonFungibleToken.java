@@ -16,7 +16,7 @@ public class NonFungibleToken extends Token {
     /**
      * Initializes an interface to a non-fungible token.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */
