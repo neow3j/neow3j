@@ -26,10 +26,6 @@ artifacts {
     testArtifacts testJar
 }
 
-jar {
-    from sourceSets.main.output.resourcesDir
-}
-
 // Todo: build task of this module should depend on the download tasks below
 // Todo: Include all the .so files inside the jar (might be automatically done, but need to check)
 
@@ -44,10 +40,11 @@ task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
     into sourceSets.main.output.resourcesDir
 }
 
-build {
+jar {
     dependsOn downloadAndUnzipLib
+    from sourceSets.main.output.resourcesDir
 }
 
-bundleJar {
+build {
     dependsOn downloadAndUnzipLib
 }
