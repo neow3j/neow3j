@@ -12,8 +12,7 @@ dependencies {
     compile project(":core")
 
     compile "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
-            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion",
-            "io.grpc:grpc-protobuf:$grpcProtobufVersion"
+            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "net.java.dev.jna:jna-platform:$jnaVersion"
