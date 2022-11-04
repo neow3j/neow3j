@@ -4,6 +4,12 @@ plugins {
 
 description 'neow3j: Integration Tests'
 
+// Remove this once neofs-api-java is officially released
+repositories {
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
+
 testSets {
     integrationTest { dirName = 'test-integration' }
 }

@@ -2,10 +2,10 @@ buildscript {
     ext.asmVersion = '9.3'
     ext.bouncycastleVersion = '1.70'
     ext.grpcProtobufVersion = '1.49.0'
-    ext.jacksonVersion = '2.13.4'
+    ext.jacksonVersion = '2.13.4.2'
     ext.javaWebSocketVersion = '1.5.3'
     ext.jnaVersion = '5.12.1'
-    ext.neofsApiJavaVersion = '2.13.1'
+    ext.neofsApiJavaVersion = '2.14.0-SNAPSHOT' // Replace with non-snapshot version once officially released.
     ext.neofsSharedLibVersion = 'v0.0.6'
     ext.okhttpVersion = '4.10.0'
     ext.protobufJavaUtilVersion = '3.21.9'
