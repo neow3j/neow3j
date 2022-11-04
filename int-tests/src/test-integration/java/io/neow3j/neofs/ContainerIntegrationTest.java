@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
@@ -100,7 +101,7 @@ public class ContainerIntegrationTest {
     }
 
     @Test
-    public void testListContainers() throws InvalidProtocolBufferException {
+    public void testListContainers() throws IOException {
         List<String> ids = neoFSClient.listContainers(account.getECKeyPair().getPublicKey());
 
         assertThat(ids, hasSize(greaterThanOrEqualTo(1)));
