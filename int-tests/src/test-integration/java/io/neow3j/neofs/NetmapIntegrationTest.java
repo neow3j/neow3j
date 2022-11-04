@@ -18,11 +18,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 public class NetmapIntegrationTest {
 
     private NeoFSClient neofsClient;
-    private Account account;
 
     @BeforeAll
     public void setUp() throws Throwable {
-        account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
+        Account account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
         neofsClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
     }
 
