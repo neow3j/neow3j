@@ -1,12 +1,13 @@
 package io.neow3j.protocol;
 
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.Async;
 
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * Contains variables that configure a {@link Neow3j} instance. In general this configuration needs to match the
- * configuration of the neo-node you connect to.
+ * configuration of the Neo node you connect to.
  */
 public class Neow3jConfig {
 
@@ -22,6 +23,9 @@ public class Neow3jConfig {
     private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
     private boolean allowTransmissionOnFault = false;
 
+    private static final Hash160 MAINNET_NNS_CONTRACT_HASH = new Hash160("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
+    private Hash160 nnsResolver = MAINNET_NNS_CONTRACT_HASH;
+
     /**
      * Constructs a configuration instance with default values.
      */
@@ -30,12 +34,18 @@ public class Neow3jConfig {
 
     public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
             ScheduledExecutorService scheduledExecutorService) {
+        this(networkMagic, blockInterval, pollingInterval, maxValidUntilBlockIncrement, scheduledExecutorService,
+                MAINNET_NNS_CONTRACT_HASH);
+    }
+
+    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
+            ScheduledExecutorService scheduledExecutorService, Hash160 neoNameServiceScriptHash) {
         this.networkMagic = networkMagic;
         this.blockInterval = blockInterval;
         this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
         this.pollingInterval = pollingInterval;
         this.scheduledExecutorService = scheduledExecutorService;
-
+        this.nnsResolver = neoNameServiceScriptHash;
     }
 
     /**
@@ -134,7 +144,7 @@ public class Neow3jConfig {
      * @return this.
      */
     public Neow3jConfig setNetworkMagic(long magic) {
-        if (magic > 0xFFFFFFFFL || magic < 0L)  {
+        if (magic > 0xFFFFFFFFL || magic < 0L) {
             throw new IllegalArgumentException("The network magic number must fit into a 32-bit unsigned integer, " +
                     "i.e., it must be positive and not greater than 0xFFFFFFFF.");
         }
@@ -185,6 +195,24 @@ public class Neow3jConfig {
      */
     public Neow3jConfig setMaxValidUntilBlockIncrement(long maxValidUntilBlockIncrement) {
         this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
+        return this;
+    }
+
+    /**
+     * @return the NeoNameService resolver script hash.
+     */
+    public Hash160 getNNSResolver() {
+        return this.nnsResolver;
+    }
+
+    /**
+     * Sets the NeoNameService resolver script hash.
+     *
+     * @param resolver the NeoNameService script hash.
+     * @return this.
+     */
+    public Neow3jConfig setNNSResolver(Hash160 resolver) {
+        this.nnsResolver = resolver;
         return this;
     }
 

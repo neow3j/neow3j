@@ -1,18 +1,16 @@
 package io.neow3j.utils;
 
-import static org.awaitility.Awaitility.await;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.notNullValue;
-
-import io.neow3j.types.Hash160;
-import io.neow3j.types.Hash256;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balance;
 import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.response.NeoGetWalletBalance;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
+import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
+import org.hamcrest.Matcher;
+import org.hamcrest.Matchers;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -21,8 +19,10 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-import org.hamcrest.Matcher;
-import org.hamcrest.Matchers;
+import static org.awaitility.Awaitility.await;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 /**
  * Utility class used to wait for blockchain related events like the inclusion of a transaction in a block or the
@@ -40,8 +40,7 @@ public class Await {
      * @param token      the script hash of the token to check the balance for.
      * @param neow3j     the {@code Neow3j} object to use to connect to a neo-node.
      */
-    public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token,
-            Neow3j neow3j) {
+    public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token, Neow3j neow3j) {
         waitUntil(callableGetBalance(scriptHash, token, neow3j), Matchers.greaterThan(0L));
     }
 
@@ -125,11 +124,8 @@ public class Await {
         return () -> {
             try {
                 NeoGetContractState response = neow3j.getContractState(contractHash160).send();
-                if (response.hasError()) {
-                    return false;
-                }
                 return response.getContractState().getHash().equals(contractHash160);
-            } catch (IOException e) {
+            } catch (IOException | RpcResponseErrorException e) {
                 return false;
             }
         };
@@ -138,9 +134,9 @@ public class Await {
     private static Callable<BigInteger> callableGetBlockCount(Neow3j neow3j) {
         return () -> {
             try {
-                NeoBlockCount getBlockCount = neow3j.getBlockCount().send();
-                return getBlockCount.getBlockCount();
-            } catch (IOException e) {
+                NeoBlockCount response = neow3j.getBlockCount().send();
+                return response.getBlockCount();
+            } catch (IOException | RpcResponseErrorException e) {
                 return BigInteger.ZERO;
             }
         };
@@ -155,7 +151,7 @@ public class Await {
                         .findFirst()
                         .map(b -> Long.valueOf(b.getAmount()))
                         .orElse(0L);
-            } catch (IOException e) {
+            } catch (IOException | RpcResponseErrorException e) {
                 return 0L;
             }
         };
@@ -169,7 +165,7 @@ public class Await {
                     return null;
                 }
                 return tx.getHeight().longValue();
-            } catch (IOException e) {
+            } catch (IOException | RpcResponseErrorException e) {
                 return null;
             }
         };
@@ -181,7 +177,7 @@ public class Await {
                 NeoGetWalletBalance response = neow3j.getWalletBalance(token).send();
                 String balance = response.getWalletBalance().getBalance();
                 return new BigDecimal(balance);
-            } catch (IOException e) {
+            } catch (IOException | RpcResponseErrorException e) {
                 return BigDecimal.ZERO;
             }
         };

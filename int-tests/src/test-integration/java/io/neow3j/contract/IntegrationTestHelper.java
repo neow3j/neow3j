@@ -30,19 +30,20 @@ public class IntegrationTestHelper {
     static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
     static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
-    static final Account DEFAULT_ACCOUNT = fromWIF(defaultAccountWIF());
-    static final Account COMMITTEE_ACCOUNT =
+    public static final Account DEFAULT_ACCOUNT = fromWIF(defaultAccountWIF());
+    public static final Account COMMITTEE_ACCOUNT =
             createMultiSigAccount(singletonList(DEFAULT_ACCOUNT.getECKeyPair().getPublicKey()), 1);
-    static final Account CLIENT_1 = fromWIF(client1AccountWIF());
-    static final Account CLIENT_2 = fromWIF(client2AccountWIF());
+    public static final Account CLIENT_1 = fromWIF(client1AccountWIF());
+    public static final Account CLIENT_2 = fromWIF(client2AccountWIF());
 
-    static void fundAccountsWithGas(Neow3j neow3j, BigDecimal amount, Account... accounts) throws Throwable {
+    public static void fundAccountsWithGas(Neow3j neow3j, BigDecimal amount, Account... accounts) throws Throwable {
         GasToken gasToken = new GasToken(neow3j);
         for (Account account : accounts) {
             transferFromGenesisToAccount(neow3j, gasToken, gasToken.toFractions(amount), account);
         }
     }
-    static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
+
+    public static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
         GasToken gasToken = new GasToken(neow3j);
         BigInteger fractions = gasToken.toFractions(new BigDecimal("100000"));
         for (Account account : accounts) {

@@ -17,7 +17,7 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
     /**
      * Initializes an interface to a divisible non-fungible token.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */

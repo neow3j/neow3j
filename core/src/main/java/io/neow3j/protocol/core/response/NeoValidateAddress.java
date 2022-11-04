@@ -3,11 +3,16 @@ package io.neow3j.protocol.core.response;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.util.Objects;
 
 public class NeoValidateAddress extends Response<NeoValidateAddress.Result> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public NeoValidateAddress.Result getValidation() {
         return getResult();
     }

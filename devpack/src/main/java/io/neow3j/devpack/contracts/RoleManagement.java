@@ -1,21 +1,21 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ECPoint;
-import io.neow3j.devpack.annotations.NativeContract;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.constants.Role;
-
-import static io.neow3j.devpack.constants.NativeContract.RoleManagementScriptHash;
 
 /**
  * Represents an interface to the native RoleManagement contract that deals with the assignment of nodes to certain
  * roles. A node can have the roles defined in {@link Role}, e.g., be an oracle node or a validator node. This
  * contract provides the functionality to check the nodes assigned a particular role.
  */
-@NativeContract
 public class RoleManagement extends ContractInterface {
 
+    /**
+     * Initializes an interface to the native RoleManagement contract.
+     */
     public RoleManagement() {
-        super(RoleManagementScriptHash);
+        super(NativeContract.RoleManagementScriptHash);
     }
 
     /**

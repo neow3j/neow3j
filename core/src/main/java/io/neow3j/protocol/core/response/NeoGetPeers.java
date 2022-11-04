@@ -5,12 +5,17 @@ import io.neow3j.protocol.core.Response;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.util.List;
 import java.util.Objects;
 
 public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
 
+    /**
+     * @return the result.
+     * @throws RpcResponseErrorException if the Neo node returned an error.
+     */
     public Peers getPeers() {
         return getResult();
     }

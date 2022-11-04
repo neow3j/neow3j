@@ -1,6 +1,8 @@
 package io.neow3j.contract;
 
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
+import io.neow3j.contract.exceptions.UnresolvableDomainNameException;
+import io.neow3j.contract.types.NNSName;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.ContractSigner;
@@ -11,6 +13,7 @@ import io.neow3j.wallet.Account;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,9 +21,9 @@ import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.StackItemType.ANY;
 import static io.neow3j.types.StackItemType.MAP;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 
 /**
  * Represents a NEP-11 non-fungible token contract and provides methods to invoke it.
@@ -46,7 +49,7 @@ public class NonFungibleToken extends Token {
         super(scriptHash, neow);
     }
 
-    // region Common methods
+    // region Token methods
 
     /**
      * Gets the total amount of NFTs owned by the {@code owner}.
@@ -63,6 +66,9 @@ public class NonFungibleToken extends Token {
         return callFunctionReturningInt(BALANCE_OF, hash160(owner));
     }
 
+    // endregion Token methods
+    // region NFT methods
+
     /**
      * Gets an iterator over the token ids of the tokens that are owned by the {@code owner}.
      *
@@ -71,10 +77,10 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<byte[]> tokensOf(Hash160 owner) throws IOException {
-        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS_OF, hash160(owner));
+        return callFunctionReturningIterator(StackItem::getByteArray, TOKENS_OF, hash160(owner));
     }
 
-    // endregion Common methods
+    // endregion NFT methods
     // region Non-divisible NFT methods
 
     /**
@@ -154,6 +160,103 @@ public class NonFungibleToken extends Token {
             throws IOException {
         throwIfDivisibleNFT();
         return invokeFunction(TRANSFER, hash160(to), byteArray(tokenId), data);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The token owner is set as signer of the transaction. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    the account of the token owner.
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, byte[] tokenId)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, tokenId, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * The token owner is set as a {@code calledByEntry} signer of the transaction. The returned builder is ready to
+     * be signed and sent.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param from    the account of the token owner.
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method of the receiving smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, byte[] tokenId, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+        throwIfSenderIsNotOwner(from.getScriptHash(), tokenId);
+        return transfer(to, tokenId, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(NNSName to, byte[] tokenId) throws IOException, UnresolvableDomainNameException {
+        return transfer(to, tokenId, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * Resolves the text record of the recipient's NNS domain name. The resolved value is expected to be a valid Neo
+     * address.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the owner is a contract.
+     * <p>
+     * This method is intended to be used for non-divisible NFTs only.
+     *
+     * @param to      the NNS domain name to resolve.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(NNSName to, byte[] tokenId, ContractParameter data)
+            throws IOException, UnresolvableDomainNameException {
+        throwIfDivisibleNFT();
+        Hash160 toScriptHash = resolveNNSTextRecord(to);
+        return invokeFunction(TRANSFER, hash160(toScriptHash), byteArray(tokenId), data);
     }
 
     /**
@@ -288,6 +391,98 @@ public class NonFungibleToken extends Token {
     }
 
     /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * The sender is set as signer of the transaction. The returned builder is ready to be signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenID)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * The sender is set as a {@code calledByEntry} signer of the transaction. The returned builder is ready to be
+     * signed and sent.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException, UnresolvableDomainNameException {
+        return transfer(from.getScriptHash(), to, amount, tokenId, data).signers(calledByEntry(from));
+    }
+
+    /**
+     * Creates a transaction script to transfer a non-fungible token and initializes a {@link TransactionBuilder}
+     * based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenID the token ID.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenID)
+            throws IOException, UnresolvableDomainNameException {
+        return transfer(from, to, amount, tokenID, null);
+    }
+
+    /**
+     * Creates a transaction script to transfer an amount of a divisible non-fungible token and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * No signers are set on the returned transaction builder. It is up to you to set the correct ones, e.g., a
+     * {@link ContractSigner} in case the {@code from} address is a contract.
+     * <p>
+     * This method is intended to be used for divisible NFTs only.
+     *
+     * @param from    the sender of the token amount.
+     * @param to      the receiver of the token amount.
+     * @param amount  the fraction amount to transfer.
+     * @param tokenId the token id.
+     * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
+     * @return a transaction builder.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
+     * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
+     */
+    public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, byte[] tokenId,
+            ContractParameter data) throws IOException, UnresolvableDomainNameException {
+        throwIfNonDivisibleNFT();
+        Hash160 toScriptHash = resolveNNSTextRecord(to);
+        return invokeFunction(TRANSFER, hash160(from), hash160(toScriptHash), integer(amount), byteArray(tokenId),
+                data);
+    }
+
+    /**
      * Builds a script that invokes the transfer method on this non-fungible token.
      * <p>
      * This method is intended to be used for divisible NFTs only.
@@ -320,8 +515,7 @@ public class NonFungibleToken extends Token {
      */
     public Iterator<Hash160> ownersOf(byte[] tokenId) throws IOException {
         throwIfNonDivisibleNFT();
-        return callFunctionReturningIterator(i -> Hash160.fromAddress(((StackItem) i).getAddress()), OWNER_OF,
-                byteArray(tokenId));
+        return callFunctionReturningIterator(i -> Hash160.fromAddress(i.getAddress()), OWNER_OF, byteArray(tokenId));
     }
 
     private void throwIfNonDivisibleNFT() throws IOException {
@@ -366,7 +560,7 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<byte[]> tokens() throws IOException {
-        return callFunctionReturningIterator(i -> ((StackItem) i).getByteArray(), TOKENS);
+        return callFunctionReturningIterator(StackItem::getByteArray, TOKENS);
     }
 
     /**
@@ -382,15 +576,30 @@ public class NonFungibleToken extends Token {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Map<String, String> properties(byte[] tokenId) throws IOException {
-        StackItem item = callInvokeFunction(PROPERTIES, singletonList(byteArray(tokenId)))
+        StackItem item = callInvokeFunction(PROPERTIES, asList(byteArray(tokenId)))
                 .getInvocationResult().getStack().get(0);
         if (item.getType().equals(MAP)) {
-            return item.getMap().entrySet().stream().collect(Collectors.toMap(
-                    e -> e.getKey().getString(),
-                    e -> e.getValue().getString()
-            ));
+            return deserializeProperties(item);
         }
         throw new UnexpectedReturnTypeException(item.getType(), MAP);
+    }
+
+    // Deserializes the properties into a map. Expects the values in the stack item map to be of type String. If a
+    // value is of type Any and its value is null, null is added to the map. In other cases, getString() might throw
+    // a StackItemCastException.
+    private Map<String, String> deserializeProperties(StackItem item) {
+        Map<String, String> map = new HashMap<>();
+        for (StackItem k : item.getMap().keySet()) {
+            StackItem valueStackItem = item.getMap().get(k);
+            String value;
+            if (valueStackItem.getType().equals(ANY) && valueStackItem.getValue() == null) {
+                value = null;
+            } else {
+                value = valueStackItem.getString();
+            }
+            map.put(k.getString(), value);
+        }
+        return map;
     }
 
     /**

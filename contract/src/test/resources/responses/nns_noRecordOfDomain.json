@@ -1,11 +1,16 @@
 {
   "jsonrpc": "2.0",
-  "id": 2,
+  "id": 136,
   "result": {
-    "script": "EQwLbWljaGFlbC5uZW8SwB8MCWdldFJlY29yZAwUCiJ0SQeNJR3TWgu9pnYscWYCtpJBYn1bUg==",
-    "state": "FAULT",
-    "gasconsumed": "14316810",
-    "exception": "Invalid type for PICKITEM: Any",
-    "stack": []
+    "script": "IAwbZ2V0cmVjb3Jkbm9yZWNvcmRvZnR5cGUubmVvEsAfDAlnZXRSZWNvcmQMFHMszB5mmOyBzn4aqMrXZMKZ3kdZQWJ9W1I=",
+    "state": "HALT",
+    "gasconsumed": "24253260",
+    "exception": null,
+    "notifications": [],
+    "stack": [
+      {
+        "type": "Any"
+      }
+    ]
   }
 }

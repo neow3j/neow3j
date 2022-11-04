@@ -1,17 +1,17 @@
 package io.neow3j.devpack.contracts;
 
-import io.neow3j.devpack.annotations.NativeContract;
-
-import static io.neow3j.devpack.constants.NativeContract.GasTokenScriptHash;
+import io.neow3j.devpack.constants.NativeContract;
 
 /**
- * Represents an interface to the native GAS token contract.
+ * Represents an interface to the native GasToken contract.
  */
-@NativeContract
 public class GasToken extends FungibleToken {
 
+    /**
+     * Initializes an interface to the native GasToken contract.
+     */
     public GasToken() {
-        super(GasTokenScriptHash);
+        super(NativeContract.GasTokenScriptHash);
     }
 
 }

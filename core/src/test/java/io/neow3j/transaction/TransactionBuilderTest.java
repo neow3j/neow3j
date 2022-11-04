@@ -15,6 +15,7 @@ import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.TestProperties;
@@ -70,7 +71,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -1014,14 +1014,12 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog_notExisting() throws Throwable {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
-                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx" +
-                ".json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog_unknowntx.json");
 
         byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
                 asList(hash160(account1.getScriptHash()),
@@ -1035,7 +1033,7 @@ public class TransactionBuilderTest {
                 .sign();
         tx.send();
 
-        assertNull(tx.getApplicationLog());
+        assertThrows(RpcResponseErrorException.class, tx::getApplicationLog);
     }
 
     @Test

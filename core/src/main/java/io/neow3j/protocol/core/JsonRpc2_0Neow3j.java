@@ -1341,7 +1341,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects) {
 
-        return neow3jRx.replayBlocksObservable(startBlock, endBlock, fullTransactionObjects);
+        return neow3jRx.replayBlocksObservable(startBlock, endBlock, fullTransactionObjects, true);
     }
 
     @Override
@@ -1362,7 +1362,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock,
             boolean fullTransactionObjects) {
 
-        return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects);
+        return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, Observable.empty());
     }
 
     @Override
@@ -1374,8 +1374,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     @Override
-    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects) throws IOException {
-        return neow3jRx.subscribeToNewBlocksObservable(fullTransactionObjects, getPollingInterval());
+    public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects) {
+        return neow3jRx.blockObservable(fullTransactionObjects, getPollingInterval());
     }
 
     @Override

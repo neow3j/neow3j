@@ -14,7 +14,7 @@ public class FungibleToken extends Token {
     /**
      * Initializes an interface to a fungible token.
      * <p>
-     * Use this constructor only with a constant script hash.
+     * Use this constructor only with a string literal.
      *
      * @param contractHash the big-endian contract script hash.
      */
