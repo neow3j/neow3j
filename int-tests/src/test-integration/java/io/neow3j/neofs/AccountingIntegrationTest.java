@@ -2,6 +2,7 @@ package io.neow3j.neofs;
 
 import io.neow3j.neofs.sdk.NeoFSClient;
 import io.neow3j.wallet.Account;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -10,6 +11,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Disabled // Remove for manual testing and once productive
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AccountingIntegrationTest {
 

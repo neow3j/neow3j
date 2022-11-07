@@ -5,6 +5,7 @@ import io.neow3j.neofs.sdk.dto.EndpointResponse;
 import io.neow3j.wallet.Account;
 import neo.fs.v2.netmap.Types;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -14,6 +15,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+@Disabled // Remove for manual testing and once productive
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NetmapIntegrationTest {
 

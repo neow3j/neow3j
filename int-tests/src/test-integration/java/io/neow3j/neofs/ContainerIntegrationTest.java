@@ -7,6 +7,7 @@ import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.wallet.Account;
 import neo.fs.v2.container.Types;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Disabled // Remove for manual testing and once productive
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContainerIntegrationTest {
 
