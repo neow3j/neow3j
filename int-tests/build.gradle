@@ -1,19 +1,50 @@
+plugins {
+    id "de.undercouch.download" version "4.1.2"
+}
+
 description 'neow3j: Integration Tests'
+
+// Remove this once neofs-api-java is officially released
+repositories {
+    mavenCentral()
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+}
 
 testSets {
     integrationTest { dirName = 'test-integration' }
 }
 
 dependencies {
-    testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
-            "org.testcontainers:junit-jupiter:$testcontainersVersion",
-            project(':compiler'),
+    testImplementation project(':compiler'),
             project(':contract'),
             project(':devpack'),
             project(':devpack-test'),
-            project(':test-tools')
+            project(':neofs'),
+            project(':test-tools'),
+            "org.testcontainers:junit-jupiter:$testcontainersVersion",
+            "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
+            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
 }
 
 integrationTest {
     useJUnitPlatform()
 }
+
+task downloadLibZip(type: Download) {
+    src "https://github.com/neow3j/neofs-api-shared-lib/releases/download/$neofsSharedLibVersion/libneofs-all.zip"
+    dest new File(temporaryDir, 'libneofs-all.zip')
+    onlyIfModified true
+}
+
+task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
+    from zipTree(downloadLibZip.dest)
+    into sourceSets.integrationTest.output.resourcesDir
+}
+
+task downloadAndUnzipLibIfDoesntExist() {
+    // execute downloadAndUnzipLib here, but only if files are not there
+//    assert file(sourceSets.main.output.resourcesDir + "$neofsSharedLibVersion" + ".txt").exists()
+    downloadAndUnzipLib
+}
+
+tasks.integrationTest.dependsOn(downloadAndUnzipLib)
