@@ -1,9 +1,7 @@
 package io.neow3j.neofs;
 
 import com.google.protobuf.InvalidProtocolBufferException;
-import io.neow3j.neofs.sdk.BasicACL;
 import io.neow3j.neofs.sdk.NeoFSClient;
-import io.neow3j.neofs.sdk.NeoFSHelper;
 import io.neow3j.neofs.sdk.exceptions.NeoFSLibraryError;
 import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.wallet.Account;
@@ -13,9 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
+import static io.neow3j.neofs.NeoFSIntegrationTestHelper.createSimpleContainer;
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -36,25 +34,6 @@ public class ContainerIntegrationTest {
     public void setUp() throws Throwable {
         account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
         neoFSClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
-    }
-
-    private Types.Container createSimpleContainer(Account ownerAccount) {
-        return Types.Container.newBuilder()
-                .setVersion(NeoFSHelper.createVersion())
-                .setNonce(NeoFSHelper.createNonce())
-                .setOwnerId(NeoFSHelper.createOwnerId(ownerAccount))
-                .setBasicAcl(BasicACL.PUBLIC_BASIC_NAME.value())
-                .setPlacementPolicy(neo.fs.v2.netmap.Types.PlacementPolicy.newBuilder()
-                        .setContainerBackupFactor(0)
-                        .addReplicas(neo.fs.v2.netmap.Types.Replica.newBuilder()
-                                .setCount(0)
-                                .build())
-                        .build())
-                .addAttributes(Types.Container.Attribute.newBuilder()
-                        .setKey("CreatedAt")
-                        .setValue(new Date().toString())
-                        .build())
-                .build();
     }
 
     @Test
