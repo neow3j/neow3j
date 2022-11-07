@@ -6,7 +6,7 @@ buildscript {
     ext.javaWebSocketVersion = '1.5.3'
     ext.jnaVersion = '5.12.1'
     ext.neofsApiJavaVersion = '2.14.0-SNAPSHOT' // Replace with non-snapshot version once officially released.
-    ext.neofsSharedLibVersion = 'v0.0.7'
+    ext.neofsSharedLibVersion = '0.0.7'
     ext.okhttpVersion = '4.10.0'
     ext.protobufJavaUtilVersion = '3.21.9'
     ext.rxjavaVersion = '2.2.21'
