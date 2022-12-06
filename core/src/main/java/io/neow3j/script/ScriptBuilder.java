@@ -256,9 +256,9 @@ public class ScriptBuilder {
 
     public ScriptBuilder pushBoolean(boolean bool) {
         if (bool) {
-            writeByte(OpCode.PUSH1.getCode());
+            writeByte(OpCode.PUSHT.getCode());
         } else {
-            writeByte(OpCode.PUSH0.getCode());
+            writeByte(OpCode.PUSHF.getCode());
         }
         return this;
     }
