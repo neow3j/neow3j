@@ -4,6 +4,7 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
+import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Manifest;
 import io.neow3j.devpack.annotations.DisplayName;
@@ -13,6 +14,7 @@ import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.ObjectMapperFactory;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -78,6 +80,20 @@ public class ContractManagementIntegrationTest {
     }
 
     @Test
+    public void getContractById() throws IOException {
+        int id = 1;
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(id));
+
+        List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(array.get(0).getInteger().intValue(), is(id));
+        assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
+        Hash160 contractHash = new Hash160(reverseHexString(array.get(2).getHexString()));
+        assertThat(contractHash, is(ct.getContract().getScriptHash()));
+        assertThat(array.get(3).getHexString(), not(isEmptyString())); // nef
+        assertThat(array.get(4).getList(), notNullValue()); // manifest
+    }
+
+    @Test
     public void getContractHashes() throws IOException {
         List<StackItem> hashes = ct.callAndTraverseIterator(testName);
         HashMap<BigInteger, Hash160> hashMap = new HashMap<>();
@@ -87,6 +103,12 @@ public class ContractManagementIntegrationTest {
         );
         assertTrue(hashMap.containsKey(BigInteger.ONE));
         assertThat(hashMap.get(BigInteger.ONE), is(ct.getContract().getScriptHash()));
+    }
+
+    @Test
+    public void verifyGetContractHashesWithGetContractMethods() throws IOException {
+        InvocationResult response = ct.callInvokeFunction(testName).getInvocationResult();
+        assertTrue(response.getStack().get(0).getBoolean());
     }
 
     @Test
@@ -294,8 +316,27 @@ public class ContractManagementIntegrationTest {
             return contractManagement.getContract(contractHash);
         }
 
+        public static Contract getContractById(int id) {
+            return contractManagement.getContractById(id);
+        }
+
         public static Iterator<Iterator.Struct<ByteString, io.neow3j.devpack.Hash160>> getContractHashes() {
             return contractManagement.getContractHashes();
+        }
+
+        public static boolean verifyGetContractHashesWithGetContractMethods() {
+            Iterator<Iterator.Struct<ByteString, io.neow3j.devpack.Hash160>> it =
+                    contractManagement.getContractHashes();
+            assert it.next();
+            Iterator.Struct<ByteString, io.neow3j.devpack.Hash160> struct = it.get();
+
+            // Convert the ByteString id from big-endian to little-endian.
+            byte[] id = struct.key.toByteArray();
+            Helper.reverse(id);
+            int littleEndianId = new ByteString(id).toInt();
+            Contract contractById = contractManagement.getContractById(littleEndianId);
+            Contract contractByHash = contractManagement.getContract(struct.value);
+            return contractById.hash == contractByHash.hash;
         }
 
         public static boolean hasMethod(io.neow3j.devpack.Hash160 contractHash, String method, int paramCount) {

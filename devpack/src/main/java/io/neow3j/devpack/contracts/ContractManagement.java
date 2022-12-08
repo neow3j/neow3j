@@ -28,6 +28,14 @@ public class ContractManagement extends ContractInterface {
     public native Contract getContract(Hash160 hash);
 
     /**
+     * Gets the deployed contract with the specified id.
+     *
+     * @param id the contract id.
+     * @return the contract.
+     */
+    public native Contract getContractById(int id);
+
+    /**
      * Gets the ids and hashes of all non native deployed contracts.
      * <p>
      * Each iterator entry is a struct with the id and the contract hash.
