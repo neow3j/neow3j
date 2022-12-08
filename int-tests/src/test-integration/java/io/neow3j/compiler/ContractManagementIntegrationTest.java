@@ -4,10 +4,12 @@ import io.neow3j.contract.NeoToken;
 import io.neow3j.contract.SmartContract;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Manifest;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.OnDeployment;
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.ContractManagement;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -23,12 +25,15 @@ import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
+import io.neow3j.utils.BigIntegers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
+import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.crypto.Sign.signMessage;
@@ -70,6 +75,18 @@ public class ContractManagementIntegrationTest {
         assertThat(reverseHexString(array.get(2).getHexString()), is(NeoToken.SCRIPT_HASH.toString())); // contract hash
         assertThat(array.get(3).getHexString(), not(isEmptyString())); // nef
         assertThat(array.get(4).getList(), notNullValue()); // manifest
+    }
+
+    @Test
+    public void getContractHashes() throws IOException {
+        List<StackItem> hashes = ct.callAndTraverseIterator(testName);
+        HashMap<BigInteger, Hash160> hashMap = new HashMap<>();
+        hashes.forEach(h ->
+                hashMap.put(BigIntegers.fromBigEndianHexString(h.getList().get(0).getHexString()),
+                        new Hash160(reverseHexString(h.getList().get(1).getHexString())))
+        );
+        assertTrue(hashMap.containsKey(BigInteger.ONE));
+        assertThat(hashMap.get(BigInteger.ONE), is(ct.getContract().getScriptHash()));
     }
 
     @Test
@@ -268,19 +285,25 @@ public class ContractManagementIntegrationTest {
                 is(reverseHexString(TestProperties.contractManagementHash())));
     }
 
-    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
+    @Permission(nativeContract = NativeContract.ContractManagement)
     static class ContractManagementIntegrationTestContract {
 
+        static final ContractManagement contractManagement = new ContractManagement();
+
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
-            return new ContractManagement().getContract(contractHash);
+            return contractManagement.getContract(contractHash);
+        }
+
+        public static Iterator<Iterator.Struct<ByteString, io.neow3j.devpack.Hash160>> getContractHashes() {
+            return contractManagement.getContractHashes();
         }
 
         public static boolean hasMethod(io.neow3j.devpack.Hash160 contractHash, String method, int paramCount) {
-            return new ContractManagement().hasMethod(contractHash, method, paramCount);
+            return contractManagement.hasMethod(contractHash, method, paramCount);
         }
 
         public static boolean[] checkManifestValues(io.neow3j.devpack.Hash160 contractHash) {
-            Manifest manifest = new ContractManagement().getContract(contractHash).manifest;
+            Manifest manifest = contractManagement.getContract(contractHash).manifest;
             boolean[] objs = new boolean[4];
             objs[0] = manifest.name == "NeoToken";
             objs[1] = manifest.abi.methods.get(0).name == "balanceOf";
@@ -290,19 +313,19 @@ public class ContractManagementIntegrationTest {
         }
 
         public static io.neow3j.devpack.Hash160 getHash() {
-            return new ContractManagement().getHash();
+            return contractManagement.getHash();
         }
 
         public static Contract deployWithoutData(ByteString nefFile, String manifest) {
-            return new ContractManagement().deploy(nefFile, manifest);
+            return contractManagement.deploy(nefFile, manifest);
         }
 
         public static Contract deployWithData(ByteString nefFile, String manifest, Object data) {
-            return new ContractManagement().deploy(nefFile, manifest, data);
+            return contractManagement.deploy(nefFile, manifest, data);
         }
     }
 
-    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
+    @Permission(nativeContract = NativeContract.ContractManagement)
     static class ContractManagementIntegrationTestContractToUpdateWithData {
 
         public static void updateWithData(ByteString nefFile, String manifest, Object data) {
@@ -310,7 +333,7 @@ public class ContractManagementIntegrationTest {
         }
     }
 
-    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
+    @Permission(nativeContract = NativeContract.ContractManagement)
     static class ContractManagementIntegrationTestContractToUpdateWithoutData {
 
         public static void updateWithoutData(ByteString nefFile, String manifest) {
@@ -360,7 +383,7 @@ public class ContractManagementIntegrationTest {
         }
     }
 
-    @Permission(contract = "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")
+    @Permission(nativeContract = NativeContract.ContractManagement)
     static class ContractManagementIntegrationTestContractToDestroy {
 
         public static void destroy() {
