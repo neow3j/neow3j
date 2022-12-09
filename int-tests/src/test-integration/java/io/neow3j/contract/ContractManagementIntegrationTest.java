@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.crypto.Base64;
+import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractState;
@@ -49,15 +50,15 @@ public class ContractManagementIntegrationTest {
     private static Neow3j neow3j;
     private static ContractManagement contractManagement;
 
-
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractManagement = new ContractManagement(neow3j);
+        NeoNameServiceTestHelper.deployNNS(neow3j, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
     }
 
     @Test
@@ -87,6 +88,18 @@ public class ContractManagementIntegrationTest {
 
         minimumDeploymentFee = contractManagement.getMinimumDeploymentFee();
         assertThat(minimumDeploymentFee, is(newDeploymentFee));
+    }
+
+    @Test
+    public void testGetContract() throws IOException {
+        ContractState contract = contractManagement.getContract(NeoToken.SCRIPT_HASH);
+        assertThat(contract.getManifest().getName(), is(NeoToken.NAME));
+    }
+
+    @Test
+    public void testGetContractById() throws IOException {
+        ContractState contract = contractManagement.getContractById(1);
+        assertThat(contract.getManifest().getName(), is("NameService"));
     }
 
     @Test

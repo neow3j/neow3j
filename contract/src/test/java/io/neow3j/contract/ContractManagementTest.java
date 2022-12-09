@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.serialization.exceptions.DeserializationException;
@@ -103,6 +104,39 @@ public class ContractManagementTest {
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
                 is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testGetContract() throws IOException {
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+
+        Hash160 contractHash = new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83");
+        ContractState state = new ContractManagement(neow3j).getContract(contractHash);
+
+        assertThat(state.getHash(), is(contractHash));
+        assertThat(state.getManifest().getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testGetContractById() throws IOException {
+        setUpWireMockForInvokeFunction("getContractById", "management_getContract.json");
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+
+        Hash160 contractHash = new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83");
+        ContractState state = new ContractManagement(neow3j).getContractById(12);
+
+        assertThat(state.getHash(), is(contractHash));
+        assertThat(state.getId(), is(12));
+        assertThat(state.getManifest().getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testGetContractById_nonExistent() throws IOException {
+        setUpWireMockForCall("invokefunction", "management_contractstate_notexistent.json");
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).getContractById(20));
+        assertThat(thrown.getMessage(), is("Could not get the contract hash for the provided id."));
     }
 
     @Test
