@@ -43,12 +43,11 @@ public class StdLib extends ContractInterface {
      * [0] StackItemType.ARRAY
      * [1] 0x02 // Number of field variables on the object
      * [2] StackItemType.BOOLEAN // type of first variable, could also be INTEGER
-     * [3] 0x01 // byte size of the variable's value
-     * [4] 0x01 // the variable's value
-     * [5] StackItemType.INTEGER // type of second variable
-     * [6] 0x02 // byte size of the variable's value
-     * [7] 0x45 // part 1 of the variable's value (little-endian)
-     * [8] 0x7D // part 2 of the variable's value (little-endian)
+     * [3] 0x01 // the variable's value (no byte size required, since boolean values have size 1)
+     * [4] StackItemType.INTEGER // type of second variable
+     * [5] 0x02 // byte size of the variable's value
+     * [6] 0x45 // part 1 of the variable's value (little-endian)
+     * [7] 0x7D // part 2 of the variable's value (little-endian)
      * </pre>
      *
      * @param source the object to serialize.
