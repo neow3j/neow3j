@@ -130,11 +130,8 @@ public class ContractManagement extends SmartContract {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<ContractState.ContractIdentifiers> getContractHashesUnwrapped() throws IOException {
-        List<StackItem> list = callFunctionAndUnwrapIterator(GET_CONTRACT_HASHES, asList(),
-                DEFAULT_ITERATOR_COUNT);
-        return list
-                .stream().map(ContractState.ContractIdentifiers::fromStackItem)
-                .collect(Collectors.toList());
+        List<StackItem> list = callFunctionAndUnwrapIterator(GET_CONTRACT_HASHES, asList(), DEFAULT_ITERATOR_COUNT);
+        return list.stream().map(ContractState.ContractIdentifiers::fromStackItem).collect(Collectors.toList());
     }
 
     /**
