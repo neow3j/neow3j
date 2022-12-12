@@ -89,8 +89,7 @@ public class InstanceOfIntegrationTest {
 
     @Test
     public void instanceOfBoolean() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                bool(true));
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
