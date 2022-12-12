@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
@@ -100,6 +101,29 @@ public class ContractManagementIntegrationTest {
     public void testGetContractById() throws IOException {
         ContractState contract = contractManagement.getContractById(1);
         assertThat(contract.getManifest().getName(), is("NameService"));
+    }
+
+    @Test
+    public void testGetContractHashes() throws IOException {
+        Iterator<ContractState.ContractIdentifiers> it = contractManagement.getContractHashes();
+        List<ContractState.ContractIdentifiers> identifiers = it.traverse(2);
+
+        assertThat(identifiers.size(), is(1));
+        assertThat(identifiers.get(0).getHash(), is(neow3j.getNNSResolver()));
+        assertThat(identifiers.get(0).getId(), is(BigInteger.ONE));
+    }
+
+    @Test
+    public void testGetContractHashesUnwrapped() throws IOException {
+        List<ContractState.ContractIdentifiers> list = contractManagement.getContractHashesUnwrapped();
+
+        assertThat(list.size(), is(1));
+        ContractState.ContractIdentifiers expected = new ContractState.ContractIdentifiers(BigInteger.ONE,
+                neow3j.getNNSResolver());
+
+        assertThat(list.get(0), is(expected));
+        assertThat(list.get(0).getId(), is(BigInteger.ONE));
+        assertThat(list.get(0).getHash(), is(neow3j.getNNSResolver()));
     }
 
     @Test
