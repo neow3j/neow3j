@@ -842,7 +842,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(9));
+        assertThat(plugins, hasSize(10));
     }
 
     @Test
