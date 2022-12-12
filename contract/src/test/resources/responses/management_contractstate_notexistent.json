@@ -1,0 +1,27 @@
+{
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+        "script": "ERHAHwwPZ2V0Q29udHJhY3RCeUlkDBT9o/pDRupTKiWPxJfdrdtkN8n9/0FifVtS",
+        "state": "HALT",
+        "gasconsumed": "2028120",
+        "exception": null,
+        "notifications": [],
+        "diagnostics": {
+            "invokedcontracts": {
+                "hash": "0xc246f62c321d258d38095185df815e8463260a15",
+                "call": [
+                    {
+                        "hash": "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd"
+                    }
+                ]
+            },
+            "storagechanges": []
+        },
+        "stack": [
+            {
+                "type": "Any"
+            }
+        ]
+    }
+}

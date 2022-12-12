@@ -5,6 +5,7 @@ import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.serialization.exceptions.DeserializationException;
@@ -24,6 +25,7 @@ import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.constants.NeoConstants.MAX_MANIFEST_SIZE;
@@ -41,6 +43,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -68,8 +71,7 @@ public class ContractManagementTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
-                new Neow3jConfig().setNetworkMagic(769));
+        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
     }
 
@@ -103,6 +105,61 @@ public class ContractManagementTest {
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
                 is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testGetContract() throws IOException {
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+
+        Hash160 contractHash = new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83");
+        ContractState state = new ContractManagement(neow3j).getContract(contractHash);
+
+        assertThat(state.getHash(), is(contractHash));
+        assertThat(state.getManifest().getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testGetContractById() throws IOException {
+        setUpWireMockForInvokeFunction("getContractById", "management_getContract.json");
+        setUpWireMockForCall("getcontractstate", "contractstate.json");
+
+        Hash160 contractHash = new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83");
+        ContractState state = new ContractManagement(neow3j).getContractById(12);
+
+        assertThat(state.getHash(), is(contractHash));
+        assertThat(state.getId(), is(12));
+        assertThat(state.getManifest().getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testGetContractById_nonExistent() throws IOException {
+        setUpWireMockForCall("invokefunction", "management_contractstate_notexistent.json");
+
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ContractManagement(neow3j).getContractById(20));
+        assertThat(thrown.getMessage(), is("Could not get the contract hash for the provided id."));
+    }
+
+    @Test
+    public void testGetContractHashes() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_iterator_session.json");
+
+        Iterator<ContractState.ContractIdentifiers> it = new ContractManagement(neow3j).getContractHashes();
+        assertThat(it.getSessionId(), is("a7b35b13-bdfc-4ab3-a398-88a9db9da4fe"));
+        assertThat(it.getIteratorId(), is("190d19ca-e935-4ad0-95c9-93b8cf6d115c"));
+    }
+
+    @Test
+    public void testGetContractHashesUnwrapped() throws IOException {
+        setUpWireMockForCall("invokescript", "management_hashes_unwrapped.json");
+
+        List<ContractState.ContractIdentifiers> list = new ContractManagement(neow3j).getContractHashesUnwrapped();
+        assertThat(list.size(), is(2));
+        assertThat(list.get(0).getId(), is(BigInteger.ONE));
+        assertThat(list.get(0).getHash(), is(new Hash160("5947de99c264d7caa81a7ece81ec98661ecc2c73")));
+        ContractState.ContractIdentifiers expected = new ContractState.ContractIdentifiers(BigInteger.valueOf(2),
+                new Hash160("3bbf19136b9a7f65b76e3f36b8c137f07d0fa4de"));
+        assertEquals(expected, list.get(1));
     }
 
     @Test

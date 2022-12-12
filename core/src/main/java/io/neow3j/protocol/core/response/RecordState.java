@@ -51,7 +51,7 @@ public class RecordState {
 
     public static RecordState fromStackItem(StackItem stackItem) {
         if (!stackItem.getType().equals(StackItemType.ARRAY)) {
-            throw new IllegalArgumentException("asdf");
+            throw new IllegalArgumentException("Could not deserialise RecordState from the stack item.");
         }
         List<StackItem> list = stackItem.getList();
         String name = list.get(0).getString();

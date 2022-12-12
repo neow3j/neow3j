@@ -1,0 +1,208 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "script": "DBTepA998DfBuDY/brdlf5prExm/OxHAHwwLZ2V0Q29udHJhY3QMFP2j+kNG6lMqJY/El92t22Q3yf3/QWJ9W1I=",
+    "state": "HALT",
+    "gasconsumed": "2028330",
+    "exception": null,
+    "notifications": [],
+    "diagnostics": {
+      "invokedcontracts": {
+        "hash": "0x6fe3f2c6b6ec2f9a604e54a551c89731396d90f4",
+        "call": [
+          {
+            "hash": "0xfffdc93764dbaddd97c48f252a53ea4643faa3fd"
+          }
+        ]
+      },
+      "storagechanges": []
+    },
+    "stack": [
+      {
+        "type": "Array",
+        "value": [
+          {
+            "type": "Integer",
+            "value": "2"
+          },
+          {
+            "type": "Integer",
+            "value": "0"
+          },
+          {
+            "type": "ByteString",
+            "value": "3qQPffA3wbg2P263ZX+aaxMZvzs="
+          },
+          {
+            "type": "ByteString",
+            "value": "TkVGM25lb3czai0zLjE5LjEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACNXAAJYeHlTQeY/GIQRQFcAAVh4UEGSXegxQFYBQZv2Z85gQFIZE9Y="
+          },
+          {
+            "type": "Struct",
+            "value": [
+              {
+                "type": "ByteString",
+                "value": "U2ltcGxlU3RvcmFnZUNvbnRyYWN0"
+              },
+              {
+                "type": "Array",
+                "value": []
+              },
+              {
+                "type": "Map",
+                "value": []
+              },
+              {
+                "type": "Array",
+                "value": []
+              },
+              {
+                "type": "Struct",
+                "value": [
+                  {
+                    "type": "Array",
+                    "value": [
+                      {
+                        "type": "Struct",
+                        "value": [
+                          {
+                            "type": "ByteString",
+                            "value": "cHV0U29tZXRoaW5n"
+                          },
+                          {
+                            "type": "Array",
+                            "value": [
+                              {
+                                "type": "Struct",
+                                "value": [
+                                  {
+                                    "type": "ByteString",
+                                    "value": "a2V5"
+                                  },
+                                  {
+                                    "type": "Integer",
+                                    "value": "19"
+                                  }
+                                ]
+                              },
+                              {
+                                "type": "Struct",
+                                "value": [
+                                  {
+                                    "type": "ByteString",
+                                    "value": "dmFsdWU="
+                                  },
+                                  {
+                                    "type": "Integer",
+                                    "value": "19"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "16"
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "0"
+                          },
+                          {
+                            "type": "Boolean",
+                            "value": false
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Struct",
+                        "value": [
+                          {
+                            "type": "ByteString",
+                            "value": "Z2V0U29tZXRoaW5n"
+                          },
+                          {
+                            "type": "Array",
+                            "value": [
+                              {
+                                "type": "Struct",
+                                "value": [
+                                  {
+                                    "type": "ByteString",
+                                    "value": "a2V5"
+                                  },
+                                  {
+                                    "type": "Integer",
+                                    "value": "19"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "18"
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "14"
+                          },
+                          {
+                            "type": "Boolean",
+                            "value": false
+                          }
+                        ]
+                      },
+                      {
+                        "type": "Struct",
+                        "value": [
+                          {
+                            "type": "ByteString",
+                            "value": "X2luaXRpYWxpemU="
+                          },
+                          {
+                            "type": "Array",
+                            "value": []
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "255"
+                          },
+                          {
+                            "type": "Integer",
+                            "value": "26"
+                          },
+                          {
+                            "type": "Boolean",
+                            "value": false
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "type": "Array",
+                    "value": []
+                  }
+                ]
+              },
+              {
+                "type": "Array",
+                "value": []
+              },
+              {
+                "type": "Array",
+                "value": []
+              },
+              {
+                "type": "ByteString",
+                "value": "eyJuYW1lIjoiU2ltcGxlU3RvcmFnZUNvbnRyYWN0In0="
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
