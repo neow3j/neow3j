@@ -9,7 +9,7 @@ import static java.lang.String.format;
 /**
  * This enum contains a <b>subset</b> of NeoVM opcodes.
  * <p>
- * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/neo-vm/OpCode.cs">here</a> for a complete list.
+ * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/Neo.VM/OpCode.cs">here</a> for a complete list.
  */
 public enum OpCode {
 
@@ -33,6 +33,16 @@ public enum OpCode {
 
     @OperandSize(size = 32)
     PUSHINT256(0x05, 1 << 2),
+
+    /**
+     * Pushes the boolean value {@code true} onto the stack.
+     */
+    PUSHT(0x08, 1),
+
+    /**
+     * Pushes the boolean value {@code false} onto the stack.
+     */
+    PUSHF(0x09, 1),
 
     /**
      * Convert the next four bytes to an address, and push the address onto the stack.

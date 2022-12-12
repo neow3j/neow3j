@@ -44,13 +44,12 @@ public class StdLibIntegrationTest {
         byte[] result = response.getInvocationResult().getStack().get(0).getByteArray();
         assertThat(result[0], is(StackItemType.ARRAY.byteValue()));
         assertThat(result[1], is((byte) 0x02)); // Number of elements
-        assertThat(result[2], is(StackItemType.INTEGER.byteValue())); // type of first element
-        assertThat(result[3], is((byte) 0x01)); // size of value
-        assertThat(result[4], is((byte) 0x01)); // the value
-        assertThat(result[5], is(StackItemType.INTEGER.byteValue())); // type of first element
-        assertThat(result[6], is((byte) 0x02)); // size of value
-        assertThat(result[7], is((byte) 0x45)); // part 1 of the value (little-endian)
-        assertThat(result[8], is((byte) 0x7D)); // part 2 of the value (little-endian)
+        assertThat(result[2], is(StackItemType.BOOLEAN.byteValue())); // type of first element
+        assertThat(result[3], is((byte) 0x01)); // the boolean value
+        assertThat(result[4], is(StackItemType.INTEGER.byteValue())); // type of first element
+        assertThat(result[5], is((byte) 0x02)); // size of value
+        assertThat(result[6], is((byte) 0x45)); // part 1 of the value (little-endian)
+        assertThat(result[7], is((byte) 0x7D)); // part 2 of the value (little-endian)
     }
 
     @Test
@@ -66,7 +65,7 @@ public class StdLibIntegrationTest {
     public void jsonSerialize() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(true), integer(5), string("hello, world!"));
         String res = response.getInvocationResult().getStack().get(0).getString();
-        assertThat(res, is("[1,5,\"hello, world!\"]"));
+        assertThat(res, is("[true,5,\"hello, world!\"]"));
     }
 
     @Test
