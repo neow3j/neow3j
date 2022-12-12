@@ -347,8 +347,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
-        assertThat(nef1.getChecksum(), is(3443651689L));
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
+        assertThat(nef1.getChecksum(), is(1094259016L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -356,12 +356,12 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getSupportedStandards(), hasSize(0));
 
         ContractABI abi1 = manifest1.getAbi();
-        assertThat(abi1.getMethods(), hasSize(9));
-        assertThat(abi1.getMethods().get(8).getName(), is("update"));
-        assertThat(abi1.getMethods().get(8).getParameters(), hasSize(3));
-        assertThat(abi1.getMethods().get(8).getReturnType(), is(ContractParameterType.VOID));
-        assertThat(abi1.getMethods().get(8).getOffset(), is(56));
-        assertFalse(abi1.getMethods().get(8).isSafe());
+        assertThat(abi1.getMethods(), hasSize(11));
+        assertThat(abi1.getMethods().get(10).getName(), is("update"));
+        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(3));
+        assertThat(abi1.getMethods().get(10).getReturnType(), is(ContractParameterType.VOID));
+        assertThat(abi1.getMethods().get(10).getOffset(), is(70));
+        assertFalse(abi1.getMethods().get(10).isSafe());
         assertThat(abi1.getEvents(), hasSize(3));
         assertThat(abi1.getEvents().get(1).getName(), is("Update"));
         assertThat(abi1.getEvents().get(1).getParameters(), hasSize(1));
@@ -374,6 +374,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getPermissions().get(0).getMethods().get(0), is("*"));
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
+
+        assertThat(contractState1.getUpdateHistory(), hasSize(1));
+        assertThat(contractState1.getUpdateHistory().get(0), is(0));
 
         NativeContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId(), is(-9));
@@ -414,6 +417,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getPermissions().get(0).getMethods().get(0), is("*"));
         assertThat(manifest8.getTrusts(), hasSize(0));
         assertNull(manifest8.getExtra());
+
+        assertThat(contractState8.getUpdateHistory(), hasSize(1));
+        assertThat(contractState8.getUpdateHistory().get(0), is(0));
     }
 
     @Test
