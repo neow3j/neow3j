@@ -188,11 +188,6 @@ public class ObjectsConverter implements Converter {
     private void handleInstanceOf(TypeInsnNode typeInsn, NeoMethod neoMethod) {
         Type type = Type.getObjectType(typeInsn.desc);
         StackItemType stackItemType = Compiler.mapTypeToStackItemType(type);
-        if (stackItemType.equals(StackItemType.BOOLEAN)) {
-            // The Boolean stack item almost never appears because bool values are usually represented as 0 and 1
-            // valued integer stack items.
-            stackItemType = StackItemType.INTEGER;
-        }
         if (stackItemType.equals(StackItemType.ANY)) {
             throw new CompilerException(neoMethod, format("The type '%s' is not supported for the instanceof " +
                     "operation.", getFullyQualifiedNameForInternalName(type.getInternalName())));
