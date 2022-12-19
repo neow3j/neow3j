@@ -95,6 +95,37 @@ Update the boilerplate repos (i.e., [sdk template](https://github.com/neow3j/neo
 [contracts template](https://github.com/neow3j/neow3j-boilerplate-sdk)) gradle.build file and possibly the example
 contract if major changes happened.
 
+## Update neow3j-test-docker
+
+1. Clone repo: `git clone git@github.com:neow3j/neow3j-test-docker.git`
+2. Open the `Dockerfile` and modify the version in the neo-express installation line:
+   ```dockerfile
+   RUN dotnet tool install Neo.Express -g --version 3.4.18
+   ```
+   If you need to depend on a preview release use the following command and adapt the version:
+   ```dockerfile
+   RUN dotnet tool install Neo.Express -g \
+     --add-source https://pkgs.dev.azure.com/ngdenterprise/Build/_packaging/public/nuget/v3/index.json \
+     --version 3.5.11-preview
+   ```
+   Instructions can also be found [here](https://github.com/neo-project/neo-express#installing-preview-releases).
+3. Build the docker image with the tags `latest` and the corresponding neo-express version:
+   ```dockerfile
+   docker build -t ghcr.io/neow3j/neow3j-test-docker:latest .
+   docker build -t ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18 .
+   ```
+4. Push the docker images to the GitHub container repository. 
+   ```dockerfile
+   docker push ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18
+   docker push ghcr.io/neow3j/neow3j-test-docker:latest
+   ```
+   Requires login to ghcr.io. The password is a GitHub access token generated with the correct permissions for 
+   container uploads.
+   ```bash
+   docker login ghcr.io -u <github_username>
+   ```
+6. Adapt `neoExpressDockerImage` in the `test-tools` application properties file.
+
 ## Publish GitHub Release
 
 1. Update the README.md in all neow3j repositories if necessary.
