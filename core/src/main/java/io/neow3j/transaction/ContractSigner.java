@@ -8,10 +8,11 @@ import java.util.List;
 
 /**
  * This signer represents a smart contract instead of a normal account. You can use this in transactions that require
- * the verification of through a smart contract, e.g., if you want to withdraw tokens from a contract you own.
+ * the verification of a smart contract, e.g., if you want to withdraw tokens from a contract you own.
  * <p>
- * Using such a signer will make Neo call the {@code verify()} method of the corresponding contract. If that {@code
- * verify()} method expects parameters, they can be set via
+ * Using such a signer will make Neo call the {@code verify()} method of the corresponding contract.
+ * <p>
+ * Make sure to provide the necessary contract parameters if the contract's {@code verify()} method expects any.
  */
 public class ContractSigner extends Signer {
 
