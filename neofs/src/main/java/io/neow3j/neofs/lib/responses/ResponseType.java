@@ -12,6 +12,9 @@ public enum ResponseType {
     // Container
     CONTAINER("container.Container"),
     CONTAINER_ID("cid.ID"),
+    // Object
+    OBJECT("object.Object"),
+    OBJECT_ID("oid.ID"),
 
     STRING("string"),
     ERROR("error"),
