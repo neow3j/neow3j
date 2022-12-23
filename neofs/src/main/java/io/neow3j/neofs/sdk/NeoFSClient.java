@@ -77,6 +77,14 @@ public class NeoFSClient {
         return new String(getResponseBytes(response));
     }
 
+    private static String getPrivateKeyForNativeLib(ECKeyPair ecKeyPair) {
+        return Numeric.toHexStringNoPrefix(ecKeyPair.getPrivateKey().getBytes());
+    }
+
+    private static String getPrivateKeyForNativeLib(Account account) {
+        return getPrivateKeyForNativeLib(account.getECKeyPair());
+    }
+
     //region client
 
     // Todo: Delete a client
@@ -202,10 +210,70 @@ public class NeoFSClient {
     //endregion container
     //region object
 
-    // Todo: Write Object
-//    // returns writerId
-//    public String initializeObjectWriter() {
-//        return null;
+    /**
+     * Creates an object (i.e., writes the given {@code fileBytes}) in the container with {@code containerId}
+     * within a session opened with the given {@code signerAccount}.
+     *
+     * @param containerId   the container id.
+     * @param fileBytes     the file bytes to write.
+     * @param signerAccount the signer account.
+     * @return the object id.
+     */
+    public String createObject(String containerId, byte[] fileBytes, Account signerAccount)
+            throws NeoFSLibraryError, UnexpectedResponseTypeException {
+
+        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
+        StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, containerId, fileBytes,
+                fileBytes.length, signerPrivateKey);
+        throwIfUnexpectedResponseType(response, ResponseType.OBJECT_ID);
+        return response.value;
+    }
+
+    /**
+     * Reads the object with {@code objectId} from the container with {@code containerId}.
+     *
+     * @param containerId   the container id.
+     * @param objectId      the object id.
+     * @param signerAccount the signer account.
+     * @return the object id.
+     */
+    public byte[] readObject(String containerId, String objectId, Account signerAccount)
+            throws NeoFSLibraryError, UnexpectedResponseTypeException {
+
+        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
+        PointerResponse response = nativeLib.ReadObject(clientId, containerId, objectId, signerPrivateKey);
+        throwIfUnexpectedResponseType(response, ResponseType.OBJECT);
+        return getResponseBytes(response);
+    }
+
+//    public String createObject(String containerId, byte[] fileBytes, Account signerAccount) {
+//        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
+//        StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, fileBytes, fileBytes.length,
+//                signerPrivateKey, containerId);
+////        throwIfUnexpectedResponseType();
+//        return response.getValue();
+//    }
+
+//    public String writeAndReadObject(String containerId, byte[] fileBytes, Account signerAccount)
+//            throws NeoFSLibraryError, UnexpectedResponseTypeException {
+//
+//        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
+//        StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, fileBytes, fileBytes.length,
+//                signerPrivateKey,
+//                containerId);
+////        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
+//
+//        System.out.println(response.getValue());
+//
+//        PointerResponse readResponse = nativeLib.ReadObject(clientId, containerId, response.getValue(),
+//                signerPrivateKey);
+//
+//        return response.getValue();
+////        PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
+////
+////        String containerListJson = new String(getResponseBytes(response));
+////        ContainerListResponse respDTO = readJson(containerListJson, ContainerListResponse.class);
+////        return respDTO.getContainerIDs();
 //    }
 //
 //    public void writeObject(String writerId) {
