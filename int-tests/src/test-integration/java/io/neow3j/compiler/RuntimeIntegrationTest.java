@@ -1,20 +1,29 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.crypto.ECKeyPair;
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Transaction;
+import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.script.InteropService;
+import io.neow3j.script.OpCode;
+import io.neow3j.script.ScriptBuilder;
+import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
+import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
@@ -24,8 +33,12 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.types.ContractParameter.array;
+import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.publicKey;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -130,6 +143,46 @@ public class RuntimeIntegrationTest {
     }
 
     @Test
+    public void loadScript() throws IOException {
+        byte[] script = new ScriptBuilder().pushInteger(100).pushInteger(42).opCode(OpCode.ADD).toArray();
+        InvocationResult result = ct.callInvokeFunction(testName,
+                        byteArray(script), integer(CallFlags.ReadOnly), array())
+                .getInvocationResult();
+        StackItem stackItem = result.getStack().get(0);
+        assertThat(stackItem.getInteger().intValue(), is(142));
+    }
+
+    @Test
+    public void checkMultiSigWitnessDynamicallyWithLoadScript() throws IOException {
+        byte[] script = new ScriptBuilder()
+                .sysCall(InteropService.SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT)
+                .toArray();
+
+        Account account1 = Account.create();
+        ECKeyPair.ECPublicKey pubKey1 = account1.getECKeyPair().getPublicKey();
+        Account account2 = Account.create();
+        ECKeyPair.ECPublicKey pubKey2 = account2.getECKeyPair().getPublicKey();
+        Account account3 = Account.create();
+        ECKeyPair.ECPublicKey pubKey3 = account3.getECKeyPair().getPublicKey();
+        Account multiSigAccount = Account.createMultiSigAccount(
+                asList(
+                        pubKey1,
+                        pubKey2,
+                        pubKey3
+                ), 2);
+
+        InvocationResult result = ct.getContract().callInvokeFunction(testName,
+                asList(
+                        byteArray(script),
+                        array(2, array(publicKey(pubKey1), publicKey(pubKey2), publicKey(pubKey3)))
+                ),
+                AccountSigner.calledByEntry(multiSigAccount)).getInvocationResult();
+
+        assertThat(result.getState(), is(NeoVMStateType.HALT));
+        assertThat(result.getStack().get(0).getAddress(), is(multiSigAccount.getAddress()));
+    }
+
+    @Test
     public void getTime() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(greaterThan(BigInteger.ZERO)));
@@ -217,6 +270,18 @@ public class RuntimeIntegrationTest {
 
         public static Transaction getScriptContainer() {
             return (Transaction) Runtime.getScriptContainer();
+        }
+
+        public static Object loadScript(ByteString script, byte callFlags, Object[] arguments) {
+            return Runtime.loadScript(script, callFlags, arguments);
+        }
+
+        public static Hash160 checkMultiSigWitnessDynamicallyWithLoadScript(ByteString script, Object[] multiSigArgs) {
+            Hash160 multiSig = (Hash160) Runtime.loadScript(script, CallFlags.None, multiSigArgs);
+            if (!Runtime.checkWitness(multiSig)) {
+                Helper.abort();
+            }
+            return multiSig;
         }
 
         public static int getTime() {
