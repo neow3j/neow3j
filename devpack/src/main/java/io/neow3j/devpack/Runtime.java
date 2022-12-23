@@ -134,6 +134,23 @@ public class Runtime {
     public static native Hash160 getEntryScriptHash();
 
     /**
+     * This method loads the provided bytecode script and executes it with the given call flags and arguments.
+     * <p>
+     * The execution context is limited to read-only ({@link io.neow3j.devpack.constants.CallFlags#ReadOnly})
+     * regardless of the provided call flags (i.e., only providing more restrictive call flags will take effect).
+     * <p>
+     * The provided script is expected to return none or exactly one value. In any case, this method always returns
+     * one value, which is {@code null} if the script did not return anything.
+     * <p>
+     * Note, that this is similar to a contract call, i.e., the script can {@code ABORT} the transaction or throw an
+     * exception. Thus, make sure to handle this appropriately.
+     *
+     * @return the return value of the script execution, or null if there was no return value.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_LOADSCRIPT)
+    public static native Object loadScript(ByteString script, byte callFlags, Object[] arguments);
+
+    /**
      * Burns the given amount of GAS in the current invocation. The GAS is taken from the amount available to the
      * invocation (system fee). Any overflow is not consumed from the transaction sender's GAS balance.
      *
