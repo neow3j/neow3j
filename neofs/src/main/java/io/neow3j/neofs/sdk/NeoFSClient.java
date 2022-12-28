@@ -6,13 +6,14 @@ import com.google.protobuf.util.JsonFormat;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
+import io.neow3j.neofs.lib.responses.NeoFSLibError;
 import io.neow3j.neofs.lib.responses.PointerResponse;
 import io.neow3j.neofs.lib.responses.Response;
 import io.neow3j.neofs.lib.responses.ResponseType;
 import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.neofs.sdk.dto.ContainerListResponse;
 import io.neow3j.neofs.sdk.dto.EndpointResponse;
-import io.neow3j.neofs.sdk.exceptions.NeoFSLibraryError;
+import io.neow3j.neofs.sdk.exceptions.NeoFSClientException;
 import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
@@ -23,6 +24,7 @@ import java.util.List;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getBoolean;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
+import static java.lang.String.format;
 
 public class NeoFSClient {
 
@@ -41,13 +43,23 @@ public class NeoFSClient {
     /**
      * Creates a new NeoFSLib instance with an already loaded native library.
      *
-     * @param lib the loaded library.
+     * @param lib      the loaded library.
+     * @param account  the account used for signing when interacting with NeoFS.
+     * @param endpoint the gRPC endpoint of the NeoFS node to connect to.
      */
     public static NeoFSClient initialize(NeoFSLib lib, Account account, String endpoint) {
         String clientId = createClient(lib, account, endpoint);
         return new NeoFSClient(lib, clientId);
     }
 
+    /**
+     * Loads the native library and initializes a new NeoFSLib instance.
+     *
+     * @param account  the account used for signing when interacting with NeoFS.
+     * @param endpoint the gRPC endpoint of the NeoFS node to connect to.
+     * @return an initialized NeoFSClient instance.
+     * @throws Exception if there was a problem when loading the native library.
+     */
     public static NeoFSClient loadAndInitialize(Account account, String endpoint) throws Exception {
         return initialize(new NeoFSLib(), account, endpoint);
     }
@@ -81,7 +93,7 @@ public class NeoFSClient {
         return Numeric.toHexStringNoPrefix(ecKeyPair.getPrivateKey().getBytes());
     }
 
-    private static String getPrivateKeyForNativeLib(Account account) {
+    public static String getPrivateKeyForNativeLib(Account account) {
         return getPrivateKeyForNativeLib(account.getECKeyPair());
     }
 
@@ -107,8 +119,11 @@ public class NeoFSClient {
      * @return the NeoFS balance.
      * @throws InvalidProtocolBufferException if the response bytes cannot be converted to the decimal protobuf type.
      */
-    public neo.fs.v2.accounting.Types.Decimal getBalance(ECKeyPair.ECPublicKey pubKey) throws Exception {
+    public neo.fs.v2.accounting.Types.Decimal getBalance(ECKeyPair.ECPublicKey pubKey)
+            throws InvalidProtocolBufferException {
+
         PointerResponse response = nativeLib.GetBalance(clientId, pubKey.getEncodedCompressedHex());
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.DECIMAL);
         byte[] responseBytes = getResponseBytes(response);
         return neo.fs.v2.accounting.Types.Decimal.parseFrom(responseBytes);
@@ -123,8 +138,9 @@ public class NeoFSClient {
      * @return the endpoint.
      * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} object.
      */
-    public EndpointResponse getEndpoint() throws Exception {
+    public EndpointResponse getEndpoint() throws IOException {
         PointerResponse response = nativeLib.GetEndpoint(clientId);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.ENDPOINT);
         String endpointJson = new String(getResponseBytes(response));
         return readJson(endpointJson, EndpointResponse.class);
@@ -137,9 +153,9 @@ public class NeoFSClient {
      * @throws InvalidProtocolBufferException if the response bytes cannot be converted to the network info protobuf
      *                                        type.
      */
-    public Types.NetworkInfo getNetworkInfo()
-            throws InvalidProtocolBufferException, UnexpectedResponseTypeException, NeoFSLibraryError {
+    public Types.NetworkInfo getNetworkInfo() throws InvalidProtocolBufferException {
         PointerResponse response = nativeLib.GetNetworkInfo(clientId);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.NETWORK);
         return Types.NetworkInfo.parseFrom(getResponseBytes(response));
     }
@@ -155,13 +171,13 @@ public class NeoFSClient {
      * @param container the container.
      * @return the container id.
      * @throws InvalidProtocolBufferException  if the container protobuf type cannot be converted to JSON format.
-     * @throws NeoFSLibraryError               if the shared library returns an error.
+     * @throws NeoFSLibError                   if the shared library returns an error.
      * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
      */
-    public String createContainer(neo.fs.v2.container.Types.Container container)
-            throws InvalidProtocolBufferException, NeoFSLibraryError, UnexpectedResponseTypeException {
+    public String createContainer(neo.fs.v2.container.Types.Container container) throws InvalidProtocolBufferException {
         String containerJson = JsonFormat.printer().print(container);
         StringResponse response = nativeLib.PutContainer(clientId, containerJson);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
         return response.value;
     }
@@ -171,14 +187,14 @@ public class NeoFSClient {
      *
      * @param containerId the container id.
      * @return the container.
-     * @throws NeoFSLibraryError               if the shared library returns an error.
+     * @throws NeoFSLibError                   if the shared library returns an error.
      * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
      * @throws InvalidProtocolBufferException  if the response bytes cannot be converted to the container protobuf
      *                                         type.
      */
-    public neo.fs.v2.container.Types.Container getContainer(String containerId)
-            throws NeoFSLibraryError, UnexpectedResponseTypeException, InvalidProtocolBufferException {
+    public neo.fs.v2.container.Types.Container getContainer(String containerId) throws InvalidProtocolBufferException {
         PointerResponse response = nativeLib.GetContainer(clientId, containerId);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.CONTAINER);
         return neo.fs.v2.container.Types.Container.parseFrom(getResponseBytes(response));
     }
@@ -188,8 +204,9 @@ public class NeoFSClient {
      *
      * @param containerId the container id.
      */
-    public boolean deleteContainer(String containerId) throws NeoFSLibraryError, UnexpectedResponseTypeException {
+    public boolean deleteContainer(String containerId) {
         PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.BOOLEAN);
         return getBoolean(response);
     }
@@ -202,6 +219,8 @@ public class NeoFSClient {
      */
     public List<String> listContainers(ECKeyPair.ECPublicKey ownerPubKey) throws IOException {
         PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
+        throwIfLibError(response);
+        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_LIST);
         String containerListJson = new String(getResponseBytes(response));
         ContainerListResponse respDTO = readJson(containerListJson, ContainerListResponse.class);
         return respDTO.getContainerIDs();
@@ -219,12 +238,11 @@ public class NeoFSClient {
      * @param signerAccount the signer account.
      * @return the object id.
      */
-    public String createObject(String containerId, byte[] fileBytes, Account signerAccount)
-            throws NeoFSLibraryError, UnexpectedResponseTypeException {
-
+    public String createObject(String containerId, byte[] fileBytes, Account signerAccount) {
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, containerId, fileBytes,
                 fileBytes.length, signerPrivateKey);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.OBJECT_ID);
         return response.value;
     }
@@ -237,96 +255,54 @@ public class NeoFSClient {
      * @param signerAccount the signer account.
      * @return the object id.
      */
-    public byte[] readObject(String containerId, String objectId, Account signerAccount)
-            throws NeoFSLibraryError, UnexpectedResponseTypeException {
-
+    public byte[] readObject(String containerId, String objectId, Account signerAccount) {
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         PointerResponse response = nativeLib.ReadObject(clientId, containerId, objectId, signerPrivateKey);
+        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.OBJECT);
         return getResponseBytes(response);
     }
 
-//    public String createObject(String containerId, byte[] fileBytes, Account signerAccount) {
-//        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
-//        StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, fileBytes, fileBytes.length,
-//                signerPrivateKey, containerId);
-////        throwIfUnexpectedResponseType();
-//        return response.getValue();
-//    }
-
-//    public String writeAndReadObject(String containerId, byte[] fileBytes, Account signerAccount)
-//            throws NeoFSLibraryError, UnexpectedResponseTypeException {
-//
-//        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
-//        StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, fileBytes, fileBytes.length,
-//                signerPrivateKey,
-//                containerId);
-////        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
-//
-//        System.out.println(response.getValue());
-//
-//        PointerResponse readResponse = nativeLib.ReadObject(clientId, containerId, response.getValue(),
-//                signerPrivateKey);
-//
-//        return response.getValue();
-////        PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
-////
-////        String containerListJson = new String(getResponseBytes(response));
-////        ContainerListResponse respDTO = readJson(containerListJson, ContainerListResponse.class);
-////        return respDTO.getContainerIDs();
-//    }
-//
-//    public void writeObject(String writerId) {
-//    }
-//
-//    public void closeObjectWriter(String writerId) {
-//    }
-
-    // Todo: Read Object
-//    // returns readerId
-//    public void initializeObjectReader() {
-//    }
-//
-//    // returns read bytes
-//    public byte[] readObject(String readerId) {
-//        return null;
-//    }
-//
-//    public void closeObjectReader() {
-//    }
-
-    // Todo: Delete Object
-    // returns read tombstone id
-//    public String deleteObject(String containerId, String objectId, neo.fs.v2.session.Types.SessionToken sessionToken,
-//            neo.fs.v2.acl.Types.BearerToken bearerToken) {
-//        return null;
-//    }
+    /**
+     * Deletes the object with {@code objectId} from the container with {@code containerId}.
+     *
+     * @param containerId   the container id.
+     * @param objectId      the object id.
+     * @param signerAccount the signer account.
+     * @return the tombstone id.
+     */
+    public String deleteObject(String containerId, String objectId, Account signerAccount) {
+        String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
+        StringResponse response = nativeLib.DeleteObject(clientId, containerId, objectId, signerPrivateKey);
+        throwIfLibError(response);
+        throwIfUnexpectedResponseType(response, ResponseType.OBJECT_ID);
+        return response.value;
+    }
 
     //endregion object
     //region helper
 
-    private void throwIfUnexpectedResponseType(Response response, ResponseType expectedType)
-            throws UnexpectedResponseTypeException, NeoFSLibraryError {
+    private <T> T readJson(String response, Class<T> clazz) throws IOException {
+        return mapper.readValue(response, clazz);
+    }
 
-        if (response.isType(ResponseType.ERROR)) {
-            if (response instanceof StringResponse) {
-                String errorMsg = ((StringResponse) response).value;
-                throw new NeoFSLibraryError(errorMsg);
-            } else if (response instanceof PointerResponse) {
-                PointerResponse pointerResponse = (PointerResponse) response;
-                String errorMsg = new String((pointerResponse).value.getByteArray(0, (pointerResponse).length));
-                throw new NeoFSLibraryError(errorMsg);
-            } else {
-                throw new NeoFSLibraryError("Shared library returned an error that could not be read.");
-            }
-        }
-        if (!response.isType(expectedType)) {
-            throw new UnexpectedResponseTypeException(expectedType, response.getType());
+    private void throwIfLibError(Response response) {
+        if (response.isError()) {
+            NeoFSLibError error = response.getError();
+            throw new NeoFSClientException(
+                    format("The native Lib returned an error with message '%s'.", error.getMessage()));
         }
     }
 
-    private <T> T readJson(String response, Class<T> clazz) throws IOException {
-        return mapper.readValue(response, clazz);
+    private void throwIfUnexpectedResponseType(Response response, ResponseType expectedType) {
+        if (!response.isResponseType(expectedType)) {
+            if (response instanceof StringResponse) {
+                String responseString = ((StringResponse) response).value;
+                throw new UnexpectedResponseTypeException(expectedType, response.type, responseString);
+            } else {
+                throw new UnexpectedResponseTypeException(expectedType, response.type);
+            }
+        }
     }
 
     //endregion helper

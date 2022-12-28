@@ -2,8 +2,6 @@ package io.neow3j.neofs;
 
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.neofs.sdk.NeoFSClient;
-import io.neow3j.neofs.sdk.exceptions.NeoFSLibraryError;
-import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.wallet.Account;
 import neo.fs.v2.container.Types;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,20 +31,20 @@ public class ContainerIntegrationTest {
     private Account account;
 
     @BeforeAll
-    public void setUp() throws Throwable {
+    public void setUp() throws Exception {
         account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
         neoFSClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
     }
 
     @Test
-    public void testCreateContainer() throws Exception {
+    public void testCreateContainer() throws InvalidProtocolBufferException {
         String containerId = neoFSClient.createContainer(createSimpleContainer(account));
         assertNotNull(containerId);
         assertFalse(containerId.isEmpty());
     }
 
     @Test
-    public void testGetContainer() throws Exception {
+    public void testGetContainer() throws InvalidProtocolBufferException, InterruptedException {
         Types.Container simpleContainer = createSimpleContainer(account);
         String containerId = neoFSClient.createContainer(simpleContainer);
 
@@ -61,9 +59,7 @@ public class ContainerIntegrationTest {
     }
 
     @Test
-    public void testDeleteContainer() throws NeoFSLibraryError, InvalidProtocolBufferException,
-            UnexpectedResponseTypeException, InterruptedException {
-
+    public void testDeleteContainer() throws InvalidProtocolBufferException, InterruptedException {
         Types.Container simpleContainer = createSimpleContainer(account);
         String containerId = neoFSClient.createContainer(simpleContainer);
         Thread.sleep(1000);
@@ -75,9 +71,7 @@ public class ContainerIntegrationTest {
     }
 
     @Test
-    public void testListContainers() throws IOException, NeoFSLibraryError, UnexpectedResponseTypeException,
-            InterruptedException {
-
+    public void testListContainers() throws IOException, InterruptedException {
         Types.Container firstContainer = createSimpleContainer(account);
         String firstContainerId = neoFSClient.createContainer(firstContainer);
         Thread.sleep(2000);

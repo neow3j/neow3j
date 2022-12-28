@@ -10,11 +10,12 @@ public enum ResponseType {
     NETWORK("netmap.NetworkInfo"),
     ENDPOINT("netmap.EndpointResponse"),
     // Container
-    CONTAINER("container.Container"),
     CONTAINER_ID("cid.ID"),
+    CONTAINER("container.Container"),
+    CONTAINER_LIST("container.ListResponse"),
     // Object
-    OBJECT("object.Object"),
     OBJECT_ID("oid.ID"),
+    OBJECT("object.Object"),
 
     STRING("string"),
     ERROR("error"),
@@ -32,8 +33,7 @@ public enum ResponseType {
                 return e;
             }
         }
-        throw new IllegalArgumentException(format("There exists no supported response type with the provided string " +
-                "value. The provided string value was %s.", type));
+        throw new IllegalArgumentException(format("No ResponseType match found for '%s'.", type));
     }
 
     @Override
