@@ -19,7 +19,7 @@ public class NeoFSIntegrationTestHelper {
                 .setOwnerId(NeoFSHelper.createOwnerId(ownerAccount))
                 .setBasicAcl(BasicACL.PUBLIC_BASIC_NAME.value())
                 .setPlacementPolicy(neo.fs.v2.netmap.Types.PlacementPolicy.newBuilder()
-                        .setContainerBackupFactor(1)
+                        .setContainerBackupFactor(0)
                         .addReplicas(neo.fs.v2.netmap.Types.Replica.newBuilder()
                                 .setCount(1)
                                 .build())

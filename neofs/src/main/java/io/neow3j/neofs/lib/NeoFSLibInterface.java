@@ -52,6 +52,8 @@ public interface NeoFSLibInterface extends Library {
 
     PointerResponse ReadObject(String clientId, String cointainerId, String objectId, String signerPrivateKey);
 
+    StringResponse DeleteObject(String clientId, String cointainerId, String objectId, String signerPrivateKey);
+
 //    PointerResponse PutObjectInit(String clientId, String containerId);
 
 //    PointerResponse DeleteObject(String clientId, String containerId, String objectId, String sessionToken,
