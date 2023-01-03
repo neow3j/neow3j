@@ -78,6 +78,7 @@ public class ObjectIntegrationTest {
         assertThat(new String(readBytes), is(testText));
 
         String tombstoneId = neofsClient.deleteObject(containerId, objectId, account);
+        Thread.sleep(2000); // Wait for object deletion to persist.
         byte[] tombstoneBytes = neofsClient.readObject(containerId, tombstoneId, account);
         Types.Tombstone tombstone = Types.Tombstone.parseFrom(tombstoneBytes);
         assertNotNull(tombstone);
