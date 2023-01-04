@@ -109,22 +109,15 @@ contract if major changes happened.
      --version 3.5.11-preview
    ```
    Instructions can also be found [here](https://github.com/neo-project/neo-express#installing-preview-releases).
-3. Build the docker image with the tags `latest` and the corresponding neo-express version:
+3. You can build the docker image locally to run tests: 
    ```dockerfile
    docker build -t ghcr.io/neow3j/neow3j-test-docker:latest .
-   docker build -t ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18 .
+   docker build -t ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18 . 
    ```
-4. Push the docker images to the GitHub container repository. 
-   ```dockerfile
-   docker push ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18
-   docker push ghcr.io/neow3j/neow3j-test-docker:latest
-   ```
-   Requires login to ghcr.io. The password is a GitHub access token generated with the correct permissions for 
-   container uploads.
-   ```bash
-   docker login ghcr.io -u <github_username>
-   ```
-6. Adapt `neoExpressDockerImage` in the `test-tools` application properties file.
+   Adapt `neoExpressDockerImage` in the `test-tools` application properties file to the new tag.
+4. To publish the new docker image run the GitHub workflow called "Build and Publish container" on the 
+   neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g., 
+   `neoxp-3.4.18`.
 
 ## Publish GitHub Release
 
