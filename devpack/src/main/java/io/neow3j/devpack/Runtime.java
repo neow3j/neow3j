@@ -145,6 +145,9 @@ public class Runtime {
      * Note, that this is similar to a contract call, i.e., the script can {@code ABORT} the transaction or throw an
      * exception. Thus, make sure to handle this appropriately.
      *
+     * @param script    the script to load into the NeoVM.
+     * @param callFlags the execution context to use.
+     * @param arguments the arguments to use.
      * @return the return value of the script execution, or null if there was no return value.
      */
     @Instruction(interopService = InteropService.SYSTEM_RUNTIME_LOADSCRIPT)
