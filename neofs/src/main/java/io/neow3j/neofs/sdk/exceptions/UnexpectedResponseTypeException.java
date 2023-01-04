@@ -4,6 +4,9 @@ import io.neow3j.neofs.lib.responses.ResponseType;
 
 import static java.lang.String.format;
 
+/**
+ * Thrown when the shared-lib returns a response type that was unexpected.
+ */
 public class UnexpectedResponseTypeException extends RuntimeException {
 
     public UnexpectedResponseTypeException(String message) {
