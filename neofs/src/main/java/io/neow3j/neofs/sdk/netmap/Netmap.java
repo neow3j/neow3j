@@ -19,8 +19,8 @@ public class Netmap {
     /**
      * Gets the endpoint this client is interfacing with.
      *
-     * @param nativeLib     the native lib.
-     * @param clientId      the client id.
+     * @param nativeLib the native lib.
+     * @param clientId  the client id.
      * @return the endpoint.
      * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} object.
      */
@@ -35,8 +35,8 @@ public class Netmap {
     /**
      * Gets the network information this client is interfacing with.
      *
-     * @param nativeLib     the native lib.
-     * @param clientId      the client id.
+     * @param nativeLib the native lib.
+     * @param clientId  the client id.
      * @return the network information.
      * @throws InvalidProtocolBufferException if the response bytes cannot be converted to the network info protobuf
      *                                        type.

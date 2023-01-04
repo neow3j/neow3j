@@ -16,9 +16,9 @@ public class Accounting {
     /**
      * Gets the NeoFS balance for the provided account with {@code pubKey}.
      *
-     * @param nativeLib     the native lib.
-     * @param clientId      the client id.
-     * @param pubKey the public key.
+     * @param nativeLib the native lib.
+     * @param clientId  the client id.
+     * @param pubKey    the public key.
      * @return the NeoFS balance.
      * @throws InvalidProtocolBufferException if the response bytes cannot be converted to the decimal protobuf type.
      */
