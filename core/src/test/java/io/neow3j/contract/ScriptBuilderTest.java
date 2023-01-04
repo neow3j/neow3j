@@ -289,7 +289,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
     @Test
     public void testMap_nested() {
         HashMap<ContractParameter, ContractParameter> map = new HashMap<>();
-        map.put(integer(1), string("first"));
+        map.put(bool(false), string("first"));
 
         HashMap<ContractParameter, ContractParameter> nestedMap = new HashMap<>();
         nestedMap.put(integer(10), string("nestedFirst"));
@@ -300,7 +300,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
                 new ScriptBuilder()
                         // first map entry
                         .pushData("first")
-                        .pushInteger(1)
+                        .pushBoolean(false)
 
                         // second map entry
                         .pushData("nestedFirst")
@@ -325,7 +325,7 @@ public class ScriptBuilderTest extends TestBinaryUtils {
 
                         // second map entry
                         .pushData("first")
-                        .pushInteger(1)
+                        .pushBoolean(false)
 
                         .pushInteger(2)
                         .opCode(OpCode.PACKMAP)

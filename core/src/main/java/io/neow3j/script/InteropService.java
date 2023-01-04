@@ -36,6 +36,7 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETEXECUTINGSCRIPTHASH("System.Runtime.GetExecutingScriptHash", 1 << 4),
     SYSTEM_RUNTIME_GETCALLINGSCRIPTHASH("System.Runtime.GetCallingScriptHash", 1 << 4),
     SYSTEM_RUNTIME_GETENTRYSCRIPTHASH("System.Runtime.GetEntryScriptHash", 1 << 4),
+    SYSTEM_RUNTIME_LOADSCRIPT("System.Runtime.LoadScript", 1 << 15),
     SYSTEM_RUNTIME_CHECKWITNESS("System.Runtime.CheckWitness", 1 << 10),
     SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
     SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),

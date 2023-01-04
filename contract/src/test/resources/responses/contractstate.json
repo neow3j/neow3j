@@ -2,7 +2,7 @@
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "id": -1,
+    "id": 12,
     "updatecounter": 0,
     "hash": "0xf61eebf573ea36593fd43aa150c055ad7906ab83",
     "nef": {

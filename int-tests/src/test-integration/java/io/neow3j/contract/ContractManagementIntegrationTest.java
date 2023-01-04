@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.crypto.Base64;
+import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractState;
@@ -20,6 +21,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
 import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
@@ -49,15 +51,15 @@ public class ContractManagementIntegrationTest {
     private static Neow3j neow3j;
     private static ContractManagement contractManagement;
 
-
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws Throwable {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         contractManagement = new ContractManagement(neow3j);
+        NeoNameServiceTestHelper.deployNNS(neow3j, COMMITTEE_ACCOUNT, DEFAULT_ACCOUNT);
     }
 
     @Test
@@ -87,6 +89,41 @@ public class ContractManagementIntegrationTest {
 
         minimumDeploymentFee = contractManagement.getMinimumDeploymentFee();
         assertThat(minimumDeploymentFee, is(newDeploymentFee));
+    }
+
+    @Test
+    public void testGetContract() throws IOException {
+        ContractState contract = contractManagement.getContract(NeoToken.SCRIPT_HASH);
+        assertThat(contract.getManifest().getName(), is(NeoToken.NAME));
+    }
+
+    @Test
+    public void testGetContractById() throws IOException {
+        ContractState contract = contractManagement.getContractById(1);
+        assertThat(contract.getManifest().getName(), is("NameService"));
+    }
+
+    @Test
+    public void testGetContractHashes() throws IOException {
+        Iterator<ContractState.ContractIdentifiers> it = contractManagement.getContractHashes();
+        List<ContractState.ContractIdentifiers> identifiers = it.traverse(2);
+
+        assertThat(identifiers.size(), is(1));
+        assertThat(identifiers.get(0).getHash(), is(neow3j.getNNSResolver()));
+        assertThat(identifiers.get(0).getId(), is(BigInteger.ONE));
+    }
+
+    @Test
+    public void testGetContractHashesUnwrapped() throws IOException {
+        List<ContractState.ContractIdentifiers> list = contractManagement.getContractHashesUnwrapped();
+
+        assertThat(list.size(), is(1));
+        ContractState.ContractIdentifiers expected = new ContractState.ContractIdentifiers(BigInteger.ONE,
+                neow3j.getNNSResolver());
+
+        assertThat(list.get(0), is(expected));
+        assertThat(list.get(0).getId(), is(BigInteger.ONE));
+        assertThat(list.get(0).getHash(), is(neow3j.getNNSResolver()));
     }
 
     @Test

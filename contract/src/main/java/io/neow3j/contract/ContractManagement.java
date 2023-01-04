@@ -5,18 +5,25 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.ContractManifest;
+import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 /**
  * Represents a Management contract and provides methods to invoke it.
@@ -28,6 +35,8 @@ public class ContractManagement extends SmartContract {
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
+    private static final String GET_CONTRACT_BY_ID = "getContractById";
+    private static final String GET_CONTRACT_HASHES = "getContractHashes";
     private static final String HAS_METHOD = "hasMethod";
     private static final String DEPLOY = "deploy";
 
@@ -62,6 +71,67 @@ public class ContractManagement extends SmartContract {
      */
     public TransactionBuilder setMinimumDeploymentFee(BigInteger minimumFee) {
         return invokeFunction(SET_MINIMUM_DEPLOYMENT_FEE, integer(minimumFee));
+    }
+
+    /**
+     * Gets the contract state of the contract with {@code contractHash}.
+     * <p>
+     * Makes use of the RPC {@link io.neow3j.protocol.core.JsonRpc2_0Neow3j#getContractState(Hash160)}.
+     *
+     * @param contractHash the contract hash.
+     * @return the contract state.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public ContractState getContract(Hash160 contractHash) throws IOException {
+        return neow3j.getContractState(contractHash).send().getContractState();
+    }
+
+    /**
+     * Gets the contract state of the contract with {@code id}.
+     * <p>
+     * Makes use of the RPC {@link io.neow3j.protocol.core.JsonRpc2_0Neow3j#getContractState(Hash160)}.
+     *
+     * @param id the contract id.
+     * @return the contract state.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public ContractState getContractById(int id) throws IOException {
+        return neow3j.getContractState(getContractHashById(id)).send().getContractState();
+    }
+
+    private Hash160 getContractHashById(int id) throws IOException {
+        InvocationResult response = callInvokeFunction(GET_CONTRACT_BY_ID, asList(integer(id))).getInvocationResult();
+        try {
+            return new Hash160(reverseArray(response.getStack().get(0).getList().get(2).getByteArray()));
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Could not get the contract hash for the provided id.");
+        }
+    }
+
+    /**
+     * Get all non native contract hashes and ids.
+     *
+     * @return all non native contract hashes and ids.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public  Iterator<ContractState.ContractIdentifiers> getContractHashes() throws IOException {
+        return callFunctionReturningIterator(ContractState.ContractIdentifiers::fromStackItem, GET_CONTRACT_HASHES);
+    }
+
+    /**
+     * Get all non native contract hashes and ids.
+     * <p>
+     * Use this method if sessions are disabled on the Neo node.
+     * <p>
+     * This method returns at most {@link NeoConstants#MAX_ITERATOR_ITEMS_DEFAULT} values. If there are more values,
+     * connect to a Neo node that supports sessions and use {@link ContractManagement#getContractHashes()}.
+     *
+     * @return all non native contract hashes and ids.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public List<ContractState.ContractIdentifiers> getContractHashesUnwrapped() throws IOException {
+        List<StackItem> list = callFunctionAndUnwrapIterator(GET_CONTRACT_HASHES, asList(), DEFAULT_ITERATOR_COUNT);
+        return list.stream().map(ContractState.ContractIdentifiers::fromStackItem).collect(Collectors.toList());
     }
 
     /**

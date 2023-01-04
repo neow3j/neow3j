@@ -109,7 +109,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public static native Boolean getBoolean(StorageContext context, byte[] key);
 
     /**
@@ -226,7 +227,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public static native Boolean getBoolean(StorageContext context, String key);
 
     /**
@@ -343,7 +345,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public static native Boolean getBoolean(StorageContext context, ByteString key);
 
     /**
@@ -460,7 +463,8 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public static native Boolean getBoolean(StorageContext context, int key);
 
     /**

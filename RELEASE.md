@@ -5,6 +5,13 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 
 ## Prepare for Source Code Release
 
+> If this release considers a major Neo version update (e.g., `3.4.x` &rarr; `3.5.x`): Check whether the [Neo-Express
+> version](https://github.com/neo-project/neo-express/releases) used in
+> the [resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
+> property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
+> according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
+> release process.
+
 1. Create a branch `release` from `main`.
 2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
    and replace it with the new version number. There should be two affected files, i.e., `README.md`,
@@ -19,6 +26,7 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 7. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
 
 ## Publish the Release Artifacts
+
 ### Credentials
 
 Make sure you have a `gradle.properties` file with the following:
@@ -49,7 +57,7 @@ Where:
    ./core/build/libs/core-3.8.0-all.jar) of all the artifacts that need to be released for that module.
 5. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/), log in and go to the *Staging Upload* section.
 6. Choose *Artifact Bundle* as the *Upload Mode* and upload the bundle jars (i.e., the files ending with `-all.jar`) for
-   each module except for the `gradle-plugin` and `int-tests` modules. A confirmation for a successful upload should be 
+   each module except for the `gradle-plugin` and `int-tests` modules. A confirmation for a successful upload should be
    displayed in the GUI.
 7. All uploaded bundles should show up in the *Staging Repositories* section as separate repositories. Once they reach
    the Status **closed** the **Release** button becomes available. Select all repositories and click **Release**.
@@ -58,6 +66,7 @@ Where:
    Repository.
 
 ## Finish Source Code Release Process
+
 1. Go to the `main` branch and bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch.
 
 ## Update `neow3j-examples` Repositories and Run Smoke Tests
@@ -86,12 +95,36 @@ Update the boilerplate repos (i.e., [sdk template](https://github.com/neow3j/neo
 [contracts template](https://github.com/neow3j/neow3j-boilerplate-sdk)) gradle.build file and possibly the example
 contract if major changes happened.
 
+## Update neow3j-test-docker
+
+1. Clone repo: `git clone git@github.com:neow3j/neow3j-test-docker.git`
+2. Open the `Dockerfile` and modify the version in the neo-express installation line:
+   ```dockerfile
+   RUN dotnet tool install Neo.Express -g --version 3.4.18
+   ```
+   If you need to depend on a preview release use the following command and adapt the version:
+   ```dockerfile
+   RUN dotnet tool install Neo.Express -g \
+     --add-source https://pkgs.dev.azure.com/ngdenterprise/Build/_packaging/public/nuget/v3/index.json \
+     --version 3.5.11-preview
+   ```
+   Instructions can also be found [here](https://github.com/neo-project/neo-express#installing-preview-releases).
+3. You can build the docker image locally to run tests: 
+   ```dockerfile
+   docker build -t ghcr.io/neow3j/neow3j-test-docker:latest .
+   docker build -t ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18 . 
+   ```
+   Adapt `neoExpressDockerImage` in the `test-tools` application properties file to the new tag.
+4. To publish the new docker image run the GitHub workflow called "Build and Publish container" on the 
+   neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g., 
+   `neoxp-3.4.18`.
+
 ## Publish GitHub Release
 
 1. Update the README.md in all neow3j repositories if necessary.
 2. Create a release draft on GitHub
     - Title format: "neow3j: 3.x.x"
-    - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If 
+    - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If
       one section doesn't have content it can be omitted.
 3. Let the team review the draft.
 4. Publish the release.

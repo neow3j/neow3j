@@ -3,6 +3,7 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.constants.NativeContract;
 
 /**
@@ -25,6 +26,31 @@ public class ContractManagement extends ContractInterface {
      * @return the contract.
      */
     public native Contract getContract(Hash160 hash);
+
+    /**
+     * Gets the deployed contract with the specified id.
+     *
+     * @param id the contract id.
+     * @return the contract.
+     */
+    public native Contract getContractById(int id);
+
+    /**
+     * Gets the ids and hashes of all non native deployed contracts.
+     * <p>
+     * Each iterator entry is a struct with the id and the contract hash.
+     * <p>
+     * Note, that the id is stored as a {@link ByteString} in big-endian format. Thus, when using that id as an
+     * integer within contract code, it needs to be reversed before converting it to an integer value. E.g., as follows:
+     * <pre>
+     * byte[] id = struct.key.toByteArray();
+     * Helper.reverse(id);
+     * int idAsInt = new ByteString(id).toInt();
+     * </pre>
+     *
+     * @return an iterator of the ids and hashes of all non native deployed contracts.
+     */
+    public native Iterator<Iterator.Struct<ByteString, Hash160>> getContractHashes();
 
     /**
      * Checks if a method exists in a contract.

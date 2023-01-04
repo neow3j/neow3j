@@ -189,7 +189,8 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public native Boolean getBoolean(byte[] key);
 
     /**
@@ -356,7 +357,8 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public native Boolean getBoolean(ByteString key);
 
     /**
@@ -524,7 +526,8 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public native Boolean getBoolean(String key);
 
     /**
@@ -692,7 +695,8 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BOOLEAN_CODE)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
     public native Boolean getBoolean(int key);
 
     /**
