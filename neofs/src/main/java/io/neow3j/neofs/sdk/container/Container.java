@@ -73,7 +73,7 @@ public class Container {
      * @param nativeLib   the native lib.
      * @param clientId    the client id.
      * @param containerId the container id.
-     * @
+     * @return if the container has been deleted successfully.
      */
     public static boolean deleteContainer(NeoFSLibInterface nativeLib, String clientId, String containerId) {
         PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
@@ -89,6 +89,7 @@ public class Container {
      * @param clientId    the client id.
      * @param ownerPubKey the owner public key.
      * @return the ids of the owned container.
+     * @throws IOException if the response bytes could not be mapped to an {@link ContainerListResponse} instance.
      */
     public static List<String> listContainers(NeoFSLibInterface nativeLib, String clientId,
             ECKeyPair.ECPublicKey ownerPubKey) throws IOException {

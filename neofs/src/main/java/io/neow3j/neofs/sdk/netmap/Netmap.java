@@ -22,7 +22,7 @@ public class Netmap {
      * @param nativeLib the native lib.
      * @param clientId  the client id.
      * @return the endpoint.
-     * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} object.
+     * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} instance.
      */
     public static EndpointResponse getEndpoint(NeoFSLibInterface nativeLib, String clientId) throws IOException {
         PointerResponse response = nativeLib.GetEndpoint(clientId);

@@ -12,6 +12,7 @@ import io.neow3j.neofs.lib.responses.ResponseType;
 import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.neofs.sdk.accounting.Accounting;
 import io.neow3j.neofs.sdk.container.Container;
+import io.neow3j.neofs.sdk.dto.ContainerListResponse;
 import io.neow3j.neofs.sdk.dto.EndpointResponse;
 import io.neow3j.neofs.sdk.exceptions.NeoFSClientException;
 import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
@@ -45,6 +46,7 @@ public class NeoFSClient {
      * @param lib      the loaded library.
      * @param account  the account used for signing when interacting with NeoFS.
      * @param endpoint the gRPC endpoint of the NeoFS node to connect to.
+     * @return an initialized NeoFSClient instance.
      */
     public static NeoFSClient initialize(NeoFSLib lib, Account account, String endpoint) {
         String clientId = createClient(lib, account, endpoint);
@@ -130,7 +132,7 @@ public class NeoFSClient {
      * Gets the endpoint this client is interfacing with.
      *
      * @return the endpoint.
-     * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} object.
+     * @throws IOException if the endpoint bytes could not be mapped to an {@link EndpointResponse} instance.
      */
     public EndpointResponse getEndpoint() throws IOException {
         return Netmap.getEndpoint(nativeLib, clientId);
@@ -158,7 +160,7 @@ public class NeoFSClient {
      * @param container the container.
      * @return the container id.
      * @throws InvalidProtocolBufferException  if the container protobuf type cannot be converted to JSON format.
-     * @throws NeoFSLibError                   if the shared library returns an error.
+     * @throws NeoFSClientException            if something went wrong interacting with the shared library.
      * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
      */
     public String createContainer(neo.fs.v2.container.Types.Container container) throws InvalidProtocolBufferException {
@@ -170,7 +172,7 @@ public class NeoFSClient {
      *
      * @param containerId the container id.
      * @return the container.
-     * @throws NeoFSLibError                   if the shared library returns an error.
+     * @throws NeoFSClientException            if something went wrong interacting with the shared library.
      * @throws UnexpectedResponseTypeException if the type of the shared library's response is unexpected.
      * @throws InvalidProtocolBufferException  if the response bytes cannot be converted to the container protobuf
      *                                         type.
@@ -183,6 +185,7 @@ public class NeoFSClient {
      * Deletes a container with {@code containerId}.
      *
      * @param containerId the container id.
+     * @return if the container has been deleted successfully.
      */
     public boolean deleteContainer(String containerId) {
         return Container.deleteContainer(nativeLib, clientId, containerId);
@@ -193,6 +196,7 @@ public class NeoFSClient {
      *
      * @param ownerPubKey the owner public key.
      * @return the ids of the owned container.
+     * @throws IOException if the response bytes could not be mapped to an {@link ContainerListResponse} instance.
      */
     public List<String> listContainers(ECKeyPair.ECPublicKey ownerPubKey) throws IOException {
         return Container.listContainers(nativeLib, clientId, ownerPubKey);
@@ -241,10 +245,24 @@ public class NeoFSClient {
     //endregion object
     //region helper
 
+    /**
+     * Deserializes the provided JSON String to the provided class.
+     *
+     * @param response the JSON content String.
+     * @param clazz    the class to deserialise the response into.
+     * @param <T>      the type the response value is mapped to.
+     * @return the class.
+     * @throws IOException if the given JSON content String could not be deserialized into the provided class.
+     */
     public static <T> T readJson(String response, Class<T> clazz) throws IOException {
         return new ObjectMapper().readValue(response, clazz);
     }
 
+    /**
+     * Throws an {@link NeoFSClientException} if the provided response is an error.
+     *
+     * @param response the response from the shared-lib.
+     */
     public static void throwIfLibError(Response response) {
         if (response.isError()) {
             NeoFSLibError error = response.getError();
@@ -253,6 +271,12 @@ public class NeoFSClient {
         }
     }
 
+    /**
+     * Throws an {@link UnexpectedResponseTypeException} if the provided response is an unexpected type.
+     *
+     * @param response     the response from the shared-lib.
+     * @param expectedType the expected type for the response.
+     */
     public static void throwIfUnexpectedResponseType(Response response, ResponseType expectedType) {
         if (!response.isResponseType(expectedType)) {
             if (response instanceof StringResponse) {
