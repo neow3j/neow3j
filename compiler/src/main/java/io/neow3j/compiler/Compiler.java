@@ -57,7 +57,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.19.3";
+    public static final String COMPILER_NAME = "neow3j-3.19.4";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
