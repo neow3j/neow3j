@@ -8,8 +8,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThan;
@@ -21,10 +21,13 @@ public class NetmapIntegrationTest {
 
     private NeoFSClient neofsClient;
 
+    @RegisterExtension
+    public static NeoFSTestExtension ct = new NeoFSTestExtension();
+
     @BeforeAll
     public void setUp() throws Throwable {
         Account account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
-        neofsClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
+        neofsClient = NeoFSClient.loadAndInitialize(account, ct.getNeofsEndpoint());
     }
 
     @Test

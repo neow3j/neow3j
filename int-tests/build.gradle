@@ -23,7 +23,8 @@ dependencies {
             project(':test-tools'),
             "org.testcontainers:junit-jupiter:$testcontainersVersion",
             "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
-            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
+            "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion",
+            "org.eclipse.jgit:org.eclipse.jgit:$jGitVersion"
 }
 
 integrationTest {

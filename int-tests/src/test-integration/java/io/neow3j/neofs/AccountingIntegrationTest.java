@@ -5,8 +5,8 @@ import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
-import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -15,10 +15,13 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AccountingIntegrationTest {
 
+    @RegisterExtension
+    public static NeoFSTestExtension ct = new NeoFSTestExtension();
+
     @Test
     public void testGetBalance() throws Exception {
         Account account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
-        NeoFSClient neoFSClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
+        NeoFSClient neoFSClient = NeoFSClient.loadAndInitialize(account, ct.getNeofsEndpoint());
 
         neo.fs.v2.accounting.Types.Decimal balance = neoFSClient.getBalance(account.getECKeyPair().getPublicKey());
         assertThat(balance.getPrecision(), is(12));

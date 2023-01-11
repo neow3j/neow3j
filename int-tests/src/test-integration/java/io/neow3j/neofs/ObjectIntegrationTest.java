@@ -9,6 +9,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.createSimpleContainer;
-import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -36,10 +36,13 @@ public class ObjectIntegrationTest {
     private NeoFSClient neofsClient;
     private String containerId;
 
+    @RegisterExtension
+    public static NeoFSTestExtension ct = new NeoFSTestExtension();
+
     @BeforeAll
     public void setup() throws Exception {
         account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
-        neofsClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
+        neofsClient = NeoFSClient.loadAndInitialize(account, ct.getNeofsEndpoint());
         containerId = neofsClient.createContainer(createSimpleContainer(account));
         Thread.sleep(2000); // Wait for container creation to persist.
     }

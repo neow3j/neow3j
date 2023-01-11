@@ -19,6 +19,7 @@ buildscript {
     ext.junitVersion = '4.13.2'
     ext.junitBenchmarkVersion = '0.7.2'
     ext.jetbrainsAnnotationsVersion = '23.0.0'
+    ext.jGitVersion = '4.6.0.201612231935-r'
     ext.jupiterVersion = '5.9.0'
     ext.logbackVersion = '1.2.11'
     ext.mockitoVersion = '3.6.0'

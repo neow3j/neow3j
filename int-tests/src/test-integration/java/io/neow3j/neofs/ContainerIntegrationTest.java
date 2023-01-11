@@ -8,12 +8,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.util.List;
 
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.createSimpleContainer;
-import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
@@ -27,13 +27,16 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContainerIntegrationTest {
 
+    @RegisterExtension
+    public static NeoFSTestExtension ct = new NeoFSTestExtension();
+
     private NeoFSClient neoFSClient;
     private Account account;
 
     @BeforeAll
     public void setUp() throws Exception {
         account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
-        neoFSClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
+        neoFSClient = NeoFSClient.loadAndInitialize(account, ct.getNeofsEndpoint());
     }
 
     @Test
