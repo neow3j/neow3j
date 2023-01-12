@@ -18,7 +18,6 @@ import io.neow3j.neofs.sdk.exceptions.NeoFSClientException;
 import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.neofs.sdk.netmap.Netmap;
 import io.neow3j.neofs.sdk.object.NeoFSObject;
-import io.neow3j.utils.Numeric;
 import io.neow3j.wallet.Account;
 import neo.fs.v2.netmap.Types;
 
@@ -26,8 +25,14 @@ import java.io.IOException;
 import java.util.List;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
+import static io.neow3j.neofs.sdk.NeoFSHelper.getPrivateKeyForNativeLib;
 import static java.lang.String.format;
 
+/**
+ * Represents a NeoFSClient in the shared-lib.
+ * <p>
+ * This class can be used to interact with NeoFS through the provided native library.
+ */
 public class NeoFSClient {
 
     private final String clientId;
@@ -41,7 +46,7 @@ public class NeoFSClient {
     }
 
     /**
-     * Creates a new NeoFSLib instance with an already loaded native library.
+     * Creates a new NeoFSClientd instance with an already loaded native library.
      *
      * @param lib      the loaded library.
      * @param account  the account used for signing when interacting with NeoFS.
@@ -54,7 +59,7 @@ public class NeoFSClient {
     }
 
     /**
-     * Loads the native library and initializes a new NeoFSLib instance.
+     * Loads the native library and initializes a new NeoFSClient instance.
      *
      * @param account  the account used for signing when interacting with NeoFS.
      * @param endpoint the gRPC endpoint of the NeoFS node to connect to.
@@ -65,14 +70,23 @@ public class NeoFSClient {
         return initialize(new NeoFSLib(), account, endpoint);
     }
 
+    /**
+     * @return the NeoFSLib instance.
+     */
     public NeoFSLib getNeoFSLib() {
         return neoFSLib;
     }
 
+    /**
+     * @return the native library interface.
+     */
     public NeoFSLibInterface getNativeLib() {
         return neoFSLib.getNativeLib();
     }
 
+    /**
+     * @return the client id of this NeoFSClient instance.
+     */
     public String getClientId() {
         return clientId;
     }
@@ -85,30 +99,23 @@ public class NeoFSClient {
      * @return the client id.
      */
     private static String createClient(NeoFSLib lib, Account account, String neofsEndpoint) {
-        String privateKeyHex = Numeric.toHexStringNoPrefix(account.getECKeyPair().getPrivateKey().getBytes());
+        String privateKeyHex = getPrivateKeyForNativeLib(account);
         PointerResponse response = lib.getNativeLib().CreateClient(privateKeyHex, neofsEndpoint);
         return new String(getResponseBytes(response));
     }
 
-    private static String getPrivateKeyForNativeLib(ECKeyPair ecKeyPair) {
-        return Numeric.toHexStringNoPrefix(ecKeyPair.getPrivateKey().getBytes());
-    }
-
-    public static String getPrivateKeyForNativeLib(Account account) {
-        return getPrivateKeyForNativeLib(account.getECKeyPair());
-    }
-
     //region client
 
-    // Todo: Delete a client
-//    /**
-//     * Deletes this client in memory.
-//     * <p>
-//     * Note, that after calling this method this NeoFSClient instance will no longer be able to issue requests.
-//     */
-//    public void deleteClient() {
-//        nativeLib.DeleteClient(clientId);
-//    }
+    /**
+     * Deletes this client in memory.
+     * <p>
+     * Note, that after calling this method this NeoFSClient instance will no longer be able to issue requests.
+     */
+    public boolean deleteClient() {
+        PointerResponse response = nativeLib.DeleteClient(clientId);
+        byte[] responseBytes = getResponseBytes(response);
+        return responseBytes.length == 1 && responseBytes[0] == 1;
+    }
 
     //endregion client
     //region accounting
@@ -259,7 +266,7 @@ public class NeoFSClient {
     }
 
     /**
-     * Throws an {@link NeoFSClientException} if the provided response is an error.
+     * Throws a {@link NeoFSClientException} if the provided response is an error.
      *
      * @param response the response from the shared-lib.
      */
@@ -267,7 +274,7 @@ public class NeoFSClient {
         if (response.isError()) {
             NeoFSLibError error = response.getError();
             throw new NeoFSClientException(
-                    format("The native Lib returned an error with message '%s'.", error.getMessage()));
+                    format("The native lib returned an error with message '%s'.", error.getMessage()));
         }
     }
 

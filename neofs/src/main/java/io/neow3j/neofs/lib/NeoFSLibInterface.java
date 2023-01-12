@@ -10,6 +10,8 @@ public interface NeoFSLibInterface extends Library {
 
     PointerResponse CreateClient(String key, String neoFSEndpoint);
 
+    PointerResponse DeleteClient(String clientId);
+
 //    PointerResponse DeleteClient(String clientId);
 
     //endregion client

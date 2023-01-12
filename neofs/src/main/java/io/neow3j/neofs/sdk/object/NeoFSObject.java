@@ -7,9 +7,9 @@ import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.wallet.Account;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
-import static io.neow3j.neofs.sdk.NeoFSClient.getPrivateKeyForNativeLib;
 import static io.neow3j.neofs.sdk.NeoFSClient.throwIfLibError;
 import static io.neow3j.neofs.sdk.NeoFSClient.throwIfUnexpectedResponseType;
+import static io.neow3j.neofs.sdk.NeoFSHelper.getPrivateKeyForNativeLib;
 
 public class NeoFSObject {
 
