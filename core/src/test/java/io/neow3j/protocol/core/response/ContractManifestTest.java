@@ -117,7 +117,6 @@ public class ContractManifestTest {
                 "uIBPwD2tYw8ESy1GXHksHD6XrzssQOJp0H0sBSJ76CnAxtf1VgZDJ45OAGXZynamiBpNS/f8Lk5aAJ2viB5XxA=="))
         );
         assertThat(manifest.getGroups(), hasSize(1));
-        System.out.println(Account.fromWIF("L3x3KgTGB9L5u1SZDexDWUuXbegMRwpRP8tVSzq3vg7RrDbNLPQw").getScriptHash());
     }
 
     @Test
