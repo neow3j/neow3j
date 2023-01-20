@@ -17,7 +17,8 @@ dependencies {
             "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-            "net.java.dev.jna:jna-platform:$jnaVersion"
+            "net.java.dev.jna:jna-platform:$jnaVersion",
+            "org.awaitility:awaitility:$awaitility"
 }
 
 configurations {
