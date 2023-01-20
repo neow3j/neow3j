@@ -5,11 +5,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
-import io.neow3j.neofs.lib.responses.NeoFSLibError;
 import io.neow3j.neofs.lib.responses.PointerResponse;
 import io.neow3j.neofs.lib.responses.Response;
 import io.neow3j.neofs.lib.responses.ResponseType;
-import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.neofs.sdk.accounting.Accounting;
 import io.neow3j.neofs.sdk.container.Container;
 import io.neow3j.neofs.sdk.dto.ContainerListResponse;
@@ -26,7 +24,6 @@ import java.util.List;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
 import static io.neow3j.neofs.sdk.NeoFSHelper.getPrivateKeyForNativeLib;
-import static java.lang.String.format;
 
 /**
  * Represents a NeoFSClient in the shared-lib.
@@ -98,7 +95,7 @@ public class NeoFSClient {
      * @param neofsEndpoint the NeoFS endpoint requests are sent to with this client.
      * @return the client id.
      */
-    private static String createClient(NeoFSLib lib, Account account, String neofsEndpoint) {
+    public static String createClient(NeoFSLib lib, Account account, String neofsEndpoint) {
         String privateKeyHex = getPrivateKeyForNativeLib(account);
         PointerResponse response = lib.getNativeLib().CreateClient(privateKeyHex, neofsEndpoint);
         return new String(getResponseBytes(response));
@@ -238,6 +235,22 @@ public class NeoFSClient {
     }
 
     /**
+     * Reads the object's header.
+     *
+     * @param containerId   the container id.
+     * @param objectId      the object id.
+     * @param signerAccount the signer account.
+     * @return an object without its payload.
+     * @throws InvalidProtocolBufferException if the response bytes cannot be converted to the object protobuf type.
+     */
+    public neo.fs.v2.object.Types.Object getObjectHeader(String containerId, String objectId, Account signerAccount)
+            throws InvalidProtocolBufferException {
+        neo.fs.v2.object.Types.Object objectHeader = NeoFSObject.getObjectHeader(nativeLib, clientId, containerId,
+                objectId, signerAccount);
+        return objectHeader;
+    }
+
+    /**
      * Deletes the object with {@code objectId} from the container with {@code containerId}.
      *
      * @param containerId   the container id.
@@ -266,19 +279,6 @@ public class NeoFSClient {
     }
 
     /**
-     * Throws a {@link NeoFSClientException} if the provided response is an error.
-     *
-     * @param response the response from the shared-lib.
-     */
-    public static void throwIfLibError(Response response) {
-        if (response.isError()) {
-            NeoFSLibError error = response.getError();
-            throw new NeoFSClientException(
-                    format("The native lib returned an error with message '%s'.", error.getMessage()));
-        }
-    }
-
-    /**
      * Throws an {@link UnexpectedResponseTypeException} if the provided response is an unexpected type.
      *
      * @param response     the response from the shared-lib.
@@ -286,12 +286,8 @@ public class NeoFSClient {
      */
     public static void throwIfUnexpectedResponseType(Response response, ResponseType expectedType) {
         if (!response.isResponseType(expectedType)) {
-            if (response instanceof StringResponse) {
-                String responseString = ((StringResponse) response).value;
-                throw new UnexpectedResponseTypeException(expectedType, response.type, responseString);
-            } else {
-                throw new UnexpectedResponseTypeException(expectedType, response.type);
-            }
+            throw new UnexpectedResponseTypeException(expectedType, response.type,
+                    response.getUnexpectedResponseMessage());
         }
     }
 
