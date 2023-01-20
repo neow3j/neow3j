@@ -2,7 +2,7 @@ package io.neow3j.neofs.lib.responses;
 
 import static java.lang.String.format;
 
-public enum ResponseType {
+public enum ExpectedResponseType {
 
     // Accounting
     DECIMAL("accounting.Decimal"),
@@ -22,17 +22,21 @@ public enum ResponseType {
 
     private final String type;
 
-    ResponseType(String type) {
+    ExpectedResponseType(String type) {
         this.type = type;
     }
 
-    public static ResponseType fromString(String type) {
-        for (ResponseType e : ResponseType.values()) {
+    public static ExpectedResponseType fromString(String type) {
+        for (ExpectedResponseType e : ExpectedResponseType.values()) {
             if (e.type.equals(type)) {
                 return e;
             }
         }
         throw new IllegalArgumentException(format("No ResponseType match found for '%s'.", type));
+    }
+
+    public String getValue() {
+        return type;
     }
 
     @Override

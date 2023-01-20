@@ -7,7 +7,7 @@ import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
 import io.neow3j.neofs.lib.responses.PointerResponse;
 import io.neow3j.neofs.lib.responses.Response;
-import io.neow3j.neofs.lib.responses.ResponseType;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.sdk.accounting.Accounting;
 import io.neow3j.neofs.sdk.container.Container;
 import io.neow3j.neofs.sdk.dto.ContainerListResponse;
@@ -284,7 +284,7 @@ public class NeoFSClient {
      * @param response     the response from the shared-lib.
      * @param expectedType the expected type for the response.
      */
-    public static void throwIfUnexpectedResponseType(Response response, ResponseType expectedType) {
+    public static void throwIfUnexpectedResponseType(Response response, ExpectedResponseType expectedType) {
         if (!response.isResponseType(expectedType)) {
             throw new UnexpectedResponseTypeException(expectedType, response.type,
                     response.getUnexpectedResponseMessage());

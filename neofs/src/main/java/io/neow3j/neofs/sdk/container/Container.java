@@ -5,7 +5,7 @@ import com.google.protobuf.util.JsonFormat;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
 import io.neow3j.neofs.lib.responses.PointerResponse;
-import io.neow3j.neofs.lib.responses.ResponseType;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.neofs.sdk.dto.ContainerListResponse;
 import io.neow3j.neofs.sdk.exceptions.NeoFSClientException;
@@ -40,7 +40,7 @@ public class Container {
 
         String containerJson = JsonFormat.printer().print(container);
         StringResponse response = nativeLib.PutContainer(clientId, containerJson);
-        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.CONTAINER_ID);
         return response.value;
     }
 
@@ -60,7 +60,7 @@ public class Container {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetContainer(clientId, containerId);
-        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.CONTAINER);
         return Types.Container.parseFrom(getResponseBytes(response));
     }
 
@@ -74,7 +74,7 @@ public class Container {
      */
     public static boolean deleteContainer(NeoFSLibInterface nativeLib, String clientId, String containerId) {
         PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
-        throwIfUnexpectedResponseType(response, ResponseType.BOOLEAN);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.BOOLEAN);
         return getBoolean(response);
     }
 
@@ -91,7 +91,7 @@ public class Container {
             ECKeyPair.ECPublicKey ownerPubKey) throws IOException {
 
         PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
-        throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_LIST);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.CONTAINER_LIST);
         String containerListJson = new String(getResponseBytes(response));
         ContainerListResponse respDTO = readJson(containerListJson, ContainerListResponse.class);
         return respDTO.getContainerIDs();

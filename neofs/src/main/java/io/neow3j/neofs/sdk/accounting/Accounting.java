@@ -4,7 +4,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
 import io.neow3j.neofs.lib.responses.PointerResponse;
-import io.neow3j.neofs.lib.responses.ResponseType;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import neo.fs.v2.accounting.Types;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
@@ -25,7 +25,7 @@ public class Accounting {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetBalance(clientId, pubKey.getEncodedCompressedHex());
-        throwIfUnexpectedResponseType(response, ResponseType.DECIMAL);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.DECIMAL);
         byte[] responseBytes = getResponseBytes(response);
         return neo.fs.v2.accounting.Types.Decimal.parseFrom(responseBytes);
     }

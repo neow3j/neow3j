@@ -3,24 +3,17 @@ package io.neow3j.neofs.lib.responses;
 import com.sun.jna.Structure;
 import io.neow3j.neofs.lib.exceptions.NeoFSLibException;
 
-import static java.lang.String.format;
-
 public abstract class Response extends Structure implements Structure.ByValue {
 
     public String type;
 
-    public ResponseType getResponseType() throws NeoFSLibException {
-        try {
-            return ResponseType.fromString(type);
-        } catch (IllegalArgumentException e) {
-            throw new NeoFSLibException(
-                    format("Could not find a matching type for this response. Type was '%s'.", type));
-        }
+    public String getResponseType() throws NeoFSLibException {
+        return type;
     }
 
-    public boolean isResponseType(ResponseType type) {
+    public boolean isResponseType(ExpectedResponseType expectedResponseType) {
         try {
-            return getResponseType() == type;
+            return getResponseType().equals(expectedResponseType.getValue());
         } catch (NeoFSLibException ignore) {
         }
         return false;

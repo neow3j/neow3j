@@ -3,7 +3,7 @@ package io.neow3j.neofs.sdk.netmap;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
 import io.neow3j.neofs.lib.responses.PointerResponse;
-import io.neow3j.neofs.lib.responses.ResponseType;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.sdk.dto.EndpointResponse;
 import neo.fs.v2.netmap.Types;
 
@@ -25,7 +25,7 @@ public class Netmap {
      */
     public static EndpointResponse getEndpoint(NeoFSLibInterface nativeLib, String clientId) throws IOException {
         PointerResponse response = nativeLib.GetEndpoint(clientId);
-        throwIfUnexpectedResponseType(response, ResponseType.ENDPOINT);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.ENDPOINT);
         String endpointJson = new String(getResponseBytes(response));
         return readJson(endpointJson, EndpointResponse.class);
     }
@@ -43,7 +43,7 @@ public class Netmap {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetNetworkInfo(clientId);
-        throwIfUnexpectedResponseType(response, ResponseType.NETWORK);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.NETWORK);
         return Types.NetworkInfo.parseFrom(getResponseBytes(response));
     }
 

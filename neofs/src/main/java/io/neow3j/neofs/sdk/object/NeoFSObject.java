@@ -3,7 +3,7 @@ package io.neow3j.neofs.sdk.object;
 import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
 import io.neow3j.neofs.lib.responses.PointerResponse;
-import io.neow3j.neofs.lib.responses.ResponseType;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.lib.responses.StringResponse;
 import io.neow3j.neofs.sdk.exceptions.UnexpectedResponseTypeException;
 import io.neow3j.wallet.Account;
@@ -32,7 +32,7 @@ public class NeoFSObject {
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         StringResponse response = nativeLib.CreateObjectWithoutAttributes(clientId, containerId, fileBytes,
                 fileBytes.length, signerPrivateKey);
-        throwIfUnexpectedResponseType(response, ResponseType.OBJECT_ID);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.OBJECT_ID);
         return response.value;
     }
 
@@ -52,7 +52,7 @@ public class NeoFSObject {
         throwIfObjectHeadNotPresent(nativeLib, clientId, containerId, objectId, signerAccount);
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         PointerResponse response = nativeLib.ReadObject(clientId, containerId, objectId, signerPrivateKey);
-        throwIfUnexpectedResponseType(response, ResponseType.OBJECT);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.OBJECT);
         return getResponseBytes(response);
     }
 
@@ -61,7 +61,7 @@ public class NeoFSObject {
 
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         PointerResponse response = nativeLib.GetObjectHead(clientId, containerId, objectId, signerPrivateKey);
-        throwIfUnexpectedResponseType(response, ResponseType.OBJECT);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.OBJECT);
         return Types.Object.parseFrom(getResponseBytes(response));
     }
 
@@ -70,7 +70,7 @@ public class NeoFSObject {
 
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         PointerResponse response = nativeLib.GetObjectHead(clientId, containerId, objectId, signerPrivateKey);
-        if (!response.isResponseType(ResponseType.OBJECT)) {
+        if (!response.isResponseType(ExpectedResponseType.OBJECT)) {
             throw new UnexpectedResponseTypeException(response.getUnexpectedResponseMessage());
         }
     }
@@ -90,7 +90,7 @@ public class NeoFSObject {
 
         String signerPrivateKey = getPrivateKeyForNativeLib(signerAccount);
         StringResponse response = nativeLib.DeleteObject(clientId, containerId, objectId, signerPrivateKey);
-        throwIfUnexpectedResponseType(response, ResponseType.OBJECT_ID);
+        throwIfUnexpectedResponseType(response, ExpectedResponseType.OBJECT_ID);
         return response.value;
     }
 
