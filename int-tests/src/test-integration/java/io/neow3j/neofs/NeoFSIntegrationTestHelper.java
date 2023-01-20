@@ -10,7 +10,7 @@ import java.util.Date;
 public class NeoFSIntegrationTestHelper {
 
     // Integration tests for the neofs module currently only run with a locally running neofs-aio container setup.
-    public static final String neofsEndpoint = "grpc://localhost:8080";
+    public static final String neofsEndpoint = "grpc://127.0.0.1:8080";
 
     protected static Types.Container createSimpleContainer(Account ownerAccount) {
         return Types.Container.newBuilder()
