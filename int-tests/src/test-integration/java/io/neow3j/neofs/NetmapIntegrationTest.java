@@ -4,10 +4,10 @@ import io.neow3j.neofs.sdk.NeoFSClient;
 import io.neow3j.neofs.sdk.dto.EndpointResponse;
 import io.neow3j.wallet.Account;
 import neo.fs.v2.netmap.Types;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
 
 import static io.neow3j.neofs.NeoFSIntegrationTestHelper.neofsEndpoint;
 import static org.hamcrest.CoreMatchers.is;
@@ -16,15 +16,19 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @Disabled // Remove for manual testing and once productive
-@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class NetmapIntegrationTest {
 
-    private NeoFSClient neofsClient;
+    private static final Account account = Account.create();
+    private static NeoFSClient neofsClient;
 
     @BeforeAll
-    public void setUp() throws Throwable {
-        Account account = Account.fromWIF("KzAXTwrj1VxQA746zSSMCt9g3omSDfyKnwsayEducuHvKd1LR9mx");
+    public static void setUp() throws Throwable {
         neofsClient = NeoFSClient.loadAndInitialize(account, neofsEndpoint);
+    }
+
+    @AfterAll
+    public static void after() {
+        neofsClient.deleteClient();
     }
 
     @Test
