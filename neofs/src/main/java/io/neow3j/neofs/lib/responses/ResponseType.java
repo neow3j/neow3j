@@ -18,7 +18,6 @@ public enum ResponseType {
     OBJECT("object.Object"),
 
     STRING("string"),
-    ERROR("error"),
     BOOLEAN("bool");
 
     private final String type;

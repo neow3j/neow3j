@@ -8,7 +8,6 @@ import io.neow3j.neofs.lib.responses.ResponseType;
 import neo.fs.v2.accounting.Types;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
-import static io.neow3j.neofs.sdk.NeoFSClient.throwIfLibError;
 import static io.neow3j.neofs.sdk.NeoFSClient.throwIfUnexpectedResponseType;
 
 public class Accounting {
@@ -26,7 +25,6 @@ public class Accounting {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetBalance(clientId, pubKey.getEncodedCompressedHex());
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.DECIMAL);
         byte[] responseBytes = getResponseBytes(response);
         return neo.fs.v2.accounting.Types.Decimal.parseFrom(responseBytes);

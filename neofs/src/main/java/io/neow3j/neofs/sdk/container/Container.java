@@ -18,7 +18,6 @@ import java.util.List;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getBoolean;
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
 import static io.neow3j.neofs.sdk.NeoFSClient.readJson;
-import static io.neow3j.neofs.sdk.NeoFSClient.throwIfLibError;
 import static io.neow3j.neofs.sdk.NeoFSClient.throwIfUnexpectedResponseType;
 
 public class Container {
@@ -41,7 +40,6 @@ public class Container {
 
         String containerJson = JsonFormat.printer().print(container);
         StringResponse response = nativeLib.PutContainer(clientId, containerJson);
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_ID);
         return response.value;
     }
@@ -62,7 +60,6 @@ public class Container {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetContainer(clientId, containerId);
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.CONTAINER);
         return Types.Container.parseFrom(getResponseBytes(response));
     }
@@ -77,7 +74,6 @@ public class Container {
      */
     public static boolean deleteContainer(NeoFSLibInterface nativeLib, String clientId, String containerId) {
         PointerResponse response = nativeLib.DeleteContainer(clientId, containerId);
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.BOOLEAN);
         return getBoolean(response);
     }
@@ -95,7 +91,6 @@ public class Container {
             ECKeyPair.ECPublicKey ownerPubKey) throws IOException {
 
         PointerResponse response = nativeLib.ListContainer(clientId, ownerPubKey.getEncodedCompressedHex());
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.CONTAINER_LIST);
         String containerListJson = new String(getResponseBytes(response));
         ContainerListResponse respDTO = readJson(containerListJson, ContainerListResponse.class);

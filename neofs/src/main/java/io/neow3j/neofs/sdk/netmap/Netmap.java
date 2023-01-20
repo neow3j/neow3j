@@ -11,7 +11,6 @@ import java.io.IOException;
 
 import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
 import static io.neow3j.neofs.sdk.NeoFSClient.readJson;
-import static io.neow3j.neofs.sdk.NeoFSClient.throwIfLibError;
 import static io.neow3j.neofs.sdk.NeoFSClient.throwIfUnexpectedResponseType;
 
 public class Netmap {
@@ -26,7 +25,6 @@ public class Netmap {
      */
     public static EndpointResponse getEndpoint(NeoFSLibInterface nativeLib, String clientId) throws IOException {
         PointerResponse response = nativeLib.GetEndpoint(clientId);
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.ENDPOINT);
         String endpointJson = new String(getResponseBytes(response));
         return readJson(endpointJson, EndpointResponse.class);
@@ -45,7 +43,6 @@ public class Netmap {
             throws InvalidProtocolBufferException {
 
         PointerResponse response = nativeLib.GetNetworkInfo(clientId);
-        throwIfLibError(response);
         throwIfUnexpectedResponseType(response, ResponseType.NETWORK);
         return Types.NetworkInfo.parseFrom(getResponseBytes(response));
     }
