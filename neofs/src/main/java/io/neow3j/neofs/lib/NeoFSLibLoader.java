@@ -16,7 +16,7 @@ import static io.neow3j.neofs.lib.NeoFSLibUtils.getArchNameForWindows;
 
 public class NeoFSLibLoader {
 
-    private static final String NEOFS_SHARED_LIB_VERSION = "0.0.10";
+    private static final String NEOFS_SHARED_LIB_VERSION = "0.0.11";
 
     private static final String TEMPORARY_FILE_EXT = ".tmp";
 
