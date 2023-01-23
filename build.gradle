@@ -22,8 +22,8 @@ buildscript {
     ext.jupiterVersion = '5.9.0'
     ext.logbackVersion = '1.2.11'
     ext.mockitoVersion = '3.6.0'
-    ext.testcontainersVersion = '1.17.4'
-    ext.wiremockVersion = '2.33.2'
+    ext.testcontainersVersion = '1.17.6'
+    ext.wiremockVersion = '2.35.0'
 
     repositories {
         mavenCentral()
