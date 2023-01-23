@@ -16,23 +16,28 @@ import static io.neow3j.neofs.lib.NeoFSLibUtils.getArchNameForWindows;
 
 public class NeoFSLibLoader {
 
+    private static final String NEOFS_SHARED_LIB_VERSION = "0.0.10";
+
     private static final String TEMPORARY_FILE_EXT = ".tmp";
 
     public static NeoFSLibInterface load() throws Exception {
-        Path libPath = getLibPath();
+        Path libPath = getLibPath(true);
         return Native.load(libPath.toAbsolutePath().toString(), NeoFSLibInterface.class);
     }
 
-    private static Path getLibPath() throws Exception {
+    private static Path getLibPath(boolean print) throws Exception {
         String arch = System.getProperty("os.arch").toLowerCase();
         String osName = System.getProperty("os.name").toLowerCase();
         String osVersion = System.getProperty("os.version").toLowerCase();
         String dataModel = System.getProperty("sun.arch.data.model").toLowerCase();
 
-        System.out.println("# OS Architecture: " + arch);
-        System.out.println("# OS Name: " + osName);
-        System.out.println("# OS Version: " + osVersion);
-        System.out.println("# Data Model: " + dataModel);
+        if (print) {
+            System.out.println("# Native Library Version: " + NEOFS_SHARED_LIB_VERSION);
+            System.out.println("# OS Architecture:        " + arch);
+            System.out.println("# OS Name:                " + osName);
+            System.out.println("# OS Version:             " + osVersion);
+            System.out.println("# Data Model:             " + dataModel);
+        }
 
         Optional<String> platformName = Optional.empty();
         Optional<String> archName = Optional.empty();

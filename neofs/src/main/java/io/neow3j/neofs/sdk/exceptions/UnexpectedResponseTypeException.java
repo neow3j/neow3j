@@ -1,32 +1,33 @@
 package io.neow3j.neofs.sdk.exceptions;
 
-import io.neow3j.neofs.lib.responses.PointerResponse;
-import io.neow3j.neofs.lib.responses.ResponseType;
-import io.neow3j.neofs.lib.responses.StringResponse;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 
-import static io.neow3j.neofs.lib.NeoFSLibUtils.getResponseBytes;
 import static java.lang.String.format;
 
-public class UnexpectedResponseTypeException extends Exception {
+/**
+ * Thrown when the shared-lib returns a response type that was unexpected.
+ */
+public class UnexpectedResponseTypeException extends RuntimeException {
 
     public UnexpectedResponseTypeException(String message) {
         super(message);
     }
 
-    public UnexpectedResponseTypeException(String expectedType, String actualType) {
+    public UnexpectedResponseTypeException(ExpectedResponseType expectedType, String actualType) {
         this(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
     }
 
-    public UnexpectedResponseTypeException(ResponseType expectedType, ResponseType actualType) {
-        this(format("Unexpected response type. Expected '%s' but was '%s'.", expectedType, actualType));
+    public UnexpectedResponseTypeException(ExpectedResponseType expectedType, ExpectedResponseType actualType) {
+        this(expectedType, actualType.toString());
     }
 
-    public UnexpectedResponseTypeException(StringResponse response, String expectedType) {
-        this(response.value, expectedType);
+    public UnexpectedResponseTypeException(ExpectedResponseType expectedType, String actualType, String responseStringValue) {
+        this(format("Unexpected response type. Expected '%s' but was '%s' with value '%s'.", expectedType, actualType,
+                responseStringValue));
     }
 
-    public UnexpectedResponseTypeException(PointerResponse response, String expectedType) {
-        this(new String(getResponseBytes(response)), expectedType);
+    public UnexpectedResponseTypeException(ExpectedResponseType expectedType, ExpectedResponseType actualType, String responseStringValue) {
+        this(expectedType, actualType.toString(), responseStringValue);
     }
 
 }

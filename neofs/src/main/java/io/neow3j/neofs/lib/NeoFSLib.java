@@ -5,9 +5,13 @@ public class NeoFSLib {
     private final NeoFSLibInterface nativeLib;
 
     public NeoFSLib() throws Exception {
-        System.out.println("\n# Loading native library");
+        System.out.println("\n------------------------");
+        System.out.println("# Loading Native Library");
+        System.out.println("------------------------");
         nativeLib = NeoFSLibLoader.load();
-        System.out.println("# Native library loaded\n");
+        System.out.println("-----------------------");
+        System.out.println("# Native Library Loaded");
+        System.out.println("-----------------------\n");
     }
 
     public NeoFSLibInterface getNativeLib() {

@@ -10,6 +10,8 @@ public interface NeoFSLibInterface extends Library {
 
     PointerResponse CreateClient(String key, String neoFSEndpoint);
 
+    PointerResponse DeleteClient(String clientId);
+
 //    PointerResponse DeleteClient(String clientId);
 
     //endregion client
@@ -46,6 +48,15 @@ public interface NeoFSLibInterface extends Library {
     //region object
 
 //    PointerResponse GetObjectInit(String clientId, String containerId);
+
+    StringResponse CreateObjectWithoutAttributes(String clientId, String containerId, byte[] fileBytes, int fileSize,
+            String sessionSignerPrivateKey);
+
+    PointerResponse ReadObject(String clientId, String cointainerId, String objectId, String signerPrivateKey);
+
+    PointerResponse GetObjectHead(String clientId, String cointainerId, String objectId, String signerPrivateKey);
+
+    StringResponse DeleteObject(String clientId, String cointainerId, String objectId, String signerPrivateKey);
 
 //    PointerResponse PutObjectInit(String clientId, String containerId);
 

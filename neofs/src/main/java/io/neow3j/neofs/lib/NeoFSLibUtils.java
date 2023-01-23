@@ -32,7 +32,7 @@ public class NeoFSLibUtils {
 
     public static Optional<String> getArchNameForLinux(String arch) {
         // TODO: linux/armv5, linux/armv6, linux/armv7, linux/armv8
-        if (arch.contains("arm64")) {
+        if (arch.contains("arm64") || arch.contains("aarch64")) {
             return Optional.of("arm64");
         } else if (arch.contains("amd64")) {
             return Optional.of("amd64");
