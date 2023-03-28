@@ -77,13 +77,15 @@ compile smart contracts that are compatible with Neo Legacy.
 * [Binance](https://binance.com)
 * [OKEx](https://okex.com)
 * [AxLabs](https://axlabs.com)
+* [GrantShares](https://grantshares.io)
+* [Flamingo (FUSD)](https://flamingo-1.gitbook.io/user-guide/v/master/flamingo-stablecoin-fusd)
+* [NeoCompounder (cNEO)](https://neocompounder.com/)
 * [Neo Blockchain Toolkit](https://marketplace.visualstudio.com/items?itemName=ngd-seattle.neo-blockchain-toolkit)
 * [NekoHit](https://nekohit.com)
 * [NeoCandy](https://neocandy.io)
 * [Neo Playground](https://neo-playground.dev)
-* [intellij-neo](https://github.com/intellij-neo/intellij-neo)
 * [Elements](https://www.getelements.dev)
-* [GrantShares](https://grantshares.io)
+* [intellij-neo](https://github.com/intellij-neo/intellij-neo)
 * Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
