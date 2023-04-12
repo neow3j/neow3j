@@ -12,12 +12,12 @@ import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.CallFlags;
 
 @ManifestExtra(key = "name", value = "ExampleContractTwo")
-@Permission(contract = "<contract_hash>", methods = "*")
+@Permission(contract = "${contract_hash}", methods = "*")
 public class TestContract2 {
 
     static final String CHILD_CONTRACT_KEY = "child";
     static StorageContext ctx = Storage.getStorageContext();
-    static final Hash160 OWNER = StringLiteralHelper.addressToScriptHash("<owner_address>");
+    static final Hash160 OWNER = StringLiteralHelper.addressToScriptHash("${owner_address}");
 
     @OnDeployment
     public static void deploy(Object data, boolean update) throws Exception {

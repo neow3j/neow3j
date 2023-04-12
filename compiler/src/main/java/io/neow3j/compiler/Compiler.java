@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -313,9 +314,18 @@ public class Compiler {
      */
     protected CompilationUnit compile(ClassNode classNode, java.util.Map<String, String> replaceMap)
             throws IOException {
-        substitutePlaceholdersInMethodBodies(classNode, replaceMap);
-        substitutePlaceholdersInAnnotations(classNode, replaceMap);
+
+        java.util.Map<String, String> embeddedReplaceMap = embedReplaceMap(replaceMap);
+        substitutePlaceholdersInMethodBodies(classNode, embeddedReplaceMap);
+        substitutePlaceholdersInAnnotations(classNode, embeddedReplaceMap);
         return compile(classNode);
+    }
+
+    // Surrounds the provided key values in the replace map with curly brackets and prepends it with a dollar sign.
+    private static java.util.Map<String, String> embedReplaceMap(java.util.Map<String, String> replaceMap) {
+        HashMap<String, String> embeddedReplaceMap = new HashMap<>();
+        replaceMap.forEach((k, v) -> embeddedReplaceMap.put(format("${%s}", k), v));
+        return embeddedReplaceMap;
     }
 
     private static void substitutePlaceholdersInMethodBodies(ClassNode classNode,
