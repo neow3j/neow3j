@@ -38,6 +38,8 @@ public class NeoFSLibUtils {
             return Optional.of("amd64");
         } else if (arch.contains("386")) {
             return Optional.of("i386");
+        } else if (arch.contains("armhf") ||  arch.contains("armv7")) {
+            return Optional.of("armhf");
         } else {
             return Optional.empty();
         }
