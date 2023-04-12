@@ -1196,30 +1196,30 @@ public class StorageIntegrationTest {
         // endregion delete
         // region find
 
-        public static Map.Entry<ByteString, ByteString> findByByteStringPrefix(ByteString prefix) {
-            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+        public static Iterator.Struct<ByteString, ByteString> findByByteStringPrefix(ByteString prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Map.Entry<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
+        public static Iterator.Struct<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
             byte[] p = new ByteString(prefix).toByteArray();
             assert p instanceof byte[];
-            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, p, FindOptions.None);
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, p, FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Map.Entry<ByteString, ByteString> findByStringPrefix(String prefix) {
-            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+        public static Iterator.Struct<ByteString, ByteString> findByStringPrefix(String prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Map.Entry<ByteString, ByteString> findByIntegerPrefix(int prefix) {
-            Iterator<Map.Entry<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+        public static Iterator.Struct<ByteString, ByteString> findByIntegerPrefix(int prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
                     FindOptions.None);
             it.next();
             return it.get();

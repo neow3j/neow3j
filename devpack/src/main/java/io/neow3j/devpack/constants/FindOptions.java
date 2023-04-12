@@ -10,8 +10,8 @@ import io.neow3j.devpack.StorageContext;
 public class FindOptions {
 
     /**
-     * No option is set. The results will be an {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each
-     * {@code Map.Entry} is a key-value pair.
+     * No option is set. The results will be an {@code Iterator<Iterator.Struct<ByteString, ByteString>>}, where each
+     * {@code Iterator.Struct} is a key-value pair.
      */
     public static final byte None = 0;
 
@@ -23,7 +23,8 @@ public class FindOptions {
 
     /**
      * Indicates that the prefix of keys should be removed before return. The results will be an
-     * {@code Iterator<Map.Entry<ByteString, ByteString>>}, where each {@code Map.Entry} is a key-value pair.
+     * {@code Iterator<Iterator.Struct<ByteString, ByteString>>}, where each {@code Iterator.Struct} is a key-value
+     * pair.
      */
     public static final byte RemovePrefix = 1 << 1;
 

@@ -1141,7 +1141,7 @@ public class StorageMapIntegrationTest {
         // region find
 
         public static Iterator findWithRemovePrefixOption() {
-            return (Iterator<Map.Entry<ByteString, ByteString>>) map.find(FindOptions.RemovePrefix);
+            return (Iterator<Iterator.Struct<ByteString, ByteString>>) map.find(FindOptions.RemovePrefix);
         }
 
         // endregion find
