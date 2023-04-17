@@ -59,8 +59,8 @@ public class ModuleTest {
         DeployConfiguration config = new DeployConfiguration();
         SmartContract sc = ctx.getDeployedContract(TestContract1.class);
         config.setDeployParam(ContractParameter.hash160(sc.getScriptHash()));
-        config.setSubstitution("<owner_address>", OWNER_ADDRESS);
-        config.setSubstitution("<contract_hash>", PERMISSION);
+        config.setSubstitution("owner_address", OWNER_ADDRESS);
+        config.setSubstitution("contract_hash", PERMISSION);
         config.setSigner(AccountSigner.global(deployer));
         return config;
     }

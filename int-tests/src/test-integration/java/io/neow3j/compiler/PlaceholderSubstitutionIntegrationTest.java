@@ -31,40 +31,40 @@ public class PlaceholderSubstitutionIntegrationTest {
         String ph6 = "anotherMethod";
         String ph7 = "MyEvent";
         String ph8 = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
-        replaceMap.put("<PLACEHODLER1>", ph1);
-        replaceMap.put("<PLACEHODLER2>", ph2);
-        replaceMap.put("<PLACEHODLER3>", ph3);
-        replaceMap.put("<PLACEHODLER4>", ph4);
-        replaceMap.put("<PLACEHODLER5>", ph5);
-        replaceMap.put("<PLACEHODLER6>", ph6);
-        replaceMap.put("<PLACEHODLER7>", ph7);
-        replaceMap.put("<PLACEHODLER8>", ph8);
+        replaceMap.put("placeholder1", ph1);
+        replaceMap.put("PLACEHODLER2", ph2);
+        replaceMap.put("PLACEHODLER3", ph3);
+        replaceMap.put("PLACEHODLER4", ph4);
+        replaceMap.put("PLACEHODLER5", ph5);
+        replaceMap.put("PLACEHODLER6", ph6);
+        replaceMap.put("PLACEHODLER7", ph7);
+        replaceMap.put("PLACEHODLER8", ph8);
         CompilationUnit res = new Compiler().compile(
                 PlaceholderSubstitutionIntegrationTestContract.class.getName(),
                 replaceMap
         );
         SmartContract c = ct.deployContract(res.getNefFile(), res.getManifest());
-        assertThat(c.callFunctionReturningString("method"), is(ph1+ph2));
-        assertThat(c.getManifest().getPermissions().get(0).getContract(),is("0x" + ph3));
-        assertThat(c.getManifest().getPermissions().get(0).getMethods().get(0),is(ph4));
-        assertThat(c.getManifest().getPermissions().get(1).getContract(),is("0x" + ph5));
-        assertThat(c.getManifest().getPermissions().get(1).getMethods().get(0),is(ph6));
+        assertThat(c.callFunctionReturningString("method"), is(ph1 + ph2));
+        assertThat(c.getManifest().getPermissions().get(0).getContract(), is("0x" + ph3));
+        assertThat(c.getManifest().getPermissions().get(0).getMethods().get(0), is(ph4));
+        assertThat(c.getManifest().getPermissions().get(1).getContract(), is("0x" + ph5));
+        assertThat(c.getManifest().getPermissions().get(1).getMethods().get(0), is(ph6));
         assertThat(c.getManifest().getAbi().getEvents().get(0).getName(), is(ph7));
         assertThat(c.callFunctionReturningScriptHash("getOwner").toAddress(), is(ph8));
     }
 
-    @Permission(contract = "<PLACEHODLER3>", methods = "<PLACEHODLER4>")
-    @Permission(contract = "<PLACEHODLER5>", methods = "<PLACEHODLER6>")
+    @Permission(contract = "${PLACEHODLER3}", methods = "${PLACEHODLER4}")
+    @Permission(contract = "${PLACEHODLER5}", methods = "${PLACEHODLER6}")
     static class PlaceholderSubstitutionIntegrationTestContract {
 
-        static final String s1 = "<PLACEHODLER1>";
-        static final Hash160 OWNER = StringLiteralHelper.addressToScriptHash("<PLACEHODLER8>");
+        static final String s1 = "${placeholder1}";
+        static final Hash160 OWNER = StringLiteralHelper.addressToScriptHash("${PLACEHODLER8}");
 
-        @DisplayName("<PLACEHODLER7>")
+        @DisplayName("${PLACEHODLER7}")
         static Event1Arg<String> event;
 
         public static String method() {
-            String s2 = "<PLACEHODLER2>";
+            String s2 = "${PLACEHODLER2}";
             return s1 + s2;
         }
 
