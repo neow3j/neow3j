@@ -14,6 +14,7 @@ import java.util.Arrays;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -123,6 +124,8 @@ public class ContractManifestTest {
     public void testCreateGroup() {
         ContractManifest manifest = new ContractManifest("TestContract", null, null, null, null, null, null, null);
         assertThat(manifest.getGroups(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, manifest::getFirstGroup);
+        assertThat(thrown.getMessage(), containsString("is not part of any group"));
 
         // parameters used:
         // group1 wif L1QfU2mHD3MvR3aqxMa7wzedePH8bpkrWmRWFQBEWcmPFrEorwjF
@@ -143,10 +146,12 @@ public class ContractManifestTest {
         manifest.setGroups(asList(group2));
 
         assertThat(manifest.getGroups(), hasSize(1));
-        assertThat(manifest.getGroups().get(0).getPubKey(),
+        assertThat(manifest.getFirstGroup().getPubKey(),
                 is("03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9"));
-        assertThat(manifest.getGroups().get(0).getSignature(),
+        assertThat(manifest.getGroup(0).getSignature(),
                 is("lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ=="));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest.getGroup(1));
+        assertThat(thrown.getMessage(), containsString("is only part of 1 groups"));
     }
 
     @Test

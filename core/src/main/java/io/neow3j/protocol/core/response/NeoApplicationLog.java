@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -11,6 +12,8 @@ import io.neow3j.types.NeoVMStateType;
 import java.util.List;
 import java.util.Objects;
 
+import static java.lang.String.format;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NeoApplicationLog {
 
@@ -18,6 +21,7 @@ public class NeoApplicationLog {
     private Hash256 transactionId;
 
     @JsonProperty("executions")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<Execution> executions;
 
     public NeoApplicationLog() {
@@ -34,6 +38,22 @@ public class NeoApplicationLog {
 
     public List<Execution> getExecutions() {
         return executions;
+    }
+
+    @JsonIgnore
+    public Execution getFirstExecution() {
+        if (executions.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction does not have any executions.");
+        }
+        return executions.get(0);
+    }
+
+    @JsonIgnore
+    public Execution getExecution(int index) {
+        if (index >= executions.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction has only %s executions.", executions.size()));
+        }
+        return executions.get(index);
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -112,11 +132,42 @@ public class NeoApplicationLog {
             return stack;
         }
 
+        public StackItem getFirstStackItem() {
+            if (stack.size() == 0) {
+                throw new IndexOutOfBoundsException("The stack is empty. This means that no items were left on the " +
+                        "NeoVM stack after this execution.");
+            }
+            return getStackItem(0);
+        }
+
+        public StackItem getStackItem(int index) {
+            if (index >= stack.size()) {
+                throw new IndexOutOfBoundsException(
+                        format("There were only %s items left on the NeoVM stack after this execution.", stack.size()));
+            }
+            return stack.get(index);
+        }
+
         /**
          * @return the notifications fired by this invocation.
          */
         public List<Notification> getNotifications() {
             return notifications;
+        }
+
+        public Notification getFirstNotification() {
+            if (notifications.size() == 0) {
+                throw new IndexOutOfBoundsException("This execution did not send any notifications.");
+            }
+            return notifications.get(0);
+        }
+
+        public Notification getNotification(int index) {
+            if (index >= notifications.size()) {
+                throw new IndexOutOfBoundsException(format("This execution only sent %s notifications.",
+                        notifications.size()));
+            }
+            return notifications.get(index);
         }
 
         @Override

@@ -35,9 +35,11 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractUtilsTest {
@@ -175,6 +177,10 @@ public class ContractUtilsTest {
         assertThat(manifestObj.getTrusts(), is(not(empty())));
         assertThat(manifestObj.getTrusts(), hasSize(1));
         assertThat(manifestObj.getTrusts(), hasItem("*"));
+        assertThat(manifestObj.getFirstTrust(), is(manifestObj.getTrust(0)));
+        assertThat(manifestObj.getFirstTrust(), is("*"));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifestObj.getTrust(1));
+        assertThat(thrown.getMessage(), containsString("trusts only 1 contracts"));
         assertThat(manifestObj.getExtra(), is(notNullValue()));
     }
 
@@ -234,6 +240,9 @@ public class ContractUtilsTest {
                 manifestObj.getTrusts(),
                 hasItems("contract1", "contract2", "contract3")
         );
+        assertThat(manifestObj.getFirstTrust(), is(manifestObj.getTrust(0)));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifestObj.getTrust(3));
+        assertThat(thrown.getMessage(), containsString("trusts only 3 contracts"));
         assertThat(manifestObj.getExtra(), is(notNullValue()));
     }
 

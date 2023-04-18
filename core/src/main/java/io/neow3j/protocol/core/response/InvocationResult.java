@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -10,6 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class InvocationResult {
@@ -86,12 +89,48 @@ public class InvocationResult {
         return notifications;
     }
 
+    @JsonIgnore
+    public Notification getFirstNotification() {
+        if (notifications.size() == 0) {
+            throw new IndexOutOfBoundsException("No notifications have been sent in this invocation.");
+        }
+        return notifications.get(0);
+    }
+
+    @JsonIgnore
+    public Notification getNotification(int index) {
+        if (index >= notifications.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("Only %s notifications have been sent in this invocation. Tried to access index %s in the " +
+                            "invocation result.", notifications.size(), index));
+        }
+        return notifications.get(index);
+    }
+
     public Diagnostics getDiagnostics() {
         return diagnostics;
     }
 
     public List<StackItem> getStack() {
         return stack;
+    }
+
+    @JsonIgnore
+    public StackItem getFirstStackItem() {
+        if (stack.size() == 0) {
+            throw new IndexOutOfBoundsException("The stack is empty. This means that no items were left on the NeoVM " +
+                    "stack after this invocation.");
+        }
+        return getStackItem(0);
+    }
+
+    @JsonIgnore
+    public StackItem getStackItem(int index) {
+        if (index >= stack.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("There were only %s items left on the NeoVM stack after this invocation", stack.size()));
+        }
+        return stack.get(index);
     }
 
     public String getTx() {
