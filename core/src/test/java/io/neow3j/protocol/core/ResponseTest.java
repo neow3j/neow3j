@@ -1302,10 +1302,10 @@ public class ResponseTest extends ResponseTester {
         TransactionSigner firstSigner = transaction.getFirstSigner();
         assertThat(firstSigner.getAccount(), is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
         assertThat(firstSigner.getScopes(), hasSize(3));
-        assertThat(firstSigner.getFirstWitnessScope(), is(WitnessScope.CUSTOM_CONTRACTS));
-        assertThat(firstSigner.getWitnessScope(1), is(WitnessScope.CUSTOM_GROUPS));
-        assertThat(firstSigner.getWitnessScope(2), is(WitnessScope.WITNESS_RULES));
-        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getWitnessScope(3));
+        assertThat(firstSigner.getFirstScope(), is(WitnessScope.CUSTOM_CONTRACTS));
+        assertThat(firstSigner.getScope(1), is(WitnessScope.CUSTOM_GROUPS));
+        assertThat(firstSigner.getScope(2), is(WitnessScope.WITNESS_RULES));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getScope(3));
         assertThat(thrown.getMessage(), containsString("only has 3 witness scopes"));
         assertThat(firstSigner.getAllowedContracts(), hasSize(2));
         assertThat(firstSigner.getFirstAllowedContract(), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
@@ -1318,8 +1318,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(thrown.getMessage(), containsString("only allows 1 groups"));
         assertThat(firstSigner.getFirstAllowedGroup(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
         WitnessRule rule = firstSigner.getRules().get(0);
-        WitnessRule firstWitnessRule = firstSigner.getFirstWitnessRule();
-        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getWitnessRule(1));
+        WitnessRule firstWitnessRule = firstSigner.getFirstRule();
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getRule(1));
         assertThat(thrown.getMessage(), containsString("only has 1 witness rules"));
         assertThat(rule, is(firstWitnessRule));
         assertThat(rule.getAction(), is(WitnessAction.ALLOW));

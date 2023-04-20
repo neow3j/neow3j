@@ -95,16 +95,16 @@ public class TransactionSigner {
     }
 
     @JsonIgnore
-    public WitnessScope getFirstWitnessScope() {
+    public WitnessScope getFirstScope() {
         if (scopes.size() == 0) {
             throw new IndexOutOfBoundsException("This transaction signer does not have any witness scopes. It might " +
                     "be malformed, since every transaction signer needs to have a witness scope specified.");
         }
-        return getWitnessScope(0);
+        return getScope(0);
     }
 
     @JsonIgnore
-    public WitnessScope getWitnessScope(int index) {
+    public WitnessScope getScope(int index) {
         if (index >= scopes.size()) {
             throw new IndexOutOfBoundsException(format("This transaction signer only has %s witness scopes. Tried to " +
                             "access index %s.", scopes.size(), index));
@@ -159,15 +159,15 @@ public class TransactionSigner {
     }
 
     @JsonIgnore
-    public WitnessRule getFirstWitnessRule() {
+    public WitnessRule getFirstRule() {
         if (rules.size() == 0) {
             throw new IndexOutOfBoundsException("This transaction signer does have any witness rules.");
         }
-        return getWitnessRule(0);
+        return getRule(0);
     }
 
     @JsonIgnore
-    public WitnessRule getWitnessRule(int index) {
+    public WitnessRule getRule(int index) {
         if (index >= rules.size()) {
             throw new IndexOutOfBoundsException(format("This transaction signer only has %s witness rules. Tried to " +
                     "access index %s.", rules.size(), index));
