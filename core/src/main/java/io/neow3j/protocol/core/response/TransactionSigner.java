@@ -38,10 +38,11 @@ public class TransactionSigner {
     private Hash160 account;
 
     @JsonProperty(value = "scopes", required = true)
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonSerialize(using = WitnessScopeSerializer.class)
     @JsonDeserialize(using = WitnessScopeDeserializer.class)
-    private List<WitnessScope> scopes;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<WitnessScope> scopes = new ArrayList<>();
 
     @JsonProperty("allowedcontracts")
     @JsonSetter(nulls = Nulls.AS_EMPTY)

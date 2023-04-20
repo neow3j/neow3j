@@ -2,9 +2,12 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,7 +31,8 @@ public class NeoListPlugins extends Response<List<NeoListPlugins.Plugin>> {
         private String version;
 
         @JsonProperty("interfaces")
-        private List<String> interfaces;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<String> interfaces = new ArrayList<>();
 
         public Plugin() {
         }

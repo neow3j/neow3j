@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class NeoGetClaimable extends Response<NeoGetClaimable.Claimables> {
 
         @JsonProperty("claimable")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Claim> claims;
+        private List<Claim> claims = new ArrayList<>();
 
         @JsonProperty("address")
         private String address;

@@ -1,6 +1,8 @@
 package io.neow3j.wallet.nep6;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.crypto.ScryptParams;
 
 import java.util.ArrayList;
@@ -22,7 +24,8 @@ public class NEP6Wallet {
     private ScryptParams scrypt;
 
     @JsonProperty("accounts")
-    private List<NEP6Account> accounts;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<NEP6Account> accounts = new ArrayList<>();
 
     @JsonProperty("extra")
     private Object extra;

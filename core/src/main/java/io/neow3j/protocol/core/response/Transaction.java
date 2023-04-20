@@ -9,6 +9,7 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -46,11 +47,12 @@ public class Transaction {
     private Long validUntilBlock;
 
     @JsonProperty("signers")
-    private List<TransactionSigner> signers;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<TransactionSigner> signers = new ArrayList<>();
 
     @JsonProperty("attributes")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<TransactionAttribute> attributes;
+    private List<TransactionAttribute> attributes = new ArrayList<>();
 
     @JsonProperty("script")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -58,7 +60,7 @@ public class Transaction {
 
     @JsonProperty("witnesses")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<NeoWitness> witnesses;
+    private List<NeoWitness> witnesses = new ArrayList<>();
 
     @JsonProperty("blockhash")
     @JsonSetter(nulls = Nulls.AS_EMPTY)

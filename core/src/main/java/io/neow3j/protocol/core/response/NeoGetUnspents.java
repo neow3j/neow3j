@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,7 +27,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @JsonProperty("balance")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Balance> balances;
+        private List<Balance> balances = new ArrayList<>();
 
         @JsonProperty("address")
         private String address;
@@ -79,7 +80,7 @@ public class NeoGetUnspents extends Response<NeoGetUnspents.Unspents> {
 
         @JsonProperty("unspent")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<UnspentTransaction> unspentTransactions;
+        private List<UnspentTransaction> unspentTransactions = new ArrayList<>();
 
         @JsonProperty("assethash")
         private String assetHash;

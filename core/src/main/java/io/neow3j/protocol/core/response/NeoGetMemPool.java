@@ -8,6 +8,7 @@ import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.protocol.core.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,11 +30,11 @@ public class NeoGetMemPool extends Response<NeoGetMemPool.MemPoolDetails> {
 
         @JsonProperty("verified")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Hash256> verified;
+        private List<Hash256> verified = new ArrayList<>();
 
         @JsonProperty("unverified")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Hash256> unverified;
+        private List<Hash256> unverified = new ArrayList<>();
 
         public MemPoolDetails() {
         }

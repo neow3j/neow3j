@@ -3,6 +3,8 @@ package io.neow3j.protocol.core.response;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.NeoVMStateType;
@@ -30,13 +32,15 @@ public class InvocationResult {
     private String exception;
 
     @JsonProperty("notifications")
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<Notification> notifications = new ArrayList<>();
 
     @JsonProperty("diagnostics")
     private Diagnostics diagnostics;
 
     @JsonProperty("stack")
-    private List<StackItem> stack;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<StackItem> stack = new ArrayList<>();
 
     @JsonProperty("tx")
     private String tx;
@@ -239,7 +243,8 @@ public class InvocationResult {
             private String script; // Base64 string
 
             @JsonProperty("parameters")
-            private List<ContractParameter> parameters;
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            private List<ContractParameter> parameters = new ArrayList<>();
 
             // encoded, hexadeximal EC-Point mapped to base64-encoded, signature
             @JsonProperty("signatures")

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.types.Hash160;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -21,7 +22,7 @@ public class NeoGetTokenBalances<T extends NeoGetTokenBalances.TokenBalances
 
         @JsonProperty("balance")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<K> balances;
+        private List<K> balances = new ArrayList<>();
 
         public TokenBalances() {
         }

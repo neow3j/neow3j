@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,7 +28,7 @@ public class ContractNef {
     @JsonProperty("tokens")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<ContractMethodToken> tokens;
+    private List<ContractMethodToken> tokens = new ArrayList<>();
 
     @JsonProperty("script")
     private String script;

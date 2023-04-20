@@ -9,6 +9,7 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,7 +23,7 @@ public class NeoApplicationLog {
 
     @JsonProperty("executions")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<Execution> executions;
+    private List<Execution> executions = new ArrayList<>();
 
     public NeoApplicationLog() {
     }
@@ -73,11 +74,11 @@ public class NeoApplicationLog {
 
         @JsonProperty("stack")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<StackItem> stack;
+        private List<StackItem> stack = new ArrayList<>();
 
         @JsonProperty("notifications")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Notification> notifications;
+        private List<Notification> notifications = new ArrayList<>();
 
         public Execution() {
         }

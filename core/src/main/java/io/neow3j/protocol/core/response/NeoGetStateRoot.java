@@ -2,10 +2,13 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.protocol.core.Response;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,7 +35,8 @@ public class NeoGetStateRoot extends Response<NeoGetStateRoot.StateRoot> {
         private Hash256 rootHash;
 
         @JsonProperty("witnesses")
-        private List<NeoWitness> witness;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<NeoWitness> witness = new ArrayList<>();
 
         public StateRoot() {
         }

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash256;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,12 +43,12 @@ public class NeoBlock {
 
     @JsonProperty("witnesses")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<NeoWitness> witnesses;
+    private List<NeoWitness> witnesses = new ArrayList<>();
 
     @JsonProperty("tx")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private List<Transaction> transactions;
+    private List<Transaction> transactions = new ArrayList<>();
 
     @JsonProperty("confirmations")
     private int confirmations;

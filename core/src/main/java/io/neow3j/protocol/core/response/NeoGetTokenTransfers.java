@@ -9,6 +9,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -19,11 +20,11 @@ public abstract class NeoGetTokenTransfers<T extends NeoGetTokenTransfers.TokenT
 
         @JsonProperty("sent")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<K> sent;
+        private List<K> sent = new ArrayList<>();
 
         @JsonProperty("received")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<K> received;
+        private List<K> received = new ArrayList<>();
 
         @JsonProperty("address")
         private String transferAddress;

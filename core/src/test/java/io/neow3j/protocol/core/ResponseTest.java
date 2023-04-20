@@ -221,6 +221,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
                         "        \"time\": 1539968858,\n" +
                         "        \"index\": 1914006,\n" +
+                        "        \"primary\": 1,\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -298,6 +299,7 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
+        assertThat(getBlock.getBlock().getPrimary(), is(1));
         assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
 
         assertThat(getBlock.getBlock().getWitnesses(), is(notNullValue()));
@@ -424,7 +426,8 @@ public class ResponseTest extends ResponseTester {
                 )
         );
 
-        assertThat(getBlock.getBlock().getTransactions(), is(nullValue()));
+        assertThat(getBlock.getBlock().getTransactions(), is(notNullValue()));
+        assertThat(getBlock.getBlock().getTransactions(), is(empty()));
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
@@ -999,6 +1002,51 @@ public class ResponseTest extends ResponseTester {
                 contractABI, asList(permission), emptyList(), null);
         ContractState expectedEqual = new ContractState(id, updateCounter, hash, nef, contractManifest);
         assertThat(contractState, is(expectedEqual));
+    }
+
+    @Test
+    public void testGetContractState_missingArrayValuesShouldBeEmpty() {
+        buildResponse("{\n" +
+                "    \"result\": {\n" +
+                "        \"nef\": {\n" +
+              //"            \"tokens\": [],\n" +
+                "        },\n" +
+                "        \"manifest\": {\n" +
+              //"            \"groups\": [],\n" +
+              //"            \"supportedstandards\": [],\n" +
+                "            \"abi\": {\n" +
+              //"                \"methods\": [],\n" +
+              //"                \"events\": []\n" +
+                "            },\n" +
+              //"            \"permissions\": [],\n" +
+              //"            \"trusts\": [],\n" +
+                "            \"extra\": null\n" +
+                "        }\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
+        ContractState contractState = getContractState.getContractState();
+        assertThat(contractState.getNef().getTokens(), is(notNullValue()));
+        assertThat(contractState.getNef().getTokens(), is(empty()));
+
+        ContractManifest manifest = contractState.getManifest();
+        assertThat(manifest.getGroups(), is(notNullValue()));
+        assertThat(manifest.getGroups(), is(empty()));
+
+        assertThat(manifest.getSupportedStandards(), is(notNullValue()));
+        assertThat(manifest.getSupportedStandards(), is(empty()));
+
+        ContractManifest.ContractABI abi = manifest.getAbi();
+        assertThat(abi.getEvents(), is(notNullValue()));
+        assertThat(abi.getEvents(), is(empty()));
+
+        assertThat(manifest.getPermissions(), is(notNullValue()));
+        assertThat(manifest.getPermissions(), is(empty()));
+
+        assertThat(manifest.getTrusts(), is(notNullValue()));
+        assertThat(manifest.getTrusts(), is(empty()));
     }
 
     @Test

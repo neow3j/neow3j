@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash160;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,7 +47,7 @@ public class NeoGetNep11Balances extends NeoGetTokenBalances<NeoGetNep11Balances
 
         @JsonProperty("tokens")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<Nep11Token> tokens;
+        private List<Nep11Token> tokens = new ArrayList<>();
 
         public Nep11Balance() {
         }
