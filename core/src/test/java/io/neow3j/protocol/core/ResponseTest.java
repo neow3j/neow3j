@@ -220,6 +220,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
                         "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
                         "        \"time\": 1539968858,\n" +
+                        "        \"nonce\": \"7F8EEE652D4BC959\",\n" +
                         "        \"index\": 1914006,\n" +
                         "        \"primary\": 1,\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
@@ -298,6 +299,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock().getMerkleRootHash(),
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
+        assertThat(getBlock.getBlock().getNonce(), is("7F8EEE652D4BC959"));
+        assertThat(getBlock.getBlock().getNonceAsLong(), is(9191546007828810073L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getPrimary(), is(1));
         assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
@@ -384,6 +387,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
                         "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
                         "        \"time\": 1539968858,\n" +
+                        "        \"nonce\": \"7F8EEE652D4BC95A\",\n" +
                         "        \"index\": 1914006,\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"witnesses\": [\n" +
@@ -410,6 +414,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(getBlock.getBlock().getMerkleRootHash(),
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
+        assertThat(getBlock.getBlock().getNonce(), is("7F8EEE652D4BC95A"));
+        assertThat(getBlock.getBlock().getNonceAsLong(), is(9191546007828810074L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
         assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
 

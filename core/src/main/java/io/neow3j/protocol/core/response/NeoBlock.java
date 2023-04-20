@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -32,6 +33,9 @@ public class NeoBlock {
     @JsonProperty("time")
     private long time;
 
+    @JsonProperty("nonce")
+    private String nonce;
+
     @JsonProperty("index")
     private long index;
 
@@ -61,14 +65,15 @@ public class NeoBlock {
     }
 
     public NeoBlock(Hash256 hash, long size, int version, Hash256 prevBlockHash, Hash256 merkleRootHash, long time,
-            long index, int primary, String nextConsensus, List<NeoWitness> witnesses, List<Transaction> transactions,
-            int confirmations, Hash256 nextBlockHash) {
+            String nonce, long index, int primary, String nextConsensus, List<NeoWitness> witnesses,
+            List<Transaction> transactions, int confirmations, Hash256 nextBlockHash) {
         this.hash = hash;
         this.size = size;
         this.version = version;
         this.prevBlockHash = prevBlockHash;
         this.merkleRootHash = merkleRootHash;
         this.time = time;
+        this.nonce = nonce;
         this.index = index;
         this.primary = primary;
         this.nextConsensus = nextConsensus;
@@ -100,6 +105,15 @@ public class NeoBlock {
 
     public long getTime() {
         return time;
+    }
+
+    public String getNonce() {
+        return nonce;
+    }
+
+    @JsonIgnore
+    public long getNonceAsLong() {
+        return Long.parseLong(nonce, 16);
     }
 
     public long getIndex() {
@@ -142,6 +156,7 @@ public class NeoBlock {
         return getSize() == neoBlock.getSize() &&
                 getVersion() == neoBlock.getVersion() &&
                 getTime() == neoBlock.getTime() &&
+                Objects.equals(getNonce(), neoBlock.getNonce()) &&
                 getIndex() == neoBlock.getIndex() &&
                 getConfirmations() == neoBlock.getConfirmations() &&
                 getPrimary() == neoBlock.getPrimary() &&
@@ -157,8 +172,8 @@ public class NeoBlock {
     @Override
     public int hashCode() {
         return Objects.hash(getHash(), getSize(), getVersion(), getPrevBlockHash(), getMerkleRootHash(), getTime(),
-                getIndex(), getPrimary(), getNextConsensus(), getWitnesses(), getTransactions(), getConfirmations(),
-                getNextBlockHash());
+                getNonce(), getIndex(), getPrimary(), getNextConsensus(), getWitnesses(), getTransactions(),
+                getConfirmations(), getNextBlockHash());
     }
 
     @Override
@@ -170,6 +185,7 @@ public class NeoBlock {
                 ", prevBlockHash='" + prevBlockHash + '\'' +
                 ", merkleRootHash='" + merkleRootHash + '\'' +
                 ", time=" + time +
+                ", nonce=" + nonce +
                 ", index=" + index +
                 ", primary=" + primary +
                 ", nextConsensus='" + nextConsensus + '\'' +
