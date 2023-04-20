@@ -106,6 +106,9 @@ public class PermissionManifestTest {
                 .compile(PermissionManifestTestContractWithoutAnnotation.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> unit.getManifest().getFirstPermission());
+        assertThat(thrown.getMessage(), containsString("does not have any permissions"));
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(unit.getManifest());
         assertThat(s, containsString("\"permissions\":[]"));
     }

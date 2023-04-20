@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,11 +17,11 @@ public class NeoExpressConfig {
 
     @JsonProperty()
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<Wallet> wallets;
+    private List<Wallet> wallets = new ArrayList<>();
 
     @JsonProperty("consensus-nodes")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<ConsensusNode> consensusNodes;
+    private List<ConsensusNode> consensusNodes = new ArrayList<>();
 
     public NeoExpressConfig() {
     }
@@ -61,7 +62,8 @@ public class NeoExpressConfig {
         private String name;
 
         @JsonProperty
-        private List<Account> accounts;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<Account> accounts = new ArrayList<>();
 
         public Wallet() {
         }
@@ -135,7 +137,8 @@ public class NeoExpressConfig {
                 private String script;
 
                 @JsonProperty
-                private List<String> parameters;
+                @JsonSetter(nulls = Nulls.AS_EMPTY)
+                private List<String> parameters = new ArrayList<>();
 
                 public Contract() {
                 }

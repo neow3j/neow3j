@@ -104,7 +104,7 @@ public class SmartContract {
 
         InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
         throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getStack().get(0);
+        StackItem item = invocationResult.getFirstStackItem();
         StackItemType type = item.getType();
         if (type.equals(BYTE_STRING)) {
             return item.getString();
@@ -132,7 +132,7 @@ public class SmartContract {
             invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
         }
         throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getStack().get(0);
+        StackItem item = invocationResult.getFirstStackItem();
         if (item.getType().equals(INTEGER)) {
             return item.getInteger();
         }
@@ -159,7 +159,7 @@ public class SmartContract {
             invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
         }
         throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getStack().get(0);
+        StackItem item = invocationResult.getFirstStackItem();
         StackItemType type = item.getType();
         if (type.equals(BOOLEAN) ||
                 type.equals(INTEGER) ||
@@ -184,7 +184,7 @@ public class SmartContract {
     public Hash160 callFunctionReturningScriptHash(String function, ContractParameter... params) throws IOException {
         InvocationResult result = callInvokeFunction(function, asList(params)).getInvocationResult();
         throwIfFaultState(result);
-        StackItem stackItem = result.getStack().get(0);
+        StackItem stackItem = result.getFirstStackItem();
         return extractScriptHash(stackItem);
     }
 
@@ -243,7 +243,7 @@ public class SmartContract {
         InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
         throwIfFaultState(invocationResult);
 
-        StackItem stackItem = invocationResult.getStack().get(0);
+        StackItem stackItem = invocationResult.getFirstStackItem();
         if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
         }
@@ -353,7 +353,7 @@ public class SmartContract {
         InvocationResult invocationResult = neow3j.invokeScript(toHexString(script), signers).send()
                 .getInvocationResult();
         throwIfFaultState(invocationResult);
-        return invocationResult.getStack().get(0).getList();
+        return invocationResult.getFirstStackItem().getList();
     }
 
     /**

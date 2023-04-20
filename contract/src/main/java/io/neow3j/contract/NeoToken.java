@@ -192,7 +192,7 @@ public class NeoToken extends FungibleToken {
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<Candidate> getCandidates() throws IOException {
-        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = callInvokeFunction(GET_CANDIDATES).getInvocationResult().getFirstStackItem();
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
@@ -256,7 +256,7 @@ public class NeoToken extends FungibleToken {
     }
 
     private List<ECPublicKey> callFunctionReturningListOfPublicKeys(String function) throws IOException {
-        StackItem arrayItem = callInvokeFunction(function).getInvocationResult().getStack().get(0);
+        StackItem arrayItem = callInvokeFunction(function).getInvocationResult().getFirstStackItem();
         if (!arrayItem.getType().equals(ARRAY)) {
             throw new UnexpectedReturnTypeException(arrayItem.getType(), ARRAY);
         }
@@ -408,7 +408,7 @@ public class NeoToken extends FungibleToken {
      */
     public NeoAccountState getAccountState(Hash160 account) throws IOException {
         StackItem result = callInvokeFunction(GET_ACCOUNT_STATE, asList(hash160(account)))
-                .getInvocationResult().getStack().get(0);
+                .getInvocationResult().getFirstStackItem();
         if (result.getType().equals(ANY)) {
             return NeoAccountState.withNoBalance();
         }

@@ -7,12 +7,14 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.crypto.Base64;
 import io.neow3j.types.Hash256;
-
 import io.neow3j.types.NeoVMStateType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Transaction {
@@ -45,11 +47,12 @@ public class Transaction {
     private Long validUntilBlock;
 
     @JsonProperty("signers")
-    private List<TransactionSigner> signers;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<TransactionSigner> signers = new ArrayList<>();
 
     @JsonProperty("attributes")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<TransactionAttribute> attributes;
+    private List<TransactionAttribute> attributes = new ArrayList<>();
 
     @JsonProperty("script")
     @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -57,7 +60,7 @@ public class Transaction {
 
     @JsonProperty("witnesses")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<NeoWitness> witnesses;
+    private List<NeoWitness> witnesses = new ArrayList<>();
 
     @JsonProperty("blockhash")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -170,8 +173,39 @@ public class Transaction {
         return signers;
     }
 
+    public TransactionSigner getFirstSigner() {
+        if (signers.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction does not have any signers. It might be malformed, " +
+                    "since every transaction requires at least one signer.");
+        }
+        return getSigner(0);
+    }
+
+    public TransactionSigner getSigner(int index) {
+        if (index >= signers.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction only has %s signers.", signers.size()));
+        }
+        return signers.get(index);
+    }
+
     public List<TransactionAttribute> getAttributes() {
         return attributes;
+    }
+
+    public TransactionAttribute getFirstAttribute() {
+        if (attributes.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction does not have any attributes.");
+        }
+        return getAttribute(0);
+    }
+
+    public TransactionAttribute getAttribute(int index) {
+        if (index >= attributes.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("This transaction only has %s attributes. Tried to access index %s.", attributes.size(),
+                            index));
+        }
+        return attributes.get(index);
     }
 
     public String getScript() {

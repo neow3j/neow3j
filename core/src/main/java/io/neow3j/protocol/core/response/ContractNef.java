@@ -1,13 +1,17 @@
 package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContractNef {
@@ -24,7 +28,7 @@ public class ContractNef {
     @JsonProperty("tokens")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<ContractMethodToken> tokens;
+    private List<ContractMethodToken> tokens = new ArrayList<>();
 
     @JsonProperty("script")
     private String script;
@@ -59,6 +63,23 @@ public class ContractNef {
 
     public List<ContractMethodToken> getTokens() {
         return tokens;
+    }
+
+    @JsonIgnore
+    public ContractMethodToken getFirstToken() {
+        if (tokens.size() == 0) {
+            throw new IndexOutOfBoundsException("This contract does not have any method tokens.");
+        }
+        return getToken(0);
+    }
+
+    @JsonIgnore
+    public ContractMethodToken getToken(int index) {
+        if (index >= tokens.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("This contract nef only has %s method tokens.", tokens.size()));
+        }
+        return tokens.get(index);
     }
 
     public String getScript() {

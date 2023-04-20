@@ -199,7 +199,8 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(block);
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
-        assertNull(block.getTransactions());
+        assertThat(block.getTransactions(), is(notNullValue()));
+        assertThat(block.getTransactions(), is(empty()));
     }
 
     @Test
@@ -289,7 +290,8 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getBlock();
 
         assertNotNull(block);
-        assertNull(block.getTransactions());
+        assertThat(block.getTransactions(), is(notNullValue()));
+        assertThat(block.getTransactions(), is(empty()));
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
         assertThat(block.getHash(), is(BLOCK_0_HASH));
     }
@@ -302,7 +304,8 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getBlock();
 
         assertNotNull(block);
-        assertNull(block.getTransactions());
+        assertThat(block.getTransactions(), is(notNullValue()));
+        assertThat(block.getTransactions(), is(empty()));
         assertThat(block.getIndex(), is(BLOCK_0_IDX.longValue()));
         assertThat(block.getHash(), is(BLOCK_0_HASH));
     }

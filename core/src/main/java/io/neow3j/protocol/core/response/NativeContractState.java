@@ -2,8 +2,11 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -11,7 +14,8 @@ import java.util.Objects;
 public class NativeContractState extends CoreContractState {
 
     @JsonProperty("updatehistory")
-    private List<Integer> updateHistory;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<Integer> updateHistory = new ArrayList<>();
 
     public NativeContractState() {
         super();

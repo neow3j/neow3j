@@ -2,7 +2,10 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -13,7 +16,8 @@ public class PopulatedBlocks {
     private String cacheId;
 
     @JsonProperty("blocks")
-    private List<Integer> blocks;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<Integer> blocks = new ArrayList<>();
 
     public PopulatedBlocks() {
     }

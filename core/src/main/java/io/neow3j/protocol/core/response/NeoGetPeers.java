@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,13 +25,16 @@ public class NeoGetPeers extends Response<NeoGetPeers.Peers> {
     public static class Peers {
 
         @JsonProperty("connected")
-        private List<AddressEntry> connected;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<AddressEntry> connected = new ArrayList<>();
 
         @JsonProperty("bad")
-        private List<AddressEntry> bad;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<AddressEntry> bad = new ArrayList<>();
 
         @JsonProperty("unconnected")
-        private List<AddressEntry> unconnected;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<AddressEntry> unconnected = new ArrayList<>();
 
         public Peers() {
         }

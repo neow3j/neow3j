@@ -26,22 +26,22 @@ public class DebugInfo {
     @JsonProperty("documents")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> documents;
+    private List<String> documents = new ArrayList<>();
 
     @JsonProperty("static-variables")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> staticVariables;
+    private List<String> staticVariables = new ArrayList<>();
 
     @JsonProperty("methods")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<Method> methods;
+    private List<Method> methods = new ArrayList<>();
 
     @JsonProperty("events")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<Event> events;
+    private List<Event> events = new ArrayList<>();
 
     public DebugInfo() {
     }
@@ -159,7 +159,7 @@ public class DebugInfo {
         @JsonProperty("params")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        private List<String> params; // format: "{name},{type}
+        private List<String> params = new ArrayList<>(); // format: "{name},{type}
 
         @JsonProperty("return")
         private String returnType;
@@ -167,13 +167,13 @@ public class DebugInfo {
         @JsonProperty("variables")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        private List<String> variables; // format: "{name},{type}
+        private List<String> variables = new ArrayList<>(); // format: "{name},{type}
 
         @JsonProperty("sequence-points")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
         // format: "{address}[{document-index}]{start-line}:{start-column}-{end-line}:{end-column}"
-        private List<String> sequencePoints;
+        private List<String> sequencePoints = new ArrayList<>();
 
         public Method() {
         }
@@ -230,7 +230,7 @@ public class DebugInfo {
         @JsonProperty("params")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
         @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        private List<String> params; // format: "{name},{type}"
+        private List<String> params = new ArrayList<>(); // format: "{name},{type}"
 
         public Event() {
         }

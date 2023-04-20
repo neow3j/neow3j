@@ -102,7 +102,7 @@ public class ContractManagement extends SmartContract {
     private Hash160 getContractHashById(int id) throws IOException {
         InvocationResult response = callInvokeFunction(GET_CONTRACT_BY_ID, asList(integer(id))).getInvocationResult();
         try {
-            return new Hash160(reverseArray(response.getStack().get(0).getList().get(2).getByteArray()));
+            return new Hash160(reverseArray(response.getFirstStackItem().getList().get(2).getByteArray()));
         } catch (Exception e) {
             throw new IllegalArgumentException("Could not get the contract hash for the provided id.");
         }

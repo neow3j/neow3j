@@ -2,6 +2,8 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
 import java.util.ArrayList;
@@ -22,7 +24,8 @@ public class Diagnostics {
      * The resulting storage changes of the invocation.
      */
     @JsonProperty("storagechanges")
-    private List<StorageChange> storageChanges;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<StorageChange> storageChanges = new ArrayList<>();
 
     public Diagnostics() {
     }
@@ -52,6 +55,7 @@ public class Diagnostics {
          * The contracts that were invoked by this contract.
          */
         @JsonProperty("call")
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
         private List<InvokedContract> invokedContracts = new ArrayList<>();
 
         public InvokedContract() {

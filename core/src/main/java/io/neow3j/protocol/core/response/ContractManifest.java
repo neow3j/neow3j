@@ -2,6 +2,7 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -40,7 +41,7 @@ public class ContractManifest {
     @JsonProperty("groups")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<ContractGroup> groups;
+    private List<ContractGroup> groups = new ArrayList<>();
 
     @JsonProperty(value = "features")
     private HashMap<Object, Object> features;
@@ -48,21 +49,21 @@ public class ContractManifest {
     @JsonProperty("supportedstandards")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> supportedStandards;
+    private List<String> supportedStandards = new ArrayList<>();
 
     @JsonProperty("abi")
     private ContractABI abi;
 
     @JsonProperty("permissions")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<ContractPermission> permissions;
+    private List<ContractPermission> permissions = new ArrayList<>();
 
     // List of trusted contracts
     @JsonProperty("trusts")
-    @JsonSerialize(using = WildcardContainerSerializer.class)
     @JsonSetter(nulls = Nulls.AS_EMPTY)
+    @JsonSerialize(using = WildcardContainerSerializer.class)
     @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-    private List<String> trusts;
+    private List<String> trusts = new ArrayList<>();
 
     // Custom user data
     @JsonProperty("extra")
@@ -90,6 +91,24 @@ public class ContractManifest {
 
     public List<ContractGroup> getGroups() {
         return groups;
+    }
+
+    @JsonIgnore
+    public ContractGroup getFirstGroup() {
+        if (groups.size() == 0) {
+            throw new IndexOutOfBoundsException("This contract is not part of any group.");
+        }
+        return getGroup(0);
+    }
+
+    @JsonIgnore
+    public ContractGroup getGroup(int index) {
+        if (index >= groups.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("This contract is only part of %s groups. Tried to access index %s in the manifest.",
+                            groups.size(), index));
+        }
+        return groups.get(index);
     }
 
     /**
@@ -128,6 +147,24 @@ public class ContractManifest {
         return supportedStandards;
     }
 
+    @JsonIgnore
+    public String getFirstSupportedStandard() {
+        if (supportedStandards.size() == 0) {
+            throw new IndexOutOfBoundsException("This contract does not support any standard.");
+        }
+        return getSupportedStandard(0);
+    }
+
+    @JsonIgnore
+    public String getSupportedStandard(int index) {
+        if (index >= supportedStandards.size()) {
+            throw new IndexOutOfBoundsException(
+                    format("This contract only supports %s standards. Tried to access a supported standard at index " +
+                            "%s in the manifest", supportedStandards.size(), index));
+        }
+        return supportedStandards.get(index);
+    }
+
     public ContractABI getAbi() {
         return abi;
     }
@@ -136,8 +173,43 @@ public class ContractManifest {
         return permissions;
     }
 
+    @JsonIgnore
+    public ContractPermission getFirstPermission() {
+        if (permissions.size() == 0) {
+            throw new IndexOutOfBoundsException("This contract does not have any permissions. It is not permitted to " +
+                    "invoke any other contract's method if it is not marked safe (i.e., read-only).");
+        }
+        return getPermission(0);
+    }
+
+    @JsonIgnore
+    public ContractPermission getPermission(int index) {
+        if (index >= permissions.size()) {
+            throw new IndexOutOfBoundsException(format("This contract only has permission for %s contracts. Tried " +
+                    "to access a permission at index %s in the manifest.", permissions.size(), index));
+        }
+        return permissions.get(index);
+    }
+
     public List<String> getTrusts() {
         return trusts;
+    }
+
+    @JsonIgnore
+    public String getFirstTrust() {
+        if (trusts.size() == 0) {
+            throw new IndexOutOfBoundsException("This contract does not trust any other contracts.");
+        }
+        return getTrust(0);
+    }
+
+    @JsonIgnore
+    public String getTrust(int index) {
+        if (index >= trusts.size()) {
+            throw new IndexOutOfBoundsException(format("This contract trusts only %s contracts. Tried to access a " +
+                    "trusted contract at index %s in the manifest.", trusts.size(), index));
+        }
+        return trusts.get(index);
     }
 
     public Object getExtra() {
@@ -266,11 +338,11 @@ public class ContractManifest {
 
         @JsonProperty("methods")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<ContractMethod> methods;
+        private List<ContractMethod> methods = new ArrayList<>();
 
         @JsonProperty("events")
         @JsonSetter(nulls = Nulls.AS_EMPTY)
-        private List<ContractEvent> events;
+        private List<ContractEvent> events = new ArrayList<>();
 
         public ContractABI() {
         }
@@ -284,8 +356,43 @@ public class ContractManifest {
             return methods;
         }
 
+        @JsonIgnore
+        public ContractMethod getFirstMethod() {
+            if (methods.size() == 0) {
+                throw new IndexOutOfBoundsException("This abi does not contain any methods. It might be malformed, " +
+                        "since every contract needs at least one method to be functional.");
+            }
+            return getMethod(0);
+        }
+
+        @JsonIgnore
+        public ContractMethod getMethod(int index) {
+            if (index >= methods.size()) {
+                throw new IndexOutOfBoundsException(
+                        format("This abi only contains %s methods. Tried to access index %s.", methods.size(), index));
+            }
+            return methods.get(index);
+        }
+
         public List<ContractEvent> getEvents() {
             return events;
+        }
+
+        @JsonIgnore
+        public ContractEvent getFirstEvent() {
+            if (events.size() == 0) {
+                throw new IndexOutOfBoundsException("This abi does not have any events.");
+            }
+            return getEvent(0);
+        }
+
+        @JsonIgnore
+        public ContractEvent getEvent(int index) {
+            if (index >= events.size()) {
+                throw new IndexOutOfBoundsException(
+                        format("This abi only has %s events. Tried to access index %s.", events.size(), index));
+            }
+            return events.get(index);
         }
 
         @Override
@@ -322,7 +429,7 @@ public class ContractManifest {
 
             @JsonProperty("parameters")
             @JsonSetter(nulls = Nulls.AS_EMPTY)
-            private List<ContractParameter> parameters;
+            private List<ContractParameter> parameters = new ArrayList<>();
 
             @JsonProperty("offset")
             private int offset;
@@ -351,6 +458,10 @@ public class ContractManifest {
 
             public List<ContractParameter> getParameters() {
                 return parameters;
+            }
+
+            public ContractParameter getParameter(int index) {
+                return parameters.get(index);
             }
 
             public int getOffset() {
@@ -406,7 +517,7 @@ public class ContractManifest {
 
             @JsonProperty("parameters")
             @JsonSetter(nulls = Nulls.AS_EMPTY)
-            private List<ContractParameter> parameters;
+            private List<ContractParameter> parameters = new ArrayList<>();
 
             public ContractEvent() {
             }
@@ -460,10 +571,10 @@ public class ContractManifest {
         private String contract;
 
         @JsonProperty("methods")
-        @JsonSerialize(using = WildcardContainerSerializer.class)
         @JsonSetter(nulls = Nulls.AS_EMPTY)
+        @JsonSerialize(using = WildcardContainerSerializer.class)
         @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
-        private List<String> methods;
+        private List<String> methods = new ArrayList<>();
 
         public ContractPermission() {
         }
@@ -479,6 +590,14 @@ public class ContractManifest {
 
         public List<String> getMethods() {
             return methods;
+        }
+
+        public String getMethod(int index) {
+            if (index >= methods.size()) {
+                throw new IndexOutOfBoundsException(
+                        format("This abi only contains %s events. Tried to access index %s.", methods.size(), index));
+            }
+            return methods.get(index);
         }
 
         @Override

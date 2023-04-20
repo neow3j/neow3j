@@ -118,9 +118,11 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -219,6 +221,7 @@ public class ResponseTest extends ResponseTester {
                         "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
                         "        \"time\": 1539968858,\n" +
                         "        \"index\": 1914006,\n" +
+                        "        \"primary\": 1,\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
@@ -296,6 +299,7 @@ public class ResponseTest extends ResponseTester {
                 is(new Hash256("0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7")));
         assertThat(getBlock.getBlock().getTime(), is(1539968858L));
         assertThat(getBlock.getBlock().getIndex(), is(1914006L));
+        assertThat(getBlock.getBlock().getPrimary(), is(1));
         assertThat(getBlock.getBlock().getNextConsensus(), is("AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB"));
 
         assertThat(getBlock.getBlock().getWitnesses(), is(notNullValue()));
@@ -422,7 +426,8 @@ public class ResponseTest extends ResponseTester {
                 )
         );
 
-        assertThat(getBlock.getBlock().getTransactions(), is(nullValue()));
+        assertThat(getBlock.getBlock().getTransactions(), is(notNullValue()));
+        assertThat(getBlock.getBlock().getTransactions(), is(empty()));
 
         assertThat(getBlock.getBlock().getConfirmations(), is(7878));
         assertThat(getBlock.getBlock().getNextBlockHash(),
@@ -803,15 +808,25 @@ public class ResponseTest extends ResponseTester {
         assertThat(nef1.getCompiler(), is("neo-core-v3.0"));
         assertThat(nef1.getSource(), is("variable-size-source-gastoken"));
         assertThat(nef1.getTokens(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, nef1::getFirstToken);
+        assertThat(thrown.getMessage(), containsString("does not have any method tokens"));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> nef1.getToken(0));
+        assertThat(thrown.getMessage(), containsString("only has 0 method tokens"));
         assertThat(nef1.getScript(), is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
         assertThat(nef1.getChecksum(), is(2663858513L));
         ContractManifest manifest1 = c1.getManifest();
         assertThat(manifest1.getName(), is("GasToken"));
         assertThat(manifest1.getGroups(), hasSize(0));
         assertThat(manifest1.getSupportedStandards(), hasSize(1));
-        assertThat(manifest1.getSupportedStandards().get(0), is("NEP-17"));
+        assertThat(manifest1.getSupportedStandard(0), is("NEP-17"));
+        assertThat(manifest1.getFirstSupportedStandard(), is(manifest1.getSupportedStandard(0)));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest1.getSupportedStandard(1));
+        assertThat(thrown.getMessage(), containsString("only supports 1 standards"));
         assertThat(manifest1.getAbi().getMethods(), hasSize(5));
         assertThat(manifest1.getAbi().getEvents(), hasSize(1));
+        assertThat(manifest1.getAbi().getFirstEvent(), is(manifest1.getAbi().getEvent(0)));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest1.getAbi().getEvent(1));
+        assertThat(thrown.getMessage(), containsString("only has 1 events"));
         assertThat(c1.getUpdateHistory(), hasSize(1));
         assertThat(c1.getUpdateHistory(), contains(0));
 
@@ -829,8 +844,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest2.getName(), is("RoleManagement"));
         assertThat(manifest2.getGroups(), hasSize(0));
         assertThat(manifest2.getSupportedStandards(), hasSize(0));
+        thrown = assertThrows(IndexOutOfBoundsException.class, manifest2::getFirstSupportedStandard);
+        assertThat(thrown.getMessage(), containsString("does not support any standard"));
         assertThat(manifest2.getAbi().getMethods(), hasSize(2));
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest2.getAbi().getFirstEvent());
+        assertThat(thrown.getMessage(), containsString("does not have any events"));
         assertThat(c2.getUpdateHistory(), contains(0));
 
         NativeContractState c3 = nativeContracts.get(2);
@@ -936,29 +955,35 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(abi.getMethods(), is(notNullValue()));
         assertThat(abi.getMethods(), hasSize(2));
-        assertThat(abi.getMethods().get(0).getName(), is("currentHash"));
-        assertThat(abi.getMethods().get(0).getParameters(), is(notNullValue()));
-        assertThat(abi.getMethods().get(0).getParameters(), hasSize(0));
-        assertThat(abi.getMethods().get(1).getName(), is("getTransactionHeight"));
-        assertThat(abi.getMethods().get(1).getParameters(), is(notNullValue()));
-        assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(1).getParameters(), hasSize(1));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getName(), is("hash"));
-        assertThat(abi.getMethods().get(1).getParameters().get(0).getType(), is(ContractParameterType.HASH256));
-        assertThat(abi.getMethods().get(1).getReturnType(), is(ContractParameterType.INTEGER));
+        assertThat(abi.getFirstMethod().getName(), is("currentHash"));
+        assertThat(abi.getMethod(0).getParameters(), is(notNullValue()));
+        assertThat(abi.getMethod(0).getParameters(), hasSize(0));
+        assertThat(abi.getMethod(1).getName(), is("getTransactionHeight"));
+        assertThat(abi.getMethod(1).getParameters(), is(notNullValue()));
+        assertThat(abi.getMethod(1).getParameters(), hasSize(1));
+        assertThat(abi.getMethod(1).getParameters(), hasSize(1));
+        assertThat(abi.getMethod(1).getParameters().get(0).getName(), is("hash"));
+        assertThat(abi.getMethod(1).getParameters().get(0).getType(), is(ContractParameterType.HASH256));
+        assertThat(abi.getMethod(1).getReturnType(), is(ContractParameterType.INTEGER));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, () -> abi.getMethod(2));
+        assertThat(thrown.getMessage(), containsString("only contains 2 methods"));
 
         assertThat(abi.getEvents(), is(notNullValue()));
         assertThat(abi.getEvents(), hasSize(0));
 
         assertThat(manifest.getPermissions(), is(notNullValue()));
         assertThat(manifest.getPermissions(), hasSize(1));
-        assertThat(manifest.getPermissions().get(0).getContract(), is("*"));
-        assertThat(manifest.getPermissions().get(0).getMethods(), is(notNullValue()));
-        assertThat(manifest.getPermissions().get(0).getMethods(), hasSize(1));
-        assertThat(manifest.getPermissions().get(0).getMethods().get(0), is("*"));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest.getPermission(1));
+        assertThat(thrown.getMessage(), containsString("only has permission for 1 contracts"));
+        assertThat(manifest.getFirstPermission().getContract(), is("*"));
+        assertThat(manifest.getPermission(0).getMethods(), is(notNullValue()));
+        assertThat(manifest.getPermission(0).getMethods(), hasSize(1));
+        assertThat(manifest.getPermission(0).getMethods().get(0), is("*"));
 
         assertThat(manifest.getTrusts(), is(notNullValue()));
         assertThat(manifest.getTrusts(), hasSize(0));
+        thrown = assertThrows(IndexOutOfBoundsException.class, manifest::getFirstTrust);
+        assertThat(thrown.getMessage(), containsString("does not trust any other contracts"));
 
         assertThat(manifest.getExtra(), is(nullValue()));
 
@@ -977,6 +1002,51 @@ public class ResponseTest extends ResponseTester {
                 contractABI, asList(permission), emptyList(), null);
         ContractState expectedEqual = new ContractState(id, updateCounter, hash, nef, contractManifest);
         assertThat(contractState, is(expectedEqual));
+    }
+
+    @Test
+    public void testGetContractState_missingArrayValuesShouldBeEmpty() {
+        buildResponse("{\n" +
+                "    \"result\": {\n" +
+                "        \"nef\": {\n" +
+              //"            \"tokens\": [],\n" +
+                "        },\n" +
+                "        \"manifest\": {\n" +
+              //"            \"groups\": [],\n" +
+              //"            \"supportedstandards\": [],\n" +
+                "            \"abi\": {\n" +
+              //"                \"methods\": [],\n" +
+              //"                \"events\": []\n" +
+                "            },\n" +
+              //"            \"permissions\": [],\n" +
+              //"            \"trusts\": [],\n" +
+                "            \"extra\": null\n" +
+                "        }\n" +
+                "    }\n" +
+                "}"
+        );
+
+        NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
+        ContractState contractState = getContractState.getContractState();
+        assertThat(contractState.getNef().getTokens(), is(notNullValue()));
+        assertThat(contractState.getNef().getTokens(), is(empty()));
+
+        ContractManifest manifest = contractState.getManifest();
+        assertThat(manifest.getGroups(), is(notNullValue()));
+        assertThat(manifest.getGroups(), is(empty()));
+
+        assertThat(manifest.getSupportedStandards(), is(notNullValue()));
+        assertThat(manifest.getSupportedStandards(), is(empty()));
+
+        ContractManifest.ContractABI abi = manifest.getAbi();
+        assertThat(abi.getEvents(), is(notNullValue()));
+        assertThat(abi.getEvents(), is(empty()));
+
+        assertThat(manifest.getPermissions(), is(notNullValue()));
+        assertThat(manifest.getPermissions(), is(empty()));
+
+        assertThat(manifest.getTrusts(), is(notNullValue()));
+        assertThat(manifest.getTrusts(), is(empty()));
     }
 
     @Test
@@ -1225,24 +1295,45 @@ public class ResponseTest extends ResponseTester {
         List<TransactionSigner> signers = transaction.getSigners();
         assertThat(signers, is(notNullValue()));
         assertThat(signers, hasSize(1));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> transaction.getSigner(1));
+        assertThat(thrown.getMessage(), containsString("only has 1 signers"));
 
-        assertThat(signers.get(0).getAccount(), is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
-        assertThat(signers.get(0).getScopes(), hasSize(3));
-        assertThat(signers.get(0).getScopes().get(0), is(WitnessScope.CUSTOM_CONTRACTS));
-        assertThat(signers.get(0).getScopes().get(1), is(WitnessScope.CUSTOM_GROUPS));
-        assertThat(signers.get(0).getScopes().get(2), is(WitnessScope.WITNESS_RULES));
-        assertThat(signers.get(0).getAllowedContracts().get(0), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
-        assertThat(signers.get(0).getAllowedContracts().get(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
-        assertThat(signers.get(0).getAllowedGroups().get(0), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
-        WitnessRule rule = signers.get(0).getRules().get(0);
+        TransactionSigner firstSigner = transaction.getFirstSigner();
+        assertThat(firstSigner.getAccount(), is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
+        assertThat(firstSigner.getScopes(), hasSize(3));
+        assertThat(firstSigner.getFirstScope(), is(WitnessScope.CUSTOM_CONTRACTS));
+        assertThat(firstSigner.getScope(1), is(WitnessScope.CUSTOM_GROUPS));
+        assertThat(firstSigner.getScope(2), is(WitnessScope.WITNESS_RULES));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getScope(3));
+        assertThat(thrown.getMessage(), containsString("only has 3 witness scopes"));
+        assertThat(firstSigner.getAllowedContracts(), hasSize(2));
+        assertThat(firstSigner.getFirstAllowedContract(), is("0xd2a4cff31913016155e38e474a2c06d08be276cf"));
+        assertThat(firstSigner.getAllowedContract(1), is("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5"));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getAllowedContract(2));
+        assertThat(thrown.getMessage(), containsString("only allows 2 contracts"));
+        assertThat(firstSigner.getAllowedGroups().get(0),
+                is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getAllowedGroup(1));
+        assertThat(thrown.getMessage(), containsString("only allows 1 groups"));
+        assertThat(firstSigner.getFirstAllowedGroup(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+        WitnessRule rule = firstSigner.getRules().get(0);
+        WitnessRule firstWitnessRule = firstSigner.getFirstRule();
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getRule(1));
+        assertThat(thrown.getMessage(), containsString("only has 1 witness rules"));
+        assertThat(rule, is(firstWitnessRule));
         assertThat(rule.getAction(), is(WitnessAction.ALLOW));
         assertThat(rule.getCondition().getType(), is(WitnessConditionType.SCRIPT_HASH));
         assertThat(rule.getCondition().getScriptHash(), is(new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")));
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
-        assertThat(attributes.get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
-        assertThat(attributes.get(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
+        assertThat(attributes, hasSize(2));
+        assertThat(transaction.getFirstAttribute(), is(transaction.getAttribute(0)));
+        assertThat(transaction.getAttribute(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertThat(transaction.getAttribute(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(2));
+        assertThat(thrown.getMessage(), containsString("only has 2 attributes"));
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
         OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
@@ -1675,9 +1766,13 @@ public class ResponseTest extends ResponseTester {
 
         List<Notification> notifications = invocationResult.getNotifications();
         assertThat(notifications, hasSize(2));
-        assertThat(notifications.get(0).getContract(),
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> invocationResult.getNotification(2));
+        assertThat(thrown.getMessage(), containsString("Only 2 notifications have been sent in this invocation"));
+        assertThat(invocationResult.getFirstNotification(), is(invocationResult.getNotification(0)));
+        assertThat(invocationResult.getNotification(0).getContract(),
                 is(new Hash160("0xe5ecdfd513d177b9fa5b05cbbce2e47421586257")));
-        assertThat(notifications.get(0).getEventName(), is("Mint"));
+        assertThat(invocationResult.getNotification(0).getEventName(), is("Mint"));
         assertThat(notifications.get(0).getState().getType(), is(StackItemType.ARRAY));
         assertThat(notifications.get(0).getState().getList().get(0).getInteger(), is(BigInteger.ONE));
         assertThat(notifications.get(0).getState().getList().get(1).getString(), is("token1"));
@@ -1688,12 +1783,15 @@ public class ResponseTest extends ResponseTester {
         assertThat(notifications.get(1).getState().getList().get(1).getString(), is("create"));
 
         assertThat(invocationResult.getStack(), hasSize(1));
-        assertThat(invocationResult.getStack().get(0).getType(), is(StackItemType.INTEROP_INTERFACE));
+        assertThat(invocationResult.getFirstStackItem(), is(invocationResult.getStackItem(0)));
+        assertThat(invocationResult.getStackItem(0).getType(), is(StackItemType.INTEROP_INTERFACE));
         assertThat(invocationResult.getStack().get(0).getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
         InteropInterfaceStackItem interopInterface = (InteropInterfaceStackItem) invocationResult.getStack().get(0);
         assertThat(interopInterface.getInterfaceName(), is("IIterator"));
         assertThat(interopInterface.getValue(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
         assertThat(interopInterface.getIteratorId(), is("fcf7b800-192a-488f-95d3-c40ac7b30ef1"));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> invocationResult.getStackItem(1));
+        assertThat(thrown.getMessage(), containsString("only 1 items left on the NeoVM stack after"));
 
         assertThat(invocationResult.getSessionId(), is("6ecb0e24-ce7f-4550-9838-aeb8c9e08570"));
     }
@@ -1754,6 +1852,9 @@ public class ResponseTest extends ResponseTester {
         assertThat(invokeFunction.getInvocationResult().getGasConsumed(), is("2007570"));
         assertNull(invokeFunction.getInvocationResult().getException());
         assertThat(invokeFunction.getInvocationResult().getNotifications(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> invokeFunction.getResult().getFirstNotification());
+        assertThat(thrown.getMessage(), containsString("No notifications have been sent in this invocation"));
 
         assertThat(invokeFunction.getInvocationResult().getStack(), is(notNullValue()));
         assertThat(invokeFunction.getInvocationResult().getStack(), hasSize(5));
@@ -1782,6 +1883,30 @@ public class ResponseTest extends ResponseTester {
                 .get(new ByteStringStackItem(hexStringToByteArray("941343239213fa0e765f1027ce742f48db779a96")))
                 .getPointer();
         assertThat(value, is(new BigInteger("12")));
+    }
+
+    @Test
+    public void testInvokeFunction_emptyStack() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"state\": \"HALT\",\n" +
+                        "        \"gasconsumed\": \"2007570\",\n" +
+                        "        \"exception\": null,\n" +
+                        "        \"notifications\": [],\n" +
+                        "        \"stack\": []\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
+        assertThat(invokeFunction.getResult().getStack(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> invokeFunction.getResult().getFirstStackItem());
+        assertThat(thrown.getMessage(), containsString("no items were left on the NeoVM stack after this invocation"));
     }
 
     @Test
@@ -2129,8 +2254,7 @@ public class ResponseTest extends ResponseTester {
                         + "    \"script\": \"VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA\",\n"
                         + "    \"state\": \"FAULT\",\n"
                         + "    \"gasconsumed\": \"0.0103542\",\n"
-                        + "    \"exception\": \"Specified argument was out of the range of valid values. (Parameter " +
-                        "'index')\",\n"
+                        + "    \"exception\": \"Specified argument was out of the range of valid values. (Parameter 'index')\",\n"
                         + "    \"stack\": [\n"
                         + "            {\n"
                         + "                \"type\": \"Buffer\",\n"
@@ -2499,34 +2623,38 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoSendFrom sendFrom = deserialiseResponse(NeoSendFrom.class);
-        assertThat(sendFrom.getSendFrom(), is(notNullValue()));
+        Transaction transaction = sendFrom.getResult();
+        assertThat(transaction, is(notNullValue()));
 
-        assertThat(sendFrom.getSendFrom().getHash(),
+        assertThat(transaction.getHash(),
                 is(new Hash256("0x6818f446c2e503998ac766a8a175f86d9a89885423f6b055aa123c984625833e")));
-        assertThat(sendFrom.getSendFrom().getSize(), is(266L));
-        assertThat(sendFrom.getSendFrom().getVersion(), is(0));
-        assertThat(sendFrom.getSendFrom().getNonce(), is(1762654532L));
-        assertThat(sendFrom.getSendFrom().getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
-        assertThat(sendFrom.getSendFrom().getSysFee(), is("9007810"));
-        assertThat(sendFrom.getSendFrom().getNetFee(), is("1266450"));
-        assertThat(sendFrom.getSendFrom().getValidUntilBlock(), is(2106392L));
+        assertThat(transaction.getSize(), is(266L));
+        assertThat(transaction.getVersion(), is(0));
+        assertThat(transaction.getNonce(), is(1762654532L));
+        assertThat(transaction.getSender(), is("AHE5cLhX5NjGB5R2PcdUvGudUoGUBDeHX4"));
+        assertThat(transaction.getSysFee(), is("9007810"));
+        assertThat(transaction.getNetFee(), is("1266450"));
+        assertThat(transaction.getValidUntilBlock(), is(2106392L));
 
-        assertThat(sendFrom.getSendFrom().getSigners(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getSigners(), hasSize(1));
-        assertThat(sendFrom.getSendFrom().getSigners().get(0).getAccount(),
+        assertThat(transaction.getSigners(), is(notNullValue()));
+        assertThat(transaction.getSigners(), hasSize(1));
+        assertThat(transaction.getSigners().get(0).getAccount(),
                 is(new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f")));
-        assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes(), hasSize(1));
-        assertThat(sendFrom.getSendFrom().getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(transaction.getSigners().get(0).getScopes(), hasSize(1));
+        assertThat(transaction.getSigners().get(0).getScopes().get(0), is(WitnessScope.CALLED_BY_ENTRY));
 
-        assertThat(sendFrom.getSendFrom().getAttributes(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getAttributes(), hasSize(0));
+        assertThat(transaction.getAttributes(), is(notNullValue()));
+        assertThat(transaction.getAttributes(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                transaction::getFirstAttribute);
+        assertThat(thrown.getMessage(), containsString("does not have any attributes"));
 
-        assertThat(sendFrom.getSendFrom().getScript(),
+        assertThat(transaction.getScript(),
                 is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
 
-        assertThat(sendFrom.getSendFrom().getWitnesses(), is(notNullValue()));
-        assertThat(sendFrom.getSendFrom().getWitnesses(), hasSize(1));
-        assertThat(sendFrom.getSendFrom().getWitnesses(),
+        assertThat(transaction.getWitnesses(), is(notNullValue()));
+        assertThat(transaction.getWitnesses(), hasSize(1));
+        assertThat(transaction.getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
                                 "DEAZaoPvbyaQyUYqIBc4MyDCGxGhxlPCuBbcHn5cYMpHPi2JD4PX2I1EsDPNtrEESPo//WBnsKyl5o5ViR5YDcJR",
@@ -2600,6 +2728,12 @@ public class ResponseTest extends ResponseTester {
                                 new Hash160("0xf68f181731a47036a99f04dad90043a744edec0f"),
                                 asList(WitnessScope.CALLED_BY_ENTRY))
                 ));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> sendMany.getResult().getFirstSigner().getFirstAllowedContract());
+        assertThat(thrown.getMessage(), containsString("does not allow any specific contract"));
+        thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> sendMany.getResult().getFirstSigner().getFirstAllowedGroup());
+        assertThat(thrown.getMessage(), containsString("does not allow any specific group"));
 
         assertThat(sendMany.getSendMany().getAttributes(), is(notNullValue()));
         assertThat(sendMany.getSendMany().getAttributes(), hasSize(0));
@@ -2964,25 +3098,34 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetApplicationLog getApplicationLog = deserialiseResponse(NeoGetApplicationLog.class);
-        NeoApplicationLog neoAppLog = getApplicationLog.getApplicationLog();
-        assertThat(neoAppLog, is(notNullValue()));
+        NeoApplicationLog log = getApplicationLog.getApplicationLog();
+        assertThat(log, is(notNullValue()));
 
-        assertThat(neoAppLog.getTransactionId(),
+        assertThat(log.getTransactionId(),
                 is(new Hash256("0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109")));
 
-        assertThat(neoAppLog.getExecutions(), hasSize(1));
-        NeoApplicationLog.Execution execution = neoAppLog.getExecutions().get(0);
+        assertThat(log.getExecutions(), hasSize(1));
+        assertThat(log.getFirstExecution(), is(log.getExecution(0)));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, () -> log.getExecution(1));
+        assertThat(thrown.getMessage(), containsString("has only 1 executions"));
+        NeoApplicationLog.Execution execution = log.getExecutions().get(0);
         assertThat(execution.getTrigger(), is("Application"));
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
         assertThat(execution.getGasConsumed(), is("9007810"));
 
         assertThat(execution.getStack(), is(notNullValue()));
         assertThat(execution.getStack(), hasSize(1));
-        assertThat(execution.getStack().get(0).getType(), is(StackItemType.INTEGER));
-        assertThat(execution.getStack().get(0).getInteger(), is(BigInteger.valueOf(1)));
+        assertThat(execution.getFirstStackItem(), is(execution.getStackItem(0)));
+        assertThat(execution.getStackItem(0).getType(), is(StackItemType.INTEGER));
+        assertThat(execution.getStackItem(0).getInteger(), is(BigInteger.valueOf(1)));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> execution.getStackItem(1));
+        assertThat(thrown.getMessage(), containsString("only 1 items left on the NeoVM stack after"));
 
         assertThat(execution.getNotifications(), is(notNullValue()));
         assertThat(execution.getNotifications(), hasSize(2));
+        assertThat(execution.getFirstNotification(), is(execution.getNotification(0)));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> execution.getNotification(2));
+        assertThat(thrown.getMessage(), containsString("only sent 2 notifications"));
 
         // Notification 0
         Notification notification0 = execution.getNotifications().get(0);
@@ -3017,6 +3160,37 @@ public class ResponseTest extends ResponseTester {
         assertThat(eventName1, is("Transfer"));
         assertThat(from1, is("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke"));
         assertThat(amount1, is(BigInteger.valueOf(100)));
+    }
+
+    @Test
+    public void testGetApplicationLog_emptyStack() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"txid\": \"0x01bcf2edbd27abb8d660b6a06113b84d02f635fed836ce46a38b4d67eae80109\",\n" +
+                        "        \"executions\": [\n" +
+                        "            {\n" +
+                        "                \"trigger\": \"Application\",\n" +
+                        "                \"vmstate\": \"HALT\",\n" +
+                        "                \"exception\": \"asdf\",\n" +
+                        "                \"gasconsumed\": \"9007810\",\n" +
+                        "                \"stack\": [],\n" +
+                        "                \"notifications\": []\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetApplicationLog getApplicationLog = deserialiseResponse(NeoGetApplicationLog.class);
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> getApplicationLog.getResult().getFirstExecution().getFirstStackItem());
+        assertThat(thrown.getMessage(), containsString("no items were left on the NeoVM stack after"));
+        thrown = assertThrows(IndexOutOfBoundsException.class,
+                () -> getApplicationLog.getResult().getFirstExecution().getFirstNotification());
+        assertThat(thrown.getMessage(), containsString("did not send any notifications"));
     }
 
     // StateService

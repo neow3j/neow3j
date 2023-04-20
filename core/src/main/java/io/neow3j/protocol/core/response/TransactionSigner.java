@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TransactionSigner {
@@ -36,10 +38,11 @@ public class TransactionSigner {
     private Hash160 account;
 
     @JsonProperty(value = "scopes", required = true)
-    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     @JsonSerialize(using = WitnessScopeSerializer.class)
     @JsonDeserialize(using = WitnessScopeDeserializer.class)
-    private List<WitnessScope> scopes;
+    @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+    private List<WitnessScope> scopes = new ArrayList<>();
 
     @JsonProperty("allowedcontracts")
     @JsonSetter(nulls = Nulls.AS_EMPTY)
@@ -91,16 +94,85 @@ public class TransactionSigner {
         return scopes;
     }
 
+    @JsonIgnore
+    public WitnessScope getFirstScope() {
+        if (scopes.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction signer does not have any witness scopes. It might " +
+                    "be malformed, since every transaction signer needs to have a witness scope specified.");
+        }
+        return getScope(0);
+    }
+
+    @JsonIgnore
+    public WitnessScope getScope(int index) {
+        if (index >= scopes.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction signer only has %s witness scopes. Tried to " +
+                            "access index %s.", scopes.size(), index));
+        }
+        return scopes.get(index);
+    }
+
     public List<String> getAllowedContracts() {
         return allowedContracts;
+    }
+
+    @JsonIgnore
+    public String getFirstAllowedContract() {
+        if (allowedContracts.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction signer does not allow any specific contract.");
+        }
+        return getAllowedContract(0);
+    }
+
+    @JsonIgnore
+    public String getAllowedContract(int index) {
+        if (index >= allowedContracts.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction signer only allows %s contracts. Tried to " +
+                    "access index %s.", allowedContracts.size(), index));
+        }
+        return allowedContracts.get(index);
     }
 
     public List<String> getAllowedGroups() {
         return allowedGroups;
     }
 
+    @JsonIgnore
+    public String getFirstAllowedGroup() {
+        if (allowedGroups.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction signer does not allow any specific group.");
+        }
+        return getAllowedGroup(0);
+    }
+
+    @JsonIgnore
+    public String getAllowedGroup(int index) {
+        if (index >= allowedGroups.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction signer only allows %s groups. Tried to " +
+                    "access index %s.", allowedGroups.size(), index));
+        }
+        return allowedGroups.get(index);
+    }
+
     public List<WitnessRule> getRules() {
         return rules;
+    }
+
+    @JsonIgnore
+    public WitnessRule getFirstRule() {
+        if (rules.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction signer does have any witness rules.");
+        }
+        return getRule(0);
+    }
+
+    @JsonIgnore
+    public WitnessRule getRule(int index) {
+        if (index >= rules.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction signer only has %s witness rules. Tried to " +
+                    "access index %s.", rules.size(), index));
+        }
+        return rules.get(index);
     }
 
     @Override

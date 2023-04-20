@@ -1,8 +1,11 @@
 package io.neow3j.transaction;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.ContractParameter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +82,8 @@ public class ContractParametersContext {
         private String script;
 
         @JsonProperty
-        private List<ContractParameter> parameters;
+        @JsonSetter(nulls = Nulls.AS_EMPTY)
+        private List<ContractParameter> parameters = new ArrayList<>();
 
         @JsonProperty
         private Map<String, String> signatures;

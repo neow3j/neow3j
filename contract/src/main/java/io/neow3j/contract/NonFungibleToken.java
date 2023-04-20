@@ -577,7 +577,7 @@ public class NonFungibleToken extends Token {
      */
     public Map<String, String> properties(byte[] tokenId) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES, asList(byteArray(tokenId)))
-                .getInvocationResult().getStack().get(0);
+                .getInvocationResult().getFirstStackItem();
         if (item.getType().equals(MAP)) {
             return deserializeProperties(item);
         }
@@ -615,7 +615,7 @@ public class NonFungibleToken extends Token {
      */
     public Map<String, StackItem> customProperties(byte[] tokenId) throws IOException {
         StackItem item = callInvokeFunction(PROPERTIES, asList(byteArray(tokenId)))
-                .getInvocationResult().getStack().get(0);
+                .getInvocationResult().getFirstStackItem();
         if (item.getType().equals(MAP)) {
             return item.getMap().entrySet().stream().collect(Collectors.toMap(
                     e -> e.getKey().getString(),

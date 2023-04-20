@@ -6,7 +6,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -14,6 +13,7 @@ import java.util.Arrays;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -25,7 +25,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, null, asList("*"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":\"*\""));
+        assertThat(s, containsString("\"trusts\":\"*\""));
     }
 
     @Test
@@ -33,7 +33,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, null, new ArrayList<>(), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":[]"));
+        assertThat(s, containsString("\"trusts\":[]"));
     }
 
     @Test
@@ -41,7 +41,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, null,
                 Arrays.asList("69ecca587293047be4c59159bf8bc399985c160d"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":" +
+        assertThat(s, containsString("\"trusts\":" +
                 "[\"69ecca587293047be4c59159bf8bc399985c160d\"]"));
     }
 
@@ -51,7 +51,7 @@ public class ContractManifestTest {
                 Arrays.asList("69ecca587293047be4c59159bf8bc399985c160d",
                         "69ecca587293047be4c59159bf8bc399985c160d"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":" +
+        assertThat(s, containsString("\"trusts\":" +
                 "[\"69ecca587293047be4c59159bf8bc399985c160d\"," +
                 "\"69ecca587293047be4c59159bf8bc399985c160d\"]"));
     }
@@ -63,7 +63,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, asList(p), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
         String exptected = "\"permissions\":[{\"contract\":\"NeoToken\",\"methods\":\"*\"}]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
@@ -71,7 +71,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, new ArrayList<>(), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"permissions\":[]"));
+        assertThat(s, containsString("\"permissions\":[]"));
     }
 
     @Test
@@ -81,7 +81,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, asList(p), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
         String exptected = "\"permissions\":[{\"contract\":\"NeoToken\",\"methods\":[\"method\"]}]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
@@ -99,7 +99,7 @@ public class ContractManifestTest {
                 "{\"contract\":\"GasToken\",\"methods\":[\"method1\",\"method2\"]}," +
                 "{\"contract\":\"SomeToken\",\"methods\":\"*\"}" +
                 "]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
@@ -123,6 +123,8 @@ public class ContractManifestTest {
     public void testCreateGroup() {
         ContractManifest manifest = new ContractManifest("TestContract", null, null, null, null, null, null, null);
         assertThat(manifest.getGroups(), hasSize(0));
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, manifest::getFirstGroup);
+        assertThat(thrown.getMessage(), containsString("is not part of any group"));
 
         // parameters used:
         // group1 wif L1QfU2mHD3MvR3aqxMa7wzedePH8bpkrWmRWFQBEWcmPFrEorwjF
@@ -143,10 +145,12 @@ public class ContractManifestTest {
         manifest.setGroups(asList(group2));
 
         assertThat(manifest.getGroups(), hasSize(1));
-        assertThat(manifest.getGroups().get(0).getPubKey(),
+        assertThat(manifest.getFirstGroup().getPubKey(),
                 is("03e237d84371612e3d2ce2a71b3c150ded51be3e93d34c494d1424bdae349900a9"));
-        assertThat(manifest.getGroups().get(0).getSignature(),
+        assertThat(manifest.getGroup(0).getSignature(),
                 is("lzrUouvaXRl0IM7dhN3PaIUZ9LL9AMw7/1ZknI60BMlPXRW99l246N69F5MW3kAiXFyk0N4cte//Ajfu1ZZ2KQ=="));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest.getGroup(1));
+        assertThat(thrown.getMessage(), containsString("is only part of 1 groups"));
     }
 
     @Test

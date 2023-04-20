@@ -1,8 +1,11 @@
 package io.neow3j.wallet.nep6;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.ContractParameterType;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -12,7 +15,8 @@ public class NEP6Contract {
     private String script;
 
     @JsonProperty("parameters")
-    private List<NEP6Parameter> nep6Parameters;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<NEP6Parameter> nep6Parameters = new ArrayList<>();
 
     @JsonProperty("deployed")
     private Boolean deployed;

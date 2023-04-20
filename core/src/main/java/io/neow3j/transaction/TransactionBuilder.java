@@ -541,7 +541,7 @@ public class TransactionBuilder {
 
     private BigInteger getSenderGasBalance() throws IOException {
         return neow3j.invokeFunction(GAS_TOKEN_HASH, BALANCE_OF_FUNCTION, asList(hash160(getSender())))
-                .send().getInvocationResult().getStack().get(0).getInteger();
+                .send().getInvocationResult().getFirstStackItem().getInteger();
     }
 
     private Hash160 getSender() {
