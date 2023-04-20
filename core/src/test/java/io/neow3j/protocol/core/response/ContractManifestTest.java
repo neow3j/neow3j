@@ -6,7 +6,6 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.ContractManifest.ContractGroup;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -26,7 +25,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, null, asList("*"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":\"*\""));
+        assertThat(s, containsString("\"trusts\":\"*\""));
     }
 
     @Test
@@ -34,7 +33,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, null, new ArrayList<>(), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":[]"));
+        assertThat(s, containsString("\"trusts\":[]"));
     }
 
     @Test
@@ -42,7 +41,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, null,
                 Arrays.asList("69ecca587293047be4c59159bf8bc399985c160d"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":" +
+        assertThat(s, containsString("\"trusts\":" +
                 "[\"69ecca587293047be4c59159bf8bc399985c160d\"]"));
     }
 
@@ -52,7 +51,7 @@ public class ContractManifestTest {
                 Arrays.asList("69ecca587293047be4c59159bf8bc399985c160d",
                         "69ecca587293047be4c59159bf8bc399985c160d"), null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"trusts\":" +
+        assertThat(s, containsString("\"trusts\":" +
                 "[\"69ecca587293047be4c59159bf8bc399985c160d\"," +
                 "\"69ecca587293047be4c59159bf8bc399985c160d\"]"));
     }
@@ -64,7 +63,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, asList(p), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
         String exptected = "\"permissions\":[{\"contract\":\"NeoToken\",\"methods\":\"*\"}]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
@@ -72,7 +71,7 @@ public class ContractManifestTest {
         ContractManifest m =
                 new ContractManifest(null, null, null, null, null, new ArrayList<>(), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
-        assertThat(s, Matchers.containsString("\"permissions\":[]"));
+        assertThat(s, containsString("\"permissions\":[]"));
     }
 
     @Test
@@ -82,7 +81,7 @@ public class ContractManifestTest {
         ContractManifest m = new ContractManifest(null, null, null, null, null, asList(p), null, null);
         String s = ObjectMapperFactory.getObjectMapper().writeValueAsString(m);
         String exptected = "\"permissions\":[{\"contract\":\"NeoToken\",\"methods\":[\"method\"]}]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
@@ -100,7 +99,7 @@ public class ContractManifestTest {
                 "{\"contract\":\"GasToken\",\"methods\":[\"method1\",\"method2\"]}," +
                 "{\"contract\":\"SomeToken\",\"methods\":\"*\"}" +
                 "]";
-        assertThat(s, Matchers.containsString(exptected));
+        assertThat(s, containsString(exptected));
     }
 
     @Test
