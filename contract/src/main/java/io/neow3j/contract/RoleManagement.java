@@ -54,7 +54,7 @@ public class RoleManagement extends SmartContract {
         NeoInvokeFunction invocation = callInvokeFunction(GET_DESIGNATED_BY_ROLE,
                 asList(integer(role.byteValue()), integer(blockIndex)));
 
-        List<StackItem> arrayOfDesignates = invocation.getInvocationResult().getStack().get(0).getList();
+        List<StackItem> arrayOfDesignates = invocation.getInvocationResult().getFirstStackItem().getList();
 
         return arrayOfDesignates.stream()
                 .map(item -> new ECPublicKey(item.getByteArray()))

@@ -465,7 +465,7 @@ public class NeoNameService extends NonFungibleToken {
     private NameState deserializeNameState(InvocationResult invocationResult) {
         throwIfFaultState(invocationResult);
 
-        StackItem stackItem = invocationResult.getStack().get(0);
+        StackItem stackItem = invocationResult.getFirstStackItem();
         if (!stackItem.getType().equals(StackItemType.MAP)) {
             throw new UnexpectedReturnTypeException(stackItem.getType(), StackItemType.MAP);
         }
