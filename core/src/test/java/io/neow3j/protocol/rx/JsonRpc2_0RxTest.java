@@ -340,8 +340,8 @@ public class JsonRpc2_0RxTest {
 
     private NeoGetBlock createBlock(int number) {
         NeoGetBlock neoGetBlock = new NeoGetBlock();
-        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, number, 0, "nonce", null,
-                null, 1, null);
+        NeoBlock block = new NeoBlock(null, 0L, 0, null, null, 123456789, "7F8EEE652D4BC959", number, 0, "nonce",
+                null, null, 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
     }
