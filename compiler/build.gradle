@@ -9,5 +9,6 @@ dependencies {
             project(':devpack')
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
+            project(':core'),
             project(':test-tools')
 }

@@ -217,7 +217,6 @@ public class Compiler {
         return StackItemType.ANY;
     }
 
-
     /**
      * Compiles the given contract class to neo-vm code and generates debug information with the help of the given
      * source containers.

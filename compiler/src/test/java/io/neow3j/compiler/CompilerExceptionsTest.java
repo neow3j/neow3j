@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
@@ -11,6 +12,8 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -239,6 +242,20 @@ public class CompilerExceptionsTest {
                 containsString("Expected a different node instruction type."));
     }
 
+    @Test
+    public void throwIfSdkRelatedMethodIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKMethod.class.getName()));
+        assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
+    }
+
+    @Test
+    public void throwIfSdkRelatedMethodIsUsedNested() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingNestedSDKMethod.class.getName()));
+        assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
+    }
+
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -425,6 +442,18 @@ public class CompilerExceptionsTest {
         public InterfaceContractMultipleArgs(String hash, String msg) {
             super(hash);
             Storage.get(Storage.getReadOnlyContext(), msg);
+        }
+    }
+
+    static class ContractUsingSDKMethod {
+        public static byte[] method() {
+            return Numeric.hexStringToByteArray("6c656574");
+        }
+    }
+
+    static class ContractUsingNestedSDKMethod {
+        public static ByteString method(byte[] bytes) {
+            return Storage.get(Storage.getReadOnlyContext(), ArrayUtils.reverseArray(bytes));
         }
     }
 

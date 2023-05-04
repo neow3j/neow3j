@@ -129,6 +129,7 @@ public class MethodsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
+        throwIfMethodIsSdkRelated(methodInsn);
         ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
         Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         // If the called method cannot be found on the owner type, we look through the super types until we find the
@@ -155,6 +156,17 @@ public class MethodsConverter implements Converter {
             return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn, compUnit);
         }
         return insn;
+    }
+
+    // Throws a CompilerException if the method instruction is a non-devpack neow3j method.
+    private static void throwIfMethodIsSdkRelated(MethodInsnNode methodInsn) {
+        String owner = methodInsn.owner;
+        if (owner.startsWith("io/neow3j/")) {
+            if (!owner.startsWith("io/neow3j/devpack")) {
+                throw new CompilerException(format("The neow3j compiler does not support SDK-related methods from the" +
+                        " neow3j library. Method %s with owner %s is not supported.", methodInsn.name, owner));
+            }
+        }
     }
 
     private static AbstractInsnNode handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,
