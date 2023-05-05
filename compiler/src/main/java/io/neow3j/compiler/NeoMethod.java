@@ -465,11 +465,35 @@ public class NeoMethod {
      */
     public void convert(CompilationUnit compUnit) throws IOException {
         AbstractInsnNode insn = asmMethod.instructions.get(0);
+        throwIfMethodHasSdkRelatedReturnOrArgType(asmMethod);
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);
             insn = insn.getNext();
         }
         insertTryCatchBlocks();
+    }
+
+    private void throwIfMethodHasSdkRelatedReturnOrArgType(MethodNode asmMethod) {
+        Type returnType = Type.getReturnType(asmMethod.desc);
+        if (isNonDevpackNeow3jType(returnType.getClassName())) {
+            throw new CompilerException(
+                    format("The neow3j compiler does not support SDK-related types. Type '%s' used as return type of " +
+                            "method '%s' is not supported.", returnType.getInternalName(), asmMethod.name));
+        }
+        for (Type argType : Type.getArgumentTypes(asmMethod.desc)) {
+            if (isNonDevpackNeow3jType(argType.getClassName())) {
+                throw new CompilerException(
+                        format("The neow3j compiler does not support SDK-related types. Type '%s' used for an " +
+                                        "argument of method '%s' is not supported.", argType.getInternalName(),
+                                asmMethod.name));
+            }
+        }
+    }
+
+    // Returns false, if the descriptor is from io/neow3j and SDK-related, i.e., neither devpack nor compiler.
+    private boolean isNonDevpackNeow3jType(String className) {
+        return className.startsWith("io.neow3j.") &&
+                (!className.startsWith("io.neow3j.devpack") && !className.startsWith("io.neow3j.compiler"));
     }
 
     /**

@@ -256,6 +256,24 @@ public class CompilerExceptionsTest {
         assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
     }
 
+    @Test
+    public void throwIfSdkRelatedArgumentTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class, () ->
+                new Compiler().compile(ContractUsingSDKArgumentType.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' used " +
+                        "for an argument of method 'invoke' is not supported."));
+    }
+
+    @Test
+    public void throwIfSdkRelatedReturnTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKReturnType.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' used as " +
+                        "return type of method 'method' is not supported."));
+    }
+
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -454,6 +472,17 @@ public class CompilerExceptionsTest {
     static class ContractUsingNestedSDKMethod {
         public static ByteString method(byte[] bytes) {
             return Storage.get(Storage.getReadOnlyContext(), ArrayUtils.reverseArray(bytes));
+        }
+    }
+
+    static class ContractUsingSDKArgumentType {
+        public static void invoke(String stringValue, io.neow3j.types.Hash160 scriptHash) {
+        }
+    }
+
+    static class ContractUsingSDKReturnType {
+        public static io.neow3j.types.Hash160 method() {
+            return io.neow3j.types.Hash160.ZERO;
         }
     }
 
