@@ -162,7 +162,7 @@ public class MethodsConverter implements Converter {
     private static void throwIfMethodIsSdkRelated(MethodInsnNode methodInsn) {
         String owner = methodInsn.owner;
         if (owner.startsWith("io/neow3j/")) {
-            if (!owner.startsWith("io/neow3j/devpack")) {
+            if (!owner.startsWith("io/neow3j/devpack") && !owner.startsWith("io/neow3j/compiler")) {
                 throw new CompilerException(format("The neow3j compiler does not support SDK-related methods from the" +
                         " neow3j library. Method %s with owner %s is not supported.", methodInsn.name, owner));
             }
