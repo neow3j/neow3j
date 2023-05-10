@@ -261,8 +261,8 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class, () ->
                 new Compiler().compile(ContractUsingSDKArgumentType.class.getName()));
         assertThat(thrown.getMessage(),
-                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' used " +
-                        "for an argument of method 'invoke' is not supported."));
+                is("The neow3j compiler does not support SDK-related types. Type 'io.neow3j.types.Hash160' used " +
+                        "for an argument of method 'method' is not supported."));
     }
 
     @Test
@@ -270,7 +270,7 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKReturnType.class.getName()));
         assertThat(thrown.getMessage(),
-                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' used as " +
+                is("The neow3j compiler does not support SDK-related types. Type 'io.neow3j.types.Hash160' used as " +
                         "return type of method 'method' is not supported."));
     }
 
@@ -492,7 +492,7 @@ public class CompilerExceptionsTest {
     }
 
     static class ContractUsingSDKArgumentType {
-        public static void invoke(String stringValue, io.neow3j.types.Hash160 scriptHash) {
+        public static void method(String stringValue, io.neow3j.types.Hash160 scriptHash) {
         }
     }
 
@@ -503,7 +503,7 @@ public class CompilerExceptionsTest {
     }
 
     static class ContractUsingSDKTypeForLocalVar {
-        public static void invoke() {
+        public static void method() {
             io.neow3j.types.Hash160 array = new io.neow3j.types.Hash160();
         }
     }

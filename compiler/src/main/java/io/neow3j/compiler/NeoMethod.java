@@ -478,14 +478,13 @@ public class NeoMethod {
         if (isNonDevpackNeow3jType(returnType.getClassName())) {
             throw new CompilerException(
                     format("The neow3j compiler does not support SDK-related types. Type '%s' used as return type of " +
-                            "method '%s' is not supported.", returnType.getInternalName(), asmMethod.name));
+                            "method '%s' is not supported.", returnType.getClassName(), asmMethod.name));
         }
         for (Type argType : Type.getArgumentTypes(asmMethod.desc)) {
             if (isNonDevpackNeow3jType(argType.getClassName())) {
                 throw new CompilerException(
                         format("The neow3j compiler does not support SDK-related types. Type '%s' used for an " +
-                                        "argument of method '%s' is not supported.", argType.getInternalName(),
-                                asmMethod.name));
+                                "argument of method '%s' is not supported.", argType.getClassName(), asmMethod.name));
             }
         }
     }
