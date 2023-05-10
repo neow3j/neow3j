@@ -490,10 +490,19 @@ public class NeoMethod {
         }
     }
 
+    public static void throwIfSdkRelatedType(String classOrFullyQualifiedName) {
+        if (isNonDevpackNeow3jType(classOrFullyQualifiedName)) {
+            throw new CompilerException(
+                    format("The neow3j compiler does not support SDK-related types. Type '%s' is not supported.",
+                            classOrFullyQualifiedName));
+        }
+    }
+
     // Returns false, if the descriptor is from io/neow3j and SDK-related, i.e., neither devpack nor compiler.
-    private boolean isNonDevpackNeow3jType(String className) {
-        return className.startsWith("io.neow3j.") &&
-                (!className.startsWith("io.neow3j.devpack") && !className.startsWith("io.neow3j.compiler"));
+    private static boolean isNonDevpackNeow3jType(String classOrFullyQualifiedName) {
+        return classOrFullyQualifiedName.startsWith("io.neow3j.") &&
+                (!classOrFullyQualifiedName.startsWith("io.neow3j.devpack") &&
+                        !classOrFullyQualifiedName.startsWith("io.neow3j.compiler"));
     }
 
     /**

@@ -274,6 +274,22 @@ public class CompilerExceptionsTest {
                         "return type of method 'method' is not supported."));
     }
 
+    @Test
+    public void throwIfSdkRelatedTypeIsUsedForLocalVar() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKTypeForLocalVar.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("does not support SDK-related types. Type 'io.neow3j.types.Hash160' is not supported."));
+    }
+
+    @Test
+    public void throwIfSdkRelatedTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKType.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("does not support SDK-related types. Type 'io.neow3j.types.Hash160' is not supported."));
+    }
+
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -484,6 +500,16 @@ public class CompilerExceptionsTest {
         public static io.neow3j.types.Hash160 method() {
             return io.neow3j.types.Hash160.ZERO;
         }
+    }
+
+    static class ContractUsingSDKTypeForLocalVar {
+        public static void invoke() {
+            io.neow3j.types.Hash160 array = new io.neow3j.types.Hash160();
+        }
+    }
+
+    static class ContractUsingSDKType {
+        public static final io.neow3j.types.Hash160 hash = new io.neow3j.types.Hash160();
     }
 
 }
