@@ -504,7 +504,7 @@ public class CompilerExceptionsTest {
 
     static class ContractUsingSDKTypeForLocalVar {
         public static void method() {
-            io.neow3j.types.Hash160 array = new io.neow3j.types.Hash160();
+            io.neow3j.types.Hash160 hash = new io.neow3j.types.Hash160();
         }
     }
 
