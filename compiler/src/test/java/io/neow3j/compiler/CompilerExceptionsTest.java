@@ -243,21 +243,21 @@ public class CompilerExceptionsTest {
     }
 
     @Test
-    public void throwIfSdkRelatedMethodIsUsed() {
+    public void throwIfSDKRelatedMethodIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKMethod.class.getName()));
         assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
     }
 
     @Test
-    public void throwIfSdkRelatedMethodIsUsedNested() {
+    public void throwIfSDKRelatedMethodIsUsedNested() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingNestedSDKMethod.class.getName()));
         assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
     }
 
     @Test
-    public void throwIfSdkRelatedArgumentTypeIsUsed() {
+    public void throwIfSDKRelatedArgumentTypeIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class, () ->
                 new Compiler().compile(ContractUsingSDKArgumentType.class.getName()));
         assertThat(thrown.getMessage(),
@@ -266,7 +266,7 @@ public class CompilerExceptionsTest {
     }
 
     @Test
-    public void throwIfSdkRelatedReturnTypeIsUsed() {
+    public void throwIfSDKRelatedReturnTypeIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKReturnType.class.getName()));
         assertThat(thrown.getMessage(),
@@ -275,7 +275,7 @@ public class CompilerExceptionsTest {
     }
 
     @Test
-    public void throwIfSdkRelatedTypeIsUsedForLocalVar() {
+    public void throwIfSDKRelatedTypeIsUsedForLocalVar() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKTypeForLocalVar.class.getName()));
         assertThat(thrown.getMessage(),
@@ -283,7 +283,7 @@ public class CompilerExceptionsTest {
     }
 
     @Test
-    public void throwIfSdkRelatedTypeIsUsed() {
+    public void throwIfSDKRelatedTypeIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKType.class.getName()));
         assertThat(thrown.getMessage(),

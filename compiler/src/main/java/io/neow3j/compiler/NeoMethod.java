@@ -465,7 +465,7 @@ public class NeoMethod {
      */
     public void convert(CompilationUnit compUnit) throws IOException {
         AbstractInsnNode insn = asmMethod.instructions.get(0);
-        throwIfMethodHasSdkRelatedReturnOrArgType(asmMethod);
+        throwIfMethodHasSDKRelatedReturnOrArgType(asmMethod);
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);
             insn = insn.getNext();
@@ -473,15 +473,15 @@ public class NeoMethod {
         insertTryCatchBlocks();
     }
 
-    private void throwIfMethodHasSdkRelatedReturnOrArgType(MethodNode asmMethod) {
+    private void throwIfMethodHasSDKRelatedReturnOrArgType(MethodNode asmMethod) {
         Type returnType = Type.getReturnType(asmMethod.desc);
-        if (isNonDevpackNeow3jType(returnType.getClassName())) {
+        if (isSDKRelatedNeow3jType(returnType.getClassName())) {
             throw new CompilerException(
                     format("The neow3j compiler does not support SDK-related types. Type '%s' used as return type of " +
                             "method '%s' is not supported.", returnType.getClassName(), asmMethod.name));
         }
         for (Type argType : Type.getArgumentTypes(asmMethod.desc)) {
-            if (isNonDevpackNeow3jType(argType.getClassName())) {
+            if (isSDKRelatedNeow3jType(argType.getClassName())) {
                 throw new CompilerException(
                         format("The neow3j compiler does not support SDK-related types. Type '%s' used for an " +
                                 "argument of method '%s' is not supported.", argType.getClassName(), asmMethod.name));
@@ -489,19 +489,40 @@ public class NeoMethod {
         }
     }
 
-    public static void throwIfSdkRelatedType(String classOrFullyQualifiedName) {
-        if (isNonDevpackNeow3jType(classOrFullyQualifiedName)) {
+    public static void throwIfSDKRelatedType(String classOrFullyQualifiedName) {
+        if (isSDKRelatedNeow3jType(classOrFullyQualifiedName)) {
             throw new CompilerException(
                     format("The neow3j compiler does not support SDK-related types. Type '%s' is not supported.",
                             classOrFullyQualifiedName));
         }
     }
 
-    // Returns false, if the descriptor is from io/neow3j and SDK-related, i.e., neither devpack nor compiler.
-    private static boolean isNonDevpackNeow3jType(String classOrFullyQualifiedName) {
-        return classOrFullyQualifiedName.startsWith("io.neow3j.") &&
-                (!classOrFullyQualifiedName.startsWith("io.neow3j.devpack") &&
-                        !classOrFullyQualifiedName.startsWith("io.neow3j.compiler"));
+    private static boolean isSDKRelatedNeow3jType(String classOrFullyQualifiedName) {
+        return isSDKRelatedNeow3jType(classOrFullyQualifiedName, "\\.");
+    }
+
+    // Returns true, if the provided name starts with 'io' and 'neow3j' and is SDK-related.
+    public static boolean isSDKRelatedNeow3jType(String classOrFullyQualifiedName, String regex) {
+        String[] split = classOrFullyQualifiedName.split(regex);
+        if (split.length < 3) {
+            return false;
+        }
+        if (split[0].equals("io") && split[1].equals("neow3j")) {
+            switch (split[2]) {
+                case "crypto":
+                case "neofs":
+                case "protocol":
+                case "script":
+                case "test":
+                case "types":
+                case "utils":
+                case "wallet":
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return false;
     }
 
     /**
