@@ -246,14 +246,18 @@ public class CompilerExceptionsTest {
     public void throwIfSDKRelatedMethodIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKMethod.class.getName()));
-        assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/utils/Numeric;' is not " +
+                        "supported."));
     }
 
     @Test
-    public void throwIfSDKRelatedMethodIsUsedNested() {
+    public void throwIfSDKRelatedNestedMethodIsUsed() {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingNestedSDKMethod.class.getName()));
-        assertThat(thrown.getMessage(), containsString("compiler does not support SDK-related methods"));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/utils/ArrayUtils;' is " +
+                        "not supported."));
     }
 
     @Test
@@ -261,8 +265,8 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class, () ->
                 new Compiler().compile(ContractUsingSDKArgumentType.class.getName()));
         assertThat(thrown.getMessage(),
-                is("The neow3j compiler does not support SDK-related types. Type 'io.neow3j.types.Hash160' used " +
-                        "for an argument of method 'method' is not supported."));
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/types/Hash160;' is not " +
+                        "supported."));
     }
 
     @Test
@@ -270,8 +274,8 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKReturnType.class.getName()));
         assertThat(thrown.getMessage(),
-                is("The neow3j compiler does not support SDK-related types. Type 'io.neow3j.types.Hash160' used as " +
-                        "return type of method 'method' is not supported."));
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/types/Hash160;' is not " +
+                        "supported."));
     }
 
     @Test
@@ -279,7 +283,8 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKTypeForLocalVar.class.getName()));
         assertThat(thrown.getMessage(),
-                containsString("does not support SDK-related types. Type 'io.neow3j.types.Hash160' is not supported."));
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' is not " +
+                        "supported."));
     }
 
     @Test
@@ -287,7 +292,8 @@ public class CompilerExceptionsTest {
         CompilerException thrown = assertThrows(CompilerException.class,
                 () -> new Compiler().compile(ContractUsingSDKType.class.getName()));
         assertThat(thrown.getMessage(),
-                containsString("does not support SDK-related types. Type 'io.neow3j.types.Hash160' is not supported."));
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' is not " +
+                        "supported."));
     }
 
     static class UnsupportedInheritanceInConstructor {

@@ -42,7 +42,8 @@ import static io.neow3j.compiler.Compiler.buildPushDataInsn;
 import static io.neow3j.compiler.Compiler.buildPushNumberInstruction;
 import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.LocalVariableHelper.addLoadLocalVariable;
-import static io.neow3j.compiler.NeoMethod.isSDKRelatedNeow3jType;
+import static io.neow3j.compiler.NeoMethod.throwIfClassNodeIsSDKRelated;
+import static io.neow3j.compiler.NeoMethod.throwIfMethodReturnOrArgTypeAreSDKRelated;
 import static io.neow3j.script.OpCode.DROP;
 import static io.neow3j.script.OpCode.DUP;
 import static io.neow3j.script.OpCode.ROT;
@@ -130,12 +131,13 @@ public class MethodsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
-        throwIfMethodIsSDKRelated(methodInsn);
+        throwIfMethodReturnOrArgTypeAreSDKRelated(methodInsn.desc);
         ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
         Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         // If the called method cannot be found on the owner type, we look through the super types until we find the
         // method.
         ClassNode topLevelOwnerClass = ownerClass;
+        throwIfClassNodeIsSDKRelated(ownerClass);
         while (!calledAsmMethod.isPresent()) {
             if (ownerClass.superName == null) {
                 throw new CompilerException(callingNeoMethod,
@@ -143,6 +145,7 @@ public class MethodsConverter implements Converter {
                                 methodInsn.name, getFullyQualifiedNameForInternalName(ownerClass.name)));
             }
             ownerClass = getAsmClassForInternalName(ownerClass.superName, compUnit.getClassLoader());
+            throwIfClassNodeIsSDKRelated(ownerClass);
             calledAsmMethod = getMethodNode(methodInsn, ownerClass);
         }
         if (hasAnnotations(calledAsmMethod.get(), Instruction.class, Instructions.class)) {
@@ -157,16 +160,6 @@ public class MethodsConverter implements Converter {
             return handleMethodCall(callingNeoMethod, ownerClass, calledAsmMethod.get(), methodInsn, compUnit);
         }
         return insn;
-    }
-
-    // Throws a CompilerException if the method instruction is an SDK-related neow3j method.
-    private static void throwIfMethodIsSDKRelated(MethodInsnNode methodInsn) {
-        String owner = methodInsn.owner;
-        if (isSDKRelatedNeow3jType(owner, "\\/")) {
-            throw new CompilerException(
-                    format("The neow3j compiler does not support SDK-related methods from the neow3j library. Method " +
-                            "'%s' with owner '%s' is not supported.", methodInsn.name, owner));
-        }
     }
 
     private static AbstractInsnNode handleMethodCall(NeoMethod callingNeoMethod, ClassNode owner,

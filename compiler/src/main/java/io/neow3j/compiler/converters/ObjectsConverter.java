@@ -46,7 +46,7 @@ import static io.neow3j.compiler.Compiler.processInstructionAnnotations;
 import static io.neow3j.compiler.Compiler.skipToCtorCall;
 import static io.neow3j.compiler.Compiler.skipToSuperCtorCall;
 import static io.neow3j.compiler.LocalVariableHelper.buildStoreOrLoadVariableInsn;
-import static io.neow3j.compiler.NeoMethod.throwIfSDKRelatedType;
+import static io.neow3j.compiler.NeoMethod.throwIfDescriptorIsSDKRelated;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
@@ -247,7 +247,7 @@ public class ObjectsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         TypeInsnNode typeInsn = (TypeInsnNode) insn;
-        throwIfSDKRelatedType(getFullyQualifiedNameForInternalName(typeInsn.desc));
+        throwIfDescriptorIsSDKRelated(typeInsn.desc);
         assert typeInsn.getNext().getOpcode() == JVMOpcode.DUP.getOpcode() :
                 "Expected DUP after NEW but got other instructions";
 
