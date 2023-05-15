@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
@@ -11,6 +12,8 @@ import io.neow3j.devpack.annotations.Safe;
 import io.neow3j.devpack.contracts.ContractInterface;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.script.OpCode;
+import io.neow3j.utils.ArrayUtils;
+import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
@@ -239,6 +242,60 @@ public class CompilerExceptionsTest {
                 containsString("Expected a different node instruction type."));
     }
 
+    @Test
+    public void throwIfSDKRelatedMethodIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKMethod.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/utils/Numeric;' is not " +
+                        "supported."));
+    }
+
+    @Test
+    public void throwIfSDKRelatedNestedMethodIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingNestedSDKMethod.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/utils/ArrayUtils;' is " +
+                        "not supported."));
+    }
+
+    @Test
+    public void throwIfSDKRelatedArgumentTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class, () ->
+                new Compiler().compile(ContractUsingSDKArgumentType.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/types/Hash160;' is not " +
+                        "supported."));
+    }
+
+    @Test
+    public void throwIfSDKRelatedReturnTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKReturnType.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'Lio/neow3j/types/Hash160;' is not " +
+                        "supported."));
+    }
+
+    @Test
+    public void throwIfSDKRelatedTypeIsUsedForLocalVar() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKTypeForLocalVar.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' is not " +
+                        "supported."));
+    }
+
+    @Test
+    public void throwIfSDKRelatedTypeIsUsed() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(ContractUsingSDKType.class.getName()));
+        assertThat(thrown.getMessage(),
+                is("The neow3j compiler does not support SDK-related types. Type 'io/neow3j/types/Hash160' is not " +
+                        "supported."));
+    }
+
     static class UnsupportedInheritanceInConstructor {
         public static void method() {
             List<String> l = new ArrayList<>();
@@ -426,6 +483,39 @@ public class CompilerExceptionsTest {
             super(hash);
             Storage.get(Storage.getReadOnlyContext(), msg);
         }
+    }
+
+    static class ContractUsingSDKMethod {
+        public static byte[] method() {
+            return Numeric.hexStringToByteArray("6c656574");
+        }
+    }
+
+    static class ContractUsingNestedSDKMethod {
+        public static ByteString method(byte[] bytes) {
+            return Storage.get(Storage.getReadOnlyContext(), ArrayUtils.reverseArray(bytes));
+        }
+    }
+
+    static class ContractUsingSDKArgumentType {
+        public static void method(String stringValue, io.neow3j.types.Hash160 scriptHash) {
+        }
+    }
+
+    static class ContractUsingSDKReturnType {
+        public static io.neow3j.types.Hash160 method() {
+            return io.neow3j.types.Hash160.ZERO;
+        }
+    }
+
+    static class ContractUsingSDKTypeForLocalVar {
+        public static void method() {
+            io.neow3j.types.Hash160 hash = new io.neow3j.types.Hash160();
+        }
+    }
+
+    static class ContractUsingSDKType {
+        public static final io.neow3j.types.Hash160 hash = new io.neow3j.types.Hash160();
     }
 
 }

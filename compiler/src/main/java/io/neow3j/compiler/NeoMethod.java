@@ -465,11 +465,54 @@ public class NeoMethod {
      */
     public void convert(CompilationUnit compUnit) throws IOException {
         AbstractInsnNode insn = asmMethod.instructions.get(0);
+        throwIfMethodReturnOrArgTypeAreSDKRelated(asmMethod.desc);
         while (insn != null) {
             insn = Compiler.handleInsn(insn, this, compUnit);
             insn = insn.getNext();
         }
         insertTryCatchBlocks();
+    }
+
+    public static void throwIfClassNodeIsSDKRelated(ClassNode ownerClass) {
+        throwIfDescriptorIsSDKRelated(Type.getObjectType(ownerClass.name).getDescriptor());
+    }
+
+    public static void throwIfMethodReturnOrArgTypeAreSDKRelated(String methodDescriptor) {
+        Type returnType = Type.getReturnType(methodDescriptor);
+        throwIfDescriptorIsSDKRelated(returnType.getDescriptor());
+
+        for (Type argType : Type.getArgumentTypes(methodDescriptor)) {
+            throwIfDescriptorIsSDKRelated(argType.getDescriptor());
+        }
+    }
+
+    public static void throwIfDescriptorIsSDKRelated(String descriptor) {
+        if (hasSDKRelatedDescriptor(descriptor)) {
+            throw new CompilerException(
+                    format("The neow3j compiler does not support SDK-related types. Type '%s' is not supported.",
+                            descriptor));
+        }
+    }
+
+    private static boolean hasSDKRelatedDescriptor(String descriptor) {
+        String[] ioNeow3jSplit = descriptor.split("io/neow3j/");
+        if (ioNeow3jSplit.length < 2) {
+            return false;
+        }
+        String[] split = ioNeow3jSplit[1].split("/");
+        switch (split[0]) {
+            case "crypto":
+            case "neofs":
+            case "protocol":
+            case "script":
+            case "test":
+            case "types":
+            case "utils":
+            case "wallet":
+                return true;
+            default:
+                return false;
+        }
     }
 
     /**
