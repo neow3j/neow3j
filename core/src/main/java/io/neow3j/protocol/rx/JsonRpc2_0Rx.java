@@ -111,7 +111,7 @@ public class JsonRpc2_0Rx {
         BigInteger latestBlockIdx;
         try {
             latestBlockIdx = getLatestBlockIdx();
-        } catch (IOException e) {
+        } catch (Exception e) {
             return Observable.error(e);
         }
 
