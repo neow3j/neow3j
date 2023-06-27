@@ -1238,7 +1238,7 @@ public class StorageIntegrationTest {
 
         public static io.neow3j.devpack.Map<ByteString, ByteString> findWithFindOptionDeserializeValues() {
             Storage.put(ctx, hexToBytes("0102"), hexToBytes("102030"));
-            byte findOption = FindOptions.DeserializeValues & FindOptions.PickField0;
+            int findOption = FindOptions.DeserializeValues & FindOptions.PickField0;
             Iterator<Struct<ByteString, ByteString>> it = Storage.find(ctx,
                     hexToBytes("01"), findOption);
             io.neow3j.devpack.Map<ByteString, ByteString> map = new io.neow3j.devpack.Map<>();
