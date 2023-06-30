@@ -398,6 +398,23 @@ public class NeoTokenTest {
     }
 
     @Test
+    public void testGetAccountState_v2() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_v2.json");
+        NeoAccountState neoAccountState =
+                new NeoToken(neow).getAccountState(account1.getScriptHash());
+
+        assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(20000)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(259)));
+
+        ECPublicKey publicKey =
+                new ECPublicKey(
+                        "037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+
+        assertThat(neoAccountState.getPublicKey(), is(publicKey));
+        assertThat(neoAccountState.getLastGasPerVote(), is(BigInteger.valueOf(1234567890)));
+    }
+
+    @Test
     public void isCandidate() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
                 NEOTOKEN_SCRIPTHASH, "getCandidates");

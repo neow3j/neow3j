@@ -417,10 +417,14 @@ public class NeoToken extends FungibleToken {
         BigInteger balance = state.get(0).getInteger();
         BigInteger updateHeight = state.get(1).getInteger();
         StackItem publicKeyItem = state.get(2);
-        if (publicKeyItem.getType().equals(ANY)) {
-            return NeoAccountState.withNoVote(balance, updateHeight);
+        BigInteger lastGasPerVote = null;
+        if (state.size() == 4) {
+            lastGasPerVote = state.get(3).getInteger();
         }
-        return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()));
+        if (publicKeyItem.getType().equals(ANY)) {
+            return NeoAccountState.withNoVote(balance, updateHeight, lastGasPerVote);
+        }
+        return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()), lastGasPerVote);
     }
 
     /**
