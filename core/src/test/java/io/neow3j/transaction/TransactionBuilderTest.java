@@ -305,7 +305,6 @@ public class TransactionBuilderTest {
     public void attributes_notValidBefore() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("getcommittee", "getcommittee.json");
         setUpWireMockForGetBlockCount(1000);
 
         BigInteger height = BigInteger.valueOf(200);
@@ -324,7 +323,6 @@ public class TransactionBuilderTest {
     public void attributes_notValidBefore_throwWhenMultiple() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("getcommittee", "getcommittee.json");
         setUpWireMockForGetBlockCount(1000);
 
         BigInteger height = BigInteger.valueOf(200);
@@ -345,6 +343,54 @@ public class TransactionBuilderTest {
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new NotValidBeforeAttribute(null));
         assertThat(thrown.getMessage(), is("Height cannot be null."));
+    }
+
+    @Test
+    public void attributes_conflicts() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        Hash256 hash = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321c");
+        ConflictsAttribute attr = new ConflictsAttribute(hash);
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account1))
+                .attributes(attr)
+                .getUnsignedTransaction();
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttributes().get(0)).getHash(), is(hash));
+    }
+
+    @Test
+    public void attributes_conflicts_multiple() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        Hash256 hash = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321c");
+        Hash256 hash2 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321d");
+        ConflictsAttribute attr = new ConflictsAttribute(hash);
+        ConflictsAttribute attr2 = new ConflictsAttribute(hash2);
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account1))
+                .attributes(attr)
+                .attributes(attr2)
+                .getUnsignedTransaction();
+        assertThat(tx.getAttributes(), hasSize(2));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttributes().get(0)).getHash(), is(hash));
+        assertThat(tx.getAttributes().get(1).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttributes().get(1)).getHash(), is(hash2));
+    }
+
+    @Test
+    public void attributes_conflicts_hashNull() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ConflictsAttribute(null));
+        assertThat(thrown.getMessage(), is("Conflict hash cannot be null."));
     }
 
     @Test

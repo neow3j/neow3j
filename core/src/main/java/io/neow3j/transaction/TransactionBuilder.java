@@ -262,6 +262,8 @@ public class TransactionBuilder {
                 safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
             } else if (attributeType.equals(NOT_VALID_BEFORE)) {
                 safeAddNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
+            } else {
+                this.attributes.add(attr);
             }
         });
         return this;
