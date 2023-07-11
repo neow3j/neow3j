@@ -76,6 +76,7 @@ import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.NotValidBeforeAttribute;
 import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
@@ -124,6 +125,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -1268,6 +1270,10 @@ public class ResponseTest extends ResponseTester {
                         "                \"id\": 0," +
                         "                \"code\": \"Success\"," +
                         "                \"result\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"NotValidBefore\"," +
+                        "                \"height\": \"10500\"" +
                         "            }" +
                         "        ]," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
@@ -1334,18 +1340,26 @@ public class ResponseTest extends ResponseTester {
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
-        assertThat(attributes, hasSize(2));
+        assertThat(attributes, hasSize(3));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(3));
+        assertThat(thrown.getMessage(), containsString("only has 3 attributes"));
+
         assertThat(transaction.getFirstAttribute(), is(transaction.getAttribute(0)));
         assertThat(transaction.getAttribute(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
         assertThat(transaction.getAttribute(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
-        thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(2));
-        assertThat(thrown.getMessage(), containsString("only has 2 attributes"));
+
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
         OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(), is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
         assertThat(oracleResp.getId(), is(0));
+
+        assertThat(attributes.get(2).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
+        NotValidBeforeAttribute expected = new NotValidBeforeAttribute(new BigInteger("10500"));
+        NotValidBeforeAttribute notValidBeforeAttribute = (NotValidBeforeAttribute) attributes.get(2);
+        assertThat(notValidBeforeAttribute.getHeight(), is(new BigInteger("10500")));
+        assertEquals(notValidBeforeAttribute, expected);
 
         assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));

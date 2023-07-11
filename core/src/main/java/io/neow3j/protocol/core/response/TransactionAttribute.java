@@ -14,7 +14,8 @@ import static java.lang.String.format;
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = HighPriorityAttribute.class, name = TransactionAttributeType.HIGH_PRIORITY_VALUE),
-        @JsonSubTypes.Type(value = OracleResponseAttribute.class, name = TransactionAttributeType.ORACLE_RESPONSE_VALUE)
+        @JsonSubTypes.Type(value = OracleResponseAttribute.class, name = TransactionAttributeType.ORACLE_RESPONSE_VALUE),
+        @JsonSubTypes.Type(value = NotValidBeforeAttribute.class, name = TransactionAttributeType.NOT_VALID_BEFORE_VALUE)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class TransactionAttribute {
@@ -54,6 +55,8 @@ public abstract class TransactionAttribute {
                 return new HighPriorityAttribute();
             case ORACLE_RESPONSE:
                 return new OracleResponseAttribute();
+            case NOT_VALID_BEFORE:
+                return new NotValidBeforeAttribute();
             default:
                 throw new IllegalArgumentException(
                         "No concrete class found for transaction attribute type " + type.jsonValue());
