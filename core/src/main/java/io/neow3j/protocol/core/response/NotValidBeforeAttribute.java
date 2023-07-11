@@ -38,7 +38,8 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
             return false;
         }
         NotValidBeforeAttribute other = (NotValidBeforeAttribute) o;
-        return getType() == other.getType();
+        return Objects.equals(getType(), other.getType()) &&
+                Objects.equals(getHeight(), other.getHeight());
     }
 
     @Override
