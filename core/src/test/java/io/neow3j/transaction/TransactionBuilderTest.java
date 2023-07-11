@@ -302,6 +302,52 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void attributes_notValidBefore() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        BigInteger height = BigInteger.valueOf(200);
+        NotValidBeforeAttribute attr = new NotValidBeforeAttribute(height);
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account1))
+                .attributes(attr)
+                .getUnsignedTransaction();
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
+        assertThat(((NotValidBeforeAttribute) tx.getAttributes().get(0)).getHeight(), is(height));
+    }
+
+    @Test
+    public void attributes_notValidBefore_throwWhenMultiple() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        BigInteger height = BigInteger.valueOf(200);
+        BigInteger height2 = BigInteger.valueOf(220);
+        NotValidBeforeAttribute attr = new NotValidBeforeAttribute(height);
+        NotValidBeforeAttribute attr2 = new NotValidBeforeAttribute(height2);
+        TransactionConfigurationException thrown = assertThrows(
+                TransactionConfigurationException.class, () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(account1))
+                        .attributes(attr)
+                        .attributes(attr2));
+        assertThat(thrown.getMessage(), is("A transaction can only have one NotValidBefore attribute."));
+    }
+
+    @Test
+    public void attributes_notValidBefore_heightNull() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new NotValidBeforeAttribute(null));
+        assertThat(thrown.getMessage(), is("Height cannot be null."));
+    }
+
+    @Test
     public void attributes_failAddingMoreThanMaxToTxBuilder() {
         List<TransactionAttribute> attrs = new ArrayList<>();
         for (int i = 0; i <= NeoConstants.MAX_TRANSACTION_ATTRIBUTES; i++) {

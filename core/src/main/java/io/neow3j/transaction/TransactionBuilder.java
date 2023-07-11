@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.TransactionAttributeType.NOT_VALID_BEFORE;
 import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.ArrayUtils.concatenate;
@@ -256,8 +257,11 @@ public class TransactionBuilder {
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         checkAndThrowIfMaxAttributesExceeded(signers.size(), this.attributes.size() + attributes.length);
         Arrays.stream(attributes).forEach(attr -> {
-            if (attr.getType() == HIGH_PRIORITY) {
+            TransactionAttributeType attributeType = attr.getType();
+            if (attributeType.equals(HIGH_PRIORITY)) {
                 safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+            } else if (attributeType.equals(NOT_VALID_BEFORE)) {
+                safeAddNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
             }
         });
         return this;
@@ -268,6 +272,13 @@ public class TransactionBuilder {
         if (!isHighPriority()) {
             attributes.add(attr);
         }
+    }
+
+    private void safeAddNotValidBeforeAttribute(NotValidBeforeAttribute attr) {
+        if (hasNotValidBeforeAttribute()) {
+            throw new TransactionConfigurationException("A transaction can only have one NotValidBefore attribute.");
+        }
+        attributes.add(attr);
     }
 
     private boolean containsDuplicateSigners(Signer... signers) {
@@ -327,6 +338,11 @@ public class TransactionBuilder {
     // Checks if this transaction builder contains a high priority attribute.
     private boolean isHighPriority() {
         return attributes.stream().anyMatch(t -> t.getType() == HIGH_PRIORITY);
+    }
+
+    // Checks if this transaction builder contains a NotValidBefore attribute.
+    private boolean hasNotValidBeforeAttribute() {
+        return attributes.stream().anyMatch(t -> t.getType() == NOT_VALID_BEFORE);
     }
 
     // Checks if this transaction contains a signer that is a committee member.
