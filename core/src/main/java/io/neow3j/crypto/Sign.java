@@ -86,23 +86,9 @@ public class Sign {
         }
 
         ECDSASignature sig = keyPair.signAndGetECDSASignature(messageHash);
-        // Now we have to work backwards to figure out the recId needed to recover the signature.
-        int recId = -1;
-        for (int i = 0; i < 4; i++) {
-            ECPublicKey k = recoverFromSignature(i, sig, messageHash);
-            if (k != null && k.equals(keyPair.getPublicKey())) {
-                recId = i;
-                break;
-            }
-        }
-        if (recId == -1) {
-            throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
-        }
-
-        int headerByte = recId + 27;
 
         // 1 header + 32 bytes for R + 32 bytes for S
-        byte v = (byte) headerByte;
+        byte v = recoverV(sig, messageHash, keyPair.getPublicKey());
         byte[] r = Numeric.toBytesPadded(sig.r, 32);
         byte[] s = Numeric.toBytesPadded(sig.s, 32);
 
@@ -179,6 +165,35 @@ public class Sign {
         ECPoint q = sumOfTwoMultiplies(secp256r1DomainParams().getG(), eInvrInv, R, srInv);
 
         return new ECPublicKey(q);
+    }
+
+    /**
+     * Recovers the signature's value {@code v} given the signature components, the signed message and the public key
+     * that generated the signature.
+     * <p>
+     * Use this message to reduce the byte size of the necessary values for verifying this signature, i.e., by
+     * providing v instead of the public key.
+     *
+     * @param sig       the R and S components of the signature, wrapped.
+     * @param message   the hash of the data that was signed.
+     * @param publicKey the public key.
+     * @return the selector value.
+     */
+    public static byte recoverV(ECDSASignature sig, byte[] message, ECPublicKey publicKey) {
+        // Work backwards to figure out the recId needed to recover the signature.
+        int recId = -1;
+        for (int i = 0; i < 4; i++) {
+            ECPublicKey k = recoverFromSignature(i, sig, message);
+            if (k != null && k.equals(publicKey)) {
+                recId = i;
+                break;
+            }
+        }
+        if (recId == -1) {
+            throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
+        }
+
+        return (byte) (recId + 27);
     }
 
     /**

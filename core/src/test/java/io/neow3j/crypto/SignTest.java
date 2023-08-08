@@ -6,6 +6,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigInteger;
 import java.security.SignatureException;
 
 import static io.neow3j.crypto.Hash.sha256;
@@ -112,6 +113,21 @@ public class SignTest {
     public void verifySignature() {
         Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
         assertTrue(Sign.verifySignature(TEST_MESSAGE_BYTES, signatureData, PUBLIC_KEY));
+    }
+
+    @Test
+    public void testRecoverV() {
+        BigInteger r = new BigInteger(
+                hexStringToByteArray("147e5f3c929dd830d961626551dbea6b70e4b2837ed2fe9089eed2072ab3a655"));
+        BigInteger s = new BigInteger(
+                hexStringToByteArray("523ae0fa8711eee4769f1913b180b9b3410bbb2cf770f529c85f6886f22cbaaf"));
+
+        ECDSASignature ecdsaSignature = new ECDSASignature(r, s);
+        ECPublicKey publicKey = KEY_PAIR.getPublicKey();
+        byte[] messageHash = sha256(TEST_MESSAGE_BYTES);
+
+        byte actualV = Sign.recoverV(ecdsaSignature, messageHash, publicKey);
+        assertThat(actualV, is((byte) 27));
     }
 
 }
