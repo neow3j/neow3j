@@ -168,10 +168,10 @@ public class Sign {
     }
 
     /**
-     * Recovers the signature's value {@code v} given the signature components, the signed message and the public key
-     * that generated the signature.
+     * Finds the signature's value {@code v}, also called recovery ID, that can be used to recover the public key from
+     * the signature.
      * <p>
-     * Use this message to reduce the byte size of the necessary values for verifying this signature, i.e., by
+     * Use this method to reduce the byte size of the necessary values for verifying this signature, i.e., by
      * providing v instead of the public key.
      *
      * @param sig       the R and S components of the signature, wrapped.
@@ -194,6 +194,23 @@ public class Sign {
         }
 
         return (byte) (recId + 27);
+    }
+
+    /**
+     * Finds the signature's value {@code v}, also called recovery ID, that can be used to recover the public key
+     * from the signature.
+     * <p>
+     * Use this method to reduce the byte size of the necessary values for verifying this signature, i.e., by
+     * providing v instead of the public key.
+     *
+     * @param sigData   the R and S components of the signature, wrapped.
+     * @param message   the hash of the data that was signed.
+     * @param publicKey the public key.
+     * @return the selector value.
+     */
+    public static byte recoverV(SignatureData sigData, byte[] message, ECPublicKey publicKey) {
+        ECDSASignature sig = new ECDSASignature(new BigInteger(1, sigData.getR()), new BigInteger(1, sigData.getS()));
+        return recoverV(sig, message, publicKey);
     }
 
     /**

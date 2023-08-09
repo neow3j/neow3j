@@ -7,6 +7,7 @@ import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 
 import static io.neow3j.crypto.Hash.sha256;
@@ -128,6 +129,16 @@ public class SignTest {
 
         byte actualV = Sign.recoverV(ecdsaSignature, messageHash, publicKey);
         assertThat(actualV, is((byte) 27));
+
+        byte[] signatureBytes = Numeric.hexStringToByteArray(
+                "f7f12d0b7bf4da2a490b0aba8b37df0606c23c8d98407f46d570b4b00709fa84" + // r
+                        "3fa81e422cc1b132d600ff2037be9d2ecc45e71d8f383c7a4e1ab44b23b1baed"); // s
+        ECKeyPair keyPair = ECKeyPair.create(hexStringToByteArray(
+                "d5677e05ffd18bcf72f6c42a0f660fc102ec67a2103fccbe6b525c7dad041699"));
+        messageHash = sha256("Hello, World!".getBytes(StandardCharsets.UTF_8));
+
+        actualV = Sign.recoverV(Sign.SignatureData.fromByteArray(signatureBytes), messageHash, keyPair.getPublicKey());
+        assertThat(actualV, is((byte) 28));
     }
 
 }
