@@ -19,7 +19,9 @@ import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.secp256r1DomainParams;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexString;
 import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
 
 /**
@@ -450,8 +452,8 @@ public class Sign {
         public String toString() {
             return "SignatureData{" +
                     "v=" + v +
-                    ", r=" + Arrays.toString(r) +
-                    ", s=" + Arrays.toString(s) +
+                    ", r=" + cleanHexPrefix(toHexString(r)) +
+                    ", s=" + cleanHexPrefix(toHexString(s)) +
                     '}';
         }
 
