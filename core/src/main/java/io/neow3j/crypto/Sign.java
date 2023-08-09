@@ -170,11 +170,9 @@ public class Sign {
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the public key that
-     * was used to sign it. This can then be compared to the expected public key to determine if the signature was
-     * correct.
+     * Recovers the public key corresponding to the given signature and message.
      *
-     * @param message       the encoded message.
+     * @param message       the message.
      * @param signatureData the message signature components.
      * @return the public key used to sign the message.
      * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
@@ -185,8 +183,7 @@ public class Sign {
     }
 
     /**
-     * Finds the signature's value {@code v}, also called recovery ID, that can be used to recover the public key from
-     * the signature.
+     * Finds the signature's value {@code v} that can be used to recover the public key from the signature.
      * <p>
      * Use this method to reduce the byte size of the necessary values for verifying this signature, i.e., by
      * providing v instead of the public key.
@@ -243,11 +240,9 @@ public class Sign {
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the public key that
-     * was used to sign it. This can then be compared to the expected public key to determine if the signature was
-     * correct.
+     * Recovers the public key corresponding to the given signature and message.
      *
-     * @param message       the encoded message.
+     * @param message       the message.
      * @param signatureData the message signature components.
      * @return the public key used to sign the message.
      * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
