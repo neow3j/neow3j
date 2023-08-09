@@ -19,7 +19,9 @@ import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.secp256r1DomainParams;
 import static io.neow3j.utils.Assertions.verifyPrecondition;
+import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexString;
 import static org.bouncycastle.math.ec.ECAlgorithms.sumOfTwoMultiplies;
 
 /**
@@ -86,23 +88,9 @@ public class Sign {
         }
 
         ECDSASignature sig = keyPair.signAndGetECDSASignature(messageHash);
-        // Now we have to work backwards to figure out the recId needed to recover the signature.
-        int recId = -1;
-        for (int i = 0; i < 4; i++) {
-            ECPublicKey k = recoverFromSignature(i, sig, messageHash);
-            if (k != null && k.equals(keyPair.getPublicKey())) {
-                recId = i;
-                break;
-            }
-        }
-        if (recId == -1) {
-            throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
-        }
-
-        int headerByte = recId + 27;
 
         // 1 header + 32 bytes for R + 32 bytes for S
-        byte v = (byte) headerByte;
+        byte v = recoverV(sig, messageHash, keyPair.getPublicKey());
         byte[] r = Numeric.toBytesPadded(sig.r, 32);
         byte[] s = Numeric.toBytesPadded(sig.s, 32);
 
@@ -182,6 +170,64 @@ public class Sign {
     }
 
     /**
+     * Recovers the public key corresponding to the given signature and message.
+     *
+     * @param message       the message.
+     * @param signatureData the message signature components.
+     * @return the public key used to sign the message.
+     * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
+     */
+    public static ECPublicKey recoverFromSignature(byte[] message, SignatureData signatureData)
+            throws SignatureException {
+        return signedMessageToKey(message, signatureData);
+    }
+
+    /**
+     * Finds the signature's value {@code v} that can be used to recover the public key from the signature.
+     * <p>
+     * Use this method to reduce the byte size of the necessary values for verifying this signature, i.e., by
+     * providing v instead of the public key.
+     *
+     * @param sig       the R and S components of the signature, wrapped.
+     * @param message   the hash of the data that was signed.
+     * @param publicKey the public key.
+     * @return the selector value.
+     */
+    public static byte recoverV(ECDSASignature sig, byte[] message, ECPublicKey publicKey) {
+        // Work backwards to figure out the recId needed to recover the signature.
+        int recId = -1;
+        for (int i = 0; i < 4; i++) {
+            ECPublicKey k = recoverFromSignature(i, sig, message);
+            if (k != null && k.equals(publicKey)) {
+                recId = i;
+                break;
+            }
+        }
+        if (recId == -1) {
+            throw new RuntimeException("Could not construct a recoverable key. This should never happen.");
+        }
+
+        return (byte) (recId + 27);
+    }
+
+    /**
+     * Finds the signature's value {@code v}, also called recovery ID, that can be used to recover the public key
+     * from the signature.
+     * <p>
+     * Use this method to reduce the byte size of the necessary values for verifying this signature, i.e., by
+     * providing v instead of the public key.
+     *
+     * @param sigData   the R and S components of the signature, wrapped.
+     * @param message   the hash of the data that was signed.
+     * @param publicKey the public key.
+     * @return the selector value.
+     */
+    public static byte recoverV(SignatureData sigData, byte[] message, ECPublicKey publicKey) {
+        ECDSASignature sig = new ECDSASignature(new BigInteger(1, sigData.getR()), new BigInteger(1, sigData.getS()));
+        return recoverV(sig, message, publicKey);
+    }
+
+    /**
      * Decompress a compressed public key (x co-ord and low-bit of y-coord).
      * <p>
      * Based on: <a href="https://tools.ietf.org/html/rfc5480#section-2.2">RFC5480</a>
@@ -194,11 +240,9 @@ public class Sign {
     }
 
     /**
-     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the public key that
-     * was used to sign it. This can then be compared to the expected public key to determine if the signature was
-     * correct.
+     * Recovers the public key corresponding to the given signature and message.
      *
-     * @param message       the encoded message.
+     * @param message       the message.
      * @param signatureData the message signature components.
      * @return the public key used to sign the message.
      * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
@@ -403,8 +447,8 @@ public class Sign {
         public String toString() {
             return "SignatureData{" +
                     "v=" + v +
-                    ", r=" + Arrays.toString(r) +
-                    ", s=" + Arrays.toString(s) +
+                    ", r=" + cleanHexPrefix(toHexString(r)) +
+                    ", s=" + cleanHexPrefix(toHexString(s)) +
                     '}';
         }
 
