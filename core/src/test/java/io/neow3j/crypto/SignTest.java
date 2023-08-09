@@ -7,7 +7,6 @@ import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.SignatureException;
 
 import static io.neow3j.crypto.Hash.sha256;
@@ -17,6 +16,7 @@ import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.crypto.Sign.signedMessageToKey;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexString;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -26,7 +26,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class SignTest {
 
     private static final String TEST_MESSAGE = "A test message";
-    private static final byte[] TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes();
+    private static final byte[] TEST_MESSAGE_BYTES = TEST_MESSAGE.getBytes(UTF_8);
     static final ECPrivateKey PRIVATE_KEY = new ECPrivateKey(Numeric.toBigIntNoPrefix(
             "9117f4bf9be717c9a90994326897f4243503accd06712162267e77f18b49c3a3"));
     static final ECPublicKey PUBLIC_KEY = new ECPublicKey(Numeric.toBigIntNoPrefix(
@@ -135,7 +135,7 @@ public class SignTest {
                         "3fa81e422cc1b132d600ff2037be9d2ecc45e71d8f383c7a4e1ab44b23b1baed"); // s
         ECKeyPair keyPair = ECKeyPair.create(hexStringToByteArray(
                 "d5677e05ffd18bcf72f6c42a0f660fc102ec67a2103fccbe6b525c7dad041699"));
-        messageHash = sha256("Hello, World!".getBytes(StandardCharsets.UTF_8));
+        messageHash = sha256("Hello, World!".getBytes(UTF_8));
 
         actualV = Sign.recoverV(Sign.SignatureData.fromByteArray(signatureBytes), messageHash, keyPair.getPublicKey());
         assertThat(actualV, is((byte) 28));
