@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.security.SignatureException;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.crypto.Sign.recoverFromSignature;
 import static io.neow3j.crypto.Sign.recoverSigningScriptHash;
 import static io.neow3j.crypto.Sign.signHexMessage;
 import static io.neow3j.crypto.Sign.signMessage;
@@ -95,6 +96,13 @@ public class SignTest {
     public void testSignedMessageToKey() throws SignatureException {
         Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
         ECPublicKey key = signedMessageToKey(TEST_MESSAGE_BYTES, signatureData);
+        assertThat(key, equalTo(PUBLIC_KEY));
+    }
+
+    @Test
+    public void testRecoverFromSignature() throws SignatureException {
+        Sign.SignatureData signatureData = signMessage(TEST_MESSAGE_BYTES, KEY_PAIR);
+        ECPublicKey key = recoverFromSignature(TEST_MESSAGE_BYTES, signatureData);
         assertThat(key, equalTo(PUBLIC_KEY));
     }
 

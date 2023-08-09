@@ -168,6 +168,21 @@ public class Sign {
     }
 
     /**
+     * Given an arbitrary piece of text and an NEO message signature encoded in bytes, returns the public key that
+     * was used to sign it. This can then be compared to the expected public key to determine if the signature was
+     * correct.
+     *
+     * @param message       the encoded message.
+     * @param signatureData the message signature components.
+     * @return the public key used to sign the message.
+     * @throws SignatureException if the public key could not be recovered or if there was a signature format error.
+     */
+    public static ECPublicKey recoverFromSignature(byte[] message, SignatureData signatureData)
+            throws SignatureException {
+        return signedMessageToKey(message, signatureData);
+    }
+
+    /**
      * Finds the signature's value {@code v}, also called recovery ID, that can be used to recover the public key from
      * the signature.
      * <p>
