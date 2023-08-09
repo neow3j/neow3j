@@ -138,7 +138,7 @@ public class SignTest {
         byte actualV = Sign.recoverV(ecdsaSignature, messageHash, publicKey);
         assertThat(actualV, is((byte) 27));
 
-        byte[] signatureBytes = Numeric.hexStringToByteArray(
+        byte[] signatureBytes = hexStringToByteArray(
                 "f7f12d0b7bf4da2a490b0aba8b37df0606c23c8d98407f46d570b4b00709fa84" + // r
                         "3fa81e422cc1b132d600ff2037be9d2ecc45e71d8f383c7a4e1ab44b23b1baed"); // s
         ECKeyPair keyPair = ECKeyPair.create(hexStringToByteArray(
@@ -151,7 +151,7 @@ public class SignTest {
 
     @Test
     public void testSignatureDataToString() {
-        byte[] signatureBytes = Numeric.hexStringToByteArray(
+        byte[] signatureBytes = hexStringToByteArray(
                 "f7f12d0b7bf4da2a490b0aba8b37df0606c23c8d98407f46d570b4b00709fa84" + // r
                         "3fa81e422cc1b132d600ff2037be9d2ecc45e71d8f383c7a4e1ab44b23b1baed"); // s
         Sign.SignatureData signatureData = Sign.SignatureData.fromByteArray((byte) 28, signatureBytes);
