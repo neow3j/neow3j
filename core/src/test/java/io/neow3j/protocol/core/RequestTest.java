@@ -23,7 +23,6 @@ import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
-import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -35,7 +34,6 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
-import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
