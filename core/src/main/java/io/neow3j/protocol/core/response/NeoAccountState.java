@@ -1,11 +1,13 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 
 import java.math.BigInteger;
 import java.util.Objects;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class NeoAccountState {
 
     @JsonProperty(value = "balance")
@@ -31,20 +33,12 @@ public class NeoAccountState {
         this.lastGasPerVote = lastGasPerVote;
     }
 
-    public NeoAccountState(BigInteger balance, BigInteger balanceHeight, ECPublicKey publicKey) {
-        this(balance, balanceHeight, publicKey, null);
-    }
-
     public static NeoAccountState withNoVote(BigInteger balance, BigInteger updateHeight, BigInteger lastGasPerVote) {
         return new NeoAccountState(balance, updateHeight, null, lastGasPerVote);
     }
 
-    public static NeoAccountState withNoVote(BigInteger balance, BigInteger updateHeight) {
-        return withNoVote(balance, updateHeight, null);
-    }
-
     public static NeoAccountState withNoBalance() {
-        return new NeoAccountState(BigInteger.ZERO, null, null);
+        return new NeoAccountState(BigInteger.ZERO, null, null, null);
     }
 
     public BigInteger getBalance() {

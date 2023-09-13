@@ -424,7 +424,8 @@ public class NeoToken extends FungibleToken {
         if (publicKeyItem.getType().equals(ANY)) {
             return NeoAccountState.withNoVote(balance, updateHeight, lastGasPerVote);
         }
-        return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()), lastGasPerVote);
+        return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()),
+                lastGasPerVote);
     }
 
     /**

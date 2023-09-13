@@ -29,10 +29,12 @@ import static io.neow3j.contract.IntegrationTestHelper.unregisterCandidateAndAwa
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -348,6 +350,7 @@ public class NeoTokenIntegrationTest {
         assertNotNull(state.getBalanceHeight());
         assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
         assertNull(state.getPublicKey());
+        assertThat(state.getLastGasPerVote(), is(BigInteger.ZERO));
 
         registerAsCandidate(candidate);
 
@@ -359,10 +362,13 @@ public class NeoTokenIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
+        BigInteger txHeight = neow3j.getTransactionHeight(txHash).send().getHeight();
+
         NeoAccountState stateWithVote = neoToken.getAccountState(voter.getScriptHash());
         assertThat(stateWithVote.getBalance(), is(BigInteger.valueOf(2000)));
-        assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertThat(stateWithVote.getBalanceHeight(), is(txHeight));
         assertThat(stateWithVote.getPublicKey(), is(candidate.getECKeyPair().getPublicKey()));
+        assertThat(stateWithVote.getLastGasPerVote(), is(BigInteger.ZERO));
 
         unregisterAsCandidate(candidate);
     }
