@@ -12,13 +12,10 @@ import static io.neow3j.utils.Numeric.toHexString;
 public class ContractStorageEntry {
 
     @JsonProperty("key")
-    private String key;
+    String key;
 
     @JsonProperty("value")
-    private String value;
-
-    public ContractStorageEntry() {
-    }
+    String value;
 
     /**
      * @return the key.
