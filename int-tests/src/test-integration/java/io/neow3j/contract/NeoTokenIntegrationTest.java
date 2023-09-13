@@ -67,6 +67,12 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
+    public void testUnclaimedGas_withoutBlockHeight() throws IOException {
+        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT);
+        assertThat(client1UnclaimedGas, greaterThanOrEqualTo(BigInteger.ZERO));
+    }
+
+    @Test
     public void testRegisterAndUnregisterCandidate() throws Throwable {
         Account candidate = Account.create();
         ECKeyPair.ECPublicKey candidateKey = candidate.getECKeyPair().getPublicKey();

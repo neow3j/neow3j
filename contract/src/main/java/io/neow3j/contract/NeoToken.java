@@ -3,6 +3,7 @@ package io.neow3j.contract;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.core.response.NeoAccountState;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
@@ -116,9 +117,12 @@ public class NeoToken extends FungibleToken {
 
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
+     * <p>
+     * The block height is required to match the current block count. Otherwise, the request will fail. Use
+     * {@link Neo#getBlockCount()} to retrieve the correct value, or use {@link NeoToken#unclaimedGas(Account)}.
      *
      * @param account     the account.
-     * @param blockHeight the block height.
+     * @param blockHeight the current block height.
      * @return the amount of unclaimed GAS.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -128,6 +132,9 @@ public class NeoToken extends FungibleToken {
 
     /**
      * Gets the amount of unclaimed GAS at the given height for the given account.
+     * <p>
+     * The block height is required to match the current block count. Otherwise, the request will fail. Use
+     * {@link Neo#getBlockCount()} to retrieve the correct value, or use {@link NeoToken#unclaimedGas(Hash160)}.
      *
      * @param scriptHash  the account's script hash.
      * @param blockHeight the block height.
@@ -138,6 +145,29 @@ public class NeoToken extends FungibleToken {
         ContractParameter accParam = hash160(scriptHash);
         ContractParameter heightParam = integer(BigInteger.valueOf(blockHeight));
         return callFunctionReturningInt(UNCLAIMED_GAS, accParam, heightParam);
+    }
+
+    /**
+     * Gets the amount of unclaimed GAS at the current height for the given account.
+     *
+     * @param account the account.
+     * @return the amount of unclaimed GAS.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger unclaimedGas(Account account) throws IOException {
+        return unclaimedGas(account.getScriptHash());
+    }
+
+    /**
+     * Gets the amount of unclaimed GAS at the current height for the given account.
+     *
+     * @param scriptHash the account's script hash.
+     * @return the amount of unclaimed GAS.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger unclaimedGas(Hash160 scriptHash) throws IOException {
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        return callFunctionReturningInt(UNCLAIMED_GAS, hash160(scriptHash), integer(blockCount));
     }
 
     // endregion unclaimed gas

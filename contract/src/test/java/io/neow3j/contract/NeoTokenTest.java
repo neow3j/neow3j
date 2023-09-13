@@ -124,6 +124,35 @@ public class NeoTokenTest {
     }
 
     @Test
+    public void getUnclaimedGas_withoutBlockHeight() throws IOException {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        String responseBody = loadFile("/responses/invokefunction_unclaimedgas.json");
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
+                        + ".*\"unclaimedGas\"" // function
+                        + ".*\"f68f181731a47036a99f04dad90043a744edec0f\""
+                        // script hash
+                        + ".*1000.*" // block height
+                ))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+
+        NeoToken neoToken = new NeoToken(neow);
+        Account account = Account.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9");
+        BigInteger expectedUnclaimedGas = new BigInteger("60000000000");
+
+        BigInteger actualUnclaimedGas = neoToken.unclaimedGas(account.getScriptHash());
+        assertThat(actualUnclaimedGas, is(expectedUnclaimedGas));
+
+        actualUnclaimedGas = neoToken.unclaimedGas(account);
+        assertThat(actualUnclaimedGas, is(expectedUnclaimedGas));
+    }
+
+    @Test
     public void registerCandidate() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_registercandidate.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
