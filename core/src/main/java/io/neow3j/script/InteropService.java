@@ -40,6 +40,14 @@ public enum InteropService {
     SYSTEM_RUNTIME_CHECKWITNESS("System.Runtime.CheckWitness", 1 << 10),
     SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
     SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),
+
+    /**
+     * This syscall is used to fire events. It consumes the top stack item as event name, and another array stack item
+     * that contains the event's state entries. When using this interoperability service manually (i.e., in an
+     * {@link io.neow3j.devpack.annotations.Instruction}), note, that the event name that is read from the stack MUST
+     * exist in the contract manifest's abi. Otherwise, the NeoVM will exit when this service is used with an event
+     * name that is not present in the abi.
+     */
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
     SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 12),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
