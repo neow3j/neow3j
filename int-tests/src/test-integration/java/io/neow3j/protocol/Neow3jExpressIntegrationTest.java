@@ -101,9 +101,9 @@ public class Neow3jExpressIntegrationTest {
                 .getContractStorage();
 
         assertThat(contractStorage, hasSize(4));
-        assertThat(contractStorage.get(3).getKey(),
-                is("147F65D434362708B255F0E06856BDCB5CE99D8505"));
-        assertThat(contractStorage.get(3).getValue(), is(not(isEmptyString())));
+        assertThat(contractStorage.get(3).getKeyHex(),
+                is("0xd78ec5eb90f8df8dfadbbd3c076e79174134ebce7a043081e4213df43f39d3"));
+        assertThat(contractStorage.get(3).getValueHex(), is(not(isEmptyString())));
     }
 
     @Test

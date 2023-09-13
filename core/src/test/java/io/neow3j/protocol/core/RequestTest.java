@@ -23,6 +23,7 @@ import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.transaction.witnessrule.WitnessAction;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -34,6 +35,7 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -250,6 +252,32 @@ public class RequestTest extends RequestTester {
                 "\"method\":\"getstorage\"," +
                 "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"" + keyBase64 + "\"]," +
                 "\"id\":1}");
+    }
+
+    @Test
+    public void testFindStorage() throws Exception {
+        neow3j.findStorage(new Hash160("1b468f207a5c5c3ee94e41b4cc606e921b33d160"), "c3", BigInteger.valueOf(2)).send();
+
+        String prefixBase64 = Base64.encode("c3");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[\"1b468f207a5c5c3ee94e41b4cc606e921b33d160\", \"" + prefixBase64 + "\", 2],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testFindStorage_withId() throws Exception {
+        neow3j.findStorage(BigInteger.valueOf(-1), "0b", BigInteger.valueOf(10)).send();
+
+        String prefixBase64 = Base64.encode("0b");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[-1, \"" + prefixBase64 + "\", 10],\n" +
+                " \"id\": 1\n" +
+                "}");
     }
 
     @Test
