@@ -1257,7 +1257,7 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetProof() throws IOException {
         long localRootIndex = 2L;
         String proof = null;
-        while (localRootIndex < 5) {
+        while (localRootIndex < 20) {
             Hash256 rootHash = getNeow3j()
                     .getStateRoot(localRootIndex)
                     .send()
