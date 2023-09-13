@@ -656,13 +656,17 @@ public class NeoMethod {
      * @return true if the opcode in the last instruction is {@link OpCode#PUSH0}. False, otherwise.
      */
     public boolean lastInstructionIsPush0() {
-        OpCode opcode;
+        return lastInstructionIsEqualTo(OpCode.PUSH0);
+    }
+
+    public boolean lastInstructionIsEqualTo(OpCode opcode) {
+        OpCode opcodeOfLastInstruction;
         try {
-            opcode = getLastInstruction().getOpcode();
+            opcodeOfLastInstruction = getLastInstruction().getOpcode();
         } catch (CompilerException ignore) {
             return false;
         }
-        return OpCode.PUSH0.equals(opcode);
+        return opcode.equals(opcodeOfLastInstruction);
     }
 
     /**
