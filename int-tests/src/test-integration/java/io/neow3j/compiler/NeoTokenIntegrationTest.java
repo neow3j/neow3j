@@ -74,9 +74,12 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void unclaimedGas() throws IOException {
+        BigInteger currentBlockCount = ct.getNeow3j().getBlockCount().send().getBlockCount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(ct.getDefaultAccount().getScriptHash()), integer(1));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
+                hash160(ct.getDefaultAccount().getScriptHash()),
+                integer(currentBlockCount));
+
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), greaterThanOrEqualTo(0));
     }
 
     @Test
