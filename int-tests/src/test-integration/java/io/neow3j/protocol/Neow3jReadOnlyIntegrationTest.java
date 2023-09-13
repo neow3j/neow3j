@@ -851,7 +851,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(10));
+        assertThat(plugins, hasSize(11));
     }
 
     @Test
