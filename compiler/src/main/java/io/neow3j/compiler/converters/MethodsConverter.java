@@ -63,8 +63,10 @@ public class MethodsConverter implements Converter {
 
     private static final List<String> PRIMITIVE_TYPE_CAST_METHODS =
             asList("intValue", "longValue", "byteValue", "shortValue", "booleanValue", "charValue");
+
+    private static final String PRIMITIVE_TYPE_WRAPPER_CLASS_BOOLEAN = "java/lang/Boolean";
     private static final List<String> PRIMITIVE_TYPE_WRAPPER_CLASSES =
-            asList("java/lang/Integer", "java/lang/Long", "java/lang/Byte", "java/lang/Short", "java/lang/Boolean",
+            asList("java/lang/Integer", "java/lang/Long", "java/lang/Byte", "java/lang/Short", PRIMITIVE_TYPE_WRAPPER_CLASS_BOOLEAN,
                     "java/lang/Character");
 
     private static final String VALUEOF_METHOD_NAME = "valueOf";
@@ -200,7 +202,11 @@ public class MethodsConverter implements Converter {
             MethodNode calledAsmMethod, MethodInsnNode methodInsn, CompilationUnit compUnit) throws IOException {
 
         if (isPrimitiveTypeCast(calledAsmMethod, owner)) {
-            // Nothing to do if Java casts between primitive type and wrapper classes.
+            if (PRIMITIVE_TYPE_WRAPPER_CLASS_BOOLEAN.equals(owner.name)) {
+                // JVM might use ICONST_0 and ICONST_1 with Boolean.valueOf() for final boolean values.
+                replaceLastOpcodeWithBoolIfPush0OrPush1(callingNeoMethod);
+            }
+            // Otherwise, nothing to do if Java casts between primitive type and wrapper classes.
             return methodInsn;
         }
         if (isStringSwitch(owner, calledAsmMethod, methodInsn)) {
@@ -221,6 +227,16 @@ public class MethodsConverter implements Converter {
         // The actual address offset for the method call is set at a later point in compilation.
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
         return methodInsn;
+    }
+
+    private static void replaceLastOpcodeWithBoolIfPush0OrPush1(NeoMethod callingNeoMethod) {
+        boolean lastIsPush0 = callingNeoMethod.lastInstructionIsPush0();
+        boolean lastIsPush1 = callingNeoMethod.lastInstructionIsEqualTo(OpCode.PUSH1);
+        if (lastIsPush0) {
+            callingNeoMethod.replaceLastInstruction(new NeoInstruction(OpCode.PUSHF));
+        } else if (lastIsPush1) {
+            callingNeoMethod.replaceLastInstruction(new NeoInstruction(OpCode.PUSHT));
+        }
     }
 
     // Handles 'super' method calls that the compiler sees for the first time (in this compilation unit) or have special

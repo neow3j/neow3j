@@ -43,7 +43,6 @@ public enum NeoVMStateType {
         return jsonValue;
     }
 
-    @JsonValue
     public Integer intValue() {
         return intValue;
     }
