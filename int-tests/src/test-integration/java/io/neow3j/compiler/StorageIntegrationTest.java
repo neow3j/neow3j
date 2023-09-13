@@ -36,6 +36,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -801,6 +802,18 @@ public class StorageIntegrationTest {
         assertTrue(map.containsKey(new ByteStringStackItem("0102")));
     }
 
+    @Test
+    public void findBackwards() throws IOException {
+        List<StackItem> forwardsIteratorList = ct.callAndTraverseIterator("findFindOptionsNone");
+        List<StackItem> backwardsIteratorList = ct.callAndTraverseIterator(testName);
+
+        assertThat(forwardsIteratorList, hasSize(3));
+        assertThat(backwardsIteratorList, hasSize(3));
+        assertThat(forwardsIteratorList.get(0), is(backwardsIteratorList.get(2)));
+        assertThat(forwardsIteratorList.get(1), is(backwardsIteratorList.get(1)));
+        assertThat(forwardsIteratorList.get(2), is(backwardsIteratorList.get(0)));
+    }
+
     // endregion find
 
     static class StorageIntegrationTestContract {
@@ -1251,9 +1264,27 @@ public class StorageIntegrationTest {
             return map;
         }
 
-        // endregion find
+        // endregion
+        // region find backwards
+
+        public static Iterator<Iterator.Struct<ByteString, ByteString>> findFindOptionsNone() {
+            prepareStorageForFindBackwards();
+            return Storage.find(ctx, hexToBytes("ff"), FindOptions.None);
+        }
+
+        public static Iterator<Iterator.Struct<ByteString, ByteString>> findBackwards() {
+            prepareStorageForFindBackwards();
+            return Storage.find(ctx, hexToBytes("ff"), FindOptions.Backwards);
+        }
+
+        private static void prepareStorageForFindBackwards() {
+            Storage.put(ctx, hexToBytes("ff00"), hexToBytes("112233"));
+            Storage.put(ctx, hexToBytes("ff01"), hexToBytes("445566"));
+            Storage.put(ctx, hexToBytes("ff02"), hexToBytes("778899"));
+        }
+
+        // endregion
 
     }
 
 }
-
