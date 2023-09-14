@@ -1366,7 +1366,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(attributes.get(2).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
         NotValidBeforeAttribute expected = new NotValidBeforeAttribute(new BigInteger("10500"));
-        NotValidBeforeAttribute notValidBeforeAttribute = (NotValidBeforeAttribute) attributes.get(2);
+        NotValidBeforeAttribute notValidBeforeAttribute = attributes.get(2).asNotValidBefore();
+        assertThat(notValidBeforeAttribute, instanceOf(NotValidBeforeAttribute.class));
         assertThat(notValidBeforeAttribute.getHeight(), is(new BigInteger("10500")));
         assertEquals(notValidBeforeAttribute, expected);
 

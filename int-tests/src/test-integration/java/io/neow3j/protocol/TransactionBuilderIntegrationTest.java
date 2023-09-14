@@ -10,6 +10,7 @@ import io.neow3j.test.NeoTestContainer;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.transaction.ConflictsAttribute;
+import io.neow3j.transaction.NotValidBeforeAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.TransactionAttributeType.CONFLICTS;
+import static io.neow3j.transaction.TransactionAttributeType.NOT_VALID_BEFORE;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
@@ -227,6 +229,40 @@ public class TransactionBuilderIntegrationTest {
                 new io.neow3j.protocol.core.response.ConflictsAttribute(conflictHash));
         assertThat(transaction.getFirstAttribute().asConflicts(), instanceOf(
                 io.neow3j.protocol.core.response.ConflictsAttribute.class));
+    }
+
+    @Test
+    public void testAttribute_notValidBefore() throws Throwable {
+        BigInteger notValidBefore = neow3j.getBlockCount().send().getBlockCount();
+        Account a = Account.fromWIF(TestProperties.defaultAccountWIF());
+        String script = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), "symbol", asList())
+                .toArray());
+
+        NotValidBeforeAttribute notValidBeforeAttribute = new NotValidBeforeAttribute(notValidBefore);
+        TransactionBuilder b = new TransactionBuilder(neow3j)
+                .script(hexStringToByteArray(script))
+                .attributes(notValidBeforeAttribute)
+                .signers(AccountSigner.none(a));
+
+        Transaction tx = b.sign();
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getFirstAttribute(), is(notValidBeforeAttribute));
+
+        NeoSendRawTransaction response = tx.send();
+        assertFalse(response.hasError());
+        Hash256 txHash = response.getSendRawTransaction().getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        System.out.println(neow3j.getBlockCount().send().getBlockCount());
+
+        io.neow3j.protocol.core.response.Transaction transaction =
+                neow3j.getTransaction(txHash).send().getTransaction();
+        assertThat(transaction.getAttributes(), hasSize(1));
+        assertThat(transaction.getFirstAttribute().getType(), is(NOT_VALID_BEFORE));
+        assertEquals(transaction.getFirstAttribute(),
+                new io.neow3j.protocol.core.response.NotValidBeforeAttribute(notValidBefore));
+        assertThat(transaction.getFirstAttribute().asNotValidBefore(), instanceOf(
+                io.neow3j.protocol.core.response.NotValidBeforeAttribute.class));
     }
 
 }
