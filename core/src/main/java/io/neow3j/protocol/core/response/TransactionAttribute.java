@@ -27,7 +27,7 @@ public abstract class TransactionAttribute {
     public TransactionAttribute() {
     }
 
-    public TransactionAttribute(TransactionAttributeType type) {
+    protected TransactionAttribute(TransactionAttributeType type) {
         this.type = type;
     }
 
@@ -59,6 +59,22 @@ public abstract class TransactionAttribute {
         }
         throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
                 TransactionAttributeType.CONFLICTS.jsonValue(), type.jsonValue()));
+    }
+
+    /**
+     * Casts this transaction attribute to a {@link NotValidBeforeAttribute} if possible, and returns it.
+     *
+     * @return this transaction attribute as a {@link NotValidBeforeAttribute}.
+     * @throws IllegalStateException if this transaction attribute is not an instance of
+     *                               {@link NotValidBeforeAttribute}.
+     */
+    @JsonIgnore
+    public NotValidBeforeAttribute asNotValidBefore() {
+        if (this instanceof NotValidBeforeAttribute) {
+            return (NotValidBeforeAttribute) this;
+        }
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
+                TransactionAttributeType.NOT_VALID_BEFORE.jsonValue(), type.jsonValue()));
     }
 
     public TransactionAttributeType getType() {
