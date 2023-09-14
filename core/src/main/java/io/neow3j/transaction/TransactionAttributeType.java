@@ -37,8 +37,7 @@ public enum TransactionAttributeType {
     private byte byteValue;
     private Class<? extends TransactionAttribute> clazz;
 
-    TransactionAttributeType(String jsonValue, int byteValue,
-            Class<? extends TransactionAttribute> clazz) {
+    TransactionAttributeType(String jsonValue, int byteValue, Class<? extends TransactionAttribute> clazz) {
         this.jsonValue = jsonValue;
         this.byteValue = (byte) byteValue;
         this.clazz = clazz;

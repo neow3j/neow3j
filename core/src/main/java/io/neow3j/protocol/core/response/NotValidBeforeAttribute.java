@@ -44,7 +44,14 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, getHeight());
+        return Objects.hash(getType(), getHeight());
+    }
+
+    @Override
+    public String toString() {
+        return "NotValidBeforeAttribute{" +
+                "height=" + getHeight() +
+                "}";
     }
 
 }

@@ -44,7 +44,7 @@ public class ConflictsAttribute extends TransactionAttribute {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, getHash());
+        return Objects.hash(getType(), getHash());
     }
 
     @Override

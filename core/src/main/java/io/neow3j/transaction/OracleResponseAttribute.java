@@ -17,24 +17,24 @@ public class OracleResponseAttribute extends TransactionAttribute {
     /**
      * The maximum size of the {@code Result} field.
      */
-    public final static int MAX_RESULT_SIZE = 0xffff; // 65'535
+    private final static int MAX_RESULT_SIZE = 0xffff; // 65'535
 
     /**
      * The ID of the oracle request.
      * <p>
      * The ID is represented as an unsigned integer by the Neo node, i.e., its range is [0, 2^64].
      */
-    public BigInteger id;
+    private BigInteger id;
 
     /**
      * The response code.
      */
-    public OracleResponseCode code;
+    private OracleResponseCode code;
 
     /**
      * The response data.
      */
-    public byte[] result;
+    private byte[] result;
 
     public OracleResponseAttribute() {
         super(TransactionAttributeType.ORACLE_RESPONSE);
@@ -78,7 +78,7 @@ public class OracleResponseAttribute extends TransactionAttribute {
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.write(BigIntegers.toLittleEndianByteArray(id));
+        writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(id, 8));
         writer.writeByte(code.byteValue());
         writer.writeVarBytes(result);
     }

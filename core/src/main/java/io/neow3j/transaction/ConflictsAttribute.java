@@ -23,7 +23,7 @@ public class ConflictsAttribute extends TransactionAttribute {
     /**
      * The hash of the conflicting transaction.
      */
-    public Hash256 hash;
+    private Hash256 hash;
 
     public ConflictsAttribute(Hash256 hash) {
         super(TransactionAttributeType.CONFLICTS);
