@@ -65,17 +65,17 @@ public class CryptoLib extends ContractInterface {
      * Serializes a bls12381 point.
      *
      * @param g the point to be serialized.
-     * @return
+     * @return the serialized point.
      */
-    public native ByteString Bls12381Serialize(InteropInterface g);
+    public native ByteString bls12381Serialize(InteropInterface g);
 
     /**
      * Deserializes a bls12381 point.
      *
      * @param data the point as byte array.
-     * @return
+     * @return the deserialized point.
      */
-    public native InteropInterface Bls12381Deserialize(ByteString data);
+    public native InteropInterface bls12381Deserialize(ByteString data);
 
     /**
      * Determines whether the specified points are equal.
@@ -84,34 +84,34 @@ public class CryptoLib extends ContractInterface {
      * @param y the second point.
      * @return true if the specified points are equal. False, otherwise.
      */
-    public native boolean Bls12381Equal(InteropInterface x, InteropInterface y);
+    public native boolean bls12381Equal(InteropInterface x, InteropInterface y);
 
     /**
      * Add operation of two points.
      *
      * @param x the first point.
      * @param y the second point.
-     * @return
+     * @return the resulting point of the addition of x and y.
      */
-    public native InteropInterface Bls12381Add(InteropInterface x, InteropInterface y);
+    public native InteropInterface bls12381Add(InteropInterface x, InteropInterface y);
 
     /**
      * Mul operation of gt point and multiplier.
      *
-     * @param x the point.
+     * @param x   the point.
      * @param mul little-endian multiplier (32 bytes).
-     * @param neg negative number.
-     * @return
+     * @param neg whether mul should be used as negative number.
+     * @return the resulting point of the multiplication of x with the multiplier.
      */
-    public native InteropInterface Bls12381Mul(InteropInterface x, ByteString mul, boolean neg);
+    public native InteropInterface bls12381Mul(InteropInterface x, ByteString mul, boolean neg);
 
     /**
-     * Pairing operation of g1 and g2 points.
+     * Pairing operation of the points g1 and g2.
      *
      * @param g1 the g1 point.
      * @param g2 the g2 point.
-     * @return
+     * @return the result of the pairing operation of g1 and g2.
      */
-    public native InteropInterface Bls12381Pairing(InteropInterface g1, InteropInterface g2);
+    public native InteropInterface bls12381Pairing(InteropInterface g1, InteropInterface g2);
 
 }
