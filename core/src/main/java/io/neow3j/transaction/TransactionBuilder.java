@@ -264,7 +264,7 @@ public class TransactionBuilder {
                     safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
                     break;
                 case NOT_VALID_BEFORE:
-                    safeAddNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
+                    addNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
                     break;
                 case CONFLICTS:
                     addConflictsAttribute((ConflictsAttribute) attr);
@@ -299,7 +299,7 @@ public class TransactionBuilder {
         }
     }
 
-    private void safeAddNotValidBeforeAttribute(NotValidBeforeAttribute attr) {
+    private void addNotValidBeforeAttribute(NotValidBeforeAttribute attr) {
         if (hasNotValidBeforeAttribute()) {
             throw new TransactionConfigurationException("A transaction can only have one NotValidBefore attribute.");
         }
@@ -362,12 +362,7 @@ public class TransactionBuilder {
 
     // Checks if this transaction builder contains a high priority attribute.
     private boolean isHighPriority() {
-        return attributes.stream().anyMatch(t -> t.getType() == HIGH_PRIORITY);
-    }
-
-    // Checks if this transaction builder contains a NotValidBefore attribute.
-    private boolean hasNotValidBeforeAttribute() {
-        return attributes.stream().anyMatch(t -> t.getType() == NOT_VALID_BEFORE);
+        return attributes.stream().anyMatch(t -> t.getType().equals(HIGH_PRIORITY));
     }
 
     // Checks if this transaction contains a signer that is a committee member.
@@ -409,6 +404,11 @@ public class TransactionBuilder {
             }
         }
         return false;
+    }
+
+    // Checks if this transaction builder contains a NotValidBefore attribute.
+    private boolean hasNotValidBeforeAttribute() {
+        return attributes.stream().anyMatch(t -> t.getType().equals(NOT_VALID_BEFORE));
     }
 
     private long fetchCurrentBlockCount() throws IOException {
