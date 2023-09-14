@@ -7,6 +7,7 @@ import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash256;
 
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * A conflicts attribute can be used to specify to only accept one of two conflicting ones and it can be used to give
@@ -53,6 +54,18 @@ public class ConflictsAttribute extends TransactionAttribute {
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
         hash.serialize(writer);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ConflictsAttribute)) {
+            return false;
+        }
+        ConflictsAttribute that = (ConflictsAttribute) o;
+        return Objects.equals(getHash(), that.getHash());
     }
 
 }
