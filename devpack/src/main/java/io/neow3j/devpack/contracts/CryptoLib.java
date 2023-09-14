@@ -2,6 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
+import io.neow3j.devpack.InteropInterface;
 import io.neow3j.devpack.constants.NamedCurve;
 import io.neow3j.devpack.constants.NativeContract;
 
@@ -59,5 +60,58 @@ public class CryptoLib extends ContractInterface {
      * @return true if the signature is valid. False, otherwise.
      */
     public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curve);
+
+    /**
+     * Serializes a bls12381 point.
+     *
+     * @param g the point to be serialized.
+     * @return the serialized point.
+     */
+    public native ByteString bls12381Serialize(InteropInterface g);
+
+    /**
+     * Deserializes a bls12381 point.
+     *
+     * @param data the point as byte array.
+     * @return the deserialized point.
+     */
+    public native InteropInterface bls12381Deserialize(ByteString data);
+
+    /**
+     * Determines whether the specified points are equal.
+     *
+     * @param x the first point.
+     * @param y the second point.
+     * @return true if the specified points are equal. False, otherwise.
+     */
+    public native boolean bls12381Equal(InteropInterface x, InteropInterface y);
+
+    /**
+     * Add operation of two points.
+     *
+     * @param x the first point.
+     * @param y the second point.
+     * @return the resulting point of the addition of x and y.
+     */
+    public native InteropInterface bls12381Add(InteropInterface x, InteropInterface y);
+
+    /**
+     * Mul operation of gt point and multiplier.
+     *
+     * @param x   the point.
+     * @param mul little-endian multiplier (32 bytes).
+     * @param neg whether mul should be used as negative number.
+     * @return the resulting point of the multiplication of x with the multiplier.
+     */
+    public native InteropInterface bls12381Mul(InteropInterface x, ByteString mul, boolean neg);
+
+    /**
+     * Pairing operation of the points g1 and g2.
+     *
+     * @param g1 the g1 point.
+     * @param g2 the g2 point.
+     * @return the result of the pairing operation of g1 and g2.
+     */
+    public native InteropInterface bls12381Pairing(InteropInterface g1, InteropInterface g2);
 
 }
