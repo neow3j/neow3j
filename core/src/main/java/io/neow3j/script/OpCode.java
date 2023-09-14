@@ -328,12 +328,12 @@ public enum OpCode {
     ABORT(0x38, 0),
 
     /**
-     * Pop the top value of the stack, if it's false, then exit vm execution and set VM state to FAULT.
+     * Pops the top value of the stack. If it's false, exits the vm execution and sets the vm state to FAULT.
      */
     ASSERT(0x39, 1),
 
     /**
-     * Pop the top value of the stack, and throw it.
+     * Pops the top value of the stack, and throw it.
      */
     THROW(0x3A, 1 << 9),
 
@@ -1083,13 +1083,19 @@ public enum OpCode {
     /**
      * Turns the vm state to FAULT immediately, and cannot be caught. Includes a reason.
      */
-    ABORTMSG(0xE0, 0);
+    ABORTMSG(0xE0, 0),
+
+    /**
+     * Pops the top value of the stack. If it's false, exits the vm execution and sets the vm state to FAULT.
+     * Includes a reason.
+     */
+    ASSERTMSG(0xE1, 1);
 
     // endregion
 
     private final int opcode;
     private final Long price;
-    private static final OpCode[] opcodes = new OpCode[225];
+    private static final OpCode[] opcodes = new OpCode[226];
 
     static {
         for (OpCode code : values()) {
