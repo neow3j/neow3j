@@ -257,11 +257,12 @@ public class TransactionBuilder {
      */
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         checkAndThrowIfMaxAttributesExceeded(signers.size(), this.attributes.size() + attributes.length);
+
         Arrays.stream(attributes).forEach(attr -> {
             TransactionAttributeType type = attr.getType();
             switch (type) {
                 case HIGH_PRIORITY:
-                    safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+                    addHighPriorityAttribute((HighPriorityAttribute) attr);
                     break;
                 case NOT_VALID_BEFORE:
                     addNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
@@ -292,11 +293,11 @@ public class TransactionBuilder {
         }
     }
 
-    // Make sure that only one high priority attribute is present
-    private void safeAddHighPriorityAttribute(HighPriorityAttribute attr) {
-        if (!isHighPriority()) {
-            attributes.add(attr);
+    private void addHighPriorityAttribute(HighPriorityAttribute attr) {
+        if (isHighPriority()) {
+            throw new TransactionConfigurationException("A transaction can only have one HighPriority attribute.");
         }
+        attributes.add(attr);
     }
 
     private void addNotValidBeforeAttribute(NotValidBeforeAttribute attr) {

@@ -59,7 +59,6 @@ import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -282,23 +281,19 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void attributes_highPriority_onlyAddedOnce() throws Throwable {
+    public void attributes_highPriority_throwWhenMultiple() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("getcommittee", "getcommittee.json");
         setUpWireMockForGetBlockCount(1000);
 
-        HighPriorityAttribute attr1 = new HighPriorityAttribute();
-        HighPriorityAttribute attr2 = new HighPriorityAttribute();
+        HighPriorityAttribute attr = new HighPriorityAttribute();
 
-        Transaction tx = new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(none(account1))
-                .attributes(attr1)
-                .attributes(attr2)
-                .getUnsignedTransaction();
+        TransactionBuilder b = new TransactionBuilder(neow).attributes(attr);
 
-        assertThat(tx.getAttributes(), hasSize(1));
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(attr));
+
+        assertThat(thrown.getMessage(), is("A transaction can only have one HighPriority attribute."));
     }
 
     @Test
@@ -332,12 +327,10 @@ public class TransactionBuilderTest {
         NotValidBeforeAttribute attr = new NotValidBeforeAttribute(height);
         NotValidBeforeAttribute attr2 = new NotValidBeforeAttribute(height2);
 
-        TransactionConfigurationException thrown = assertThrows(
-                TransactionConfigurationException.class, () -> new TransactionBuilder(neow)
-                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                        .signers(none(account1))
-                        .attributes(attr)
-                        .attributes(attr2));
+        TransactionBuilder b = new TransactionBuilder(neow).attributes(attr);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(attr2));
 
         assertThat(thrown.getMessage(), is("A transaction can only have one NotValidBefore attribute."));
     }
@@ -357,11 +350,13 @@ public class TransactionBuilderTest {
 
         Hash256 hash = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321c");
         ConflictsAttribute attr = new ConflictsAttribute(hash);
+
         Transaction tx = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account1))
                 .attributes(attr)
                 .getUnsignedTransaction();
+
         assertThat(tx.getAttributes(), hasSize(1));
         assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.CONFLICTS));
         assertThat(((ConflictsAttribute) tx.getAttributes().get(0)).getHash(), is(hash));
@@ -377,12 +372,14 @@ public class TransactionBuilderTest {
         Hash256 hash2 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321d");
         ConflictsAttribute attr = new ConflictsAttribute(hash);
         ConflictsAttribute attr2 = new ConflictsAttribute(hash2);
+
         Transaction tx = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account1))
                 .attributes(attr)
                 .attributes(attr2)
                 .getUnsignedTransaction();
+
         assertThat(tx.getAttributes(), hasSize(2));
         assertThat(tx.getFirstAttribute().getType(), is(TransactionAttributeType.CONFLICTS));
         assertThat(((ConflictsAttribute) tx.getFirstAttribute()).getHash(), is(hash));
@@ -401,7 +398,7 @@ public class TransactionBuilderTest {
 
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> b.attributes(conflictsAttribute));
-        assertThat(thrown.getMessage(), containsString("already exists a conflicts attribute"));
+        assertThat(thrown.getMessage(), containsString("already exists a conflicts attribute for the hash "));
         assertThat(thrown.getMessage(), containsString("in this transaction"));
     }
 
