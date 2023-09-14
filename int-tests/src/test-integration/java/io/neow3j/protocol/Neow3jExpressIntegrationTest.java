@@ -1,8 +1,8 @@
 package io.neow3j.protocol;
 
 import io.neow3j.crypto.Base64;
-import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.ExpressContractStorageEntry;
 import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
@@ -95,15 +95,14 @@ public class Neow3jExpressIntegrationTest {
 
     @Test
     public void testExpressGetContractStorage() throws IOException {
-        List<ContractStorageEntry> contractStorage = getNeow3jExpress()
+        List<ExpressContractStorageEntry> contractStorage = getNeow3jExpress()
                 .expressGetContractStorage(IntegrationTestHelper.GAS_HASH)
                 .send()
                 .getContractStorage();
 
         assertThat(contractStorage, hasSize(4));
-        assertThat(contractStorage.get(3).getKey(),
-                is("147F65D434362708B255F0E06856BDCB5CE99D8505"));
-        assertThat(contractStorage.get(3).getValue(), is(not(isEmptyString())));
+        assertThat(contractStorage.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        assertThat(contractStorage.get(3).getValueHex(), is(not(isEmptyString())));
     }
 
     @Test

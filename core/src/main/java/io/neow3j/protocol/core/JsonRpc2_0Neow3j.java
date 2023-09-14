@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoFindStorage;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetCommittee;
@@ -407,6 +408,49 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
+     * Finds storage entries of a contract based on the prefix and start index.
+     * <p>
+     * Use start index 0. Then, if the result is truncated (i.e., {@link NeoFindStorage.FoundStorage#isTruncated()}),
+     * the value {@link NeoFindStorage.FoundStorage#getNext()} provides the next start index to find further values
+     * with another request.
+     *
+     * @param contractHash    the contract hash.
+     * @param prefixHexString the prefix to filter the storage entries.
+     * @param startIndex      the start index.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStorage> findStorage(Hash160 contractHash, String prefixHexString, BigInteger startIndex) {
+        return new Request<>(
+                "findstorage",
+                asList(contractHash, Base64.encode(prefixHexString), startIndex),
+                neow3jService,
+                NeoFindStorage.class);
+    }
+
+    /**
+     * Finds storage entries of a contract based on the prefix and start index.
+     * <p>
+     * Use start index 0. Then, if the result is truncated (i.e., {@link NeoFindStorage.FoundStorage#isTruncated()}),
+     * the value {@link NeoFindStorage.FoundStorage#getNext()} provides the next start index to find further values
+     * with another request.
+     *
+     * @param contractId      the contract id.
+     * @param prefixHexString the prefix to filter the storage entries.
+     * @param startIndex      the start index.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStorage> findStorage(BigInteger contractId, String prefixHexString,
+            BigInteger startIndex) {
+        return new Request<>(
+                "findstorage",
+                asList(contractId, Base64.encode(prefixHexString), startIndex),
+                neow3jService,
+                NeoFindStorage.class);
+    }
+
+    /**
      * Gets the transaction height with the specified transaction hash.
      *
      * @param txHash the transaction hash.
@@ -568,9 +612,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * Includes diagnostics from the invocation.
      *
-     * @param contractHash   the contract hash to invoke.
-     * @param functionName   the function to invoke.
-     * @param signers        the signers.
+     * @param contractHash the contract hash to invoke.
+     * @param functionName the function to invoke.
+     * @param signers      the signers.
      * @return the request object.
      */
     @Override
