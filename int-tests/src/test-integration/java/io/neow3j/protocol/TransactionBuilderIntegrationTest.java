@@ -9,6 +9,7 @@ import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.ConflictsAttribute;
 import io.neow3j.transaction.Signer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
@@ -33,12 +34,18 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.transaction.TransactionAttributeType.CONFLICTS;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -187,6 +194,39 @@ public class TransactionBuilderIntegrationTest {
         TransactionConfigurationException thrown =
                 assertThrows(TransactionConfigurationException.class, b::getUnsignedTransaction);
         assertThat(thrown.getMessage(), containsString("The vm exited due to the following exception: "));
+    }
+
+    @Test
+    public void testAttribute_conflicts() throws Throwable {
+        Hash256 conflictHash = new Hash256("fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b");
+        Account a = Account.fromWIF(TestProperties.defaultAccountWIF());
+        String script = toHexStringNoPrefix(new ScriptBuilder()
+                .contractCall(new Hash160(gasTokenHash()), "symbol", asList())
+                .toArray());
+
+        ConflictsAttribute conflictsAttribute = new ConflictsAttribute(conflictHash);
+        TransactionBuilder b = new TransactionBuilder(neow3j)
+                .script(hexStringToByteArray(script))
+                .attributes(conflictsAttribute)
+                .signers(AccountSigner.none(a));
+
+        Transaction tx = b.sign();
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getFirstAttribute(), is(conflictsAttribute));
+
+        NeoSendRawTransaction response = tx.send();
+        assertFalse(response.hasError());
+        Hash256 txHash = response.getSendRawTransaction().getHash();
+        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        io.neow3j.protocol.core.response.Transaction transaction =
+                neow3j.getTransaction(txHash).send().getTransaction();
+        assertThat(transaction.getAttributes(), hasSize(1));
+        assertThat(transaction.getFirstAttribute().getType(), is(CONFLICTS));
+        assertEquals(transaction.getFirstAttribute(),
+                new io.neow3j.protocol.core.response.ConflictsAttribute(conflictHash));
+        assertThat(transaction.getFirstAttribute().asConflicts(), instanceOf(
+                io.neow3j.protocol.core.response.ConflictsAttribute.class));
     }
 
 }

@@ -387,6 +387,21 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void testAttribute_conflicts_sameExistsAlready() {
+        Hash256 conflictHash = new Hash256("fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b");
+        ConflictsAttribute conflictsAttribute = new ConflictsAttribute(conflictHash);
+
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .attributes(conflictsAttribute);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(conflictsAttribute));
+        assertThat(thrown.getMessage(), containsString("already exists a conflicts attribute"));
+        assertThat(thrown.getMessage(), containsString("in this transaction"));
+    }
+
+    @Test
     public void attributes_conflicts_hashNull() {
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new ConflictsAttribute(null));

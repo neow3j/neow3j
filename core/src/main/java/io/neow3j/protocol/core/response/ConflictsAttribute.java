@@ -47,4 +47,11 @@ public class ConflictsAttribute extends TransactionAttribute {
         return Objects.hash(type, getHash());
     }
 
+    @Override
+    public String toString() {
+        return "ConflictsAttribute{" +
+                "hash=" + getHash() +
+                "}";
+    }
+
 }

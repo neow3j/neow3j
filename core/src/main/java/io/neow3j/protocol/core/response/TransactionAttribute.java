@@ -42,8 +42,23 @@ public abstract class TransactionAttribute {
         if (this instanceof HighPriorityAttribute) {
             return (HighPriorityAttribute) this;
         }
-        throw new IllegalStateException(format("This transaction attribute is not of type %s but of %s.",
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
                 TransactionAttributeType.HIGH_PRIORITY.jsonValue(), type.jsonValue()));
+    }
+
+    /**
+     * Casts this transaction attribute to a {@link ConflictsAttribute} if possible, and returns it.
+     *
+     * @return this transaction attribute as a {@link ConflictsAttribute}.
+     * @throws IllegalStateException if this transaction attribute is not an instance of {@link ConflictsAttribute}.
+     */
+    @JsonIgnore
+    public ConflictsAttribute asConflicts() {
+        if (this instanceof ConflictsAttribute) {
+            return (ConflictsAttribute) this;
+        }
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
+                TransactionAttributeType.CONFLICTS.jsonValue(), type.jsonValue()));
     }
 
     public TransactionAttributeType getType() {

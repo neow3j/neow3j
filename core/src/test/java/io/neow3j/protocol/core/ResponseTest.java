@@ -1355,7 +1355,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(transaction.getFirstAttribute(), is(transaction.getAttribute(0)));
         assertThat(transaction.getAttribute(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
-        assertThat(transaction.getAttribute(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
+        assertThat(transaction.getAttribute(0).asHighPriority(), instanceOf(HighPriorityAttribute.class));
 
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
         OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
@@ -1373,13 +1373,14 @@ public class ResponseTest extends ResponseTester {
         assertThat(attributes.get(3).getType(), is(TransactionAttributeType.CONFLICTS));
         Hash256 conflictHash1 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321a");
         ConflictsAttribute expectedConflict1 = new ConflictsAttribute(conflictHash1);
-        ConflictsAttribute conflictsAttribute1 = (ConflictsAttribute) attributes.get(3);
+        ConflictsAttribute conflictsAttribute1 = attributes.get(3).asConflicts();
+        assertThat(conflictsAttribute1, instanceOf(ConflictsAttribute.class));
         assertThat(conflictsAttribute1.getHash(), is(conflictHash1));
         assertEquals(conflictsAttribute1, expectedConflict1);
 
         assertThat(attributes.get(4).getType(), is(TransactionAttributeType.CONFLICTS));
         Hash256 conflictHash2 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321b");
-        ConflictsAttribute conflictsAttribute2 = (ConflictsAttribute) attributes.get(4);
+        ConflictsAttribute conflictsAttribute2 = attributes.get(4).asConflicts();
         assertThat(conflictsAttribute2.getHash(), is(conflictHash2));
 
         assertThat(transaction.getScript(),

@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
+import static io.neow3j.transaction.TransactionAttributeType.CONFLICTS;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
 import static io.neow3j.transaction.TransactionAttributeType.NOT_VALID_BEFORE;
 import static io.neow3j.transaction.Witness.createContractWitness;
@@ -257,16 +258,38 @@ public class TransactionBuilder {
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         checkAndThrowIfMaxAttributesExceeded(signers.size(), this.attributes.size() + attributes.length);
         Arrays.stream(attributes).forEach(attr -> {
-            TransactionAttributeType attributeType = attr.getType();
-            if (attributeType.equals(HIGH_PRIORITY)) {
-                safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
-            } else if (attributeType.equals(NOT_VALID_BEFORE)) {
-                safeAddNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
-            } else {
-                this.attributes.add(attr);
+            TransactionAttributeType type = attr.getType();
+            switch (type) {
+                case HIGH_PRIORITY:
+                    safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+                    break;
+                case NOT_VALID_BEFORE:
+                    safeAddNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
+                    break;
+                case CONFLICTS:
+                    addConflictsAttribute((ConflictsAttribute) attr);
+                    break;
+                default:
+                    this.attributes.add(attr);
             }
         });
         return this;
+    }
+
+    private void addConflictsAttribute(ConflictsAttribute attr) {
+        checkAndThrowIfExistsAlready(attr);
+        this.attributes.add(attr);
+    }
+
+    private void checkAndThrowIfExistsAlready(ConflictsAttribute attr) {
+        boolean sameConflictAttributeExists = this.attributes.stream()
+                .filter(a -> a.getType().equals(CONFLICTS))
+                .map(a -> (ConflictsAttribute) a)
+                .anyMatch(a -> a.getHash().equals(attr.getHash()));
+        if (sameConflictAttributeExists) {
+            throw new TransactionConfigurationException(format("There already exists a conflicts attribute for the " +
+                    "hash %s in this transaction.", attr.getHash()));
+        }
     }
 
     // Make sure that only one high priority attribute is present
