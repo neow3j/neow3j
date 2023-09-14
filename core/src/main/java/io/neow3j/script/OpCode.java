@@ -1086,8 +1086,9 @@ public enum OpCode {
     ABORTMSG(0xE0, 0),
 
     /**
-     * Pops the top value of the stack. If it's false, exits the vm execution and sets the vm state to FAULT.
-     * Includes a reason.
+     * Pops the two top values of the stack. If the second-to-top value on the stack is false, exits the vm execution
+     * and sets the vm state to FAULT. In this case, the top stack value is provided as reason for the exit.
+     * Otherwise, it is ignored.
      */
     ASSERTMSG(0xE1, 1);
 
