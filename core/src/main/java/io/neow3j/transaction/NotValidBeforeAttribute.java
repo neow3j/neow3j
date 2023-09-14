@@ -9,14 +9,14 @@ import java.math.BigInteger;
 import java.util.Objects;
 
 /**
- * A not valid before attribute can be used to specify a block height from which on the transaction is valid.
+ * A not valid before attribute can be used to specify a block height (index) from which on the transaction is valid.
  */
 public class NotValidBeforeAttribute extends TransactionAttribute {
 
     private static final int HEIGHT_BYTE_SIZE = 4;
 
     /**
-     * The height of the block from which on the transaction is valid.
+     * The height (index) of the block from which on the transaction is valid.
      */
     private BigInteger height;
 
@@ -29,7 +29,7 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
     }
 
     /**
-     * @return the height of the block from which on the transaction is valid.
+     * @return the height (index) of the block from which on the transaction is valid.
      */
     public BigInteger getHeight() {
         return height;

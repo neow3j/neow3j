@@ -233,13 +233,16 @@ public class TransactionBuilderIntegrationTest {
 
     @Test
     public void testAttribute_notValidBefore() throws Throwable {
-        BigInteger notValidBefore = neow3j.getBlockCount().send().getBlockCount();
+        // The NotValidBefore attribute considers the current height/index.
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        BigInteger height = blockCount.subtract(BigInteger.ONE);
+        NotValidBeforeAttribute notValidBeforeAttribute = new NotValidBeforeAttribute(height);
+
         Account a = Account.fromWIF(TestProperties.defaultAccountWIF());
         String script = toHexStringNoPrefix(new ScriptBuilder()
                 .contractCall(new Hash160(gasTokenHash()), "symbol", asList())
                 .toArray());
 
-        NotValidBeforeAttribute notValidBeforeAttribute = new NotValidBeforeAttribute(notValidBefore);
         TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(script))
                 .attributes(notValidBeforeAttribute)
@@ -253,14 +256,13 @@ public class TransactionBuilderIntegrationTest {
         assertFalse(response.hasError());
         Hash256 txHash = response.getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        System.out.println(neow3j.getBlockCount().send().getBlockCount());
 
         io.neow3j.protocol.core.response.Transaction transaction =
                 neow3j.getTransaction(txHash).send().getTransaction();
         assertThat(transaction.getAttributes(), hasSize(1));
         assertThat(transaction.getFirstAttribute().getType(), is(NOT_VALID_BEFORE));
         assertEquals(transaction.getFirstAttribute(),
-                new io.neow3j.protocol.core.response.NotValidBeforeAttribute(notValidBefore));
+                new io.neow3j.protocol.core.response.NotValidBeforeAttribute(height));
         assertThat(transaction.getFirstAttribute().asNotValidBefore(), instanceOf(
                 io.neow3j.protocol.core.response.NotValidBeforeAttribute.class));
     }
