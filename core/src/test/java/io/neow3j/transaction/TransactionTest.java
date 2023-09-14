@@ -301,6 +301,31 @@ public class TransactionTest {
     }
 
     @Test
+    public void testGetAttribute_exceptions() throws DeserializationException {
+        byte[] data = hexStringToByteArray(""
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
+                // one called by entry signer
+                + "00" // no attribute
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+                + "00"
+        );
+
+        Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
+        assertThat(tx.getAttributes(), hasSize(0));
+
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, tx::getFirstAttribute);
+        assertThat(thrown.getMessage(), containsString("has no attributes"));
+
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> tx.getAttribute(0));
+        assertThat(thrown.getMessage(), containsString("has only 0 attributes"));
+    }
+
+    @Test
     public void getTxId() {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
                 new Neow3jConfig().setNetworkMagic(5195086));

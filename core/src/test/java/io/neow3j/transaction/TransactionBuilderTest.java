@@ -236,7 +236,7 @@ public class TransactionBuilderTest {
                 .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
-        assertThat(tx.getAttributes().get(0).getType(),
+        assertThat(tx.getFirstAttribute().getType(),
                 is(TransactionAttributeType.HIGH_PRIORITY));
     }
 
@@ -380,10 +380,10 @@ public class TransactionBuilderTest {
                 .attributes(attr2)
                 .getUnsignedTransaction();
         assertThat(tx.getAttributes(), hasSize(2));
-        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.CONFLICTS));
-        assertThat(((ConflictsAttribute) tx.getAttributes().get(0)).getHash(), is(hash));
-        assertThat(tx.getAttributes().get(1).getType(), is(TransactionAttributeType.CONFLICTS));
-        assertThat(((ConflictsAttribute) tx.getAttributes().get(1)).getHash(), is(hash2));
+        assertThat(tx.getFirstAttribute().getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getFirstAttribute()).getHash(), is(hash));
+        assertThat(tx.getAttribute(1).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttribute(1)).getHash(), is(hash2));
     }
 
     @Test
