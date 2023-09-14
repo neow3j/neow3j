@@ -12,10 +12,12 @@ import java.math.BigInteger;
  */
 public class NotValidBeforeAttribute extends TransactionAttribute {
 
+    private static final int HEIGHT_BYTE_SIZE = 4;
+
     /**
      * The height of the block from which on the transaction is valid.
      */
-    public BigInteger height;
+    private BigInteger height;
 
     public NotValidBeforeAttribute(BigInteger height) {
         super(TransactionAttributeType.NOT_VALID_BEFORE);
@@ -34,17 +36,17 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
 
     @Override
     protected int getSizeWithoutType() {
-        return 4; // 4 bytes for the height
+        return HEIGHT_BYTE_SIZE;
     }
 
     @Override
     protected void deserializeWithoutType(BinaryReader reader) throws IOException {
-        height = BigIntegers.fromLittleEndianByteArray(reader.readBytes(4));
+        height = BigIntegers.fromLittleEndianByteArray(reader.readBytes(HEIGHT_BYTE_SIZE));
     }
 
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
-        writer.write(BigIntegers.toLittleEndianByteArray(height));
+        writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(height, HEIGHT_BYTE_SIZE));
     }
 
 }
