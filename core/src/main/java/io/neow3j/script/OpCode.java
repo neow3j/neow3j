@@ -13,7 +13,7 @@ import static java.lang.String.format;
  */
 public enum OpCode {
 
-//region Constants
+    // region Constants
 
     // Push a signed integer of the given bit length in its two's complement and little-endian order.
     @OperandSize(size = 1)
@@ -163,9 +163,8 @@ public enum OpCode {
      */
     PUSH16(0x20, 1),
 
-//endregion
-
-//region Flow control
+    // endregion
+    // region Flow control
 
     /**
      * The NOP operation does nothing. It is intended to fill in space if opcodes are patched.
@@ -324,7 +323,7 @@ public enum OpCode {
     CALLT(0x37, 1 << 15),
 
     /**
-     * Turn the vm state to FAULT immediately, and cannot be caught.
+     * Turns the vm state to FAULT immediately, and cannot be caught.
      */
     ABORT(0x38, 0),
 
@@ -385,9 +384,8 @@ public enum OpCode {
     @OperandSize(size = 4)
     SYSCALL(0x41, 0),
 
-//endregion
-
-//region Stack
+    // endregion
+    // region Stack
 
     /**
      * Puts the number of stack items onto the stack.
@@ -464,9 +462,8 @@ public enum OpCode {
      */
     REVERSEN(0x55, 1 << 4),
 
-//endregion
-
-//region Slot
+    // endregion
+    // region Slot
 
     /**
      * Initialize the static field list for the current execution context.
@@ -732,9 +729,8 @@ public enum OpCode {
     @OperandSize(size = 1)
     STARG(0x87, 1 << 1),
 
-//endregion
-
-//region Splice
+    // endregion
+    // region Splice
 
     /**
      * Creates a new Buffer and pushes it onto the stack.
@@ -766,9 +762,8 @@ public enum OpCode {
      */
     RIGHT(0x8E, 1 << 11),
 
-//endregion
-
-//region Bitwise logic
+    // endregion
+    // region Bitwise logic
 
     /**
      * Flips all bits in the input.
@@ -800,9 +795,8 @@ public enum OpCode {
      */
     NOTEQUAL(0x98, 1 << 5),
 
-//endregion
-
-//region Arithmetic
+    // endregion
+    // region Arithmetic
 
     /**
      * Puts the sign of top stack item on top of the main stack.
@@ -951,9 +945,8 @@ public enum OpCode {
      */
     WITHIN(0xBB, 1 << 3),
 
-//endregion
-
-//region Compound-type
+    // endregion
+    // region Compound-type
 
     /**
      * A value n is taken from top of main stack. The next n*2 items on main stack are removed, put inside n-sized
@@ -1067,9 +1060,8 @@ public enum OpCode {
      */
     CLEARITEMS(0xD3, 1 << 4),
 
-//endregion
-
-//region Types
+    // endregion
+    // region Types
 
     /**
      * Returns true if the input is null. Returns false otherwise.
@@ -1086,13 +1078,18 @@ public enum OpCode {
      * Converts the top item to the specified type.
      */
     @OperandSize(size = 1)
-    CONVERT(0xDB, 1 << 13);
+    CONVERT(0xDB, 1 << 13),
 
-//endregion
+    /**
+     * Turns the vm state to FAULT immediately, and cannot be caught. Includes a reason.
+     */
+    ABORTMSG(0xE0, 0);
 
-    private int opcode;
-    private Long price;
-    private static OpCode[] opcodes = new OpCode[220];
+    // endregion
+
+    private final int opcode;
+    private final Long price;
+    private static final OpCode[] opcodes = new OpCode[225];
 
     static {
         for (OpCode code : values()) {
