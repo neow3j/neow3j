@@ -6,6 +6,7 @@ import io.neow3j.utils.BigIntegers;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Objects;
 
 /**
  * A not valid before attribute can be used to specify a block height from which on the transaction is valid.
@@ -47,6 +48,18 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
     @Override
     protected void serializeWithoutType(BinaryWriter writer) throws IOException {
         writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(height, HEIGHT_BYTE_SIZE));
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof NotValidBeforeAttribute)) {
+            return false;
+        }
+        NotValidBeforeAttribute that = (NotValidBeforeAttribute) o;
+        return Objects.equals(getHeight(), that.getHeight());
     }
 
 }

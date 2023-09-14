@@ -69,7 +69,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -407,6 +409,14 @@ public class TransactionBuilderTest {
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> new ConflictsAttribute(null));
         assertThat(thrown.getMessage(), is("Conflict hash cannot be null."));
+    }
+
+    @Test
+    public void attributes_compareNotValidBeforeAttributes() {
+        NotValidBeforeAttribute attr1 = new NotValidBeforeAttribute(new BigInteger("147"));
+        NotValidBeforeAttribute attr2 = new NotValidBeforeAttribute(BigInteger.ONE);
+        assertNotEquals(attr1, attr2);
+        assertEquals(attr1, new NotValidBeforeAttribute(BigInteger.valueOf(147)));
     }
 
     @Test
