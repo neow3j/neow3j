@@ -25,6 +25,14 @@ public class Helper {
     public static native void abort();
 
     /**
+     * Aborts the execution of the contract. Includes a reason.
+     *
+     * @param reason the reason.
+     */
+    @Instruction(opcode = OpCode.ABORTMSG)
+    public static native void abort(String reason);
+
+    /**
      * Converts the given byte to a byte array.
      *
      * @param source the byte to convert.

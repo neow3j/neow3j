@@ -57,6 +57,16 @@ public class HelperIntegrationTest {
     }
 
     @Test
+    public void abortMsg() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, bool(false));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+
+        response = ct.callInvokeFunction(testName, bool(true));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(response.getInvocationResult().getException(), is("ABORTMSG is executed. Reason: Jones"));
+    }
+
+    @Test
     public void toByteArrayFromByte() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getType(), is(StackItemType.BUFFER));
@@ -334,6 +344,12 @@ public class HelperIntegrationTest {
         public static void abort(boolean bool) {
             if (bool) {
                 Helper.abort();
+            }
+        }
+
+        public static void abortMsg(boolean bool) {
+            if (bool) {
+                Helper.abort("Jones");
             }
         }
 

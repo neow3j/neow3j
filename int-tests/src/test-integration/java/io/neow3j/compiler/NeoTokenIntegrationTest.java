@@ -74,9 +74,12 @@ public class NeoTokenIntegrationTest {
 
     @Test
     public void unclaimedGas() throws IOException {
+        BigInteger currentBlockCount = ct.getNeow3j().getBlockCount().send().getBlockCount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
-                hash160(ct.getDefaultAccount().getScriptHash()), integer(1));
-        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(0));
+                hash160(ct.getDefaultAccount().getScriptHash()),
+                integer(currentBlockCount));
+
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), greaterThanOrEqualTo(0));
     }
 
     @Test
@@ -238,10 +241,16 @@ public class NeoTokenIntegrationTest {
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
         response = ct.callInvokeFunction(testName, hash160(acc));
-        List<StackItem> stateNoVote = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(response.getInvocationResult().getStack(), hasSize(1));
+        StackItem item = response.getInvocationResult().getFirstStackItem();
+        assertThat(item.getType(), is(StackItemType.STRUCT));
+
+        List<StackItem> stateNoVote = item.getList();
+        assertThat(stateNoVote, hasSize(4));
         assertThat(stateNoVote.get(0).getInteger(), is(BigInteger.valueOf(10L)));
         assertThat(stateNoVote.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ONE));
         assertNull(stateNoVote.get(2).getValue());
+        assertThat(stateNoVote.get(3).getValue(), is(BigInteger.ZERO));
     }
 
     @Test
@@ -250,11 +259,18 @@ public class NeoTokenIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName,
                 hash160(ct.getDefaultAccount()),
                 publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
-        List<StackItem> stateStruct = response.getInvocationResult().getStack().get(0).getList();
+
+        assertThat(response.getInvocationResult().getStack(), hasSize(1));
+        StackItem item = response.getInvocationResult().getFirstStackItem();
+        assertThat(item.getType(), is(StackItemType.STRUCT));
+
+        List<StackItem> stateStruct = item.getList();
+        assertThat(stateStruct, hasSize(4));
         assertThat(stateStruct.get(0).getInteger(), is(BigInteger.valueOf(10000L)));
         assertThat(stateStruct.get(1).getInteger(), greaterThanOrEqualTo(BigInteger.ONE));
         assertThat(stateStruct.get(2).getByteArray(),
                 is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
+        assertThat(stateStruct.get(3).getInteger(), is(BigInteger.ZERO));
 
         unregisterCandidate(ct.getDefaultAccount());
     }

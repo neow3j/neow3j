@@ -50,7 +50,7 @@ public class OracleResponseAttribute extends TransactionAttribute {
     @Override
     public String toString() {
         return "OracleResponseAttribute{" +
-                "response=" + oracleResponse +
+                "response=" + getOracleResponse() +
                 '}';
     }
 

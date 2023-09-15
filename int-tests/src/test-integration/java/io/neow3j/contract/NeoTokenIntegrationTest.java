@@ -67,6 +67,12 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
+    public void testUnclaimedGas_withoutBlockHeight() throws IOException {
+        BigInteger client1UnclaimedGas = neoToken.unclaimedGas(COMMITTEE_ACCOUNT);
+        assertThat(client1UnclaimedGas, greaterThanOrEqualTo(BigInteger.ZERO));
+    }
+
+    @Test
     public void testRegisterAndUnregisterCandidate() throws Throwable {
         Account candidate = Account.create();
         ECKeyPair.ECPublicKey candidateKey = candidate.getECKeyPair().getPublicKey();
@@ -348,6 +354,7 @@ public class NeoTokenIntegrationTest {
         assertNotNull(state.getBalanceHeight());
         assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
         assertNull(state.getPublicKey());
+        assertThat(state.getLastGasPerVote(), is(BigInteger.ZERO));
 
         registerAsCandidate(candidate);
 
@@ -359,10 +366,13 @@ public class NeoTokenIntegrationTest {
                 .getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);
 
+        BigInteger txHeight = neow3j.getTransactionHeight(txHash).send().getHeight();
+
         NeoAccountState stateWithVote = neoToken.getAccountState(voter.getScriptHash());
         assertThat(stateWithVote.getBalance(), is(BigInteger.valueOf(2000)));
-        assertThat(state.getBalanceHeight(), greaterThanOrEqualTo(BigInteger.ONE));
+        assertThat(stateWithVote.getBalanceHeight(), is(txHeight));
         assertThat(stateWithVote.getPublicKey(), is(candidate.getECKeyPair().getPublicKey()));
+        assertThat(stateWithVote.getLastGasPerVote(), is(BigInteger.ZERO));
 
         unregisterAsCandidate(candidate);
     }

@@ -253,6 +253,32 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testFindStorage() throws Exception {
+        neow3j.findStorage(new Hash160("1b468f207a5c5c3ee94e41b4cc606e921b33d160"), "c3", BigInteger.valueOf(2)).send();
+
+        String prefixBase64 = Base64.encode("c3");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[\"1b468f207a5c5c3ee94e41b4cc606e921b33d160\", \"" + prefixBase64 + "\", 2],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testFindStorage_withId() throws Exception {
+        neow3j.findStorage(BigInteger.valueOf(-1), "0b", BigInteger.valueOf(10)).send();
+
+        String prefixBase64 = Base64.encode("0b");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[-1, \"" + prefixBase64 + "\", 10],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
     public void testGetTransactionHeight() throws Exception {
         neow3j.getTransactionHeight(
                 new Hash256("0x793f560ae7058a50c672890e69c9292391dd159ce963a33462059d03b9573d6a"))

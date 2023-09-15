@@ -14,7 +14,9 @@ import static java.lang.String.format;
 @JsonTypeInfo(use = Id.NAME, property = "type", include = As.EXISTING_PROPERTY)
 @JsonSubTypes(value = {
         @JsonSubTypes.Type(value = HighPriorityAttribute.class, name = TransactionAttributeType.HIGH_PRIORITY_VALUE),
-        @JsonSubTypes.Type(value = OracleResponseAttribute.class, name = TransactionAttributeType.ORACLE_RESPONSE_VALUE)
+        @JsonSubTypes.Type(value = OracleResponseAttribute.class, name = TransactionAttributeType.ORACLE_RESPONSE_VALUE),
+        @JsonSubTypes.Type(value = NotValidBeforeAttribute.class, name = TransactionAttributeType.NOT_VALID_BEFORE_VALUE),
+        @JsonSubTypes.Type(value = ConflictsAttribute.class, name = TransactionAttributeType.CONFLICTS_VALUE)
 })
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class TransactionAttribute {
@@ -25,7 +27,7 @@ public abstract class TransactionAttribute {
     public TransactionAttribute() {
     }
 
-    public TransactionAttribute(TransactionAttributeType type) {
+    protected TransactionAttribute(TransactionAttributeType type) {
         this.type = type;
     }
 
@@ -40,8 +42,39 @@ public abstract class TransactionAttribute {
         if (this instanceof HighPriorityAttribute) {
             return (HighPriorityAttribute) this;
         }
-        throw new IllegalStateException(format("This transaction attribute is not of type %s but of %s.",
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
                 TransactionAttributeType.HIGH_PRIORITY.jsonValue(), type.jsonValue()));
+    }
+
+    /**
+     * Casts this transaction attribute to a {@link ConflictsAttribute} if possible, and returns it.
+     *
+     * @return this transaction attribute as a {@link ConflictsAttribute}.
+     * @throws IllegalStateException if this transaction attribute is not an instance of {@link ConflictsAttribute}.
+     */
+    @JsonIgnore
+    public ConflictsAttribute asConflicts() {
+        if (this instanceof ConflictsAttribute) {
+            return (ConflictsAttribute) this;
+        }
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
+                TransactionAttributeType.CONFLICTS.jsonValue(), type.jsonValue()));
+    }
+
+    /**
+     * Casts this transaction attribute to a {@link NotValidBeforeAttribute} if possible, and returns it.
+     *
+     * @return this transaction attribute as a {@link NotValidBeforeAttribute}.
+     * @throws IllegalStateException if this transaction attribute is not an instance of
+     *                               {@link NotValidBeforeAttribute}.
+     */
+    @JsonIgnore
+    public NotValidBeforeAttribute asNotValidBefore() {
+        if (this instanceof NotValidBeforeAttribute) {
+            return (NotValidBeforeAttribute) this;
+        }
+        throw new IllegalStateException(format("This transaction attribute is not of type %s but of type %s.",
+                TransactionAttributeType.NOT_VALID_BEFORE.jsonValue(), type.jsonValue()));
     }
 
     public TransactionAttributeType getType() {
@@ -54,6 +87,10 @@ public abstract class TransactionAttribute {
                 return new HighPriorityAttribute();
             case ORACLE_RESPONSE:
                 return new OracleResponseAttribute();
+            case NOT_VALID_BEFORE:
+                return new NotValidBeforeAttribute();
+            case CONFLICTS:
+                return new ConflictsAttribute();
             default:
                 throw new IllegalArgumentException(
                         "No concrete class found for transaction attribute type " + type.jsonValue());

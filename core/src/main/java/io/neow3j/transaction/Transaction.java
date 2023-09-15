@@ -178,6 +178,29 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
+     * @return the first attribute of this transaction.
+     */
+    public TransactionAttribute getFirstAttribute() {
+        if (attributes.size() == 0) {
+            throw new IndexOutOfBoundsException("This transaction has no attributes.");
+        }
+        return getAttribute(0);
+    }
+
+    /**
+     * Gets the attribute at {@code index} of this transaction's attributes list.
+     *
+     * @param index the index.
+     * @return the attribute.
+     */
+    public TransactionAttribute getAttribute(int index) {
+        if (index >= attributes.size()) {
+            throw new IndexOutOfBoundsException(format("This transaction has only %s attributes.", attributes.size()));
+        }
+        return attributes.get(index);
+    }
+
+    /**
      * @return the script of this transaction.
      */
     public byte[] getScript() {
@@ -334,7 +357,7 @@ public class Transaction extends NeoSerializable {
      * If the application log could not be fetched, {@code null} is returned.
      *
      * @return the application log.
-     * @throws IOException if something goes wrong in the communication with the neo-node.
+     * @throws IOException               if something goes wrong in the communication with the neo-node.
      * @throws RpcResponseErrorException if the Neo node returns an error.
      */
     public NeoApplicationLog getApplicationLog() throws IOException {

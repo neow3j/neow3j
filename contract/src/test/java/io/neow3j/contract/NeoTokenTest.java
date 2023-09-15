@@ -124,6 +124,35 @@ public class NeoTokenTest {
     }
 
     @Test
+    public void getUnclaimedGas_withoutBlockHeight() throws IOException {
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        String responseBody = loadFile("/responses/invokefunction_unclaimedgas.json");
+        WireMock.stubFor(post(urlEqualTo("/"))
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokefunction\""
+                        + ".*\"params\":"
+                        + ".*\"" + NEOTOKEN_SCRIPTHASH + "\""
+                        + ".*\"unclaimedGas\"" // function
+                        + ".*\"f68f181731a47036a99f04dad90043a744edec0f\""
+                        // script hash
+                        + ".*1000.*" // block height
+                ))
+                .willReturn(aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+
+        NeoToken neoToken = new NeoToken(neow);
+        Account account = Account.fromAddress("NMNB9beANndYi5bd8Cd3U35EMvzmWMDSy9");
+        BigInteger expectedUnclaimedGas = new BigInteger("60000000000");
+
+        BigInteger actualUnclaimedGas = neoToken.unclaimedGas(account.getScriptHash());
+        assertThat(actualUnclaimedGas, is(expectedUnclaimedGas));
+
+        actualUnclaimedGas = neoToken.unclaimedGas(account);
+        assertThat(actualUnclaimedGas, is(expectedUnclaimedGas));
+    }
+
+    @Test
     public void registerCandidate() throws IOException {
         setUpWireMockForCall("invokescript", "invokescript_registercandidate.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
@@ -359,42 +388,71 @@ public class NeoTokenTest {
     }
 
     @Test
-    public void testGetAccountState() throws IOException {
-        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState.json");
-        NeoAccountState neoAccountState =
-                new NeoToken(neow).getAccountState(account1.getScriptHash());
+    public void testGetAccountState_v1() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_v1.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
 
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(20000)));
         assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(259)));
 
-        ECPublicKey publicKey =
-                new ECPublicKey(
-                        "037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+        ECPublicKey publicKey = new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
 
         assertThat(neoAccountState.getPublicKey(), is(publicKey));
+        assertNull(neoAccountState.getLastGasPerVote());
+    }
+
+    @Test
+    public void testGetAccountState_noVote_v1() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_v1_noVote.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+
+        assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(12000)));
+        assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
+        assertNull(neoAccountState.getPublicKey());
+        assertNull(neoAccountState.getLastGasPerVote());
+    }
+
+    @Test
+    public void testGetAccountState_noBalance_v1() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_v1_noBalance.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+
+        assertThat(neoAccountState.getBalance(), is(BigInteger.ZERO));
+        assertNull(neoAccountState.getBalanceHeight());
+        assertNull(neoAccountState.getPublicKey());
+        assertNull(neoAccountState.getLastGasPerVote());
+    }
+
+    @Test
+    public void testGetAccountState() throws IOException {
+        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState.json");
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
+
+        BigInteger expectedBalance = BigInteger.valueOf(20000);
+        BigInteger expectedBalanceHeight = BigInteger.valueOf(259);
+        ECPublicKey expectedPubKey =
+                new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
+        BigInteger expectedLastGasPerVote = BigInteger.valueOf(1234567890);
+
+        assertThat(neoAccountState.getBalance(), is(expectedBalance));
+        assertThat(neoAccountState.getBalanceHeight(), is(expectedBalanceHeight));
+        assertThat(neoAccountState.getPublicKey(), is(expectedPubKey));
+        assertThat(neoAccountState.getLastGasPerVote(), is(expectedLastGasPerVote));
+
+        NeoAccountState expectedAccountState = new NeoAccountState(expectedBalance, expectedBalanceHeight,
+                expectedPubKey, expectedLastGasPerVote);
+        assertThat(neoAccountState, is(expectedAccountState));
     }
 
     @Test
     public void testGetAccountState_noVote() throws IOException {
         setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE, "neoToken_getAccountState_noVote.json");
-        NeoAccountState neoAccountState =
-                new NeoToken(neow).getAccountState(account1.getScriptHash());
+        NeoAccountState neoAccountState = new NeoToken(neow).getAccountState(account1.getScriptHash());
 
         assertThat(neoAccountState.getBalance(), is(BigInteger.valueOf(12000)));
         assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
         assertNull(neoAccountState.getPublicKey());
-    }
-
-    @Test
-    public void testGetAccountState_noBalance() throws IOException {
-        setUpWireMockForInvokeFunction(GET_ACCOUNT_STATE,
-                "neoToken_getAccountState_noBalance.json");
-        NeoAccountState neoAccountState =
-                new NeoToken(neow).getAccountState(account1.getScriptHash());
-
-        assertThat(neoAccountState.getBalance(), is(BigInteger.ZERO));
-        assertNull(neoAccountState.getBalanceHeight());
-        assertNull(neoAccountState.getPublicKey());
+        assertThat(neoAccountState.getLastGasPerVote(), is(new BigInteger("17861939882879230")));
     }
 
     @Test

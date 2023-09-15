@@ -202,8 +202,8 @@ public class ObjectsConverter implements Converter {
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.LDSFLD));
     }
 
-    public static void addStoreStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod,
-            CompilationUnit compUnit) throws IOException {
+    public static void addStoreStaticField(FieldInsnNode fieldInsn, NeoMethod neoMethod, CompilationUnit compUnit)
+            throws IOException {
         int neoVmIdx = compUnit.getNeoModule().getContractVariable(fieldInsn, compUnit).getNeoIdx();
         neoMethod.addInstruction(buildStoreOrLoadVariableInsn(neoVmIdx, OpCode.STSFLD));
     }
@@ -270,7 +270,7 @@ public class ObjectsConverter implements Converter {
         }
 
         if (isAssertion(typeInsn, compUnit)) {
-            return handleAssertion(typeInsn, callingNeoMethod);
+            return handleAssertion(typeInsn, callingNeoMethod, compUnit);
         }
 
         if (isNewException(typeInsn, compUnit)) {
@@ -394,21 +394,27 @@ public class ObjectsConverter implements Converter {
         return false;
     }
 
-    private static AbstractInsnNode handleAssertion(TypeInsnNode typeInsn, NeoMethod callingNeoMethod) {
-        convertJumpConditionBeforeAssertion(callingNeoMethod);
+    private static AbstractInsnNode handleAssertion(TypeInsnNode typeInsn, NeoMethod callingNeoMethod,
+            CompilationUnit compUnit) throws IOException {
 
+        convertJumpConditionBeforeAssertion(callingNeoMethod);
         AbstractInsnNode insn = typeInsn.getNext().getNext();
         while (!isCallToCtor(insn, Type.getType(AssertionError.class).getInternalName())) {
-            // Instructions between the type instruction and <init> method of the AssertionError can be ignored.
+            handleInsn(insn, callingNeoMethod, compUnit);
             insn = insn.getNext();
         }
 
         Type[] argTypes = Type.getType(((MethodInsnNode) insn).desc).getArgumentTypes();
-        if (argTypes.length != 0) {
-            throw new CompilerException("Passing a message with the 'assert' statement is not supported.");
+        if (argTypes.length == 0) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.ASSERT));
+            return insn.getNext(); // Skip the throw instruction.
+        } else if (argTypes.length == 1) {
+            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.ASSERTMSG));
+            return insn.getNext(); // Skip the throw instruction.
+        } else {
+            throw new CompilerException("The 'assert' statement should only accept at most one argument. The compiler" +
+                    " cannot process this AssertionError.");
         }
-        callingNeoMethod.addInstruction(new NeoInstruction(OpCode.ASSERT));
-        return insn.getNext(); // Skip the throw instruction.
     }
 
     private static void convertJumpConditionBeforeAssertion(NeoMethod neoMethod) {
