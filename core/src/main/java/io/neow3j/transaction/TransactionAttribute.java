@@ -72,18 +72,6 @@ public abstract class TransactionAttribute extends NeoSerializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (!(o instanceof TransactionAttribute)) {
-            return false;
-        }
-        TransactionAttribute that = (TransactionAttribute) o;
-        return getType() == that.getType();
-    }
-
-    @Override
     public int hashCode() {
         return Objects.hash(getType());
     }

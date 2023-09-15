@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 
 import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_ATTRIBUTES;
 import static io.neow3j.transaction.TransactionAttributeType.HIGH_PRIORITY;
+import static io.neow3j.transaction.TransactionAttributeType.NOT_VALID_BEFORE;
 import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.ArrayUtils.concatenate;
@@ -243,6 +244,8 @@ public class TransactionBuilder {
         return this;
     }
 
+    // region attributes
+
     /**
      * Adds the given attributes to this transaction.
      * <p>
@@ -255,26 +258,62 @@ public class TransactionBuilder {
      */
     public TransactionBuilder attributes(TransactionAttribute... attributes) {
         checkAndThrowIfMaxAttributesExceeded(signers.size(), this.attributes.size() + attributes.length);
+
         Arrays.stream(attributes).forEach(attr -> {
-            if (attr.getType() == HIGH_PRIORITY) {
-                safeAddHighPriorityAttribute((HighPriorityAttribute) attr);
+            TransactionAttributeType type = attr.getType();
+            switch (type) {
+                case HIGH_PRIORITY:
+                    addHighPriorityAttribute((HighPriorityAttribute) attr);
+                    break;
+                case NOT_VALID_BEFORE:
+                    addNotValidBeforeAttribute((NotValidBeforeAttribute) attr);
+                    break;
+                case CONFLICTS:
+                    addConflictsAttribute((ConflictsAttribute) attr);
+                    break;
+                default:
+                    this.attributes.add(attr);
             }
         });
         return this;
     }
 
-    // Make sure that only one high priority attribute is present
-    private void safeAddHighPriorityAttribute(HighPriorityAttribute attr) {
-        if (!isHighPriority()) {
-            attributes.add(attr);
+    private void addConflictsAttribute(ConflictsAttribute attr) {
+        if (hasAttribute(attr)) {
+            throw new TransactionConfigurationException(
+                    format("There already exists a conflicts attribute for the hash %s in this transaction.",
+                            attr.getHash()));
         }
+        this.attributes.add(attr);
     }
 
-    private boolean containsDuplicateSigners(Signer... signers) {
-        List<Hash160> signerList = Stream.of(signers).map(Signer::getScriptHash).collect(Collectors.toList());
-        Set<Hash160> signerSet = new HashSet<>(signerList);
-        return signerList.size() != signerSet.size();
+    private void addHighPriorityAttribute(HighPriorityAttribute attr) {
+        if (isHighPriority()) {
+            throw new TransactionConfigurationException("A transaction can only have one HighPriority attribute.");
+        }
+        attributes.add(attr);
     }
+
+    private void addNotValidBeforeAttribute(NotValidBeforeAttribute attr) {
+        if (hasAttributeOfType(NOT_VALID_BEFORE)) {
+            throw new TransactionConfigurationException("A transaction can only have one NotValidBefore attribute.");
+        }
+        attributes.add(attr);
+    }
+
+    private boolean hasAttribute(TransactionAttribute attr) {
+        return this.attributes.stream().anyMatch(a -> a.equals(attr));
+    }
+
+    private boolean hasAttributeOfType(TransactionAttributeType type) {
+        return attributes.stream().anyMatch(t -> t.getType().equals(type));
+    }
+
+    private boolean isHighPriority() {
+        return hasAttributeOfType(HIGH_PRIORITY);
+    }
+
+    // endregion
 
     /**
      * Builds the transaction without signing it.
@@ -324,9 +363,10 @@ public class TransactionBuilder {
                 script, new ArrayList<>());
     }
 
-    // Checks if this transaction builder contains a high priority attribute.
-    private boolean isHighPriority() {
-        return attributes.stream().anyMatch(t -> t.getType() == HIGH_PRIORITY);
+    private boolean containsDuplicateSigners(Signer... signers) {
+        List<Hash160> signerList = Stream.of(signers).map(Signer::getScriptHash).collect(Collectors.toList());
+        Set<Hash160> signerSet = new HashSet<>(signerList);
+        return signerList.size() != signerSet.size();
     }
 
     // Checks if this transaction contains a signer that is a committee member.

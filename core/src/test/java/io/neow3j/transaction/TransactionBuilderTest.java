@@ -59,7 +59,6 @@ import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static io.neow3j.wallet.Account.createMultiSigAccount;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -70,7 +69,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -236,7 +237,7 @@ public class TransactionBuilderTest {
                 .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
-        assertThat(tx.getAttributes().get(0).getType(),
+        assertThat(tx.getFirstAttribute().getType(),
                 is(TransactionAttributeType.HIGH_PRIORITY));
     }
 
@@ -282,23 +283,140 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void attributes_highPriority_onlyAddedOnce() throws Throwable {
+    public void attributes_highPriority_throwWhenMultiple() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("getcommittee", "getcommittee.json");
         setUpWireMockForGetBlockCount(1000);
 
-        HighPriorityAttribute attr1 = new HighPriorityAttribute();
-        HighPriorityAttribute attr2 = new HighPriorityAttribute();
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        TransactionBuilder b = new TransactionBuilder(neow).attributes(attr);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(attr));
+
+        assertThat(thrown.getMessage(), is("A transaction can only have one HighPriority attribute."));
+    }
+
+    @Test
+    public void attributes_notValidBefore() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        BigInteger height = BigInteger.valueOf(200);
+        NotValidBeforeAttribute attr = new NotValidBeforeAttribute(height);
 
         Transaction tx = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(account1))
-                .attributes(attr1)
-                .attributes(attr2)
+                .attributes(attr)
                 .getUnsignedTransaction();
 
         assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
+        assertThat(((NotValidBeforeAttribute) tx.getAttributes().get(0)).getHeight(), is(height));
+    }
+
+    @Test
+    public void attributes_notValidBefore_throwWhenMultiple() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        BigInteger height = BigInteger.valueOf(200);
+        BigInteger height2 = BigInteger.valueOf(220);
+        NotValidBeforeAttribute attr = new NotValidBeforeAttribute(height);
+        NotValidBeforeAttribute attr2 = new NotValidBeforeAttribute(height2);
+
+        TransactionBuilder b = new TransactionBuilder(neow).attributes(attr);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(attr2));
+
+        assertThat(thrown.getMessage(), is("A transaction can only have one NotValidBefore attribute."));
+    }
+
+    @Test
+    public void attributes_notValidBefore_heightNull() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new NotValidBeforeAttribute(null));
+        assertThat(thrown.getMessage(), is("Height cannot be null."));
+    }
+
+    @Test
+    public void attributes_conflicts() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        Hash256 hash = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321c");
+        ConflictsAttribute attr = new ConflictsAttribute(hash);
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account1))
+                .attributes(attr)
+                .getUnsignedTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttributes().get(0)).getHash(), is(hash));
+    }
+
+    @Test
+    public void attributes_conflicts_multiple() throws Throwable {
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        Hash256 hash = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321c");
+        Hash256 hash2 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321d");
+        ConflictsAttribute attr = new ConflictsAttribute(hash);
+        ConflictsAttribute attr2 = new ConflictsAttribute(hash2);
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account1))
+                .attributes(attr)
+                .attributes(attr2)
+                .getUnsignedTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(2));
+        assertThat(tx.getFirstAttribute().getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getFirstAttribute()).getHash(), is(hash));
+        assertThat(tx.getAttribute(1).getType(), is(TransactionAttributeType.CONFLICTS));
+        assertThat(((ConflictsAttribute) tx.getAttribute(1)).getHash(), is(hash2));
+    }
+
+    @Test
+    public void testAttribute_conflicts_sameExistsAlready() {
+        Hash256 conflictHash = new Hash256("fe26f525c17b58f63a4d106fba973ec34cc99bfe2501c9f672cc145b483e398b");
+        ConflictsAttribute conflictsAttribute = new ConflictsAttribute(conflictHash);
+
+        TransactionBuilder b = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .attributes(conflictsAttribute);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> b.attributes(conflictsAttribute));
+        assertThat(thrown.getMessage(), containsString("already exists a conflicts attribute for the hash "));
+        assertThat(thrown.getMessage(), containsString("in this transaction"));
+    }
+
+    @Test
+    public void attributes_conflicts_hashNull() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> new ConflictsAttribute(null));
+        assertThat(thrown.getMessage(), is("Conflict hash cannot be null."));
+    }
+
+    @Test
+    public void attributes_compareNotValidBeforeAttributes() {
+        NotValidBeforeAttribute attr1 = new NotValidBeforeAttribute(new BigInteger("147"));
+        NotValidBeforeAttribute attr2 = new NotValidBeforeAttribute(BigInteger.ONE);
+        assertNotEquals(attr1, attr2);
+        assertEquals(attr1, new NotValidBeforeAttribute(BigInteger.valueOf(147)));
     }
 
     @Test

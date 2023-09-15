@@ -1,6 +1,7 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.ResponseTester;
+import io.neow3j.protocol.core.response.ConflictsAttribute;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMethod;
@@ -77,6 +78,7 @@ import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
+import io.neow3j.protocol.core.response.NotValidBeforeAttribute;
 import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.OracleRequest;
 import io.neow3j.protocol.core.response.OracleResponse;
@@ -125,6 +127,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -1269,6 +1272,18 @@ public class ResponseTest extends ResponseTester {
                         "                \"id\": 0," +
                         "                \"code\": \"Success\"," +
                         "                \"result\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"NotValidBefore\"," +
+                        "                \"height\": \"10500\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"Conflicts\"," +
+                        "                \"hash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321a\"" +
+                        "            }," +
+                        "            {" +
+                        "                \"type\": \"Conflicts\"," +
+                        "                \"hash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321b\"" +
                         "            }" +
                         "        ]," +
                         "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
@@ -1335,18 +1350,40 @@ public class ResponseTest extends ResponseTester {
 
         List<TransactionAttribute> attributes = transaction.getAttributes();
         assertThat(attributes, is(notNullValue()));
-        assertThat(attributes, hasSize(2));
+        assertThat(attributes, hasSize(5));
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(5));
+        assertThat(thrown.getMessage(), containsString("only has 5 attributes"));
+
         assertThat(transaction.getFirstAttribute(), is(transaction.getAttribute(0)));
         assertThat(transaction.getAttribute(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
-        assertThat(transaction.getAttribute(0).asHighPriority(), is(instanceOf(HighPriorityAttribute.class)));
-        thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(2));
-        assertThat(thrown.getMessage(), containsString("only has 2 attributes"));
+        assertThat(transaction.getAttribute(0).asHighPriority(), instanceOf(HighPriorityAttribute.class));
+
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
         OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(), is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
         assertThat(oracleResp.getId(), is(0));
+
+        assertThat(attributes.get(2).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
+        NotValidBeforeAttribute expected = new NotValidBeforeAttribute(new BigInteger("10500"));
+        NotValidBeforeAttribute notValidBeforeAttribute = attributes.get(2).asNotValidBefore();
+        assertThat(notValidBeforeAttribute, instanceOf(NotValidBeforeAttribute.class));
+        assertThat(notValidBeforeAttribute.getHeight(), is(new BigInteger("10500")));
+        assertEquals(notValidBeforeAttribute, expected);
+
+        assertThat(attributes.get(3).getType(), is(TransactionAttributeType.CONFLICTS));
+        Hash256 conflictHash1 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321a");
+        ConflictsAttribute expectedConflict1 = new ConflictsAttribute(conflictHash1);
+        ConflictsAttribute conflictsAttribute1 = attributes.get(3).asConflicts();
+        assertThat(conflictsAttribute1, instanceOf(ConflictsAttribute.class));
+        assertThat(conflictsAttribute1.getHash(), is(conflictHash1));
+        assertEquals(conflictsAttribute1, expectedConflict1);
+
+        assertThat(attributes.get(4).getType(), is(TransactionAttributeType.CONFLICTS));
+        Hash256 conflictHash2 = new Hash256("0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321b");
+        ConflictsAttribute conflictsAttribute2 = attributes.get(4).asConflicts();
+        assertThat(conflictsAttribute2.getHash(), is(conflictHash2));
 
         assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));
