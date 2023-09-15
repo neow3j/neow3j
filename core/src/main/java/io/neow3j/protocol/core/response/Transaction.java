@@ -131,7 +131,7 @@ public class Transaction {
         validUntilBlock = tx.getValidUntilBlock();
         signers = tx.getSigners().stream().map(TransactionSigner::new).collect(Collectors.toList());
         attributes = tx.getAttributes().stream()
-                .map(a -> TransactionAttribute.fromType(a.getType()))
+                .map(TransactionAttribute::fromSerializable)
                 .collect(Collectors.toList());
         script = Base64.encode(tx.getScript());
         witnesses = tx.getWitnesses().stream().map(NeoWitness::new).collect(Collectors.toList());

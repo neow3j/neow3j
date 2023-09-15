@@ -606,15 +606,15 @@ public class TransactionTest {
                 signers,
                 BigInteger.TEN.pow(8).longValue(),
                 1L,
-                asList(new NotValidBeforeAttribute(BigInteger.TEN)),
+                asList(new HighPriorityAttribute()),
                 new byte[]{(byte) OpCode.PUSH1.getCode()},
                 witnesses);
 
         String json = tx.toJson();
         assertThat(json, is(
                 "{\"vmstate\":null," +
-                        "\"hash\":\"21ab105180a72e4c03ae6afa5ee9dab499933428d617a58185b9c2264cf6a16e\"," +
-                        "\"size\":81," +
+                        "\"hash\":\"40124209fe280d5bbe24a6ae54399b8a36baf2fba30de78b9017e6956cf69c05\"," +
+                        "\"size\":77," +
                         "\"version\":0," +
                         "\"nonce\":16909060," +
                         "\"sender\":\"0f46dc4287b70117ce8354924b5cb3a47215ad93\"," +
@@ -627,7 +627,7 @@ public class TransactionTest {
                         "{\"account\":\"d6c712eb53b1a130f59fd4e5864bdac27458a509\",\"scopes\":\"CalledByEntry\"," +
                         "\"allowedcontracts\":[],\"allowedgroups\":[],\"rules\":[]}]," +
                         "\"attributes\":" +
-                        "[{\"type\":\"NotValidBefore\",\"height\":10}]," +
+                        "[{\"type\":\"HighPriority\"}]," +
                         "\"script\":\"EQ==\"," +
                         "\"witnesses\":[{\"invocation\":\"AA==\",\"verification\":\"AA==\"}]," +
                         "\"blockhash\":null," +
