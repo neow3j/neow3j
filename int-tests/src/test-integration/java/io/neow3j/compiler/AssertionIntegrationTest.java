@@ -78,6 +78,20 @@ public class AssertionIntegrationTest {
     }
 
     @Test
+    public void testWitnessCheckWithMessage() throws Throwable {
+        Account a = Account.fromWIF("L4NH7MLEdnX6u8vGx1qTLnuE9Aa5ovKcrVtUQfhyksqcAwZ4Xfto");
+        NeoInvokeFunction response = ct.getContract()
+                .callInvokeFunction(testName, asList(hash160(a)), calledByEntry(Account.create()));
+        InvocationResult result = response.getInvocationResult();
+        assertTrue(result.hasStateFault());
+        assertThat(result.getException(), is("ASSERTMSG is executed with false result. Reason: witness check failed"));
+
+        response = ct.getContract().callInvokeFunction(testName, asList(hash160(a)), calledByEntry(a));
+        result = response.getInvocationResult();
+        assertThat(result.getState(), is(NeoVMStateType.HALT));
+    }
+
+    @Test
     public void testAssertionWithMethod() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, string("hello, world!"));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
@@ -85,6 +99,17 @@ public class AssertionIntegrationTest {
         response = ct.callInvokeFunction(testName, string("hello world"));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
         assertThat(response.getInvocationResult().getException(), containsString(NEOVM_FAILED_ASSERT_MESSAGE));
+    }
+
+    @Test
+    public void testAssertionWithMethodWithMessage() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string("myvalue"));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.HALT));
+
+        response = ct.callInvokeFunction(testName, string("notmyvalue"));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(response.getInvocationResult().getException(),
+                is("ASSERTMSG is executed with false result. Reason: hi, world!"));
     }
 
     @Test
@@ -209,6 +234,16 @@ public class AssertionIntegrationTest {
         response = ct.callInvokeFunction(testName,
                 string("string"), string("not-string"), integer(1), string("1"), bool(true));
         assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(response.getInvocationResult().getException(), is(NEOVM_FAILED_ASSERT_MESSAGE));
+    }
+
+    @Test
+    public void testComplexAssertionWithMessage() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName,
+                string("string"), string("not-string"), integer(1), string("1"), bool(true));
+        assertThat(response.getInvocationResult().getState(), is(NeoVMStateType.FAULT));
+        assertThat(response.getInvocationResult().getException(),
+                is("ASSERTMSG is executed with false result. Reason: complex assertion failed"));
     }
 
     static class AssertionTestContract {
@@ -228,12 +263,20 @@ public class AssertionIntegrationTest {
             assert Runtime.checkWitness(witness);
         }
 
-        public static void testAssertionWithMethod(String value) {
-            assert value == getString();
+        public static void testWitnessCheckWithMessage(Hash160 witness) {
+            assert Runtime.checkWitness(witness) : "witness check failed";
         }
 
-        private static String getString() {
-            return "hello" + ", world!";
+        public static void testAssertionWithMethod(String value) {
+            assert value == getString("hello");
+        }
+
+        public static void testAssertionWithMethodWithMessage(String value) {
+            assert value == "myvalue" : getString("hi");
+        }
+
+        private static String getString(String s1) {
+            return s1 + ", world!";
         }
 
         public static void testEQ(int i) {
@@ -269,7 +312,12 @@ public class AssertionIntegrationTest {
         }
 
         public static void testComplexAssertion(String a, String b, Integer i, String n, boolean c) {
-            assert a == b && i == new StdLib().atoi(n, 10) || i == 42 && c || a == getString();
+            assert a == b && i == new StdLib().atoi(n, 10) || i == 42 && c || a == getString("hello");
+        }
+
+        public static void testComplexAssertionWithMessage(String a, String b, Integer i, String n, boolean c) {
+            assert a == b && i == new StdLib().atoi(n, 10) || i == 42 && c || a == getString("hello") :
+                    "complex assertion failed";
         }
 
     }

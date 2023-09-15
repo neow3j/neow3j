@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.ExpressContractStorageEntry;
 import io.neow3j.protocol.core.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NativeContractState;
@@ -3532,16 +3533,16 @@ public class ResponseTest extends ResponseTester {
         NeoExpressGetContractStorage expressGetContractStorage =
                 deserialiseResponse(NeoExpressGetContractStorage.class);
 
-        List<ContractStorageEntry> contractStorage = expressGetContractStorage.getContractStorage();
+        List<ExpressContractStorageEntry> contractStorage = expressGetContractStorage.getContractStorage();
         assertThat(contractStorage, hasSize(6));
 
         ContractStorageEntry storageEntry3 = contractStorage.get(2);
-        assertThat(storageEntry3.getKey(), is("0d"));
-        assertThat(storageEntry3.getValue(), is("00e8764817"));
+        assertThat(storageEntry3.getKeyHex(), is("0x0d"));
+        assertThat(storageEntry3.getValueHex(), is("0x00e8764817"));
 
         ContractStorageEntry storageEntry6 = contractStorage.get(5);
-        assertThat(storageEntry6.getKey(), is("1d00000000"));
-        assertThat(storageEntry6.getValue(), is("0065cd1d"));
+        assertThat(storageEntry6.getKeyHex(), is("0x1d00000000"));
+        assertThat(storageEntry6.getValueHex(), is("0x0065cd1d"));
     }
 
     @Test

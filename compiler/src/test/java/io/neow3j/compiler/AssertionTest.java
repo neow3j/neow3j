@@ -132,10 +132,35 @@ public class AssertionTest {
     }
 
     @Test
-    public void testNoMessageSupportInAssertion() {
-        CompilerException thrown = assertThrows(CompilerException.class,
-                () -> new Compiler().compile(AssertionWithMessage.class.getName()));
-        assertThat(thrown.getMessage(), is("Passing a message with the 'assert' statement is not supported."));
+    public void testNoMessageSupportInAssertion() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(AssertionWithMessage.class.getName());
+        List<NeoMethod> sortedMethods = compUnit.getNeoModule().getSortedMethods();
+        assertThat(sortedMethods, hasSize(3));
+
+        SortedMap<Integer, NeoInstruction> insns = sortedMethods.get(0).getInstructions();
+
+        assertThat(insns.entrySet(), hasSize(7));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.NOTEQUAL));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.PUSHDATA1));
+        assertThat(insns.get(6).getOperand(), is("Value must be 1.".getBytes()));
+        assertThat(insns.get(24).getOpcode(), is(OpCode.ASSERTMSG));
+        assertThat(insns.get(25).getOpcode(), is(OpCode.RET));
+
+        insns = sortedMethods.get(1).getInstructions();
+        assertThat(insns.entrySet(), hasSize(8));
+        assertThat(insns.get(3).getOpcode(), is(OpCode.LDARG0));
+        assertThat(insns.get(4).getOpcode(), is(OpCode.PUSH3));
+        assertThat(insns.get(5).getOpcode(), is(OpCode.EQUAL));
+        assertThat(insns.get(6).getOpcode(), is(OpCode.LDARG1));
+        assertThat(insns.get(7).getOpcode(), is(OpCode.CALL_L));
+        assertThat(insns.get(12).getOpcode(), is(OpCode.ASSERTMSG));
+        assertThat(insns.get(13).getOpcode(), is(OpCode.RET));
+
+        insns = sortedMethods.get(2).getInstructions();
+        assertThat(insns.entrySet(), hasSize(3));
+        assertThat(insns.get(0).getOpcode(), is(OpCode.INITSLOT));
+        assertThat(insns.get(3).getOpcode(), is(OpCode.LDARG0));
+        assertThat(insns.get(4).getOpcode(), is(OpCode.RET));
     }
 
     static class InitsslotWithoutStaticVar {
@@ -225,6 +250,14 @@ public class AssertionTest {
     static class AssertionWithMessage {
         public static void assertWithMessage(int i) {
             assert i != 1 : "Value must be 1.";
+        }
+
+        public static void assertWithMessageFromMethod(int i, String msg) {
+            assert i == 3 : getMessage(msg);
+        }
+
+        private static String getMessage(String msg) {
+            return msg;
         }
     }
 

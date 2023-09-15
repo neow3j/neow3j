@@ -12,19 +12,14 @@
         "value": [
           {
             "type": "Integer",
-            "value": "20000"
+            "value": "12000"
           },
           {
             "type": "Integer",
-            "value": "259"
+            "value": "820"
           },
           {
-            "type": "ByteString",
-            "value": "A3J586UHgXJRU0GBEWyzjvMEaLJQdIJ9s0y7xq3Ihzky"
-          },
-          {
-            "type": "Integer",
-            "value": "1234567890"
+            "type": "Any"
           }
         ]
       }

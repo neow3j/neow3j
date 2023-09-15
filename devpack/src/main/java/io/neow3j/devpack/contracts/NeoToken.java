@@ -144,10 +144,18 @@ public class NeoToken extends FungibleToken {
          */
         public final ECPoint voteTo;
 
+        /**
+         * The last GAS per NEO for the committee member this account last voted for.
+         * <p>
+         * This field is {@code 0} by default if the account does not hold any NEO.
+         */
+        public final int lastGasPerVote;
+
         private AccountState() {
             balance = 0;
             balanceHeight = 0;
             voteTo = null;
+            lastGasPerVote = 0;
         }
 
     }
