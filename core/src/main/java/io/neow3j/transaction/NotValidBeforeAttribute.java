@@ -20,8 +20,12 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
      */
     private BigInteger height;
 
-    public NotValidBeforeAttribute(BigInteger height) {
+    public NotValidBeforeAttribute() {
         super(TransactionAttributeType.NOT_VALID_BEFORE);
+    }
+
+    public NotValidBeforeAttribute(BigInteger height) {
+        this();
         if (height == null) {
             throw new IllegalArgumentException("Height cannot be null.");
         }

@@ -25,8 +25,12 @@ public class ConflictsAttribute extends TransactionAttribute {
      */
     private Hash256 hash;
 
-    public ConflictsAttribute(Hash256 hash) {
+    public ConflictsAttribute() {
         super(TransactionAttributeType.CONFLICTS);
+    }
+
+    public ConflictsAttribute(Hash256 hash) {
+        this();
         if (hash == null) {
             throw new IllegalArgumentException("Conflict hash cannot be null.");
         }

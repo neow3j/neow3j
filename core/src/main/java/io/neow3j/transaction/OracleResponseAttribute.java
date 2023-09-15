@@ -8,6 +8,8 @@ import io.neow3j.utils.BigIntegers;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * A high priority attribute can be used by committee members to prioritize a transaction.
@@ -38,6 +40,13 @@ public class OracleResponseAttribute extends TransactionAttribute {
 
     public OracleResponseAttribute() {
         super(TransactionAttributeType.ORACLE_RESPONSE);
+    }
+
+    public OracleResponseAttribute(BigInteger id, OracleResponseCode code, byte[] result) {
+        this();
+        this.id = id;
+        this.code = code;
+        this.result = result;
     }
 
     /**
@@ -81,6 +90,21 @@ public class OracleResponseAttribute extends TransactionAttribute {
         writer.write(BigIntegers.toLittleEndianByteArrayZeroPadded(id, 8));
         writer.writeByte(code.byteValue());
         writer.writeVarBytes(result);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof OracleResponseAttribute)) {
+            return false;
+        }
+        OracleResponseAttribute that = (OracleResponseAttribute) o;
+        return Objects.equals(getType(), that.getType()) &&
+                Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getCode(), that.getCode()) &&
+                Arrays.equals(getResult(), that.getResult());
     }
 
 }
