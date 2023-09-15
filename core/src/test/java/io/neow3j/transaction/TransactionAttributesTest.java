@@ -1,7 +1,6 @@
 package io.neow3j.transaction;
 
 import io.neow3j.protocol.core.response.OracleResponseCode;
-import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash256;
