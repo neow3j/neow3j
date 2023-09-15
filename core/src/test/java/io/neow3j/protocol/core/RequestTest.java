@@ -199,6 +199,17 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetContractState_byId() throws Exception {
+        neow3j.getContractState(BigInteger.valueOf(-6)).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getcontractstate\"," +
+                "\"params\":[-6]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
     public void testGetMemPool() throws Exception {
         neow3j.getMemPool().send();
 

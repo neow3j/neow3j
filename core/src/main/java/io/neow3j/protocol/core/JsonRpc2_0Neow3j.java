@@ -317,6 +317,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
+     * Gets the contract information.
+     *
+     * @param contractId the contract id.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetContractState> getContractState(BigInteger contractId) {
+        return new Request<>(
+                "getcontractstate",
+                asList(contractId),
+                neow3jService,
+                NeoGetContractState.class);
+    }
+
+    /**
      * Gets the native contract information by its name.
      * <p>
      * This RPC only works for native contracts.
