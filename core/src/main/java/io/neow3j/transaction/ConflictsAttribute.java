@@ -10,8 +10,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 /**
- * A conflicts attribute can be used to specify to only accept one of two conflicting ones and it can be used to give
- * priority if needed.
+ * A conflicts attribute can be used to specify to only accept one of two conflicting transactions.
  * <p>
  * If the conflicting transaction is already contained in a block, the transaction with this attribute will be
  * rejected as invalid.
