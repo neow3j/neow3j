@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -146,7 +147,7 @@ public class Neow3jExpressIntegrationTest {
         String callbackMethod = "callback";
         String userData = "KAA=";
 
-        assertThat(oracleRequests, hasSize(1));
+        assertThat(oracleRequests, hasSize(2));
         OracleRequest oracleRequest = oracleRequests.get(0);
         assertThat(oracleRequest.getRequestId(), is(requestId));
         assertThat(oracleRequest.getOriginalTransactionHash(), is(notNullValue()));
@@ -162,20 +163,19 @@ public class Neow3jExpressIntegrationTest {
     public void testExpressCreateOracleResponseTx() throws Exception {
         Hash256 txHash = new Hash256(container.enableOracle());
         Await.waitUntilTransactionIsExecuted(txHash, getNeow3jExpress());
-        String responseResult = "bmVvdzNq";
+        byte[] responseResult = "neow3j".getBytes();
         String oracleResponseTx = getNeow3jExpress()
                 .expressCreateOracleResponseTx(
-                        new OracleResponse(0, OracleResponseCode.SUCCESS, responseResult))
+                        new OracleResponse(1, OracleResponseCode.SUCCESS, Base64.encode(responseResult)))
                 .send()
                 .getOracleResponseTx();
 
-        Transaction tx = NeoSerializableInterface.from(Base64.decode(oracleResponseTx),
-                Transaction.class);
+        Transaction tx = NeoSerializableInterface.from(Base64.decode(oracleResponseTx), Transaction.class);
         OracleResponseAttribute attr = (OracleResponseAttribute) tx.getAttributes().get(0);
 
-        assertThat(attr.getId(), is(BigInteger.ZERO));
-        assertThat(attr.getCode(), is(OracleResponseCode.SUCCESS));
-        assertThat(attr.getResult(), is(Base64.decode(responseResult)));
+        OracleResponseAttribute expectedAttribute = new OracleResponseAttribute(
+                BigInteger.ONE, OracleResponseCode.SUCCESS, responseResult);
+        assertEquals(attr, expectedAttribute);
     }
 
     @Test
