@@ -99,7 +99,7 @@ public class ContractManagementIntegrationTest {
 
     @Test
     public void testGetContractById() throws IOException {
-        ContractState contract = contractManagement.getContractById(1);
+        ContractState contract = contractManagement.getContractById(BigInteger.ONE);
         assertThat(contract.getManifest().getName(), is("NameService"));
     }
 

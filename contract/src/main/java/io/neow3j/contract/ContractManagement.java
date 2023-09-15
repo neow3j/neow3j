@@ -95,17 +95,8 @@ public class ContractManagement extends SmartContract {
      * @return the contract state.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public ContractState getContractById(int id) throws IOException {
-        return neow3j.getContractState(getContractHashById(id)).send().getContractState();
-    }
-
-    private Hash160 getContractHashById(int id) throws IOException {
-        InvocationResult response = callInvokeFunction(GET_CONTRACT_BY_ID, asList(integer(id))).getInvocationResult();
-        try {
-            return new Hash160(reverseArray(response.getFirstStackItem().getList().get(2).getByteArray()));
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Could not get the contract hash for the provided id.");
-        }
+    public ContractState getContractById(BigInteger id) throws IOException {
+        return neow3j.getContractState(id).send().getContractState();
     }
 
     /**
