@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -173,6 +174,7 @@ public class Transaction {
         return signers;
     }
 
+    @JsonIgnore
     public TransactionSigner getFirstSigner() {
         if (signers.size() == 0) {
             throw new IndexOutOfBoundsException("This transaction does not have any signers. It might be malformed, " +
@@ -192,6 +194,7 @@ public class Transaction {
         return attributes;
     }
 
+    @JsonIgnore
     public TransactionAttribute getFirstAttribute() {
         if (attributes.size() == 0) {
             throw new IndexOutOfBoundsException("This transaction does not have any attributes.");
