@@ -124,7 +124,7 @@ public class ContractManagementTest {
         setUpWireMockForCall("getcontractstate", "contractstate.json");
 
         Hash160 contractHash = new Hash160("0xf61eebf573ea36593fd43aa150c055ad7906ab83");
-        ContractState state = new ContractManagement(neow3j).getContractById(12);
+        ContractState state = new ContractManagement(neow3j).getContractById(BigInteger.valueOf(12));
 
         assertThat(state.getHash(), is(contractHash));
         assertThat(state.getId(), is(12));
@@ -136,7 +136,7 @@ public class ContractManagementTest {
         setUpWireMockForCall("invokefunction", "management_contractstate_notexistent.json");
 
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-                () -> new ContractManagement(neow3j).getContractById(20));
+                () -> new ContractManagement(neow3j).getContractById(BigInteger.valueOf(20)));
         assertThat(thrown.getMessage(), is("Could not get the contract hash for the provided id."));
     }
 
