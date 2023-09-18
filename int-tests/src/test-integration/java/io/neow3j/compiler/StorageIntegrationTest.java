@@ -741,7 +741,7 @@ public class StorageIntegrationTest {
     }
 
     // endregion
-    // region put integer key
+    // region put hash160 key
 
     @Test
     public void putHash160KeyByteArrayValue() throws IOException {
@@ -808,6 +808,79 @@ public class StorageIntegrationTest {
         Hash256 txHash = ct.getDeployTxHash();
         Hash160 scriptHash = new Hash160("33716e70a3019234b5e2ee70f56c1e7375423cd2");
         ContractParameter key = hash160(scriptHash);
+        ContractParameter value = hash256(txHash);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(txHash.toLittleEndianArray()));
+    }
+
+    // endregion
+    // region put hash256 key
+
+    @Test
+    public void putHash256KeyByteArrayValue() throws IOException {
+        String v = "moooon";
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = byteArrayFromString(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(v));
+    }
+
+    @Test
+    public void putHash256KeyByteStringValue() throws IOException {
+        String s = "hello there";
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = byteArrayFromString(s);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(s));
+    }
+
+    @Test
+    public void putHash256KeyStringValue() throws IOException {
+        String s = "wow";
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = string(s);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is(s));
+    }
+
+    @Test
+    public void putHash256KeyIntegerValue() throws IOException {
+        BigInteger i = BigInteger.valueOf(144);
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = integer(i);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(i));
+    }
+
+    @Test
+    public void putHash256KeyBooleanValue() throws IOException {
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = bool(false);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00}));
+    }
+
+    @Test
+    public void putHash256KeyHash160Value() throws IOException {
+        Hash160 scriptHash = ct.getClient1().getScriptHash();
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
+        ContractParameter value = hash160(scriptHash);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(scriptHash.toAddress()));
+    }
+
+    @Test
+    public void putHash256KeyHash256Value() throws IOException {
+        Hash256 txHash = ct.getDeployTxHash();
+        Hash256 hash256 = new Hash256("c702c345d7b2878a98359c2fac09fea222af5769e100e0462b4bf1b6fcca0ee2");
+        ContractParameter key = hash256(hash256);
         ContractParameter value = hash256(txHash);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getByteArray(), is(txHash.toLittleEndianArray()));
@@ -1335,6 +1408,48 @@ public class StorageIntegrationTest {
         }
 
         public static ByteString putHash160KeyHash256Value(io.neow3j.devpack.Hash160 key,
+                io.neow3j.devpack.Hash256 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        // endregion
+        // region put hash256 key
+
+        public static ByteString putHash256KeyByteArrayValue(io.neow3j.devpack.Hash256 key, byte[] value) {
+            byte[] v = new ByteString(value).toByteArray();
+            assert v instanceof byte[];
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyByteStringValue(io.neow3j.devpack.Hash256 key, ByteString value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyStringValue(io.neow3j.devpack.Hash256 key, String value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyIntegerValue(io.neow3j.devpack.Hash256 key, int value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyBooleanValue(io.neow3j.devpack.Hash256 key, boolean value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyHash160Value(io.neow3j.devpack.Hash256 key,
+                io.neow3j.devpack.Hash160 value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
+        }
+
+        public static ByteString putHash256KeyHash256Value(io.neow3j.devpack.Hash256 key,
                 io.neow3j.devpack.Hash256 value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());

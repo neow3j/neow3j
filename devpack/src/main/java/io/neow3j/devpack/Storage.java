@@ -871,6 +871,79 @@ public class Storage {
     public static native void put(StorageContext context, Hash160 key, Hash256 value);
 
     // endregion
+    // region put hash256 key
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, byte[] value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, int value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, boolean value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, ByteString value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, String value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, Hash160 value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, Hash256 key, Hash256 value);
+
+    // endregion
     // region delete
 
     /**
