@@ -345,7 +345,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(nativeContracts, hasSize(9));
         NativeContractState contractState1 = nativeContracts.get(0);
-        assertThat(contractState1.getId(), is(-1));
+        assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -386,7 +386,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(contractState1.getUpdateHistory().get(0), is(0));
 
         NativeContractState contractState8 = nativeContracts.get(8);
-        assertThat(contractState8.getId(), is(-9));
+        assertThat(contractState8.getId().intValue(), is(-9));
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
         ContractNef nef8 = contractState8.getNef();
@@ -437,7 +437,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-5));
+        assertThat(contractState.getId().intValue(), is(-5));
         assertThat(contractState.getHash(), is(NEO_HASH));
         ContractNef nef = contractState.getNef();
         assertThat(nef, is(notNullValue()));
@@ -503,7 +503,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-6));
+        assertThat(contractState.getId().intValue(), is(-6));
         assertThat(contractState.getHash(), is(GAS_HASH));
         ContractNef nef = contractState.getNef();
         assertNotNull(nef);

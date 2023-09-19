@@ -811,7 +811,7 @@ public class ResponseTest extends ResponseTester {
         List<NativeContractState> nativeContracts = getNativeContracts.getNativeContracts();
         assertThat(nativeContracts, hasSize(3));
         NativeContractState c1 = nativeContracts.get(0);
-        assertThat(c1.getId(), is(-6));
+        assertThat(c1.getId().intValue(), is(-6));
         assertThat(c1.getHash(), is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
@@ -841,7 +841,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(c1.getUpdateHistory(), contains(0));
 
         NativeContractState c2 = nativeContracts.get(1);
-        assertThat(c2.getId(), is(-8));
+        assertThat(c2.getId().intValue(), is(-8));
         assertThat(c2.getHash(), is(new Hash160("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")));
         ContractNef nef2 = c2.getNef();
         assertThat(nef2.getMagic(), is(860243278L));
@@ -863,7 +863,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(c2.getUpdateHistory(), contains(0));
 
         NativeContractState c3 = nativeContracts.get(2);
-        assertThat(c3.getId(), is(-9));
+        assertThat(c3.getId().intValue(), is(-9));
         assertThat(c3.getHash(), is(new Hash160("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")));
         ContractNef nef3 = c3.getNef();
         assertThat(nef3.getMagic(), is(860243278L));
@@ -943,7 +943,7 @@ public class ResponseTest extends ResponseTester {
         NeoGetContractState getContractState = deserialiseResponse(NeoGetContractState.class);
         ContractState contractState = getContractState.getContractState();
         assertThat(contractState, is(notNullValue()));
-        assertThat(contractState.getId(), is(-4));
+        assertThat(contractState.getId().intValue(), is(-4));
         assertThat(contractState.getUpdateCounter(), is(0));
         assertThat(contractState.getHash(), is(new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be")));
         assertThat(contractState.getNef().getMagic(), is(860243278L));
@@ -997,7 +997,7 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(manifest.getExtra(), is(nullValue()));
 
-        int id = -4;
+        BigInteger id = BigInteger.valueOf(-4);
         int updateCounter = 0;
         Hash160 hash = new Hash160("0xda65b600f7124ce6c79950c1772a36403104f2be");
         ContractNef nef = new ContractNef(860243278L, "neo-core-v3.0", "variable-size-source-ledgercontract",

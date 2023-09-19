@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.types.Hash160;
 
+import java.math.BigInteger;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class CoreContractState extends ExpressContractState {
 
     @JsonProperty("id")
-    private int id;
+    private BigInteger id;
 
     @JsonProperty("nef")
     private ContractNef nef;
@@ -16,13 +18,13 @@ public abstract class CoreContractState extends ExpressContractState {
     public CoreContractState() {
     }
 
-    public CoreContractState(int id, Hash160 hash, ContractNef nef, ContractManifest manifest) {
+    public CoreContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest) {
         super(hash, manifest);
         this.id = id;
         this.nef = nef;
     }
 
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 

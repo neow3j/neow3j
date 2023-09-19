@@ -6,7 +6,6 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractState;
-import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.ContractParameter;
@@ -21,7 +20,6 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
-import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
@@ -35,7 +33,6 @@ public class ContractManagement extends SmartContract {
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
-    private static final String GET_CONTRACT_BY_ID = "getContractById";
     private static final String GET_CONTRACT_HASHES = "getContractHashes";
     private static final String HAS_METHOD = "hasMethod";
     private static final String DEPLOY = "deploy";
@@ -89,7 +86,7 @@ public class ContractManagement extends SmartContract {
     /**
      * Gets the contract state of the contract with {@code id}.
      * <p>
-     * Makes use of the RPC {@link io.neow3j.protocol.core.JsonRpc2_0Neow3j#getContractState(Hash160)}.
+     * Makes use of the RPC {@link io.neow3j.protocol.core.JsonRpc2_0Neow3j#getContractState(BigInteger)}.
      *
      * @param id the contract id.
      * @return the contract state.
@@ -105,7 +102,7 @@ public class ContractManagement extends SmartContract {
      * @return all non native contract hashes and ids.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public  Iterator<ContractState.ContractIdentifiers> getContractHashes() throws IOException {
+    public Iterator<ContractState.ContractIdentifiers> getContractHashes() throws IOException {
         return callFunctionReturningIterator(ContractState.ContractIdentifiers::fromStackItem, GET_CONTRACT_HASHES);
     }
 
