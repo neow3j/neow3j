@@ -1432,6 +1432,142 @@ public class StorageMap {
     public native void put(Hash160 key, Hash256 value);
 
     // endregion
+    // region put hash256 key
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, byte[] value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, int value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, boolean value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, ByteString value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, String value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, Hash160 value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, Hash256 value);
+
+    // endregion
     // region delete
 
     /**

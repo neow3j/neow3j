@@ -90,6 +90,9 @@ public class StorageMapIntegrationTest {
     private static final String KEY_HASH160_HEX = "56dd2a8942506015369a2919eed12f6c76d52aa9";
     private static final Hash160 KEY_HASH160 = new Hash160(KEY_HASH160_HEX);
 
+    private static final String KEY_HASH256_HEX = "442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014";
+    private static final Hash256 KEY_HASH256 = new Hash256(KEY_HASH256_HEX);
+
     private static final Integer KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
@@ -810,6 +813,68 @@ public class StorageMapIntegrationTest {
     }
 
     // endregion
+    // region put hash256 key
+
+    @Test
+    public void putHash256KeyByteArrayValue() throws IOException {
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putHash256KeyByteStringValue() throws IOException {
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putHash256KeyIntegerValue() throws IOException {
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = integer(28);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(value.getValue()));
+    }
+
+    @Test
+    public void putHash256KeyBooleanValue() throws IOException {
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
+    }
+
+    @Test
+    public void putHash256KeyStringValue() throws IOException {
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = string("hello neow3j");
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is("hello neow3j"));
+    }
+
+    @Test
+    public void putHash256KeyHash160Value() throws IOException {
+        Hash160 v = ct.getClient1().getScriptHash();
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putHash256KeyHash256Value() throws IOException {
+        Hash256 v = ct.getBlockHashOfDeployTx();
+        ContractParameter key = hash256(KEY_HASH256);
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
+    }
+
+    // endregion
     // region delete
 
     @Test
@@ -1275,6 +1340,51 @@ public class StorageMapIntegrationTest {
 
         public static ByteString putHash160KeyHash256Value(io.neow3j.devpack.Hash160 key, io.neow3j.devpack.Hash256 value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        // endregion
+        // region put hash256 key
+
+        public static ByteString putHash256KeyByteArrayValue(io.neow3j.devpack.Hash256 key, byte[] value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyByteStringValue(io.neow3j.devpack.Hash256 key, ByteString value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyIntegerValue(io.neow3j.devpack.Hash256 key, int value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyBooleanValue(io.neow3j.devpack.Hash256 key, boolean value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyStringValue(io.neow3j.devpack.Hash256 key, String value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyHash160Value(io.neow3j.devpack.Hash256 key, io.neow3j.devpack.Hash160 value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putHash256KeyHash256Value(io.neow3j.devpack.Hash256 key, io.neow3j.devpack.Hash256 value) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
         }
