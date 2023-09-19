@@ -624,6 +624,124 @@ public class Storage {
     public static native Integer getIntOrZero(StorageContext context, Hash160 key);
 
     // endregion
+    // region get hash256 key
+
+    /**
+     * Returns the value corresponding to the given key.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ByteString get(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to a byte array.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public static native byte[] getByteArray(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key as a string.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a string.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native String getString(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
+    public static native Boolean getBoolean(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getInt(StorageContext context, Hash256 key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, Hash256 key);
+
+    // endregion
     // region put bytearray key
 
     /**
