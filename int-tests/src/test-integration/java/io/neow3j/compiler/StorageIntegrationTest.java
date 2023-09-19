@@ -1438,6 +1438,7 @@ public class StorageIntegrationTest {
         }
 
         public static int getIntByHash160Key(io.neow3j.devpack.Hash160 key) {
+            assert io.neow3j.devpack.Hash160.isValid(key);
             return Storage.getInt(ctx, key);
         }
 
