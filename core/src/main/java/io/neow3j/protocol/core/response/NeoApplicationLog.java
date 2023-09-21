@@ -133,6 +133,7 @@ public class NeoApplicationLog {
             return stack;
         }
 
+        @JsonIgnore
         public StackItem getFirstStackItem() {
             if (stack.size() == 0) {
                 throw new IndexOutOfBoundsException("The stack is empty. This means that no items were left on the " +
@@ -156,6 +157,7 @@ public class NeoApplicationLog {
             return notifications;
         }
 
+        @JsonIgnore
         public Notification getFirstNotification() {
             if (notifications.size() == 0) {
                 throw new IndexOutOfBoundsException("This execution did not send any notifications.");

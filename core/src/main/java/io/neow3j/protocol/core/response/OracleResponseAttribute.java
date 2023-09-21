@@ -22,12 +22,22 @@ public class OracleResponseAttribute extends TransactionAttribute {
     }
 
     /**
-     * Gets the oracle response.
-     *
      * @return the oracle response.
      */
     public OracleResponse getOracleResponse() {
         return oracleResponse;
+    }
+
+    /**
+     * Transforms a {@link io.neow3j.transaction.OracleResponseAttribute} object to an instance of this type (its DTO
+     * representation type).
+     *
+     * @param attr the OracleResponse transaction attribute.
+     * @return the DTO form of the attribute.
+     */
+    public static TransactionAttribute fromSerializable(io.neow3j.transaction.OracleResponseAttribute attr) {
+        OracleResponse oracleResponse = new OracleResponse(attr.getId(), attr.getCode(), new String(attr.getResult()));
+        return new OracleResponseAttribute(oracleResponse);
     }
 
     @Override

@@ -983,8 +983,7 @@ public class TransactionBuilderTest {
         tx.send();
         NeoApplicationLog applicationLog = tx.getApplicationLog();
         assertThat(applicationLog.getTransactionId(),
-                is(new Hash256(
-                        "0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
+                is(new Hash256("0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
     }
 
     @Test

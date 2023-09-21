@@ -2,12 +2,13 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.math.BigInteger;
 import java.util.Objects;
 
 public class OracleResponse {
 
     @JsonProperty(value = "id", required = true)
-    private Integer id;
+    private BigInteger id;
 
     @JsonProperty(value = "code")
     private OracleResponseCode responseCode;
@@ -18,7 +19,14 @@ public class OracleResponse {
     public OracleResponse() {
     }
 
-    public OracleResponse(Integer id, OracleResponseCode responseCode, String result) {
+    /**
+     * Constructs a new OracleResponse object.
+     *
+     * @param id           the request id.
+     * @param responseCode the response code.
+     * @param result       the result.
+     */
+    public OracleResponse(BigInteger id, OracleResponseCode responseCode, String result) {
         this.id = id;
         this.responseCode = responseCode;
         this.result = result;
@@ -30,7 +38,7 @@ public class OracleResponse {
      *
      * @return the response id.
      */
-    public int getId() {
+    public BigInteger getId() {
         return id;
     }
 

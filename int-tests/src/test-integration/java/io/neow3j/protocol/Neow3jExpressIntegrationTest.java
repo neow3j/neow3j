@@ -165,7 +165,7 @@ public class Neow3jExpressIntegrationTest {
         String responseResult = "bmVvdzNq";
         String oracleResponseTx = getNeow3jExpress()
                 .expressCreateOracleResponseTx(
-                        new OracleResponse(0, OracleResponseCode.SUCCESS, responseResult))
+                        new OracleResponse(BigInteger.ZERO, OracleResponseCode.SUCCESS, responseResult))
                 .send()
                 .getOracleResponseTx();
 
