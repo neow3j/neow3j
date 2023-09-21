@@ -98,6 +98,8 @@ public interface Neo {
 
     Request<?, NeoGetContractState> getContractState(Hash160 contractHash);
 
+    Request<?, NeoGetContractState> getContractState(BigInteger contractId);
+
     Request<?, NeoGetContractState> getNativeContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
