@@ -1341,11 +1341,11 @@ public class ResponseTest extends ResponseTester {
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> transaction.getAttribute(2));
         assertThat(thrown.getMessage(), containsString("only has 2 attributes"));
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
-        OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
+        OracleResponseAttribute oracleResponseAttribute = attributes.get(1).asOracleResponse();
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(), is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
-        assertThat(oracleResp.getId(), is(0));
+        assertThat(oracleResp.getId(), is(BigInteger.ZERO));
 
         assertThat(transaction.getScript(),
                 is("AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg="));

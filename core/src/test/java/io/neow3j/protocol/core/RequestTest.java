@@ -1243,7 +1243,7 @@ public class RequestTest extends RequestTester {
     @Test
     public void testExpressCreateOracleResponseTx() throws Exception {
         neow3jExpress.expressCreateOracleResponseTx(
-                new OracleResponse(3, OracleResponseCode.SUCCESS, "bmVvdzNq")).send();
+                new OracleResponse(BigInteger.valueOf(3), OracleResponseCode.SUCCESS, "bmVvdzNq")).send();
 
         verifyResult("{\n" +
                 " \"jsonrpc\": \"2.0\",\n" +

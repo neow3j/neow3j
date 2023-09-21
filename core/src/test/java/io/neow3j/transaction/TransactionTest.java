@@ -1,5 +1,6 @@
 package io.neow3j.transaction;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
@@ -587,6 +588,53 @@ public class TransactionTest {
         UnsupportedOperationException thrown =
                 assertThrows(UnsupportedOperationException.class, tx::toContractParametersContext);
         assertThat(thrown.getMessage(), is("Cannot handle contract signers"));
+    }
+
+    @Test
+    public void testToJson() throws JsonProcessingException {
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.global(account1));
+        signers.add(AccountSigner.calledByEntry(account2));
+
+        List<Witness> witnesses = new ArrayList<>();
+        witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
+
+        Transaction tx = new Transaction(neow,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                asList(new HighPriorityAttribute()),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                witnesses);
+
+        String json = tx.toJson();
+        assertThat(json, is(
+                "{\"vmstate\":null," +
+                        "\"hash\":\"40124209fe280d5bbe24a6ae54399b8a36baf2fba30de78b9017e6956cf69c05\"," +
+                        "\"size\":77," +
+                        "\"version\":0," +
+                        "\"nonce\":16909060," +
+                        "\"sender\":\"0f46dc4287b70117ce8354924b5cb3a47215ad93\"," +
+                        "\"sysfee\":\"100000000\"," +
+                        "\"netfee\":\"1\"," +
+                        "\"validuntilblock\":16909060," +
+                        "\"signers\":[" +
+                        "{\"account\":\"0f46dc4287b70117ce8354924b5cb3a47215ad93\",\"scopes\":\"Global\"," +
+                        "\"allowedcontracts\":[],\"allowedgroups\":[],\"rules\":[]}," +
+                        "{\"account\":\"d6c712eb53b1a130f59fd4e5864bdac27458a509\",\"scopes\":\"CalledByEntry\"," +
+                        "\"allowedcontracts\":[],\"allowedgroups\":[],\"rules\":[]}]," +
+                        "\"attributes\":" +
+                        "[{\"type\":\"HighPriority\"}]," +
+                        "\"script\":\"EQ==\"," +
+                        "\"witnesses\":[{\"invocation\":\"AA==\",\"verification\":\"AA==\"}]," +
+                        "\"blockhash\":null," +
+                        "\"confirmations\":0," +
+                        "\"blocktime\":0" +
+                        "}"
+        ));
     }
 
 }
