@@ -536,6 +536,16 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, byte[] key, boolean value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, ByteString value);
 
     /**
@@ -590,6 +600,16 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteString key, int value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, ByteString key, boolean value);
 
     /**
      * Stores the given key-value pair.
@@ -662,6 +682,16 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, String key, boolean value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, String key, String value);
 
     /**
@@ -716,6 +746,16 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, int value);
+
+    /**
+     * Stores the given key-value pair.
+     *
+     * @param context the storage context to store the value in.
+     * @param key     the key.
+     * @param value   the value to store.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_PUT)
+    public static native void put(StorageContext context, int key, boolean value);
 
     /**
      * Stores the given key-value pair.

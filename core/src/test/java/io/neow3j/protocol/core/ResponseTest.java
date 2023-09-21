@@ -1359,11 +1359,11 @@ public class ResponseTest extends ResponseTester {
         assertThat(transaction.getAttribute(0).asHighPriority(), instanceOf(HighPriorityAttribute.class));
 
         assertThat(attributes.get(1).getType(), is(TransactionAttributeType.ORACLE_RESPONSE));
-        OracleResponseAttribute oracleResponseAttribute = (OracleResponseAttribute) attributes.get(1);
+        OracleResponseAttribute oracleResponseAttribute = attributes.get(1).asOracleResponse();
         OracleResponse oracleResp = oracleResponseAttribute.getOracleResponse();
         assertThat(oracleResp.getResponseCode(), is(OracleResponseCode.SUCCESS));
         assertThat(oracleResp.getResult(), is("EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="));
-        assertThat(oracleResp.getId(), is(0));
+        assertThat(oracleResp.getId(), is(BigInteger.ZERO));
 
         assertThat(attributes.get(2).getType(), is(TransactionAttributeType.NOT_VALID_BEFORE));
         NotValidBeforeAttribute expected = new NotValidBeforeAttribute(new BigInteger("10500"));

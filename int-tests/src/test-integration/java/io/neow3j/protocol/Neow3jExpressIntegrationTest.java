@@ -165,7 +165,7 @@ public class Neow3jExpressIntegrationTest {
         byte[] responseResult = "neow3j".getBytes();
         String oracleResponseTx = getNeow3jExpress()
                 .expressCreateOracleResponseTx(
-                        new OracleResponse(1, OracleResponseCode.SUCCESS, Base64.encode(responseResult)))
+                        new OracleResponse(BigInteger.ONE, OracleResponseCode.SUCCESS, Base64.encode(responseResult)))
                 .send()
                 .getOracleResponseTx();
 

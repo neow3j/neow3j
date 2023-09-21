@@ -508,6 +508,15 @@ public class StorageIntegrationTest {
     }
 
     @Test
+    public void putByteArrayKeyBooleanValue() throws IOException {
+        ContractParameter key = byteArray("02");
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
+    }
+
+    @Test
     public void putByteArrayKeyHash160Value() throws IOException {
         Hash160 v = ct.getDefaultAccount().getScriptHash();
         ContractParameter key = byteArray("02");
@@ -562,6 +571,15 @@ public class StorageIntegrationTest {
         ContractParameter value = integer(10);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(v));
+    }
+
+    @Test
+    public void putByteStringKeyBooleanValue() throws IOException {
+        ContractParameter key = byteArray("02");
+        ContractParameter value = bool(false);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00}));
     }
 
     @Test
@@ -622,6 +640,15 @@ public class StorageIntegrationTest {
     }
 
     @Test
+    public void putStringKeyBooleanValue() throws IOException {
+        ContractParameter key = string("key");
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
+    }
+
+    @Test
     public void putStringKeyHash160Value() throws IOException {
         Hash160 v = ct.getDefaultAccount().getScriptHash();
         ContractParameter key = string("key");
@@ -676,6 +703,15 @@ public class StorageIntegrationTest {
         ContractParameter value = integer(i);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(i));
+    }
+
+    @Test
+    public void putIntegerKeyBooleanValue() throws IOException {
+        ContractParameter key = integer(136);
+        ContractParameter value = bool(false);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00}));
     }
 
     @Test
@@ -1048,6 +1084,13 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, k);
         }
 
+        public static ByteString putByteArrayKeyBooleanValue(byte[] key, boolean value) {
+            byte[] k = new ByteString(key).toByteArray();
+            assert k instanceof byte[];
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
+        }
+
         public static ByteString putByteArrayKeyHash160Value(byte[] key,
                 io.neow3j.devpack.Hash160 value) {
             byte[] k = new ByteString(key).toByteArray();
@@ -1089,6 +1132,11 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
+        public static ByteString putByteStringKeyBooleanValue(ByteString key, boolean value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
         public static ByteString putByteStringKeyHash160Value(ByteString key,
                 io.neow3j.devpack.Hash160 value) {
             Storage.put(ctx, key, value);
@@ -1126,6 +1174,11 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
+        public static ByteString putStringKeyBooleanValue(String key, boolean value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
         public static ByteString putStringKeyHash160Value(String key,
                 io.neow3j.devpack.Hash160 value) {
             Storage.put(ctx, key, value);
@@ -1159,6 +1212,11 @@ public class StorageIntegrationTest {
         }
 
         public static ByteString putIntegerKeyIntegerValue(int key, int value) {
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString putIntegerKeyBooleanValue(int key, boolean value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key);
         }

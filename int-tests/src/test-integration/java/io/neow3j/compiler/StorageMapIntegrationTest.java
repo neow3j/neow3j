@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 
 import static io.neow3j.devpack.StringLiteralHelper.hexToBytes;
 import static io.neow3j.types.ContractParameter.bool;
@@ -516,6 +515,15 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
+    public void putByteArrayKeyBooleanValue() throws IOException {
+        ContractParameter key = byteArray("02");
+        ContractParameter value = bool(false);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00}));
+    }
+
+    @Test
     public void putByteArrayKeyStringValue() throws IOException {
         String v = "hello, world!";
         ContractParameter key = byteArray("02");
@@ -570,6 +578,15 @@ public class StorageMapIntegrationTest {
         ContractParameter value = integer(v);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger().intValue(), is(v));
+    }
+
+    @Test
+    public void putByteStringKeyBooleanValue() throws IOException {
+        ContractParameter key = byteArray("02");
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
     }
 
     @Test
@@ -630,6 +647,15 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
+    public void putStringKeyBooleanValue() throws IOException {
+        ContractParameter key = string("aa");
+        ContractParameter value = bool(false);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x00}));
+    }
+
+    @Test
     public void putStringKeyStringValue() throws IOException {
         String v = "hello, world!";
         ContractParameter key = string("aa");
@@ -681,6 +707,15 @@ public class StorageMapIntegrationTest {
         ContractParameter value = integer(28);
         InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
         assertThat(res.getStack().get(0).getInteger(), is(value.getValue()));
+    }
+
+    @Test
+    public void putIntegerKeyBooleanValue() throws IOException {
+        ContractParameter key = integer(513);
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
     }
 
     @Test
@@ -992,6 +1027,11 @@ public class StorageMapIntegrationTest {
             return Storage.get(ctx, prefix.concat(key));
         }
 
+        public static ByteString putByteArrayKeyBooleanValue(byte[] key, boolean value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
         public static ByteString putByteArrayKeyStringValue(byte[] key, String value) {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
@@ -1023,6 +1063,11 @@ public class StorageMapIntegrationTest {
         }
 
         public static ByteString putByteStringKeyIntegerValue(ByteString key, int value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putByteStringKeyBooleanValue(ByteString key, boolean value) {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
         }
@@ -1062,6 +1107,11 @@ public class StorageMapIntegrationTest {
             return Storage.get(ctx, prefix.concat(key));
         }
 
+        public static ByteString putStringKeyBooleanValue(String key, boolean value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
         public static ByteString putStringKeyStringValue(String key, String value) {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
@@ -1093,6 +1143,11 @@ public class StorageMapIntegrationTest {
         }
 
         public static ByteString putIntegerKeyIntegerValue(int key, int value) {
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString putIntegerKeyBooleanValue(int key, boolean value) {
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key));
         }
