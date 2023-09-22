@@ -29,6 +29,17 @@ public class ConflictsAttribute extends TransactionAttribute {
         return hash;
     }
 
+    /**
+     * Transforms a {@link io.neow3j.transaction.ConflictsAttribute} object to an instance of this type (its DTO
+     * representation type).
+     *
+     * @param attr the Conflicts transaction attribute.
+     * @return the DTO form of the attribute.
+     */
+    public static TransactionAttribute fromSerializable(io.neow3j.transaction.ConflictsAttribute attr) {
+        return new ConflictsAttribute(attr.getHash());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

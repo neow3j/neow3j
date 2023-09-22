@@ -1,6 +1,8 @@
 package io.neow3j.protocol.core.response;
 
+import io.neow3j.transaction.ConflictsAttribute;
 import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.types.Hash256;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -65,6 +67,16 @@ public class TransactionAttributeTest {
         OracleResponseAttribute expected = new OracleResponseAttribute(
                 new OracleResponse(BigInteger.TEN, OracleResponseCode.TIMEOUT, "hello")
         );
+        assertEquals(actual, expected);
+    }
+
+    @Test
+    public void testConflicts_transformFromSerializable() {
+        Hash256 conflictsHash = new Hash256("0xf4609b99e171190c22adcf70c88a7a14b5b530914d2398287bd8bb7ad95a661c");
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(new ConflictsAttribute(conflictsHash));
+
+        io.neow3j.protocol.core.response.ConflictsAttribute expected = new io.neow3j.protocol.core.response.ConflictsAttribute(
+                conflictsHash);
         assertEquals(actual, expected);
     }
 
