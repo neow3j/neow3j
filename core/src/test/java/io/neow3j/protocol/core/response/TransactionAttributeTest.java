@@ -1,6 +1,5 @@
 package io.neow3j.protocol.core.response;
 
-import io.neow3j.transaction.ConflictsAttribute;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.types.Hash256;
 import org.junit.jupiter.api.Test;
