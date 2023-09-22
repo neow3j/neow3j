@@ -52,7 +52,9 @@ public class TransactionAttributeTest {
 
     @Test
     public void testHighPriority_transformFromSerializable() {
-        TransactionAttribute actual = TransactionAttribute.fromSerializable(new io.neow3j.transaction.HighPriorityAttribute());
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.HighPriorityAttribute()
+        );
         assertEquals(actual, new HighPriorityAttribute());
     }
 
@@ -71,12 +73,24 @@ public class TransactionAttributeTest {
     }
 
     @Test
+    public void testNotValidBefore_transformFromSerializable() {
+        BigInteger notValidBefore = new BigInteger("438034626");
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.NotValidBeforeAttribute(notValidBefore)
+        );
+
+        NotValidBeforeAttribute expected = new NotValidBeforeAttribute(notValidBefore);
+        assertEquals(actual, expected);
+    }
+
+    @Test
     public void testConflicts_transformFromSerializable() {
         Hash256 conflictsHash = new Hash256("0xf4609b99e171190c22adcf70c88a7a14b5b530914d2398287bd8bb7ad95a661c");
-        TransactionAttribute actual = TransactionAttribute.fromSerializable(new ConflictsAttribute(conflictsHash));
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.ConflictsAttribute(conflictsHash)
+        );
 
-        io.neow3j.protocol.core.response.ConflictsAttribute expected = new io.neow3j.protocol.core.response.ConflictsAttribute(
-                conflictsHash);
+        ConflictsAttribute expected = new ConflictsAttribute(conflictsHash);
         assertEquals(actual, expected);
     }
 
