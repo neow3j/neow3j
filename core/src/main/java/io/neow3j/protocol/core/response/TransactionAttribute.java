@@ -114,9 +114,9 @@ public abstract class TransactionAttribute {
             case ORACLE_RESPONSE:
                 return OracleResponseAttribute.fromSerializable((io.neow3j.transaction.OracleResponseAttribute) attr);
             case NOT_VALID_BEFORE:
-                return new NotValidBeforeAttribute();
+                return NotValidBeforeAttribute.fromSerializable((io.neow3j.transaction.NotValidBeforeAttribute) attr);
             case CONFLICTS:
-                return new ConflictsAttribute();
+                return ConflictsAttribute.fromSerializable((io.neow3j.transaction.ConflictsAttribute) attr);
             default:
                 throw new IllegalArgumentException(
                         "No concrete class found for transaction attribute type " + attr.getType().jsonValue());

@@ -29,6 +29,17 @@ public class NotValidBeforeAttribute extends TransactionAttribute {
         return height;
     }
 
+    /**
+     * Transforms a {@link io.neow3j.transaction.NotValidBeforeAttribute} object to an instance of this type (its DTO
+     * representation type).
+     *
+     * @param attr the NotValidBefore transaction attribute.
+     * @return the DTO form of the attribute.
+     */
+    public static TransactionAttribute fromSerializable(io.neow3j.transaction.NotValidBeforeAttribute attr) {
+        return new NotValidBeforeAttribute(attr.getHeight());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
