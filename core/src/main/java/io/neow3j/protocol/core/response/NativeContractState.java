@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -21,7 +22,7 @@ public class NativeContractState extends CoreContractState {
         super();
     }
 
-    public NativeContractState(int id, Hash160 hash, ContractNef nef, ContractManifest manifest,
+    public NativeContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest,
             List<Integer> updateHistory) {
 
         super(id, hash, nef, manifest);
@@ -44,7 +45,7 @@ public class NativeContractState extends CoreContractState {
                 ", hash='" + getHash() + '\'' +
                 ", nef=" + getNef() +
                 ", manifest=" + getManifest() +
-                ", updateHistory=" + updateHistory +
+                ", updateHistory=" + getUpdateHistory() +
                 '}';
     }
 

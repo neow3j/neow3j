@@ -199,6 +199,17 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testGetContractState_byId() throws Exception {
+        neow3j.getContractState(BigInteger.valueOf(-6)).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getcontractstate\"," +
+                "\"params\":[-6]," +
+                "\"id\":1}"
+        );
+    }
+
+    @Test
     public void testGetMemPool() throws Exception {
         neow3j.getMemPool().send();
 
@@ -250,6 +261,32 @@ public class RequestTest extends RequestTester {
                 "\"method\":\"getstorage\"," +
                 "\"params\":[\"03febccf81ac85e3d795bc5cbd4e84e907812aa3\",\"" + keyBase64 + "\"]," +
                 "\"id\":1}");
+    }
+
+    @Test
+    public void testFindStorage() throws Exception {
+        neow3j.findStorage(new Hash160("1b468f207a5c5c3ee94e41b4cc606e921b33d160"), "c3", BigInteger.valueOf(2)).send();
+
+        String prefixBase64 = Base64.encode("c3");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[\"1b468f207a5c5c3ee94e41b4cc606e921b33d160\", \"" + prefixBase64 + "\", 2],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testFindStorage_withId() throws Exception {
+        neow3j.findStorage(BigInteger.valueOf(-1), "0b", BigInteger.valueOf(10)).send();
+
+        String prefixBase64 = Base64.encode("0b");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[-1, \"" + prefixBase64 + "\", 10],\n" +
+                " \"id\": 1\n" +
+                "}");
     }
 
     @Test

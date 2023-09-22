@@ -2003,8 +2003,7 @@ public class StorageMap {
      *     </li>
      * </ul>
      *
-     * @param findOptions Controls the kind of iterator to return. Use the values of
-     *                    {@link FindOptions}.
+     * @param findOptions Controls the kind of iterator to return. Use the values of {@link FindOptions}.
      * @return an iterator over key, values or key-value pairs found under this map's prefix.
      */
     @Instruction(opcode = OpCode.SWAP)
@@ -2015,7 +2014,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_FIND)
-    public native Iterator find(byte findOptions);
+    public native Iterator find(int findOptions);
 
     // endregion find
 

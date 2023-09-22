@@ -8,12 +8,14 @@ import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractMet
 import io.neow3j.protocol.core.response.ContractManifest.ContractPermission;
 import io.neow3j.protocol.core.response.ContractNef;
 import io.neow3j.protocol.core.response.ContractState;
+import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoFindStorage;
 import io.neow3j.protocol.core.response.NeoGetMemPool.MemPoolDetails;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Balances.Nep17Balances;
@@ -79,6 +81,7 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -92,6 +95,7 @@ import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -341,7 +345,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertThat(nativeContracts, hasSize(9));
         NativeContractState contractState1 = nativeContracts.get(0);
-        assertThat(contractState1.getId(), is(-1));
+        assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -382,7 +386,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(contractState1.getUpdateHistory().get(0), is(0));
 
         NativeContractState contractState8 = nativeContracts.get(8);
-        assertThat(contractState8.getId(), is(-9));
+        assertThat(contractState8.getId().intValue(), is(-9));
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
         ContractNef nef8 = contractState8.getNef();
@@ -433,7 +437,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-5));
+        assertThat(contractState.getId().intValue(), is(-5));
         assertThat(contractState.getHash(), is(NEO_HASH));
         ContractNef nef = contractState.getNef();
         assertThat(nef, is(notNullValue()));
@@ -483,6 +487,12 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest.getTrusts(), hasSize(0));
 
         assertNull(manifest.getExtra());
+
+        ContractState contractStateById = getNeow3j()
+                .getContractState(BigInteger.valueOf(-5))
+                .send()
+                .getContractState();
+        assertEquals(contractState, contractStateById);
     }
 
     @Test
@@ -493,7 +503,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getContractState();
 
         assertNotNull(contractState);
-        assertThat(contractState.getId(), is(-6));
+        assertThat(contractState.getId().intValue(), is(-6));
         assertThat(contractState.getHash(), is(GAS_HASH));
         ContractNef nef = contractState.getNef();
         assertNotNull(nef);
@@ -619,6 +629,38 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getStorage();
 
         assertThat(storage, is("QAFBAighAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bIQA="));
+    }
+
+    @Test
+    public void testFindStorage() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(GAS_HASH, "", BigInteger.ZERO)
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(4)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(4));
+        assertThat(storageEntries.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(3).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_contractId() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(BigInteger.valueOf(-6), "14", BigInteger.ONE)
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(3)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(2));
+        assertThat(storageEntries.get(1).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(1).getValueHex(), containsString("0x41012107"));
     }
 
     @Test
@@ -851,7 +893,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(10));
+        assertThat(plugins, hasSize(11));
     }
 
     @Test
@@ -1222,7 +1264,7 @@ public class Neow3jReadOnlyIntegrationTest {
     public void testGetProof() throws IOException {
         long localRootIndex = 2L;
         String proof = null;
-        while (localRootIndex < 5) {
+        while (localRootIndex < 20) {
             Hash256 rootHash = getNeow3j()
                     .getStateRoot(localRootIndex)
                     .send()

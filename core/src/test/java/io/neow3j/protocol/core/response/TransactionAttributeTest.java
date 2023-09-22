@@ -1,7 +1,7 @@
 package io.neow3j.protocol.core.response;
 
-import io.neow3j.crypto.Base64;
 import io.neow3j.transaction.TransactionAttributeType;
+import io.neow3j.types.Hash256;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
@@ -15,10 +15,9 @@ public class TransactionAttributeTest {
 
     @Test
     public void testAsHighPriority_wrongType() {
-        TransactionAttribute oracleResponseAttribute = new OracleResponseAttribute(new OracleResponse(BigInteger.TEN,
-                OracleResponseCode.SUCCESS, Base64.encode(new byte[]{0x00, 0x01})));
+        TransactionAttribute notValidBeforeAttribute = new NotValidBeforeAttribute(BigInteger.TEN);
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                oracleResponseAttribute::asHighPriority);
+                notValidBeforeAttribute::asHighPriority);
         assertThat(thrown.getMessage(),
                 containsString("attribute is not of type " + TransactionAttributeType.HIGH_PRIORITY.jsonValue()));
     }
@@ -33,8 +32,28 @@ public class TransactionAttributeTest {
     }
 
     @Test
+    public void testAsConflicts_wrongType() {
+        TransactionAttribute notValidBeforeAttribute = new NotValidBeforeAttribute(BigInteger.TEN);
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                notValidBeforeAttribute::asConflicts);
+        assertThat(thrown.getMessage(),
+                containsString("attribute is not of type " + TransactionAttributeType.CONFLICTS.jsonValue()));
+    }
+
+    @Test
+    public void testAsNotValidBefore_wrongType() {
+        TransactionAttribute highPriorityAttribute = new HighPriorityAttribute();
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                highPriorityAttribute::asNotValidBefore);
+        assertThat(thrown.getMessage(),
+                containsString("attribute is not of type " + TransactionAttributeType.NOT_VALID_BEFORE.jsonValue()));
+    }
+
+    @Test
     public void testHighPriority_transformFromSerializable() {
-        TransactionAttribute actual = TransactionAttribute.fromSerializable(new io.neow3j.transaction.HighPriorityAttribute());
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.HighPriorityAttribute()
+        );
         assertEquals(actual, new HighPriorityAttribute());
     }
 
@@ -49,6 +68,28 @@ public class TransactionAttributeTest {
         OracleResponseAttribute expected = new OracleResponseAttribute(
                 new OracleResponse(BigInteger.TEN, OracleResponseCode.TIMEOUT, "hello")
         );
+        assertEquals(actual, expected);
+    }
+
+    @Test
+    public void testNotValidBefore_transformFromSerializable() {
+        BigInteger notValidBefore = new BigInteger("438034626");
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.NotValidBeforeAttribute(notValidBefore)
+        );
+
+        NotValidBeforeAttribute expected = new NotValidBeforeAttribute(notValidBefore);
+        assertEquals(actual, expected);
+    }
+
+    @Test
+    public void testConflicts_transformFromSerializable() {
+        Hash256 conflictsHash = new Hash256("0xf4609b99e171190c22adcf70c88a7a14b5b530914d2398287bd8bb7ad95a661c");
+        TransactionAttribute actual = TransactionAttribute.fromSerializable(
+                new io.neow3j.transaction.ConflictsAttribute(conflictsHash)
+        );
+
+        ConflictsAttribute expected = new ConflictsAttribute(conflictsHash);
         assertEquals(actual, expected);
     }
 

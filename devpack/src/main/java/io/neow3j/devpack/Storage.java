@@ -1252,7 +1252,7 @@ public class Storage {
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, byte[] prefix, byte findOptions);
+    public static native Iterator find(StorageContext context, byte[] prefix, int findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -1285,7 +1285,7 @@ public class Storage {
      * @return an iterator over key, values, or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, ByteString prefix, byte findOptions);
+    public static native Iterator find(StorageContext context, ByteString prefix, int findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -1318,7 +1318,7 @@ public class Storage {
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, String prefix, byte findOptions);
+    public static native Iterator find(StorageContext context, String prefix, int findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -1351,7 +1351,7 @@ public class Storage {
      * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, int prefix, byte findOptions);
+    public static native Iterator find(StorageContext context, int prefix, int findOptions);
 
     // endregion find
 

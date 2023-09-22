@@ -26,7 +26,7 @@ public class HighPriorityAttribute extends TransactionAttribute {
 
     @Override
     public int hashCode() {
-        return Objects.hash(type);
+        return Objects.hash(getType());
     }
 
 }

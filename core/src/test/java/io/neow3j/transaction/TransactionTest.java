@@ -43,6 +43,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -120,7 +121,7 @@ public class TransactionTest {
                 signers,
                 BigInteger.TEN.pow(8).longValue(),
                 1L,
-                new ArrayList<>(),
+                asList(new HighPriorityAttribute()),
                 new byte[]{(byte) OpCode.PUSH1.getCode()},
                 witnesses);
 
@@ -134,7 +135,7 @@ public class TransactionTest {
                 + "02"  // 2 signers
                 + "93ad1572a4b35c4b925483ce1701b78742dc460f" + "80" // global signer
                 + "09a55874c2da4b86e5d49ff530a1b153eb12c7d6" + "01" // calledByEntry signer
-                + "00"
+                + "01" + "01"
                 + "01" + OpCode.PUSH1.toString() // 1-byte script with PUSH1 OpCode
                 + "01" // 1 witness
                 + "01000100" // witness
@@ -166,7 +167,7 @@ public class TransactionTest {
         assertThat(tx.getNetworkFee(), is(1268390L));
         assertThat(tx.getValidUntilBlock(), is(2106265L));
         assertThat(tx.getAttributes(), hasSize(1));
-        assertThat(tx.getAttributes().get(0).getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+        assertEquals(tx.getFirstAttribute(), new HighPriorityAttribute());
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getSigners().get(0).getScriptHash(),
                 is(new Hash160("969a77db482f74ce27105f760efa139223431394")));
@@ -299,6 +300,31 @@ public class TransactionTest {
         DeserializationException thrown = assertThrows(DeserializationException.class,
                 () -> NeoSerializableInterface.from(txBytes, Transaction.class));
         assertThat(thrown.getMessage(), containsString("A transaction can hold at most "));
+    }
+
+    @Test
+    public void testGetAttribute_exceptions() throws DeserializationException {
+        byte[] data = hexStringToByteArray(""
+                + "00" // version
+                + "62bdaa0e"  // nonce
+                + "c272890000000000"  // system fee
+                + "a65a130000000000"  // network fee
+                + "99232000"  // valid until block
+                + "01" + "941343239213fa0e765f1027ce742f48db779a96" + "01"
+                // one called by entry signer
+                + "00" // no attribute
+                + "01" + OpCode.PUSH1.toString()  // 1-byte script with PUSH1 OpCode
+                + "00"
+        );
+
+        Transaction tx = NeoSerializableInterface.from(data, Transaction.class);
+        assertThat(tx.getAttributes(), hasSize(0));
+
+        IndexOutOfBoundsException thrown = assertThrows(IndexOutOfBoundsException.class, tx::getFirstAttribute);
+        assertThat(thrown.getMessage(), containsString("has no attributes"));
+
+        thrown = assertThrows(IndexOutOfBoundsException.class, () -> tx.getAttribute(0));
+        assertThat(thrown.getMessage(), containsString("has only 0 attributes"));
     }
 
     @Test

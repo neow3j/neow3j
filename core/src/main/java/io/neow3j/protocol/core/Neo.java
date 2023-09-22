@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
 import io.neow3j.protocol.core.response.NeoFindStates;
+import io.neow3j.protocol.core.response.NeoFindStorage;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetCommittee;
@@ -97,6 +98,8 @@ public interface Neo {
 
     Request<?, NeoGetContractState> getContractState(Hash160 contractHash);
 
+    Request<?, NeoGetContractState> getContractState(BigInteger contractId);
+
     Request<?, NeoGetContractState> getNativeContractState(String contractName);
 
     Request<?, NeoGetMemPool> getMemPool();
@@ -108,6 +111,10 @@ public interface Neo {
     Request<?, NeoGetRawTransaction> getRawTransaction(Hash256 txHash);
 
     Request<?, NeoGetStorage> getStorage(Hash160 contractHash, String keyHexString);
+
+    Request<?, NeoFindStorage> findStorage(BigInteger contractId, String prefixHex, BigInteger startIndex);
+
+    Request<?, NeoFindStorage> findStorage(Hash160 contractHash, String prefixHex, BigInteger startIndex);
 
     Request<?, NeoGetTransactionHeight> getTransactionHeight(Hash256 txHash);
 

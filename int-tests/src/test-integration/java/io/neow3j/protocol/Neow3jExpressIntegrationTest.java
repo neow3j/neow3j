@@ -1,8 +1,8 @@
 package io.neow3j.protocol;
 
 import io.neow3j.crypto.Base64;
-import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.ExpressContractState;
+import io.neow3j.protocol.core.response.ExpressContractStorageEntry;
 import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.Nep17Contract;
 import io.neow3j.protocol.core.response.OracleRequest;
@@ -36,6 +36,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestMethodOrder(MethodOrderer.MethodName.class)
@@ -95,15 +96,14 @@ public class Neow3jExpressIntegrationTest {
 
     @Test
     public void testExpressGetContractStorage() throws IOException {
-        List<ContractStorageEntry> contractStorage = getNeow3jExpress()
+        List<ExpressContractStorageEntry> contractStorage = getNeow3jExpress()
                 .expressGetContractStorage(IntegrationTestHelper.GAS_HASH)
                 .send()
                 .getContractStorage();
 
         assertThat(contractStorage, hasSize(4));
-        assertThat(contractStorage.get(3).getKey(),
-                is("147F65D434362708B255F0E06856BDCB5CE99D8505"));
-        assertThat(contractStorage.get(3).getValue(), is(not(isEmptyString())));
+        assertThat(contractStorage.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        assertThat(contractStorage.get(3).getValueHex(), is(not(isEmptyString())));
     }
 
     @Test
@@ -146,7 +146,7 @@ public class Neow3jExpressIntegrationTest {
         String callbackMethod = "callback";
         String userData = "KAA=";
 
-        assertThat(oracleRequests, hasSize(1));
+        assertThat(oracleRequests, hasSize(2));
         OracleRequest oracleRequest = oracleRequests.get(0);
         assertThat(oracleRequest.getRequestId(), is(requestId));
         assertThat(oracleRequest.getOriginalTransactionHash(), is(notNullValue()));
@@ -162,20 +162,19 @@ public class Neow3jExpressIntegrationTest {
     public void testExpressCreateOracleResponseTx() throws Exception {
         Hash256 txHash = new Hash256(container.enableOracle());
         Await.waitUntilTransactionIsExecuted(txHash, getNeow3jExpress());
-        String responseResult = "bmVvdzNq";
+        byte[] responseResult = "neow3j".getBytes();
         String oracleResponseTx = getNeow3jExpress()
                 .expressCreateOracleResponseTx(
-                        new OracleResponse(BigInteger.ZERO, OracleResponseCode.SUCCESS, responseResult))
+                        new OracleResponse(BigInteger.ONE, OracleResponseCode.SUCCESS, Base64.encode(responseResult)))
                 .send()
                 .getOracleResponseTx();
 
-        Transaction tx = NeoSerializableInterface.from(Base64.decode(oracleResponseTx),
-                Transaction.class);
+        Transaction tx = NeoSerializableInterface.from(Base64.decode(oracleResponseTx), Transaction.class);
         OracleResponseAttribute attr = (OracleResponseAttribute) tx.getAttributes().get(0);
 
-        assertThat(attr.getId(), is(BigInteger.ZERO));
-        assertThat(attr.getCode(), is(OracleResponseCode.SUCCESS));
-        assertThat(attr.getResult(), is(Base64.decode(responseResult)));
+        OracleResponseAttribute expectedAttribute = new OracleResponseAttribute(
+                BigInteger.ONE, OracleResponseCode.SUCCESS, responseResult);
+        assertEquals(attr, expectedAttribute);
     }
 
     @Test

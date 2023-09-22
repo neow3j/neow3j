@@ -32,7 +32,6 @@ public class OracleResponse {
         this.result = result;
     }
 
-
     /**
      * Gets the response id.
      *
@@ -82,9 +81,9 @@ public class OracleResponse {
     @Override
     public String toString() {
         return "OracleResponse{" +
-                "id='" + id + '\'' +
-                ", code='" + responseCode + '\'' +
-                ", result='" + result + '\'' +
+                "id='" + getId() + '\'' +
+                ", code='" + getResponseCode() + '\'' +
+                ", result='" + getResult() + '\'' +
                 "}";
     }
 
