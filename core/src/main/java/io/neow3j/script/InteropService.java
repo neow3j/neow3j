@@ -43,8 +43,8 @@ public enum InteropService {
 
     /**
      * This syscall is used to fire events. It consumes the top stack item as event name, and another array stack item
-     * that contains the event's state entries. When using this interoperability service manually (i.e., in an
-     * {@link io.neow3j.devpack.annotations.Instruction}), note, that the event name that is read from the stack MUST
+     * that contains the event's state entries. When using this interoperability service manually in the devpack (i.e.,
+     * in {@code Instruction} annotations), note, that the event name that is read from the stack MUST
      * exist in the contract manifest's ABI. Otherwise, the NeoVM will exit with an error as soon as it reaches
      * this syscall.
      */
