@@ -1548,8 +1548,8 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
-        public static ByteString getByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static ByteString getByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.get(ctx, key);
         }
 
@@ -1596,8 +1596,8 @@ public class StorageIntegrationTest {
             return hash;
         }
 
-        public static io.neow3j.devpack.Hash160 getHash160ByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static io.neow3j.devpack.Hash160 getHash160ByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
@@ -1646,8 +1646,8 @@ public class StorageIntegrationTest {
             return hash;
         }
 
-        public static io.neow3j.devpack.Hash256 getHash256ByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static io.neow3j.devpack.Hash256 getHash256ByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
@@ -1656,50 +1656,50 @@ public class StorageIntegrationTest {
         // endregion
         // region getECPoint
 
-        public static io.neow3j.devpack.ECPoint getECPointByByteArrayKey(byte[] key) {
+        public static ECPoint getECPointByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByByteStringKey(ByteString key) {
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+        public static ECPoint getECPointByByteStringKey(ByteString key) {
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByStringKey(String key) {
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+        public static ECPoint getECPointByStringKey(String key) {
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByIntegerKey(int key) {
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+        public static ECPoint getECPointByIntegerKey(int key) {
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByHash160Key(io.neow3j.devpack.Hash160 key) {
+        public static ECPoint getECPointByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByHash256Key(io.neow3j.devpack.Hash256 key) {
+        public static ECPoint getECPointByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
-        public static io.neow3j.devpack.ECPoint getECPointByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
-            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
-            assert io.neow3j.devpack.ECPoint.isValid(point);
+        public static ECPoint getECPointByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
+            assert ECPoint.isValid(point);
             return point;
         }
 
@@ -1734,8 +1734,8 @@ public class StorageIntegrationTest {
             return Storage.getByteArray(ctx, key);
         }
 
-        public static byte[] getByteArrayByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static byte[] getByteArrayByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.getByteArray(ctx, key);
         }
 
@@ -1770,8 +1770,8 @@ public class StorageIntegrationTest {
             return Storage.getString(ctx, key);
         }
 
-        public static String getStringByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static String getStringByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.getString(ctx, key);
         }
 
@@ -1808,8 +1808,8 @@ public class StorageIntegrationTest {
             return Storage.getBoolean(ctx, key);
         }
 
-        public static boolean getBooleanByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static boolean getBooleanByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.getBoolean(ctx, key);
         }
 
@@ -1872,13 +1872,13 @@ public class StorageIntegrationTest {
             return Storage.getIntOrZero(ctx, key);
         }
 
-        public static int getIntByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static int getIntByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.getInt(ctx, key);
         }
 
-        public static int getIntOrZeroByECPointKey(io.neow3j.devpack.ECPoint key) {
-            assert io.neow3j.devpack.ECPoint.isValid(key);
+        public static int getIntOrZeroByECPointKey(ECPoint key) {
+            assert ECPoint.isValid(key);
             return Storage.getIntOrZero(ctx, key);
         }
 
@@ -1938,9 +1938,10 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, k);
         }
 
-        public static ByteString putByteArrayKeyECPointValue(byte[] key, io.neow3j.devpack.ECPoint value) {
+        public static ByteString putByteArrayKeyECPointValue(byte[] key, ECPoint value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
+            assert ECPoint.isValid(value);
             Storage.put(ctx, k, value);
             return Storage.get(ctx, k);
         }
@@ -1987,8 +1988,9 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
-        public static ByteString putByteStringKeyECPointValue(ByteString key, io.neow3j.devpack.ECPoint value) {
+        public static ByteString putByteStringKeyECPointValue(ByteString key, ECPoint value) {
             Storage.put(ctx, key, value);
+            assert ECPoint.isValid(value);
             return Storage.get(ctx, key);
         }
 
@@ -2034,8 +2036,9 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
-        public static ByteString putStringKeyECPointValue(String key, io.neow3j.devpack.ECPoint value) {
+        public static ByteString putStringKeyECPointValue(String key, ECPoint value) {
             Storage.put(ctx, key, value);
+            assert ECPoint.isValid(value);
             return Storage.get(ctx, key);
         }
 
@@ -2088,7 +2091,8 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key);
         }
 
-        public static ByteString putIntegerKeyECPointValue(int key, io.neow3j.devpack.ECPoint value) {
+        public static ByteString putIntegerKeyECPointValue(int key, ECPoint value) {
+            assert ECPoint.isValid(value);
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key);
         }
@@ -2135,9 +2139,9 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putHash160KeyECPointValue(io.neow3j.devpack.Hash160 key,
-                io.neow3j.devpack.ECPoint value) {
+        public static ByteString putHash160KeyECPointValue(io.neow3j.devpack.Hash160 key, ECPoint value) {
             Storage.put(ctx, key, value);
+            assert ECPoint.isValid(value);
             return Storage.get(ctx, key.toByteString());
         }
 
@@ -2183,8 +2187,8 @@ public class StorageIntegrationTest {
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putHash256KeyECPointValue(io.neow3j.devpack.Hash256 key,
-                io.neow3j.devpack.ECPoint value) {
+        public static ByteString putHash256KeyECPointValue(io.neow3j.devpack.Hash256 key, ECPoint value) {
+            assert ECPoint.isValid(value);
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
@@ -2192,47 +2196,46 @@ public class StorageIntegrationTest {
         // endregion
         // region put ecpoint key
 
-        public static ByteString putECPointKeyByteArrayValue(io.neow3j.devpack.ECPoint key, byte[] value) {
+        public static ByteString putECPointKeyByteArrayValue(ECPoint key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
             Storage.put(ctx, key, v);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyByteStringValue(io.neow3j.devpack.ECPoint key, ByteString value) {
+        public static ByteString putECPointKeyByteStringValue(ECPoint key, ByteString value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyStringValue(io.neow3j.devpack.ECPoint key, String value) {
+        public static ByteString putECPointKeyStringValue(ECPoint key, String value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyIntegerValue(io.neow3j.devpack.ECPoint key, int value) {
+        public static ByteString putECPointKeyIntegerValue(ECPoint key, int value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyBooleanValue(io.neow3j.devpack.ECPoint key, boolean value) {
+        public static ByteString putECPointKeyBooleanValue(ECPoint key, boolean value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyHash160Value(io.neow3j.devpack.ECPoint key,
+        public static ByteString putECPointKeyHash160Value(ECPoint key,
                 io.neow3j.devpack.Hash160 value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyHash256Value(io.neow3j.devpack.ECPoint key,
+        public static ByteString putECPointKeyHash256Value(ECPoint key,
                 io.neow3j.devpack.Hash256 value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
 
-        public static ByteString putECPointKeyECPointValue(io.neow3j.devpack.ECPoint key,
-                io.neow3j.devpack.ECPoint value) {
+        public static ByteString putECPointKeyECPointValue(ECPoint key, ECPoint value) {
             Storage.put(ctx, key, value);
             return Storage.get(ctx, key.toByteString());
         }
