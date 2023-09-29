@@ -2056,7 +2056,7 @@ public class StorageMapIntegrationTest {
                 io.neow3j.devpack.Hash160 value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         public static ByteString putHash160KeyHash256Value(io.neow3j.devpack.Hash160 key,
@@ -2117,7 +2117,7 @@ public class StorageMapIntegrationTest {
                 io.neow3j.devpack.Hash256 value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         public static ByteString putHash256KeyECPointValue(io.neow3j.devpack.Hash256 key, ECPoint value) {
@@ -2169,14 +2169,14 @@ public class StorageMapIntegrationTest {
         public static ByteString putECPointKeyHash256Value(ECPoint key, io.neow3j.devpack.Hash256 value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(ctx, prefix.concat(key.toByteString()));
         }
 
         public static ByteString putECPointKeyECPointValue(ECPoint key, ECPoint value) {
             assert ECPoint.isValid(key);
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteString()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         // endregion
@@ -2204,17 +2204,17 @@ public class StorageMapIntegrationTest {
 
         public static ByteString deleteByHash160(io.neow3j.devpack.Hash160 key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key.toByteString()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         public static ByteString deleteByHash256(io.neow3j.devpack.Hash256 key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key.toByteString()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         public static ByteString deleteByECPoint(ECPoint key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key.toByteString()));
+            return Storage.get(ctx, prefix.concat(key));
         }
 
         // endregion

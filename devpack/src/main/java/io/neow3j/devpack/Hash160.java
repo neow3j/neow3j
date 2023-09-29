@@ -12,7 +12,7 @@ import io.neow3j.types.StackItemType;
  * devpack that returns a {@code Hash160}, the bytes will be little-endian. But if you construct a {@code Hash160} by
  * yourself the ordering is according to whatever you used as input.
  */
-public class Hash160 {
+public class Hash160 extends ByteStringType {
 
     private static final byte LENGTH = 0x14; // 20 bytes
 
