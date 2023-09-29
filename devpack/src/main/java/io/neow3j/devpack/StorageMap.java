@@ -139,6 +139,26 @@ public class StorageMap {
     public native Hash256 getHash256(byte[] key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(byte[] key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -303,6 +323,26 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native Hash256 getHash256(ByteString key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -474,6 +514,26 @@ public class StorageMap {
     public native Hash256 getHash256(String key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(String key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
      * and converts it to a byte array.
      *
@@ -641,6 +701,26 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native Hash256 getHash256(int key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -812,6 +892,26 @@ public class StorageMap {
     public native Hash256 getHash256(Hash160 key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(Hash160 key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -979,6 +1079,26 @@ public class StorageMap {
     public native Hash256 getHash256(Hash256 key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(Hash256 key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -1084,6 +1204,193 @@ public class StorageMap {
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
     public native Integer getIntOrZero(Hash256 key);
+
+    // endregion
+    // region get ecpoint key
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ByteString get(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash160 getHash160(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native Hash256 getHash256(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
+     * a byte array.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public native byte[] getByteArray(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a string.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a string.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native String getString(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a boolean.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
+    public native Boolean getBoolean(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
+     * an integer. The bytes are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getInt(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
+     * an integer. The bytes are read in little-endian format. E.g., the byte string {@code 0102} (in hexadecimal
+     * representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param key The key of the value to retrieve.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public native Integer getIntOrZero(ECPoint key);
 
     // endregion
     // region put bytearray key
@@ -1221,6 +1528,25 @@ public class StorageMap {
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(byte[] key, Hash256 value);
 
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(byte[] key, ECPoint value);
+
     // endregion
     // region put bytestring key
 
@@ -1356,6 +1682,25 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(ByteString key, Hash256 value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ByteString key, ECPoint value);
 
     // endregion
     // region put string key
@@ -1493,6 +1838,25 @@ public class StorageMap {
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(String key, Hash256 value);
 
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(String key, ECPoint value);
+
     // endregion
     // region put integer key
 
@@ -1628,6 +1992,25 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(int key, Hash256 value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(int key, ECPoint value);
 
     // endregion
     // region put hash160 key
@@ -1765,6 +2148,25 @@ public class StorageMap {
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(Hash160 key, Hash256 value);
 
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash160 key, ECPoint value);
+
     // endregion
     // region put hash256 key
 
@@ -1901,6 +2303,180 @@ public class StorageMap {
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
     public native void put(Hash256 key, Hash256 value);
 
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(Hash256 key, ECPoint value);
+
+    // endregion
+    // region put ecpoint key
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, byte[] value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, int value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, boolean value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, ByteString value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, String value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, Hash160 value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, Hash256 value);
+
+    /**
+     * Stores the given key-value pair prefixed with this {@code StorageMap}'s prefix ({@code prefix + key}) into the
+     * underlying storage context.
+     *
+     * @param key   The key of the entry.
+     * @param value The value of the entry.
+     */
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PICK)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.ROT)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_PUT)
+    public native void put(ECPoint key, ECPoint value);
+
     // endregion
     // region delete
 
@@ -1971,6 +2547,22 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
     public native void delete(int key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(ECPoint key);
 
     // endregion delete
     // region find
