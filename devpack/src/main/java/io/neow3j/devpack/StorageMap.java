@@ -139,6 +139,26 @@ public class StorageMap {
     public native Hash256 getHash256(byte[] key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(byte[] key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -303,6 +323,26 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native Hash256 getHash256(ByteString key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(ByteString key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -474,6 +514,26 @@ public class StorageMap {
     public native Hash256 getHash256(String key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(String key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
      * and converts it to a byte array.
      *
@@ -641,6 +701,26 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native Hash256 getHash256(int key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(int key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context
@@ -812,6 +892,26 @@ public class StorageMap {
     public native Hash256 getHash256(Hash160 key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(Hash160 key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -979,6 +1079,26 @@ public class StorageMap {
     public native Hash256 getHash256(Hash256 key);
 
     /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(Hash256 key);
+
+    /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
      * a byte array.
      *
@@ -1144,6 +1264,26 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
     public native Hash256 getHash256(ECPoint key);
+
+    /**
+     * Gets the value with a key equal to {@code prefix + key} from the underlying storage context as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param key the key of the value to retrieve.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
+    public native ECPoint getECPoint(ECPoint key);
 
     /**
      * Gets the value with a key equal to {@code prefix + key} from the underlying storage context and converts it to
