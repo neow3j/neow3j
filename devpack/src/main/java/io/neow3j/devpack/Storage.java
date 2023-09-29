@@ -1577,6 +1577,24 @@ public class Storage {
      * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
+    public static native void delete(StorageContext context, Hash160 key);
+
+    /**
+     * Deletes the value corresponding to the given key from the storage.
+     *
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
+    public static native void delete(StorageContext context, Hash256 key);
+
+    /**
+     * Deletes the value corresponding to the given key from the storage.
+     *
+     * @param context the storage context to delete from.
+     * @param key     the key to delete.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
     public static native void delete(StorageContext context, ECPoint key);
 
     // endregion delete

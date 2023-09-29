@@ -1404,6 +1404,38 @@ public class StorageMapIntegrationTest {
     }
 
     @Test
+    public void deleteByHash160() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH160_HEX)),
+                byteArrayFromString("del by hash160"));
+
+        InvocationResult res = ct.callInvokeFunction("getByHash160Key", hash160(KEY_HASH160)).getInvocationResult();
+
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getString(), is("del by hash160"));
+
+        res = ct.callInvokeFunction(testName, hash160(KEY_HASH160)).getInvocationResult();
+        assertNull(res.getFirstStackItem().getValue());
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, byteArray(reverseHexString(KEY_HASH160_HEX)));
+    }
+
+    @Test
+    public void deleteByHash256() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH256_HEX)),
+                byteArrayFromString("del by hash256"));
+
+        InvocationResult res = ct.callInvokeFunction("getByHash256Key", hash256(KEY_HASH256)).getInvocationResult();
+
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getString(), is("del by hash256"));
+
+        res = ct.callInvokeFunction(testName, hash256(KEY_HASH256)).getInvocationResult();
+        assertNull(res.getFirstStackItem().getValue());
+
+        ct.invokeFunctionAndAwaitExecution(REMOVE_DATA, byteArray(reverseHexString(KEY_HASH256_HEX)));
+    }
+
+    @Test
     public void deleteByECPoint() throws Throwable {
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(KEY_ECPOINT_HEX), byteArrayFromString("del by point"));
 
@@ -2110,25 +2142,25 @@ public class StorageMapIntegrationTest {
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
         }
 
-        public static ByteString putECPointKeyIntegerValue(io.neow3j.devpack.ECPoint key, int value) {
+        public static ByteString putECPointKeyIntegerValue(ECPoint key, int value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
         }
 
-        public static ByteString putECPointKeyBooleanValue(io.neow3j.devpack.ECPoint key, boolean value) {
+        public static ByteString putECPointKeyBooleanValue(ECPoint key, boolean value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
         }
 
-        public static ByteString putECPointKeyStringValue(io.neow3j.devpack.ECPoint key, String value) {
+        public static ByteString putECPointKeyStringValue(ECPoint key, String value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
         }
 
-        public static ByteString putECPointKeyHash160Value(io.neow3j.devpack.ECPoint key, io.neow3j.devpack.Hash160 value) {
+        public static ByteString putECPointKeyHash160Value(ECPoint key, io.neow3j.devpack.Hash160 value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
             return Storage.get(ctx, prefix.concat(key.toByteArray()));
@@ -2168,6 +2200,16 @@ public class StorageMapIntegrationTest {
         public static ByteString deleteByInteger(int key) {
             map.delete(key);
             return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString deleteByHash160(io.neow3j.devpack.Hash160 key) {
+            map.delete(key);
+            return Storage.get(ctx, prefix.concat(key.toByteString()));
+        }
+
+        public static ByteString deleteByHash256(io.neow3j.devpack.Hash256 key) {
+            map.delete(key);
+            return Storage.get(ctx, prefix.concat(key.toByteString()));
         }
 
         public static ByteString deleteByECPoint(ECPoint key) {
