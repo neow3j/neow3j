@@ -73,6 +73,19 @@ public class Storage {
     public static native Hash256 getHash256(StorageContext context, byte[] key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, byte[] key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -189,6 +202,19 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native Hash256 getHash256(StorageContext context, String key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, String key);
 
     /**
      * Returns the value corresponding to the given key and converts it to a byte array.
@@ -309,6 +335,19 @@ public class Storage {
     public static native Hash256 getHash256(StorageContext context, ByteString key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, ByteString key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -425,6 +464,19 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native Hash256 getHash256(StorageContext context, int key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, int key);
 
     /**
      * Returns the value corresponding to the given key and converts it to a byte array.
@@ -545,6 +597,19 @@ public class Storage {
     public static native Hash256 getHash256(StorageContext context, Hash160 key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, Hash160 key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -663,6 +728,19 @@ public class Storage {
     public static native Hash256 getHash256(StorageContext context, Hash256 key);
 
     /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, Hash256 key);
+
+    /**
      * Returns the value corresponding to the given key and converts it to a byte array.
      * <p>
      * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
@@ -779,6 +857,19 @@ public class Storage {
      */
     @Instruction(interopService = SYSTEM_STORAGE_GET)
     public static native Hash256 getHash256(StorageContext context, ECPoint key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, ECPoint key);
 
     /**
      * Returns the value corresponding to the given key and converts it to a byte array.

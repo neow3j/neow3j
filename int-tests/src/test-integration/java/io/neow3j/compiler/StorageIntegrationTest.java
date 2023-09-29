@@ -366,6 +366,85 @@ public class StorageIntegrationTest {
     }
 
     // endregion
+    // region getECPoint
+
+    @Test
+    public void getECPointByByteArrayKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName);
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByByteStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName);
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByStringKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName);
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByIntegerKey() throws Throwable {
+        ContractParameter key = byteArrayFromString(testName);
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, key, data);
+
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByHash160Key() throws Throwable {
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH160_HEX)), data);
+
+        ContractParameter key = hash160(KEY_HASH160);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByHash256Key() throws Throwable {
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH256_HEX)), data);
+
+        ContractParameter key = hash256(KEY_HASH256);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    @Test
+    public void getECPointByECPointKey() throws Throwable {
+        ContractParameter data = publicKey(ECPOINT_VAL);
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(KEY_ECPOINT_HEX), data);
+
+        ContractParameter key = publicKey(KEY_ECPOINT);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getHexString(), is(ECPOINT_HEX_VAL));
+    }
+
+    // endregion
     // region getByteArray
 
     @Test
@@ -1572,6 +1651,56 @@ public class StorageIntegrationTest {
             io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
+        }
+
+        // endregion
+        // region getECPoint
+
+        public static io.neow3j.devpack.ECPoint getECPointByByteArrayKey(byte[] key) {
+            byte[] k = new ByteString(key).toByteArray();
+            assert k instanceof byte[];
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByByteStringKey(ByteString key) {
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByStringKey(String key) {
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByIntegerKey(int key) {
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByHash160Key(io.neow3j.devpack.Hash160 key) {
+            assert io.neow3j.devpack.Hash160.isValid(key);
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByHash256Key(io.neow3j.devpack.Hash256 key) {
+            assert io.neow3j.devpack.Hash256.isValid(key);
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
+        }
+
+        public static io.neow3j.devpack.ECPoint getECPointByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            io.neow3j.devpack.ECPoint point = Storage.getECPoint(ctx, key);
+            assert io.neow3j.devpack.ECPoint.isValid(point);
+            return point;
         }
 
         // endregion
