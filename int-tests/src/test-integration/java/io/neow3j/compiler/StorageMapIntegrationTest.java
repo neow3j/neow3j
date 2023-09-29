@@ -1,6 +1,8 @@
 package io.neow3j.compiler;
 
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.ByteString;
+import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
 import io.neow3j.devpack.StorageContext;
@@ -32,6 +34,7 @@ import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.publicKey;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
@@ -41,6 +44,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuppressWarnings("unchecked")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -93,6 +97,16 @@ public class StorageMapIntegrationTest {
 
     private static final String KEY_HASH256_HEX = "442050ddb914d41b80481a03938e63b1bb88a28f2acb8e636492205392e9f014";
     private static final Hash256 KEY_HASH256 = new Hash256(KEY_HASH256_HEX);
+
+    private static final String KEY_ECPOINT_HEX = "03afcc76bedc01df1d28f95f4e173fdb1d7271c974a46e7cf277e7776737bebdf2";
+    private static final ECPublicKey KEY_ECPOINT = new ECPublicKey(hexStringToByteArray(KEY_ECPOINT_HEX));
+
+    private static final String ECPOINT_HEX_VAL = "02e986f4c8e007554e0c8d38861c273cc1a20eaf828417221fab6e4be9060ffcb7";
+    private static final ECPublicKey ECPOINT_VAL = new ECPublicKey(hexStringToByteArray(ECPOINT_HEX_VAL));
+
+    private static final String ECPOINT_HEX_VAL_2 =
+            "0232e49fe7e4beea4b38d5cb71270ff63617aa7b59d071d26d37e5888bf23e2f51";
+    private static final ECPublicKey ECPOINT_VAL_2 = new ECPublicKey(hexStringToByteArray(ECPOINT_HEX_VAL_2));
 
     private static final Integer KEY_WITHOUT_VALUE = 8;
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
@@ -679,6 +693,99 @@ public class StorageMapIntegrationTest {
     }
 
     // endregion
+    // region get ecpoint key
+
+    @Test
+    public void getByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), byteArrayFromString("Moon"));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getString(), is("Moon"));
+    }
+
+    @Test
+    public void getHash160ByECPointKey() throws Throwable {
+        Hash160 hash160 = new Hash160("a8387e42ccc4366121e519f6133090f0525e5ec6");
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), hash160(hash160));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getAddress(), is(hash160.toAddress()));
+    }
+
+    @Test
+    public void getHash256ByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), hash256(hash256));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(reverseArray(hash256.toArray())));
+    }
+
+    @Test
+    public void getByteArrayByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL),
+                byteArrayFromString("My name is Trinity."));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BUFFER));
+        assertThat(res.getStack().get(0).getString(), is("My name is Trinity."));
+    }
+
+    @Test
+    public void getStringByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL),
+                string("Trinity and Neo"));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getString(), is("Trinity and Neo"));
+    }
+
+    @Test
+    public void getBooleanByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), bool(true));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BOOLEAN));
+        assertThat(res.getStack().get(0).getBoolean(), is(true));
+    }
+
+    @Test
+    public void getIntByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), integer(777));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(777)));
+    }
+
+    @Test
+    public void getIntOrZeroByECPointKey() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(ECPOINT_HEX_VAL), integer(10100));
+
+        ContractParameter key = publicKey(ECPOINT_VAL);
+        InvocationResult res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(10100)));
+
+        // Test that instructions return 0 if no value was found for the provided key.
+        ECPublicKey keyNoValue = new ECPublicKey("0333af5eb246f3b853580e1ec889e7cf9e4f18390a9487cc330a44ba14b1c5350b");
+        key = publicKey(keyNoValue);
+        res = ct.callInvokeFunction(testName, key).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.INTEGER));
+        assertThat(res.getStack().get(0).getInteger(), is(BigInteger.ZERO));
+    }
+
+    // endregion
     // region put bytearray key
 
     @Test
@@ -1063,6 +1170,68 @@ public class StorageMapIntegrationTest {
     }
 
     // endregion
+    // region put ecpoint key
+
+    @Test
+    public void putECPointKeyByteArrayValue() throws IOException {
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putECPointKeyByteStringValue() throws IOException {
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = byteArray(new byte[]{1, 2, 5, 6});
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(value.getValue()));
+    }
+
+    @Test
+    public void putECPointKeyIntegerValue() throws IOException {
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = integer(28);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getInteger(), is(value.getValue()));
+    }
+
+    @Test
+    public void putECPointKeyBooleanValue() throws IOException {
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = bool(true);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getStack().get(0).getByteArray(), is(new byte[]{0x01}));
+    }
+
+    @Test
+    public void putECPointKeyStringValue() throws IOException {
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = string("hello neow3j");
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getString(), is("hello neow3j"));
+    }
+
+    @Test
+    public void putECPointKeyHash160Value() throws IOException {
+        Hash160 v = ct.getClient1().getScriptHash();
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = hash160(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getAddress(), is(v.toAddress()));
+    }
+
+    @Test
+    public void putECPointKeyHash256Value() throws IOException {
+        Hash256 v = ct.getBlockHashOfDeployTx();
+        ContractParameter key = publicKey(ECPOINT_VAL_2);
+        ContractParameter value = hash256(v);
+        InvocationResult res = ct.callInvokeFunction(testName, key, value).getInvocationResult();
+        assertThat(res.getStack().get(0).getByteArray(), is(v.toLittleEndianArray()));
+    }
+
+    // endregion
     // region delete
 
     @Test
@@ -1101,6 +1270,19 @@ public class StorageMapIntegrationTest {
         assertThat(res.getStack().get(0).getInteger(), is(BigInteger.valueOf(DATA8)));
         res = ct.callInvokeFunction(testName, key).getInvocationResult();
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
+    }
+
+    @Test
+    public void deleteByECPoint() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(KEY_ECPOINT_HEX), byteArrayFromString("del by point"));
+
+        InvocationResult res = ct.callInvokeFunction("getByECPointKey", publicKey(KEY_ECPOINT)).getInvocationResult();
+
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getString(), is("del by point"));
+
+        res = ct.callInvokeFunction(testName, publicKey(KEY_ECPOINT)).getInvocationResult();
+        assertNull(res.getFirstStackItem().getValue());
     }
 
     // endregion
@@ -1418,6 +1600,49 @@ public class StorageMapIntegrationTest {
         }
 
         // endregion
+        // region get ecpoint key
+
+        public static ByteString getByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.get(key);
+        }
+
+        public static io.neow3j.devpack.Hash160 getHash160ByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getHash160(key);
+        }
+
+        public static io.neow3j.devpack.Hash256 getHash256ByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getHash256(key);
+        }
+
+        public static byte[] getByteArrayByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getByteArray(key);
+        }
+
+        public static String getStringByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getString(key);
+        }
+
+        public static boolean getBooleanByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getBoolean(key);
+        }
+
+        public static int getIntByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getInt(key);
+        }
+
+        public static int getIntOrZeroByECPointKey(io.neow3j.devpack.ECPoint key) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            return map.getIntOrZero(key);
+        }
+
+        // endregion
         // region put bytearray key
 
         public static ByteString putByteArrayKeyByteArrayValue(byte[] key, byte[] value) {
@@ -1672,6 +1897,53 @@ public class StorageMapIntegrationTest {
         }
 
         // endregion
+        // region put ecpoint key
+
+        public static ByteString putECPointKeyByteArrayValue(io.neow3j.devpack.ECPoint key, byte[] value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyByteStringValue(io.neow3j.devpack.ECPoint key, ByteString value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyIntegerValue(io.neow3j.devpack.Hash256 key, int value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyBooleanValue(io.neow3j.devpack.Hash256 key, boolean value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyStringValue(io.neow3j.devpack.Hash256 key, String value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyHash160Value(io.neow3j.devpack.Hash256 key,
+                io.neow3j.devpack.Hash160 value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        public static ByteString putECPointKeyHash256Value(io.neow3j.devpack.ECPoint key,
+                io.neow3j.devpack.Hash256 value) {
+            assert io.neow3j.devpack.ECPoint.isValid(key);
+            map.put(key, value);
+            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+        }
+
+        // endregion
         // region delete
 
         public static ByteString deleteByByteArrayKey(byte[] key) {
@@ -1692,6 +1964,11 @@ public class StorageMapIntegrationTest {
         public static ByteString deleteByInteger(int key) {
             map.delete(key);
             return Storage.get(ctx, prefix.concat(key));
+        }
+
+        public static ByteString deleteByECPoint(ECPoint key) {
+            map.delete(key);
+            return Storage.get(ctx, prefix.concat(key.toByteString()));
         }
 
         // endregion
