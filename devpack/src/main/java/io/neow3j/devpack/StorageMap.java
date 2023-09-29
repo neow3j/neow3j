@@ -2562,6 +2562,38 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(Hash160 key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
+    public native void delete(Hash256 key);
+
+    /**
+     * Deletes the entry with a key equal to {@code prefix + key} from the underlying storage context.
+     *
+     * @param key The key to delete.
+     */
+    @Instruction(opcode = OpCode.OVER)
+    @Instruction(opcode = OpCode.PUSH1)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.CAT)
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.PICKITEM)
+    @Instruction(interopService = InteropService.SYSTEM_STORAGE_DELETE)
     public native void delete(ECPoint key);
 
     // endregion delete

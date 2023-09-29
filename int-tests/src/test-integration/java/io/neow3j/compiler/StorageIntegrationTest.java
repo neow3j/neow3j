@@ -1418,6 +1418,35 @@ public class StorageIntegrationTest {
         assertThat(res.getStack().get(0).getValue(), is(nullValue()));
     }
 
+
+    @Test
+    public void deleteByHash160Key() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH160_HEX)),
+                byteArrayFromString("delete by hash160"));
+
+        InvocationResult res = ct.callInvokeFunction("getByHash160Key", hash160(KEY_HASH160))
+                .getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getString(), is("delete by hash160"));
+
+        res = ct.callInvokeFunction(testName, hash160(KEY_HASH160)).getInvocationResult();
+        assertNull(res.getFirstStackItem().getValue());
+    }
+
+    @Test
+    public void deleteByHash256Key() throws Throwable {
+        ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(reverseHexString(KEY_HASH256_HEX)),
+                byteArrayFromString("delete by hash256"));
+
+        InvocationResult res = ct.callInvokeFunction("getByHash256Key", hash256(KEY_HASH256))
+                .getInvocationResult();
+        assertThat(res.getFirstStackItem().getType(), is(StackItemType.BYTE_STRING));
+        assertThat(res.getFirstStackItem().getString(), is("delete by hash256"));
+
+        res = ct.callInvokeFunction(testName, hash256(KEY_HASH256)).getInvocationResult();
+        assertNull(res.getFirstStackItem().getValue());
+    }
+
     @Test
     public void deleteByECPointKey() throws Throwable {
         ct.invokeFunctionAndAwaitExecution(STORE_DATA, byteArray(KEY_ECPOINT_HEX),
@@ -2261,6 +2290,16 @@ public class StorageIntegrationTest {
         }
 
         public static ByteString deleteByIntegerKey(int key) {
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString deleteByHash160Key(io.neow3j.devpack.Hash160 key) {
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
+        }
+
+        public static ByteString deleteByHash256Key(io.neow3j.devpack.Hash256 key) {
             Storage.delete(ctx, key);
             return Storage.get(ctx, key);
         }
