@@ -165,6 +165,137 @@ public class Storage {
     public static native Integer getIntOrZero(StorageContext context, byte[] key);
 
     // endregion get bytearray key
+    // region get bytestring type key
+
+    /**
+     * Returns the value corresponding to the given key.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ByteString get(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash160}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash160.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash160 getHash160(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code Hash256}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a Hash256.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native Hash256 getHash256(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key as a {@code ECPoint}.
+     * <p>
+     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
+     * verify the correct format.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a ECPoint.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native ECPoint getECPoint(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to a byte array.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to a byte array.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    public static native byte[] getByteArray(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key as a string.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a string.
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    public static native String getString(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key as a boolean.
+     * <p>
+     * This does not incur any extra GAS costs.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key as a boolean.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.NOT)
+    @Instruction(opcode = OpCode.NOT)
+    public static native Boolean getBoolean(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getInt(StorageContext context, ByteStringType key);
+
+    /**
+     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
+     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
+     * <p>
+     * Returns 0, if no value is found for the provided key.
+     * <p>
+     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
+     *
+     * @param context the storage context to search in.
+     * @param key     the key to search for.
+     * @return the value corresponding to the given key converted to an integer.
+     */
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GET)
+    @Instruction(opcode = OpCode.DUP)
+    @Instruction(opcode = OpCode.ISNULL)
+    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
+    @Instruction(opcode = OpCode.DROP)
+    @Instruction(opcode = OpCode.PUSH0)
+    @Instruction(opcode = OpCode.JMP, operand = 0x04)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    public static native Integer getIntOrZero(StorageContext context, ByteStringType key);
+
+    // endregion get bytestring key
     // region get string key
 
     /**
@@ -296,137 +427,6 @@ public class Storage {
     public static native Integer getIntOrZero(StorageContext context, String key);
 
     // endregion get string key
-    // region get bytestring key
-
-    /**
-     * Returns the value corresponding to the given key.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ByteString get(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash160}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash160.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash160 getHash160(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash256}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash256.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash256 getHash256(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code ECPoint}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a ECPoint.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ECPoint getECPoint(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to a byte array.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to a byte array.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    public static native byte[] getByteArray(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key as a string.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a string.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native String getString(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key as a boolean.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a boolean.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.NOT)
-    @Instruction(opcode = OpCode.NOT)
-    public static native Boolean getBoolean(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInt(StorageContext context, ByteString key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * Returns 0, if no value is found for the provided key.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
-    @Instruction(opcode = OpCode.DROP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getIntOrZero(StorageContext context, ByteString key);
-
-    // endregion get bytestring key
     // region get integer key
 
     /**
@@ -558,399 +558,6 @@ public class Storage {
     public static native Integer getIntOrZero(StorageContext context, int key);
 
     // endregion
-    // region get hash160 key
-
-    /**
-     * Returns the value corresponding to the given key.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ByteString get(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash160}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash160.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash160 getHash160(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash256}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash256.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash256 getHash256(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code ECPoint}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a ECPoint.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ECPoint getECPoint(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to a byte array.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to a byte array.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    public static native byte[] getByteArray(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key as a string.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a string.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native String getString(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key as a boolean.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a boolean.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.NOT)
-    @Instruction(opcode = OpCode.NOT)
-    public static native Boolean getBoolean(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInt(StorageContext context, Hash160 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * Returns 0, if no value is found for the provided key.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
-    @Instruction(opcode = OpCode.DROP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getIntOrZero(StorageContext context, Hash160 key);
-
-    // endregion
-    // region get hash256 key
-
-    /**
-     * Returns the value corresponding to the given key.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ByteString get(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash160}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash160.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash160 getHash160(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash256}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash256.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash256 getHash256(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code ECPoint}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a ECPoint.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ECPoint getECPoint(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to a byte array.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to a byte array.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    public static native byte[] getByteArray(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key as a string.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a string.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native String getString(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key as a boolean.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a boolean.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.NOT)
-    @Instruction(opcode = OpCode.NOT)
-    public static native Boolean getBoolean(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInt(StorageContext context, Hash256 key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * Returns 0, if no value is found for the provided key.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
-    @Instruction(opcode = OpCode.DROP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getIntOrZero(StorageContext context, Hash256 key);
-
-    // endregion
-    // region get ecpoint key
-
-    /**
-     * Returns the value corresponding to the given key.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ByteString get(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash160}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash160}.</b> Use {@link Hash160#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash160.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash160 getHash160(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code Hash256}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code Hash256}.</b> Use {@link Hash256#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a Hash256.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native Hash256 getHash256(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key as a {@code ECPoint}.
-     * <p>
-     * <b>Does NOT check if the value is a valid {@code ECPoint}.</b> Use {@link ECPoint#isValid(Object)} in order to
-     * verify the correct format.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a ECPoint.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native ECPoint getECPoint(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to a byte array.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to a byte array.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to a byte array.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
-    public static native byte[] getByteArray(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key as a string.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a string.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    public static native String getString(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key as a boolean.
-     * <p>
-     * This does not incur any extra GAS costs.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key as a boolean.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.NOT)
-    @Instruction(opcode = OpCode.NOT)
-    public static native Boolean getBoolean(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getInt(StorageContext context, ECPoint key);
-
-    /**
-     * Returns the value corresponding to the given key and converts it to an integer. The bytes are read in
-     * little-endian format. E.g., the byte string {@code 0102} (in hexadecimal representation) is converted to 513.
-     * <p>
-     * Returns 0, if no value is found for the provided key.
-     * <p>
-     * This incurs the GAS cost of converting the {@code ByteString} value to an integer.
-     *
-     * @param context the storage context to search in.
-     * @param key     the key to search for.
-     * @return the value corresponding to the given key converted to an integer.
-     */
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISNULL)
-    @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x06)
-    @Instruction(opcode = OpCode.DROP)
-    @Instruction(opcode = OpCode.PUSH0)
-    @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
-    public static native Integer getIntOrZero(StorageContext context, ECPoint key);
-
-    // endregion
     // region put bytearray key
 
     /**
@@ -991,16 +598,6 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, byte[] key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, byte[] key, String value);
 
     /**
@@ -1011,30 +608,10 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, byte[] key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, byte[] key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, byte[] key, ECPoint value);
+    public static native void put(StorageContext context, byte[] key, ByteStringType value);
 
     // endregion put bytearray key
-    // region put bytestring key
+    // region put bytestring type key
 
     /**
      * Stores the given key-value pair.
@@ -1044,7 +621,7 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, byte[] value);
+    public static native void put(StorageContext context, ByteStringType key, byte[] value);
 
     /**
      * Stores the given key-value pair.
@@ -1054,7 +631,7 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, int value);
+    public static native void put(StorageContext context, ByteStringType key, int value);
 
     /**
      * Stores the given key-value pair.
@@ -1064,7 +641,7 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, boolean value);
+    public static native void put(StorageContext context, ByteStringType key, boolean value);
 
     /**
      * Stores the given key-value pair.
@@ -1074,7 +651,7 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, String value);
+    public static native void put(StorageContext context, ByteStringType key, String value);
 
     /**
      * Stores the given key-value pair.
@@ -1084,39 +661,9 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, ByteString value);
+    public static native void put(StorageContext context, ByteStringType key, ByteStringType value);
 
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ByteString key, ECPoint value);
-
-    // endregion put bytestring key
+    // endregion
     // region put string key
 
     /**
@@ -1167,37 +714,7 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, String key, ECPoint value);
+    public static native void put(StorageContext context, String key, ByteStringType value);
 
     // endregion put string key
     // region put integer key
@@ -1240,16 +757,6 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, int key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, int key, String value);
 
     /**
@@ -1260,278 +767,9 @@ public class Storage {
      * @param value   the value to store.
      */
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, int key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, int key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, int key, ECPoint value);
+    public static native void put(StorageContext context, int key, ByteStringType value);
 
     // endregion put integer key
-    // region put hash160 key
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, byte[] value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, int value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, boolean value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, String value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash160 key, ECPoint value);
-
-    // endregion
-    // region put hash256 key
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, byte[] value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, int value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, boolean value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, String value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, Hash256 key, ECPoint value);
-
-    // endregion
-    // region put ecpoint key
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, byte[] value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, int value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, boolean value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, ByteString value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, String value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, Hash160 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, Hash256 value);
-
-    /**
-     * Stores the given key-value pair.
-     *
-     * @param context the storage context to store the value in.
-     * @param key     the key.
-     * @param value   the value to store.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_PUT)
-    public static native void put(StorageContext context, ECPoint key, ECPoint value);
-
-    // endregion
     // region delete
 
     /**
@@ -1550,7 +788,8 @@ public class Storage {
      * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, ByteString key);
+    public static native void delete(StorageContext context, int key);
+
 
     /**
      * Deletes the value corresponding to the given key from the storage.
@@ -1568,34 +807,7 @@ public class Storage {
      * @param key     the key to delete.
      */
     @Instruction(interopService = SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, int key);
-
-    /**
-     * Deletes the value corresponding to the given key from the storage.
-     *
-     * @param context the storage context to delete from.
-     * @param key     the key to delete.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, Hash160 key);
-
-    /**
-     * Deletes the value corresponding to the given key from the storage.
-     *
-     * @param context the storage context to delete from.
-     * @param key     the key to delete.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, Hash256 key);
-
-    /**
-     * Deletes the value corresponding to the given key from the storage.
-     *
-     * @param context the storage context to delete from.
-     * @param key     the key to delete.
-     */
-    @Instruction(interopService = SYSTEM_STORAGE_DELETE)
-    public static native void delete(StorageContext context, ECPoint key);
+    public static native void delete(StorageContext context, ByteStringType key);
 
     // endregion delete
     // region find
@@ -1661,10 +873,10 @@ public class Storage {
      * @param context     the storage context to use.
      * @param prefix      the key prefix.
      * @param findOptions the find options to control the kind of iterator to return.
-     * @return an iterator over key, values, or key-value pairs found under the given prefix.
+     * @return an iterator over key, values or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, ByteString prefix, int findOptions);
+    public static native Iterator find(StorageContext context, int prefix, int findOptions);
 
     /**
      * Returns an iterator over the values found under the given key prefix.
@@ -1727,10 +939,10 @@ public class Storage {
      * @param context     the storage context to use.
      * @param prefix      the key prefix.
      * @param findOptions the find options to control the kind of iterator to return.
-     * @return an iterator over key, values or key-value pairs found under the given prefix.
+     * @return an iterator over key, values, or key-value pairs found under the given prefix.
      */
     @Instruction(interopService = SYSTEM_STORAGE_FIND)
-    public static native Iterator find(StorageContext context, int prefix, int findOptions);
+    public static native Iterator find(StorageContext context, ByteStringType prefix, int findOptions);
 
     // endregion find
 

@@ -8,7 +8,7 @@ import io.neow3j.types.StackItemType;
  * Represents a public key elliptic curve point. Use this class instead of plain byte arrays and strings to validate
  * that a value is actually a 33 byte EC point.
  */
-public class ECPoint {
+public class ECPoint extends ByteStringType {
 
     private static final byte LENGTH = 0x21; // 33 bytes
 

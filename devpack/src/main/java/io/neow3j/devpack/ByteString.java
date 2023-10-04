@@ -12,7 +12,7 @@ import io.neow3j.types.StackItemType;
  * converted to and from {@code ByteString} without any GAS costs. The conversion to byte array and integer are not
  * free.
  */
-public class ByteString {
+public class ByteString extends ByteStringType {
 
     /**
      * Constructs a new {@code ByteString} from the given string. The given string is interpreted as a UTF-8 encoded
@@ -122,7 +122,7 @@ public class ByteString {
      */
     @Instruction(opcode = OpCode.CAT)
     @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
-    public native ByteString concat(ByteString other);
+    public native ByteString concat(ByteStringType other);
 
     /**
      * Concatenates this byte string and the given byte array. The returned value is a new byte string instance.
