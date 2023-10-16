@@ -13,7 +13,6 @@ dependencies {
 
     testImplementation "nl.jqno.equalsverifier:equalsverifier:$equalsverifierVersion",
             "ch.qos.logback:logback-classic:$logbackVersion",
-            "org.jetbrains:annotations:$jetbrainsAnnotationsVersion",
             project(':test-tools')
 }
 

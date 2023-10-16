@@ -32,22 +32,23 @@ artifacts {
 // Todo: build task of this module should depend on the download tasks below
 // Todo: Include all the .so files inside the jar (might be automatically done, but need to check)
 
-task downloadLibZip(type: Download) {
-    src "https://github.com/neow3j/neofs-api-shared-lib/releases/download/$neofsSharedLibVersion/libneofs-all.zip"
-    dest new File(temporaryDir, 'libneofs-all.zip')
-    onlyIfModified true
-}
-
-task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
-    from zipTree(downloadLibZip.dest)
-    into sourceSets.main.output.resourcesDir
-}
-
-jar {
-    dependsOn downloadAndUnzipLib
-    from sourceSets.main.output.resourcesDir
-}
-
-build {
-    dependsOn downloadAndUnzipLib
-}
+// Uncomment this when continuing with neofs development
+//task downloadLibZip(type: Download) {
+//    src "https://github.com/neow3j/neofs-api-shared-lib/releases/download/$neofsSharedLibVersion/libneofs-all.zip"
+//    dest new File(temporaryDir, 'libneofs-all.zip')
+//    onlyIfModified true
+//}
+//
+//task downloadAndUnzipLib(dependsOn: downloadLibZip, type: Copy) {
+//    from zipTree(downloadLibZip.dest)
+//    into sourceSets.main.output.resourcesDir
+//}
+//
+//jar {
+//    dependsOn downloadAndUnzipLib
+//    from sourceSets.main.output.resourcesDir
+//}
+//
+//build {
+//    dependsOn downloadAndUnzipLib
+//}
