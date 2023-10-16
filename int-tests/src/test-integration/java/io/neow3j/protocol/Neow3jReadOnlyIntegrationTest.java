@@ -1376,16 +1376,17 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testFindStates_startKeyAndCount() throws IOException {
-        long stateHeight = getNeow3j().getStateHeight().send()
-                .getStateHeight().getLocalRootIndex();
-        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send()
-                .getStateRoot().getRootHash();
         String keyPrefix = "14";
         String startKey = "147f";
         Hash160 contractHash = new Hash160(gasTokenHash());
+
+        long stateHeight = getNeow3j().getStateHeight().send().getStateHeight().getLocalRootIndex();
+        Hash256 rootHash = getNeow3j().getStateRoot(stateHeight).send().getStateRoot().getRootHash();
+
         NeoFindStates.States states = getNeow3j()
                 .findStates(rootHash, contractHash, keyPrefix, startKey, 1).send()
                 .getStates();
+
         assertNotNull(states.getFirstProof());
         assertNull(states.getLastProof());
         assertFalse(states.isTruncated());
