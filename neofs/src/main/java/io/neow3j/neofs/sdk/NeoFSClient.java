@@ -5,9 +5,9 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.neofs.lib.NeoFSLib;
 import io.neow3j.neofs.lib.NeoFSLibInterface;
+import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.lib.responses.PointerResponse;
 import io.neow3j.neofs.lib.responses.Response;
-import io.neow3j.neofs.lib.responses.ExpectedResponseType;
 import io.neow3j.neofs.sdk.accounting.Accounting;
 import io.neow3j.neofs.sdk.container.Container;
 import io.neow3j.neofs.sdk.dto.ContainerListResponse;
@@ -91,6 +91,7 @@ public class NeoFSClient {
     /**
      * Creates a client to interace with NeoFS.
      *
+     * @param lib           the loaded library.
      * @param account       the account used to sign requests made with this client.
      * @param neofsEndpoint the NeoFS endpoint requests are sent to with this client.
      * @return the client id.
@@ -107,6 +108,8 @@ public class NeoFSClient {
      * Deletes this client in memory.
      * <p>
      * Note, that after calling this method this NeoFSClient instance will no longer be able to issue requests.
+     *
+     * @return true, if the client deletion was successful. False, otherwise.
      */
     public boolean deleteClient() {
         PointerResponse response = nativeLib.DeleteClient(clientId);
