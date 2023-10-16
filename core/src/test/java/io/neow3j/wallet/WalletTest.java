@@ -3,7 +3,6 @@ package io.neow3j.wallet;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
-import com.google.common.io.Files;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.NEP2;
 import io.neow3j.crypto.exceptions.CipherException;
@@ -23,6 +22,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -412,8 +412,8 @@ public class WalletTest {
         return testFile;
     }
 
-    private File createTempDir() {
-        File tempDir = Files.createTempDir();
+    private File createTempDir() throws IOException {
+        File tempDir = Files.createTempDirectory("neow3j").toFile();
         tempDir.deleteOnExit();
         return tempDir;
     }
