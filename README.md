@@ -30,7 +30,7 @@ To make use of all neow3j SDK features, add `io.neow3j:contract` to your depende
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.21.0'
+implementation 'io.neow3j:contract:3.21.1'
 ```
 
 __Maven__
@@ -39,7 +39,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>3.21.0</version>
+    <version>3.21.1</version>
 </dependency>
 ```
 
@@ -56,7 +56,7 @@ Then, add the following dependency to your project.
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.21.0'
+implementation 'io.neow3j:devpack:3.21.1'
 ```
 
 __Maven__
@@ -65,7 +65,7 @@ __Maven__
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>3.21.0</version>
+    <version>3.21.1</version>
 </dependency>
 ```
 
