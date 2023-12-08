@@ -269,6 +269,17 @@ public class StdLibIntegrationTest {
         assertThat(strings.get(3).getString(), is("world"));
     }
 
+    @Test
+    public void getStringLength() throws Throwable {
+        String s = "hello, world!";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(s));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(s.length()));
+
+        String complexString = "🦆+ã";
+        response = ct.callInvokeFunction(testName, string(complexString));
+        assertThat(response.getInvocationResult().getStack().get(0).getInteger().intValue(), is(3));
+    }
+
     static class StdLibIntegrationTestContract {
 
         static StdLib stdLib = new StdLib();
@@ -348,6 +359,10 @@ public class StdLibIntegrationTest {
 
         public static String[] stringSplitRemoveEmptyEntries(String s, String sep) {
             return stdLib.stringSplit(s, sep, true);
+        }
+
+        public static int getStringLength(String s) {
+            return stdLib.strLen(s);
         }
 
         @Struct

@@ -65,7 +65,6 @@ public class StdLib extends ContractInterface {
      */
     public native Object deserialize(ByteString source);
 
-
     /**
      * Serializes the given object to a JSON string.
      * <p>
@@ -260,5 +259,15 @@ public class StdLib extends ContractInterface {
      * @return the list of separated strings.
      */
     public native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
+
+    /**
+     * Returns the length of the string.
+     * <p>
+     * Note, that the length considers UTF-16 elements as one, that means that it will return 1 for "a", "ã" and "🦆".
+     *
+     * @param str the string.
+     * @return the length of the string.
+     */
+    public native int strLen(String str);
 
 }
