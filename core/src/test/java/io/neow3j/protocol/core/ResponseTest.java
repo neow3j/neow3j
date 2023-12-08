@@ -604,10 +604,7 @@ public class ResponseTest extends ResponseTester {
                         "                ],\n" +
                         "                \"trusts\": [],\n" +
                         "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
+                        "            }\n" +
                         "        },\n" +
                         "        {\n" +
                         "            \"id\": -8,\n" +
@@ -669,10 +666,7 @@ public class ResponseTest extends ResponseTester {
                         "                ],\n" +
                         "                \"trusts\": [],\n" +
                         "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
+                        "            }\n" +
                         "        },\n" +
                         "        {\n" +
                         "            \"id\": -9,\n" +
@@ -798,10 +792,7 @@ public class ResponseTest extends ResponseTester {
                         "                ],\n" +
                         "                \"trusts\": [],\n" +
                         "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
+                        "            }\n" +
                         "        }\n" +
                         "    ]\n" +
                         "}"
@@ -837,8 +828,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest1.getAbi().getFirstEvent(), is(manifest1.getAbi().getEvent(0)));
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest1.getAbi().getEvent(1));
         assertThat(thrown.getMessage(), containsString("only has 1 events"));
-        assertThat(c1.getUpdateHistory(), hasSize(1));
-        assertThat(c1.getUpdateHistory(), contains(0));
+        assertThat(c1.getUpdateHistory(), hasSize(0));
 
         NativeContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId().intValue(), is(-8));
@@ -860,7 +850,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest2.getAbi().getFirstEvent());
         assertThat(thrown.getMessage(), containsString("does not have any events"));
-        assertThat(c2.getUpdateHistory(), contains(0));
+        assertThat(c2.getUpdateHistory(), hasSize(0));
 
         NativeContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId().intValue(), is(-9));
@@ -878,7 +868,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest3.getSupportedStandards(), hasSize(0));
         assertThat(manifest3.getAbi().getMethods(), hasSize(5));
         assertThat(manifest3.getAbi().getEvents(), hasSize(2));
-        assertThat(c3.getUpdateHistory(), contains(0));
+        assertThat(c3.getUpdateHistory(), hasSize(0));
     }
 
     @Test

@@ -382,8 +382,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
 
-        assertThat(contractState1.getUpdateHistory(), hasSize(1));
-        assertThat(contractState1.getUpdateHistory().get(0), is(0));
+        assertThat(contractState1.getUpdateHistory(), hasSize(0));
 
         NativeContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId().intValue(), is(-9));
@@ -425,8 +424,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getTrusts(), hasSize(0));
         assertNull(manifest8.getExtra());
 
-        assertThat(contractState8.getUpdateHistory(), hasSize(1));
-        assertThat(contractState8.getUpdateHistory().get(0), is(0));
+        assertThat(contractState8.getUpdateHistory(), hasSize(0));
     }
 
     @Test
