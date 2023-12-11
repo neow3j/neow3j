@@ -1626,7 +1626,13 @@ public class ResponseTest extends ResponseTester {
                         "            \"addressversion\": 22,\n" +
                         "            \"maxtransactionsperblock\": 150000,\n" +
                         "            \"memorypoolmaxtransactions\": 34000,\n" +
-                        "            \"initialgasdistribution\": 14\n" +
+                        "            \"initialgasdistribution\": 14,\n" +
+                        "            \"hardforks\": [\n" +
+                        "                {\n" +
+                        "                    \"name\": \"HF_Aspidochelone\",\n" +
+                        "                    \"blockheight\": 0\n" +
+                        "                }\n" +
+                        "            ]\n" +
                         "        }\n" +
                         "    }\n" +
                         "}"
@@ -1649,6 +1655,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
         assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
+        assertThat(protocol.getHardforks(), hasSize(1));
+
+        assertThat(protocol.getHardforks(), hasSize(1));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks firstHardfork = protocol.getHardforks().get(0);
+        assertThat(firstHardfork.getName(), is("HF_Aspidochelone"));
+        assertThat(firstHardfork.getBlockHeight(), is(BigInteger.ZERO));
     }
 
 
@@ -1664,14 +1676,16 @@ public class ResponseTest extends ResponseTester {
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
                         "        \"protocol\": {\n" +
-                        "            \"addressversion\": 22,\n" +
                         "            \"network\": 4232068425,\n" +
+                        "            \"validatorscount\": 3,\n" +
                         "            \"msperblock\": 15000,\n" +
                         "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"addressversion\": 22,\n" +
                         "            \"maxvaliduntilblockincrement\": 1,\n" +
                         "            \"maxtransactionsperblock\": 150000,\n" +
                         "            \"memorypoolmaxtransactions\": 34000,\n" +
-                        "            \"initialgasdistribution\": 14\n" +
+                        "            \"initialgasdistribution\": 14,\n" +
+                        "            \"hardforks\":  []\n" +
                         "        }\n" +
                         "    }\n" +
                         "}"
@@ -1686,14 +1700,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
-        assertThat(protocol.getAddressVersion(), is(22));
         assertThat(protocol.getNetwork(), is(4232068425L));
+        assertThat(protocol.getValidatorsCount(), is(3));
         assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
         assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getAddressVersion(), is(22));
         assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
         assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
+        assertThat(protocol.getHardforks(), is(hasSize(0)));
     }
 
     @Test

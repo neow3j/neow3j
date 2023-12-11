@@ -733,6 +733,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(50_000));
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
+        assertThat(protocol.getHardforks(), hasSize(0));
     }
 
     // SmartContract Methods
