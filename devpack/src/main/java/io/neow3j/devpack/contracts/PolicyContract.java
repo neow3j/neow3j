@@ -14,6 +14,11 @@ public class PolicyContract extends ContractInterface {
     public static final int MaxExecFeeFactor = 100;
 
     /**
+     * The maximum attribute fee that the committee can set.
+     */
+    public static final int maxAttributeFee = 10_0000_0000;
+
+    /**
      * The maximum storage price that the committee can set.
      */
     public static final int MaxStoragePrice = 10000000;
@@ -113,5 +118,21 @@ public class PolicyContract extends ContractInterface {
      * @param price the desired price for one byte of storage.
      */
     public native void setStoragePrice(int price);
+
+    /**
+     * Gets the GAS fee for the given attribute type.
+     *
+     * @param attributeType the attribute type.
+     * @return the GAS fee for the given attribute type.
+     */
+    public native int getAttributeFee(byte attributeType);
+
+    /**
+     * Sets the GAS fee for the given attribute type.
+     *
+     * @param attributeType the attribute type.
+     * @param fee the GAS fee.
+     */
+    public native void setAttributeFee(byte attributeType, int fee);
 
 }
