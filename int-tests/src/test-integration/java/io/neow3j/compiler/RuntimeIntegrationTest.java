@@ -8,17 +8,20 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
+import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.constants.CallFlags;
 import io.neow3j.devpack.constants.TriggerType;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
 import io.neow3j.protocol.core.response.InvocationResult;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.script.InteropService;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
@@ -216,6 +219,33 @@ public class RuntimeIntegrationTest {
     }
 
     @Test
+    public void currentSigners() throws Throwable {
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
+
+        assertThat(log.getFirstExecution().getStack(), hasSize(1));
+        List<StackItem> signersItems = log.getFirstExecution().getFirstStackItem().getList();
+        assertThat(signersItems, hasSize(1));
+        List<StackItem> signerItem = signersItems.get(0).getList();
+        assertThat(signerItem, hasSize(5));
+        assertThat(signerItem.get(0).getAddress(), is(ct.getDefaultAccount().getAddress()));
+        assertThat(signerItem.get(1).getInteger().byteValue(), is(WitnessScope.GLOBAL.byteValue()));
+        assertThat(signerItem.get(2).getList(), hasSize(0));
+        assertThat(signerItem.get(3).getList(), hasSize(0));
+        assertThat(signerItem.get(4).getList(), hasSize(0));
+    }
+
+    @Test
+    public void getFirstSignersWitnessScope() throws Throwable {
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName);
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
+
+        assertThat(log.getFirstExecution().getStack(), hasSize(1));
+        assertThat(log.getFirstExecution().getFirstStackItem().getInteger().byteValue(),
+                is(WitnessScope.GLOBAL.byteValue()));
+    }
+
+    @Test
     public void getNetwork() throws Throwable {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         BigInteger magic1 = res.getStack().get(0).getInteger();
@@ -299,6 +329,14 @@ public class RuntimeIntegrationTest {
 
         public static void burnGas() {
             Runtime.burnGas(Helper.pow(10, 10)); // burn 100 GAS
+        }
+
+        public static Signer[] currentSigners() {
+            return Runtime.currentSigners();
+        }
+
+        public static byte getFirstSignersWitnessScope() {
+            return Runtime.currentSigners()[0].witnessScopes;
         }
 
         public static int getNetwork() {
