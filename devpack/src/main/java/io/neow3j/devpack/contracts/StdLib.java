@@ -261,9 +261,12 @@ public class StdLib extends ContractInterface {
     public native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
 
     /**
-     * Returns the length of the string.
+     * Returns the number of characters of the string.
      * <p>
-     * Note, that the length considers UTF-16 elements as one, that means that it will return 1 for "a", "ã" and "🦆".
+     * Note, that this method considers each string "element" as one, that means that it will return 1 for "a", "ã" and
+     * "🦆". This length will be different from the length returned by {@link String#length()} if the string does
+     * contain non-ASCII characters. On the NeoVM, {@link String#length()} returns the byte length of the string. So,
+     * "🦆" has a byte length of 4.
      *
      * @param str the string.
      * @return the length of the string.
