@@ -4,6 +4,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.Witness;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
@@ -108,6 +109,24 @@ public class PolicyContractIntegrationTest {
 
         BigInteger newFeePerByte = policyContract.getStoragePrice();
         assertThat(newFeePerByte, is(expectedNewStoragePrice));
+    }
+
+    @Test
+    public void testSetAndGetAttributeFee() throws Throwable {
+        BigInteger attributeFee = policyContract.getAttributeFee(TransactionAttributeType.CONFLICTS);
+        assertThat(attributeFee, is(BigInteger.ZERO));
+
+        Transaction tx = policyContract.setAttributeFee(TransactionAttributeType.CONFLICTS, new BigInteger("300000"))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        BigInteger newAttributeFee = policyContract.getAttributeFee(TransactionAttributeType.CONFLICTS);
+        assertThat(newAttributeFee, is(new BigInteger("300000")));
     }
 
     @Test

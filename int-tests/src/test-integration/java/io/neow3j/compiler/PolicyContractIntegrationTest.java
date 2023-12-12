@@ -2,6 +2,7 @@ package io.neow3j.compiler;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.Permission;
+import io.neow3j.devpack.constants.AttributeType;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -21,6 +22,7 @@ import static io.neow3j.test.TestProperties.policyContractHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +32,7 @@ public class PolicyContractIntegrationTest {
     public static final long FEE_PER_BYTE = 1000L; // GAS fractions
     public static final int DEFAULT_EXEC_FEE_FACTOR = 30;
     public static final int DEFAULT_STORAGE_PRICE = 100000;
+    public static final int DEFAULT_ATTRIBUTE_FEE = 0;
 
     private String testName;
 
@@ -88,8 +91,7 @@ public class PolicyContractIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(99));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(res.get(0).getInteger(),
-                is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(99)));
     }
 
@@ -99,9 +101,19 @@ public class PolicyContractIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1000000));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(res.get(0).getInteger(),
-                is(BigInteger.valueOf(DEFAULT_STORAGE_PRICE)));
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_STORAGE_PRICE)));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(1000000)));
+    }
+
+    @Test
+    public void setAndGetAttributeFee() throws IOException {
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1345_0000));
+        List<StackItem> feeList = response.getInvocationResult().getFirstStackItem().getList();
+        assertThat(feeList, hasSize(3));
+        assertThat(feeList.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_ATTRIBUTE_FEE)));
+        assertThat(feeList.get(1).getInteger(), is(BigInteger.valueOf(1345_0000)));
+        assertThat(feeList.get(2).getInteger(), is(BigInteger.valueOf(10_0000_0000)));
     }
 
     @Test
@@ -154,6 +166,16 @@ public class PolicyContractIntegrationTest {
             policyContract.setStoragePrice(newPrice);
             prices[1] = policyContract.getStoragePrice();
             return prices;
+        }
+
+        public static int[] setAndGetAttributeFee(int newFeeConflicts) {
+            int[] fees = new int[3];
+            fees[0] = policyContract.getAttributeFee(AttributeType.Conflicts);
+            policyContract.setAttributeFee(AttributeType.Conflicts, newFeeConflicts);
+            fees[1] = policyContract.getAttributeFee(AttributeType.Conflicts);
+            policyContract.setAttributeFee(AttributeType.OracleResponse, PolicyContract.maxAttributeFee);
+            fees[2] = policyContract.getAttributeFee(AttributeType.OracleResponse);
+            return fees;
         }
 
     }
