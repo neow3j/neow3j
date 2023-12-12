@@ -1,11 +1,16 @@
 package io.neow3j.protocol.core.response;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
@@ -137,6 +142,11 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             @JsonProperty("initialgasdistribution")
             private BigInteger initialGasDistribution;
 
+            @JsonProperty("hardforks")
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
+            private List<Hardforks> hardforks = new ArrayList<>();
+
             public Protocol() {
             }
 
@@ -176,6 +186,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return initialGasDistribution;
             }
 
+            public List<Hardforks> getHardforks() {
+                return hardforks;
+            }
+
             @Override
             public boolean equals(Object o) {
                 if (this == o) {
@@ -193,14 +207,16 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         Objects.equals(getAddressVersion(), that.getAddressVersion()) &&
                         Objects.equals(getMaxTransactionsPerBlock(), that.getMaxTransactionsPerBlock()) &&
                         Objects.equals(getMemoryPoolMaxTransactions(), that.getMemoryPoolMaxTransactions()) &&
-                        Objects.equals(getInitialGasDistribution(), that.getInitialGasDistribution());
+                        Objects.equals(getInitialGasDistribution(), that.getInitialGasDistribution()) &&
+                        Objects.equals(getHardforks(), that.getHardforks());
             }
 
             @Override
             public int hashCode() {
                 return Objects.hash(getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
                         getMaxValidUntilBlockIncrement(), getMaxTraceableBlocks(), getAddressVersion(),
-                        getMaxTransactionsPerBlock(), getMemoryPoolMaxTransactions(), getInitialGasDistribution());
+                        getMaxTransactionsPerBlock(), getMemoryPoolMaxTransactions(), getInitialGasDistribution(),
+                        getHardforks());
             }
 
             @Override
@@ -215,7 +231,54 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         ", maxTransactionsPerBlock=" + maxTransactionsPerBlock +
                         ", memoryPoolMaxTransactions=" + memoryPoolMaxTransactions +
                         ", initialGasDistribution=" + initialGasDistribution +
+                        ", hardforks=" + hardforks +
                         '}';
+            }
+
+            public static class Hardforks {
+
+                @JsonProperty("name")
+                private String name;
+
+                @JsonProperty("blockheight")
+                private BigInteger blockHeight;
+
+                public Hardforks() {
+                }
+
+                public String getName() {
+                    return name;
+                }
+
+                public BigInteger getBlockHeight() {
+                    return blockHeight;
+                }
+
+                @Override
+                public boolean equals(Object o) {
+                    if (this == o) {
+                        return true;
+                    }
+                    if (!(o instanceof Hardforks)) {
+                        return false;
+                    }
+                    Hardforks that = (Hardforks) o;
+                    return Objects.equals(getName(), that.getName()) &&
+                            Objects.equals(getBlockHeight(), that.getBlockHeight());
+                }
+
+                @Override
+                public int hashCode() {
+                    return Objects.hash(getName(), getBlockHeight());
+                }
+
+                @Override
+                public String toString() {
+                    return "Hardforks{" +
+                            "name=" + name +
+                            ", blockheight=" + blockHeight +
+                            '}';
+                }
             }
         }
 
