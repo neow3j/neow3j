@@ -266,7 +266,7 @@ public class StdLib extends ContractInterface {
      * Note, that this method considers each string "element" as one, that means that it will return 1 for "a", "ã" and
      * "🦆". This length will be different from the length returned by {@link String#length()} if the string does
      * contain non-ASCII characters. On the NeoVM, {@link String#length()} returns the byte length of the string. So,
-     * "🦆" has a byte length of 4.
+     * "🦆" has a byte length of 4. That's because {@link String#length()} compiles to the NeoVM's SIZE instruction.
      *
      * @param str the string.
      * @return the length of the string.
