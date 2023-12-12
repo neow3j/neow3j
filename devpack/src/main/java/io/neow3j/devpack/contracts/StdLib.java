@@ -65,7 +65,6 @@ public class StdLib extends ContractInterface {
      */
     public native Object deserialize(ByteString source);
 
-
     /**
      * Serializes the given object to a JSON string.
      * <p>
@@ -260,5 +259,18 @@ public class StdLib extends ContractInterface {
      * @return the list of separated strings.
      */
     public native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
+
+    /**
+     * Returns the number of characters of the string.
+     * <p>
+     * Note, that this method considers each string "element" as one, that means that it will return 1 for "a", "ã" and
+     * "🦆". This length will be different from the length returned by {@link String#length()} if the string does
+     * contain non-ASCII characters. On the NeoVM, {@link String#length()} returns the byte length of the string. So,
+     * "🦆" has a byte length of 4. That's because {@link String#length()} compiles to the NeoVM's SIZE instruction.
+     *
+     * @param str the string.
+     * @return the length of the string.
+     */
+    public native int strLen(String str);
 
 }
