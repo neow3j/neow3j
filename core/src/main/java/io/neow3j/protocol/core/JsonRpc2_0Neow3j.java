@@ -1059,9 +1059,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * priority. Make sure that the involved signers are the same as in the transaction to cancel. The first signer will
      * be used to pay for GAS costs. Signers can also be contracts that have a verify method.
      *
-     * @param txHash   The hash of the transaction to cancel.
-     * @param signers  The signers used to perform the cancellation. The first signer will be used to pay for GAS costs.
-     * @param extraFee An extra network fee to boost priority of the cancellation transaction. Pass the fee in fractions
+     * @param txHash   the hash of the transaction to cancel.
+     * @param signers  the signers used to perform the cancellation. The first signer will be used to pay for GAS costs.
+     * @param extraFee an extra network fee to boost priority of the cancellation transaction. Pass the fee in fractions
      *                 of GAS. Pass null if you don't want to add an extra fee.
      * @return the request object.
      */

@@ -32,6 +32,7 @@ import java.math.BigInteger;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -162,7 +163,7 @@ public class Neow3jWriteIntegrationTest {
         Transaction tx = response.getSendMany();
         assertThat(tx.getSender(), is(committeeAccountAddress()));
 
-        Await.waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
+        waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
         Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send()
                 .getApplicationLog().getExecutions().get(0);
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
@@ -215,16 +216,13 @@ public class Neow3jWriteIntegrationTest {
         assertNotNull(tx);
     }
 
-    /*
-     * Relies on the fact that the chain is producing approx. every second.
-     */
     @Test
-    public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException, InterruptedException {
+    public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException {
         TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
                 defaultAccountAddress());
         Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
 
-        Thread.sleep(1200); // Wait a bit more than 1 second to be sure that the tx is included.
+        waitUntilTransactionIsExecuted(tx.getHash(), getNeow3j());
 
         NeoCancelTransaction cancel = getNeow3j()
                 .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
