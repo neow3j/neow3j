@@ -986,6 +986,19 @@ public class RequestTest extends RequestTester {
                 "\"id\":1}");
     }
 
+    @Test
+    public void testCancelTransaction() throws Exception {
+        neow3j.cancelTransaction(Hash256.ZERO, asList(Hash160.ZERO, Hash160.ZERO), BigInteger.valueOf(3333)).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"canceltransaction\"," +
+                "\"params\":[\"0000000000000000000000000000000000000000000000000000000000000000\"," +
+                "[\"NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf\", \"NKuyBkoGdZZSLyPbJEetheRhMjeznFZszf\"]," +
+                "\"3333\"" +
+                "]," +
+                "\"id\":1}");
+    }
+
     // TokenTracker: Nep17
 
     @Test

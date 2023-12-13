@@ -3,6 +3,8 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
+import io.neow3j.protocol.core.response.NeoGetTransaction;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -35,6 +37,7 @@ import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -210,6 +213,48 @@ public class Neow3jWriteIntegrationTest {
         Transaction tx = sendToAddress.getSendToAddress();
 
         assertNotNull(tx);
+    }
+
+    /*
+     * Relies on the fact that the chain is producing approx. every second.
+     */
+    @Test
+    public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException, InterruptedException {
+        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
+                defaultAccountAddress());
+        Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
+
+        Thread.sleep(1200); // Wait a bit more than 1 second to be sure that the tx is included.
+
+        NeoCancelTransaction cancel = getNeow3j()
+                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
+                .send();
+
+        assertThat(cancel.getError().getMessage(), is("This tx is already confirmed, can't be cancelled."));
+    }
+
+    /*
+     * This test can have timing issues. The transaction is sent and then immediately cancelled. But, if the
+     * transaction is included in a block before the cancellation is processed, the test will fail.
+     */
+    @Test
+    public void cancelTransactionSucceedsWithSingleSigner() throws IOException {
+        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
+                defaultAccountAddress());
+        Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
+
+        NeoCancelTransaction cancel = getNeow3j()
+                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
+                .send();
+
+        assertFalse(cancel.hasError());
+        Transaction txOrCtx = cancel.getTransaction();
+        assertNotNull(txOrCtx.getHash());
+        assertThat(txOrCtx.getSender(), is(defaultAccountAddress()));
+
+        NeoGetTransaction cancelled = getNeow3j().getTransaction(tx.getHash()).send();
+        assertTrue(cancelled.hasError());
+        assertThat(cancelled.getError().getMessage(), is("Unknown transaction"));
     }
 
 }
