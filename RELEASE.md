@@ -6,11 +6,11 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 ## Prepare for Source Code Release
 
 > If this release considers a major Neo version update (e.g., `3.4.x` &rarr; `3.5.x`): Check whether the [Neo-Express
-version](https://github.com/neo-project/neo-express/releases) used in the
-[resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
-property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
-according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
-release process.
+> version](https://github.com/neo-project/neo-express/releases) used in the
+> [resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
+> property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
+> according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
+> release process.
 
 1. Create a branch `release` from `main`.
 2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
