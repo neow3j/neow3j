@@ -17,9 +17,11 @@ repositories {
 Then you would be able to use the snapshot versions:
 
 ```groovy
-implementation 'io.neow3j:contract:3.21.1-SNAPSHOT'
-implementation 'io.neow3j:devpack:3.21.1-SNAPSHOT'
+implementation 'io.neow3j:contract:3.x.x-SNAPSHOT'
+implementation 'io.neow3j:devpack:3.x.x-SNAPSHOT'
 ```
+
+> TODO: Add instructions for creating a snapshot.
 
 ## Locally Testing GitHub Action Workflows
 
