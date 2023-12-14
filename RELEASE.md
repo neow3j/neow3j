@@ -6,24 +6,23 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 ## Prepare for Source Code Release
 
 > If this release considers a major Neo version update (e.g., `3.4.x` &rarr; `3.5.x`): Check whether the [Neo-Express
-> version](https://github.com/neo-project/neo-express/releases) used in
-> the [resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
-> property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
-> according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
-> release process.
+version](https://github.com/neo-project/neo-express/releases) used in the
+[resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
+property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
+according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
+release process.
 
 1. Create a branch `release` from `main`.
 2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
-   and replace it with the new version number. There should be two affected files, i.e., `README.md`,
-   and `DEVELOPMENT.md`.
-3. Verify that the release version is also set correctly in the files `build.gradle` and `Compiler.java`.
-4. Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
+   and replace it with the new version number. Files that have to contain the new version number are `README.md`,
+   `build.gradle` and `Compiler.java`.
+3. Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
     - Set the name as "Release x.x.x".
     - Set the correct milestone, project and a reviewer.
-5. Review the Release Pull Request, mainly checking for critical changes **or** changes that shouldn't be in the
+4. Review the Release Pull Request, mainly checking for critical changes **or** changes that shouldn't be in the
    release.
-6. Merge the Pull Request, and then, delete the `release` branch.
-7. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
+5. Merge the Pull Request, and then, delete the `release` branch.
+6. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
 
 ## Publish the Release Artifacts
 
@@ -109,14 +108,14 @@ contract if major changes happened.
      --version 3.5.11-preview
    ```
    Instructions can also be found [here](https://github.com/neo-project/neo-express#installing-preview-releases).
-3. You can build the docker image locally to run tests: 
+3. You can build the docker image locally to run tests:
    ```dockerfile
    docker build -t ghcr.io/neow3j/neow3j-test-docker:latest .
    docker build -t ghcr.io/neow3j/neow3j-test-docker:neoxp-3.4.18 . 
    ```
    Adapt `neoExpressDockerImage` in the `test-tools` application properties file to the new tag.
-4. To publish the new docker image run the GitHub workflow called "Build and Publish container" on the 
-   neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g., 
+4. To publish the new docker image run the GitHub workflow called "Build and Publish container" on the
+   neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g.,
    `neoxp-3.4.18`.
 
 ## Publish GitHub Release
