@@ -20,6 +20,7 @@ import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
@@ -2644,6 +2645,32 @@ public class ResponseTest extends ResponseTester {
         assertThat(importPrivKey.getAddresses().getLabel(), is(nullValue()));
         assertThat(importPrivKey.getAddresses().getWatchOnly(), is(false));
     }
+
+    @Test
+    public void testCancelTransaction() {
+        buildResponse(
+                "{\"jsonrpc\":\"2.0\",\"id\":3," +
+                        "\"result\":{\"hash\":\"0x8916c94bb7c4a63f117ca873c9224955bf9ad00b1149a0173e33614559713425\"," +
+                        "\"size\":192,\"version\":0,\"nonce\":1749194511," +
+                        "\"sender\":\"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\"," +
+                        "\"sysfee\":\"0\",\"netfee\":\"2343101\",\"validuntilblock\":86401," +
+                        "\"signers\":[{\"account\":\"0x69ecca587293047be4c59159bf8bc399985c160d\"," +
+                        "\"scopes\":\"None\"}]," +
+                        "\"attributes\":[" +
+                        "{\"type\":\"Conflicts\"," +
+                        "\"hash\":\"0x830869b930477c50c91a11569821a4d665d4a61af78a092e3c1a8690f846fc82\"}]," +
+                        "\"script\":\"QA==\"," +
+                        "\"witnesses\":[{\"invocation\":\"DEBoureAXZRM9wyjX/xZP3Di8Q006H3mb" +
+                        "\\u002B6DqWbjAjnIVP/Zd/uG57SecDqO2mZAX\\u002B5eoHQYAGRI6/nrOuwP\\u002BrLU\"," +
+                        "\"verification\":\"DCEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtBVuezJw==\"}]}}\n"
+        );
+
+        NeoCancelTransaction cancelTxResponse = deserialiseResponse(NeoCancelTransaction.class);
+        Transaction tx = cancelTxResponse.getTransaction();
+        assertThat(tx.getHash(), is(new Hash256("0x8916c94bb7c4a63f117ca873c9224955bf9ad00b1149a0173e33614559713425")));
+        // Not testing more fields as they are tested in testGetTransaction
+    }
+
 
     @Test
     public void testListAddress() {

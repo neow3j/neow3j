@@ -8,6 +8,7 @@ import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.response.NeoCalculateNetworkFee;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
@@ -1049,6 +1050,37 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken) {
         return sendToAddress(txSendToken.getToken(), Hash160.fromAddress(txSendToken.getAddress()),
                 txSendToken.getValue());
+    }
+
+    /**
+     * Attempt to cancel a transaction that has been sent to the network if it is not yet confirmed. This is achieved by
+     * creating a conflicting transaction (using the 'conflicts' transaction attribute). The conflicting transaction
+     * has a minimally higher network fee than the transaction to cancel. You can also add an extra network fee to boost
+     * priority. At least one of the signers has to overlap with the signers on the transaction to be cancelled.
+     * The first signer will be used to pay for GAS costs.
+     *
+     * @param txHash   the hash of the transaction to cancel.
+     * @param signers  the signers used to perform the cancellation.
+     * @param extraFee an extra network fee to boost priority of the cancellation transaction. Pass the fee in fractions
+     *                 of GAS. Pass null if you don't want to add an extra fee.
+     * @return the request object.
+     */
+    public Request<?, NeoCancelTransaction> cancelTransaction(Hash256 txHash, List<Hash160> signers,
+            BigInteger extraFee) {
+
+        if (txHash == null) {
+            throw new IllegalArgumentException("txHash must not be null");
+        }
+        if (signers.isEmpty()) {
+            throw new IllegalArgumentException("signers must not be empty");
+        }
+        List<String> signerAddresses = signers.stream().map(Hash160::toAddress).collect(Collectors.toList());
+        List<Object> params = asList(txHash, signerAddresses, extraFee != null ? extraFee.toString() : null);
+        return new Request<>(
+                "canceltransaction",
+                params,
+                neow3jService,
+                NeoCancelTransaction.class);
     }
 
     // endregion Wallet Methods
