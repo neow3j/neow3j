@@ -246,9 +246,9 @@ public class Neow3jWriteIntegrationTest {
                 .send();
 
         assertFalse(cancel.hasError());
-        Transaction txOrCtx = cancel.getTransaction();
-        assertNotNull(txOrCtx.getHash());
-        assertThat(txOrCtx.getSender(), is(defaultAccountAddress()));
+        Transaction cancelTx = cancel.getTransaction();
+        assertNotNull(cancelTx.getHash());
+        assertThat(cancelTx.getSender(), is(defaultAccountAddress()));
 
         NeoGetTransaction cancelled = getNeow3j().getTransaction(tx.getHash()).send();
         assertTrue(cancelled.hasError());
