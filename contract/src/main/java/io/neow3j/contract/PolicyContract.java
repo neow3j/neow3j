@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 
@@ -21,10 +22,12 @@ public class PolicyContract extends SmartContract {
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";
     private static final String GET_STORAGE_PRICE = "getStoragePrice";
+    private static final String GET_ATTRIBUTE_FEE = "getAttributeFee";
     private static final String IS_BLOCKED = "isBlocked";
     private static final String SET_FEE_PER_BYTE = "setFeePerByte";
     private static final String SET_EXEC_FEE_FACTOR = "setExecFeeFactor";
     private static final String SET_STORAGE_PRICE = "setStoragePrice";
+    private static final String SET_ATTRIBUTE_FEE = "setAttributeFee";
     private static final String BLOCK_ACCOUNT = "blockAccount";
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
 
@@ -65,6 +68,14 @@ public class PolicyContract extends SmartContract {
      */
     public BigInteger getStoragePrice() throws IOException {
         return callFunctionReturningInt(GET_STORAGE_PRICE);
+    }
+
+    /**
+     * @return the GAS fee for using a transaction attribute.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getAttributeFee(TransactionAttributeType attributeType) throws IOException {
+        return callFunctionReturningInt(GET_ATTRIBUTE_FEE, integer(attributeType.byteValue()));
     }
 
     /**
@@ -115,6 +126,20 @@ public class PolicyContract extends SmartContract {
      */
     public TransactionBuilder setStoragePrice(BigInteger price) {
         return invokeFunction(SET_STORAGE_PRICE, integer(price));
+    }
+
+    /**
+     * Creates a transaction script to set the attribute fee and initializes a {@link TransactionBuilder} based on
+     * this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
+     *
+     * @param fee the attribute fee.
+     * @return a {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setAttributeFee(TransactionAttributeType attributeType, BigInteger fee) {
+        return invokeFunction(SET_ATTRIBUTE_FEE, integer(attributeType.byteValue()), integer(fee));
     }
 
     /**

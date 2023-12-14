@@ -163,6 +163,12 @@ public class Runtime {
     public static native void burnGas(int gas);
 
     /**
+     * @return the signers of the current transaction.
+     */
+    @Instruction(interopService = InteropService.SYSTEM_RUNTIME_CURRENTSIGNERS)
+    public static native Signer[] currentSigners();
+
+    /**
      * @return the magic number of the network the contract is deployed on.
      */
     @Instruction(interopService = InteropService.SYSTEM_RUNTIME_GETNETWORK)

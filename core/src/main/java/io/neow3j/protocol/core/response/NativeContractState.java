@@ -29,13 +29,14 @@ public class NativeContractState extends CoreContractState {
         this.updateHistory = updateHistory;
     }
 
+    @Deprecated
     public List<Integer> getUpdateHistory() {
         return updateHistory;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getHash(), getNef(), getManifest(), getUpdateHistory());
+        return Objects.hash(getId(), getHash(), getNef(), getManifest());
     }
 
     @Override
@@ -45,7 +46,6 @@ public class NativeContractState extends CoreContractState {
                 ", hash='" + getHash() + '\'' +
                 ", nef=" + getNef() +
                 ", manifest=" + getManifest() +
-                ", updateHistory=" + getUpdateHistory() +
                 '}';
     }
 

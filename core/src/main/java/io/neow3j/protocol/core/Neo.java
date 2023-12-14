@@ -4,6 +4,7 @@ import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
 import io.neow3j.protocol.core.response.NeoCalculateNetworkFee;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
@@ -205,6 +206,8 @@ public interface Neo {
     Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, Hash160 to, BigInteger amount);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken);
+
+    Request<?, NeoCancelTransaction> cancelTransaction(Hash256 txHash, List<Hash160> signers, BigInteger extraFee);
 
     //endregion
 

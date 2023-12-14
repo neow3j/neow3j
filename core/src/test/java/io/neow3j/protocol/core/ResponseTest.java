@@ -20,6 +20,7 @@ import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
 import io.neow3j.protocol.core.response.NeoCloseWallet;
 import io.neow3j.protocol.core.response.NeoConnectionCount;
 import io.neow3j.protocol.core.response.NeoDumpPrivKey;
@@ -94,8 +95,8 @@ import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.witnessrule.WitnessRule;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
-import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.transaction.witnessrule.WitnessAction;
+import io.neow3j.transaction.witnessrule.WitnessConditionType;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
@@ -119,7 +120,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
@@ -221,8 +221,10 @@ public class ResponseTest extends ResponseTester {
                         "        \"hash\": \"0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8\",\n" +
                         "        \"size\": 1217,\n" +
                         "        \"version\": 0,\n" +
-                        "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
-                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
+                        "        \"previousblockhash\": " +
+                        "\"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
+                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7" +
+                        "\",\n" +
                         "        \"time\": 1539968858,\n" +
                         "        \"nonce\": \"7F8EEE652D4BC959\",\n" +
                         "        \"index\": 1914006,\n" +
@@ -230,13 +232,17 @@ public class ResponseTest extends ResponseTester {
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": " +
+                        "\"DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ" +
+                        "\",\n" +
+                        "                \"verification\": " +
+                        "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"tx\": [\n" +
                         "            {\n" +
-                        "                \"hash\": \"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
+                        "                \"hash\": " +
+                        "\"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
                         "                \"size\": 267,\n" +
                         "                \"version\": 0,\n" +
                         "                \"nonce\": 565086327,\n" +
@@ -252,16 +258,21 @@ public class ResponseTest extends ResponseTester {
                         "                ]," +
                         "                \"attributes\": [],\n" +
                         "                \"script\":\n" +
-                        "                    \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
+                        "                    " +
+                        "\"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
                         "                \"witnesses\": [\n" +
                         "                    {\n" +
-                        "                        \"invocation\": \"DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+\",\n" +
-                        "                        \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                        \"invocation\": " +
+                        "\"DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q" +
+                        "+\",\n" +
+                        "                        \"verification\": " +
+                        "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"hash\": \"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
+                        "                \"hash\": " +
+                        "\"0x46eca609a9a8c8340ee56b174b04bc9c9f37c89771c3a8998dc043f5a74ad510\",\n" +
                         "                \"size\": 267,\n" +
                         "                \"version\": 0,\n" +
                         "                \"nonce\": 565086327,\n" +
@@ -276,17 +287,22 @@ public class ResponseTest extends ResponseTester {
                         "                    }" +
                         "                ]," +
                         "                \"attributes\": [],\n" +
-                        "                \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
+                        "                \"script\": " +
+                        "\"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg\",\n" +
                         "                \"witnesses\": [\n" +
                         "                    {\n" +
-                        "                        \"invocation\": \"DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q+\",\n" +
-                        "                        \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                        \"invocation\": " +
+                        "\"DEBR7EQOb1NUjat1wrINzBNKOQtXoUmRVZU8h5c8K5CLMCUVcGkFVqAAGUJDh3mVcz6sTgXvmMuujWYrBveeM4q" +
+                        "+\",\n" +
+                        "                        \"verification\": " +
+                        "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "                    }\n" +
                         "                ]\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"confirmations\": 7878,\n" +
-                        "        \"nextblockhash\": \"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
+                        "        \"nextblockhash\": " +
+                        "\"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -316,7 +332,8 @@ public class ResponseTest extends ResponseTester {
                 getBlock.getBlock().getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ",
+                                "DEBJVWapboNkCDlH9uu" +
+                                        "+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 )
@@ -388,20 +405,26 @@ public class ResponseTest extends ResponseTester {
                         "        \"hash\": \"0x1de7e5eaab0f74ac38f5191c038e009d3c93ef5c392d1d66fa95ab164ba308b8\",\n" +
                         "        \"size\": 1217,\n" +
                         "        \"version\": 0,\n" +
-                        "        \"previousblockhash\": \"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
-                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7\",\n" +
+                        "        \"previousblockhash\": " +
+                        "\"0x045cabde4ecbd50f5e4e1b141eaf0842c1f5f56517324c8dcab8ccac924e3a39\",\n" +
+                        "        \"merkleroot\": \"0x6afa63201b88b55ad2213e5a69a1ad5f0db650bc178fc2bedd2fb301c1278bf7" +
+ "\",\n" +
                         "        \"time\": 1539968858,\n" +
                         "        \"nonce\": \"7F8EEE652D4BC95A\",\n" +
                         "        \"index\": 1914006,\n" +
                         "        \"nextconsensus\": \"AWZo4qAxhT8fwKL93QATSjCYCgHmCY1XLB\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": " +
+                        "\"DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ" +
+                        "\",\n" +
+                        "                \"verification\": " +
+                        "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"confirmations\": 7878,\n" +
-                        "        \"nextblockhash\": \"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
+                        "        \"nextblockhash\": " +
+ "\"0x4a97ca89199627f877b6bffe865b8327be84b368d62572ef20953829c3501643\"\n" +
                         "    }\n" +
                         "}"
         );
@@ -430,7 +453,8 @@ public class ResponseTest extends ResponseTester {
                 getBlock.getBlock().getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DEBJVWapboNkCDlH9uu+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ",
+                                "DEBJVWapboNkCDlH9uu" +
+                                        "+tStOgGnwODlolRifxTvQiBkhM0vplSPo4vMj9Jt3jvzztMlwmO75Ss5cptL8wUMxASjZ",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 )
@@ -450,7 +474,8 @@ public class ResponseTest extends ResponseTester {
                 "{\n" +
                         "  \"jsonrpc\": \"2.0\",\n" +
                         "  \"id\": 67,\n" +
-                        "  \"result\": \"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n" +
+                        "  \"result\": " +
+                        "\"00000000ebaa4ed893333db1ed556bb24145f4e7fe40b9c7c07ff2235c7d3d361ddb27e603da9da4c7420d090d0e29c588cfd701b3f81819375e537c634bd779ddc7e2e2c436cc5ba53f00001952d428256ad0cdbe48d3a3f5d10013ab9ffee489706078714f1ea201c340c44387d762d1bcb2ab0ec650628c7c674021f333ee7666e2a03805ad86df3b826b5dbf5ac607a361807a047d43cf6bba726dcb06a42662aee7e78886c72faef940e6cef9abab82e1e90c6683ac8241b3bf51a10c908f01465f19c3df1099ef5de5d43a648a6e4ab63cc7d5e88146bddbe950e8041e44a2b0b81f21ad706e88258540fd19314f46ad452b4cbedf58bf9d266c0c808374cd33ef18d9a0575b01e47f6bb04abe76036619787c457c49288aeb91ff23cdb85771c0209db184801d5bdd348b532102103a7f7dd016558597f7960d27c516a4394fd968b9e65155eb4b013e4040406e2102a7bc55fe8684e0119768d104ba30795bdcc86619e864add26156723ed185cd622102b3622bf4017bdfe317c58aed5f4c753f206b7db896046fa7d774bbc4bf7f8dc22103d90c07df63e690ce77912e10ab51acc944b66860237b608c4f8f8309e71ee69954ae0100001952d42800000000\"\n" +
                         "}"
         );
 
@@ -496,315 +521,306 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetNativeContracts() {
         buildResponse("{\n" +
-                        "    \"jsonrpc\": \"2.0\",\n" +
-                        "    \"id\": 1,\n" +
-                        "    \"result\": [\n" +
-                        "        {\n" +
-                        "            \"id\": -6,\n" +
-                        "            \"hash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
-                        "            \"nef\": {\n" +
-                        "                \"magic\": 860243278,\n" +
-                        "                \"compiler\": \"neo-core-v3.0\",\n" +
-                        "                \"source\": \"variable-size-source-gastoken\",\n" +
-                        "                \"tokens\": [],\n" +
-                        "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
-                        "                \"checksum\": 2663858513\n" +
-                        "            },\n" +
-                        "            \"manifest\": {\n" +
-                        "                \"name\": \"GasToken\",\n" +
-                        "                \"groups\": [],\n" +
-                        "                \"supportedstandards\": [\n" +
-                        "                    \"NEP-17\"\n" +
-                        "                ],\n" +
-                        "                \"abi\": {\n" +
-                        "                    \"methods\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"balanceOf\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"account\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Integer\",\n" +
-                        "                            \"offset\": 0,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"decimals\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"Integer\",\n" +
-                        "                            \"offset\": 7,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"symbol\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"String\",\n" +
-                        "                            \"offset\": 14,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"totalSupply\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"Integer\",\n" +
-                        "                            \"offset\": 21,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"transfer\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"from\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"to\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"amount\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"data\",\n" +
-                        "                                    \"type\": \"Any\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Boolean\",\n" +
-                        "                            \"offset\": 28,\n" +
-                        "                            \"safe\": false\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"events\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"Transfer\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"from\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"to\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"amount\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                }\n" +
-                        "                            ]\n" +
-                        "                        }\n" +
-                        "                    ]\n" +
-                        "                },\n" +
-                        "                \"permissions\": [\n" +
-                        "                    {\n" +
-                        "                        \"contract\": \"*\",\n" +
-                        "                        \"methods\": \"*\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"trusts\": [],\n" +
-                        "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
-                        "        },\n" +
-                        "        {\n" +
-                        "            \"id\": -8,\n" +
-                        "            \"hash\": \"0x49cf4e5378ffcd4dec034fd98a174c5491e395e2\",\n" +
-                        "            \"nef\": {\n" +
-                        "                \"magic\": 860243278,\n" +
-                        "                \"compiler\": \"neo-core-v3.0\",\n" +
-                        "                \"source\": \"variable-size-source-rolemanagement\",\n" +
-                        "                \"tokens\": [],\n" +
-                        "                \"script\": \"EEEa93tnQBBBGvd7Z0A=\",\n" +
-                        "                \"checksum\": 983638438\n" +
-                        "            },\n" +
-                        "            \"manifest\": {\n" +
-                        "                \"name\": \"RoleManagement\",\n" +
-                        "                \"groups\": [],\n" +
-                        "                \"supportedstandards\": [],\n" +
-                        "                \"abi\": {\n" +
-                        "                    \"methods\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"designateAsRole\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"role\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"nodes\",\n" +
-                        "                                    \"type\": \"Array\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Void\",\n" +
-                        "                            \"offset\": 0,\n" +
-                        "                            \"safe\": false\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"getDesignatedByRole\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"role\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"index\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Array\",\n" +
-                        "                            \"offset\": 7,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"events\": []\n" +
-                        "                },\n" +
-                        "                \"permissions\": [\n" +
-                        "                    {\n" +
-                        "                        \"contract\": \"*\",\n" +
-                        "                        \"methods\": \"*\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"trusts\": [],\n" +
-                        "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
-                        "        },\n" +
-                        "        {\n" +
-                        "            \"id\": -9,\n" +
-                        "            \"hash\": \"0xfe924b7cfe89ddd271abaf7210a80a7e11178758\",\n" +
-                        "            \"nef\": {\n" +
-                        "                \"magic\": 860243278,\n" +
-                        "                \"compiler\": \"neo-core-v3.0\",\n" +
-                        "                \"source\": \"variable-size-source-oraclecontract\",\n" +
-                        "                \"tokens\": [],\n" +
-                        "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
-                        "                \"checksum\": 2663858513\n" +
-                        "            },\n" +
-                        "            \"manifest\": {\n" +
-                        "                \"name\": \"OracleContract\",\n" +
-                        "                \"groups\": [],\n" +
-                        "                \"supportedstandards\": [],\n" +
-                        "                \"abi\": {\n" +
-                        "                    \"methods\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"finish\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"Void\",\n" +
-                        "                            \"offset\": 0,\n" +
-                        "                            \"safe\": false\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"getPrice\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"Integer\",\n" +
-                        "                            \"offset\": 7,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"request\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"url\",\n" +
-                        "                                    \"type\": \"String\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"filter\",\n" +
-                        "                                    \"type\": \"String\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"callback\",\n" +
-                        "                                    \"type\": \"String\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"userData\",\n" +
-                        "                                    \"type\": \"Any\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"gasForResponse\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Void\",\n" +
-                        "                            \"offset\": 14,\n" +
-                        "                            \"safe\": false\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"setPrice\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"price\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                }\n" +
-                        "                            ],\n" +
-                        "                            \"returntype\": \"Void\",\n" +
-                        "                            \"offset\": 21,\n" +
-                        "                            \"safe\": false\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"verify\",\n" +
-                        "                            \"parameters\": [],\n" +
-                        "                            \"returntype\": \"Boolean\",\n" +
-                        "                            \"offset\": 28,\n" +
-                        "                            \"safe\": true\n" +
-                        "                        }\n" +
-                        "                    ],\n" +
-                        "                    \"events\": [\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"OracleRequest\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"Id\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"RequestContract\",\n" +
-                        "                                    \"type\": \"Hash160\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"Url\",\n" +
-                        "                                    \"type\": \"String\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"Filter\",\n" +
-                        "                                    \"type\": \"String\"\n" +
-                        "                                }\n" +
-                        "                            ]\n" +
-                        "                        },\n" +
-                        "                        {\n" +
-                        "                            \"name\": \"OracleResponse\",\n" +
-                        "                            \"parameters\": [\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"Id\",\n" +
-                        "                                    \"type\": \"Integer\"\n" +
-                        "                                },\n" +
-                        "                                {\n" +
-                        "                                    \"name\": \"OriginalTx\",\n" +
-                        "                                    \"type\": \"Hash256\"\n" +
-                        "                                }\n" +
-                        "                            ]\n" +
-                        "                        }\n" +
-                        "                    ]\n" +
-                        "                },\n" +
-                        "                \"permissions\": [\n" +
-                        "                    {\n" +
-                        "                        \"contract\": \"*\",\n" +
-                        "                        \"methods\": \"*\"\n" +
-                        "                    }\n" +
-                        "                ],\n" +
-                        "                \"trusts\": [],\n" +
-                        "                \"extra\": null\n" +
-                        "            },\n" +
-                        "            \"updatehistory\": [\n" +
-                        "                0\n" +
-                        "            ]\n" +
-                        "        }\n" +
-                        "    ]\n" +
-                        "}"
+                "    \"jsonrpc\": \"2.0\",\n" +
+                "    \"id\": 1,\n" +
+                "    \"result\": [\n" +
+                "        {\n" +
+                "            \"id\": -6,\n" +
+                "            \"hash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"source\": \"variable-size-source-gastoken\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
+                "                \"checksum\": 2663858513\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"GasToken\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [\n" +
+                "                    \"NEP-17\"\n" +
+                "                ],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"balanceOf\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"account\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"decimals\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 7,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"symbol\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"String\",\n" +
+                "                            \"offset\": 14,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"totalSupply\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 21,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"transfer\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"from\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"to\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"amount\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"data\",\n" +
+                "                                    \"type\": \"Any\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Boolean\",\n" +
+                "                            \"offset\": 28,\n" +
+                "                            \"safe\": false\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"Transfer\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"from\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"to\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"amount\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        }\n" +
+                "                    ]\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            }\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"id\": -8,\n" +
+                "            \"hash\": \"0x49cf4e5378ffcd4dec034fd98a174c5491e395e2\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"source\": \"variable-size-source-rolemanagement\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"EEEa93tnQBBBGvd7Z0A=\",\n" +
+                "                \"checksum\": 983638438\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"RoleManagement\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"designateAsRole\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"role\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"nodes\",\n" +
+                "                                    \"type\": \"Array\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"getDesignatedByRole\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"role\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"index\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Array\",\n" +
+                "                            \"offset\": 7,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": []\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            }\n" +
+                "        },\n" +
+                "        {\n" +
+                "            \"id\": -9,\n" +
+                "            \"hash\": \"0xfe924b7cfe89ddd271abaf7210a80a7e11178758\",\n" +
+                "            \"nef\": {\n" +
+                "                \"magic\": 860243278,\n" +
+                "                \"compiler\": \"neo-core-v3.0\",\n" +
+                "                \"source\": \"variable-size-source-oraclecontract\",\n" +
+                "                \"tokens\": [],\n" +
+                "                \"script\": \"EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A=\",\n" +
+                "                \"checksum\": 2663858513\n" +
+                "            },\n" +
+                "            \"manifest\": {\n" +
+                "                \"name\": \"OracleContract\",\n" +
+                "                \"groups\": [],\n" +
+                "                \"supportedstandards\": [],\n" +
+                "                \"abi\": {\n" +
+                "                    \"methods\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"finish\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 0,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"getPrice\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Integer\",\n" +
+                "                            \"offset\": 7,\n" +
+                "                            \"safe\": true\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"request\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"url\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"filter\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"callback\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"userData\",\n" +
+                "                                    \"type\": \"Any\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"gasForResponse\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 14,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"setPrice\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"price\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ],\n" +
+                "                            \"returntype\": \"Void\",\n" +
+                "                            \"offset\": 21,\n" +
+                "                            \"safe\": false\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"verify\",\n" +
+                "                            \"parameters\": [],\n" +
+                "                            \"returntype\": \"Boolean\",\n" +
+                "                            \"offset\": 28,\n" +
+                "                            \"safe\": true\n" +
+                "                        }\n" +
+                "                    ],\n" +
+                "                    \"events\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"OracleRequest\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Id\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"RequestContract\",\n" +
+                "                                    \"type\": \"Hash160\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Url\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Filter\",\n" +
+                "                                    \"type\": \"String\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        },\n" +
+                "                        {\n" +
+                "                            \"name\": \"OracleResponse\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Id\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"OriginalTx\",\n" +
+                "                                    \"type\": \"Hash256\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        }\n" +
+                "                    ]\n" +
+                "                },\n" +
+                "                \"permissions\": [\n" +
+                "                    {\n" +
+                "                        \"contract\": \"*\",\n" +
+                "                        \"methods\": \"*\"\n" +
+                "                    }\n" +
+                "                ],\n" +
+                "                \"trusts\": [],\n" +
+                "                \"extra\": null\n" +
+                "            }\n" +
+                "        }\n" +
+                "    ]\n" +
+                "}"
         );
 
         NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
@@ -837,8 +853,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest1.getAbi().getFirstEvent(), is(manifest1.getAbi().getEvent(0)));
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest1.getAbi().getEvent(1));
         assertThat(thrown.getMessage(), containsString("only has 1 events"));
-        assertThat(c1.getUpdateHistory(), hasSize(1));
-        assertThat(c1.getUpdateHistory(), contains(0));
 
         NativeContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId().intValue(), is(-8));
@@ -860,7 +874,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest2.getAbi().getEvents(), hasSize(0));
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest2.getAbi().getFirstEvent());
         assertThat(thrown.getMessage(), containsString("does not have any events"));
-        assertThat(c2.getUpdateHistory(), contains(0));
 
         NativeContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId().intValue(), is(-9));
@@ -878,7 +891,6 @@ public class ResponseTest extends ResponseTester {
         assertThat(manifest3.getSupportedStandards(), hasSize(0));
         assertThat(manifest3.getAbi().getMethods(), hasSize(5));
         assertThat(manifest3.getAbi().getEvents(), hasSize(2));
-        assertThat(c3.getUpdateHistory(), contains(0));
     }
 
     @Test
@@ -1019,17 +1031,17 @@ public class ResponseTest extends ResponseTester {
         buildResponse("{\n" +
                 "    \"result\": {\n" +
                 "        \"nef\": {\n" +
-              //"            \"tokens\": [],\n" +
+                //"            \"tokens\": [],\n" +
                 "        },\n" +
                 "        \"manifest\": {\n" +
-              //"            \"groups\": [],\n" +
-              //"            \"supportedstandards\": [],\n" +
+                //"            \"groups\": [],\n" +
+                //"            \"supportedstandards\": [],\n" +
                 "            \"abi\": {\n" +
-              //"                \"methods\": [],\n" +
-              //"                \"events\": []\n" +
+                //"                \"methods\": [],\n" +
+                //"                \"events\": []\n" +
                 "            },\n" +
-              //"            \"permissions\": [],\n" +
-              //"            \"trusts\": [],\n" +
+                //"            \"permissions\": [],\n" +
+                //"            \"trusts\": [],\n" +
                 "            \"extra\": null\n" +
                 "        }\n" +
                 "    }\n" +
@@ -1279,21 +1291,28 @@ public class ResponseTest extends ResponseTester {
                         "            }," +
                         "            {" +
                         "                \"type\": \"Conflicts\"," +
-                        "                \"hash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321a\"" +
+                        "                \"hash\": " +
+                         "\"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321a\"" +
                         "            }," +
                         "            {" +
                         "                \"type\": \"Conflicts\"," +
-                        "                \"hash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321b\"" +
+                        "                \"hash\": " +
+                         "\"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e80321b\"" +
                         "            }" +
                         "        ]," +
-                        "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
+                        "        \"script\": " +
+                         "\"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjg=\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": " +
+                         "\"DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L" +
+                        "\",\n" +
+                        "                \"verification\": " +
+                         "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ],\n" +
-                        "        \"blockhash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299\",\n" +
+                        "        \"blockhash\": \"0x8529cf7301d13cc13d85913b8367700080a6e96db045687b8db720e91e803299" +
+                         "\",\n" +
                         "        \"confirmations\": 1388,\n" +
                         "        \"blocktime\": 1589019142879,\n" +
                         "        \"vmstate\": \"HALT\"\n" +
@@ -1338,7 +1357,8 @@ public class ResponseTest extends ResponseTester {
                 is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getAllowedGroup(1));
         assertThat(thrown.getMessage(), containsString("only allows 1 groups"));
-        assertThat(firstSigner.getFirstAllowedGroup(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+        assertThat(firstSigner.getFirstAllowedGroup(),
+                is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
         WitnessRule rule = firstSigner.getRules().get(0);
         WitnessRule firstWitnessRule = firstSigner.getFirstRule();
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> firstSigner.getRule(1));
@@ -1392,7 +1412,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(transaction.getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L",
+                                "DEBhsuS9LxQ2PKpx2XJJ/aGEr/pZ7qfZy77OyhDmWx" +
+                                        "+BobkQAnDPLg6ohOa9SSHa0OMDavUl7zpmJip3r8T5Dr1L",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
@@ -1409,7 +1430,8 @@ public class ResponseTest extends ResponseTester {
                 "{\n" +
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
-                        "    \"result\": \"00961a5e3e0feced44a74300d9da049fa93670a43117188ff6c272890000000000fa561300000000004619200000010feced44a74300d9da049fa93670a43117188ff6015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c140feced44a74300d9da049fa93670a43117188ff613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4061b2e4bd2f14363caa71d97249fda184affa59eea7d9cbbececa10e65b1f81a1b9100270cf2e0ea884e6bd4921dad0e3036af525ef3a66262a77afc4f90ebd4b2b110c2103f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2110b413073b3bb\"\n" +
+                        "    \"result\": " +
+                         "\"00961a5e3e0feced44a74300d9da049fa93670a43117188ff6c272890000000000fa561300000000004619200000010feced44a74300d9da049fa93670a43117188ff6015600640c14e6c1013654af113d8a968bdca52c9948a82b953d0c140feced44a74300d9da049fa93670a43117188ff613c00c087472616e736665720c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b523801420c4061b2e4bd2f14363caa71d97249fda184affa59eea7d9cbbececa10e65b1f81a1b9100270cf2e0ea884e6bd4921dad0e3036af525ef3a66262a77afc4f90ebd4b2b110c2103f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2110b413073b3bb\"\n" +
                         "}"
         );
 
@@ -1457,12 +1479,14 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": [\n" +
                         "        {\n" +
-                        "            \"publickey\": \"03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2\",\n" +
+                        "            \"publickey\": " +
+                        "\"03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2\",\n" +
                         "            \"votes\": \"0\",\n" +
                         "            \"active\": false\n" +
                         "        },\n" +
                         "        {\n" +
-                        "            \"publickey\": \"02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6\",\n" +
+                        "            \"publickey\": " +
+ "\"02494f3ff953e45ca4254375187004f17293f90a1aa4b1a89bc07065bc1da521f6\",\n" +
                         "            \"votes\": \"91600000\",\n" +
                         "            \"active\": true\n" +
                         "        }\n" +
@@ -1486,7 +1510,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getPublicKey(),
                 is("03f1ec3c1e283e880de6e9c489f0f27c19007c53385aaa4c0c917c320079edadf2"));
         assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotes(), is("0"));
-        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotesAsBigInteger(), is(BigInteger.valueOf(0)));
+        assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getVotesAsBigInteger(),
+                is(BigInteger.valueOf(0)));
         assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(0).getActive(), is(false));
         assertThat(neoGetNextBlockValidators.getNextBlockValidators().get(1).getActive(), is(true));
     }
@@ -1636,7 +1661,13 @@ public class ResponseTest extends ResponseTester {
                         "            \"addressversion\": 22,\n" +
                         "            \"maxtransactionsperblock\": 150000,\n" +
                         "            \"memorypoolmaxtransactions\": 34000,\n" +
-                        "            \"initialgasdistribution\": 14\n" +
+                        "            \"initialgasdistribution\": 14,\n" +
+                        "            \"hardforks\": [\n" +
+                        "                {\n" +
+                        "                    \"name\": \"HF_Aspidochelone\",\n" +
+                        "                    \"blockheight\": 0\n" +
+                        "                }\n" +
+                        "            ]\n" +
                         "        }\n" +
                         "    }\n" +
                         "}"
@@ -1659,6 +1690,12 @@ public class ResponseTest extends ResponseTester {
         assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
         assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
+        assertThat(protocol.getHardforks(), hasSize(1));
+
+        assertThat(protocol.getHardforks(), hasSize(1));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks firstHardfork = protocol.getHardforks().get(0);
+        assertThat(firstHardfork.getName(), is("HF_Aspidochelone"));
+        assertThat(firstHardfork.getBlockHeight(), is(BigInteger.ZERO));
     }
 
 
@@ -1674,14 +1711,16 @@ public class ResponseTest extends ResponseTester {
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
                         "        \"protocol\": {\n" +
-                        "            \"addressversion\": 22,\n" +
                         "            \"network\": 4232068425,\n" +
+                        "            \"validatorscount\": 3,\n" +
                         "            \"msperblock\": 15000,\n" +
                         "            \"maxtraceableblocks\": 3,\n" +
+                        "            \"addressversion\": 22,\n" +
                         "            \"maxvaliduntilblockincrement\": 1,\n" +
                         "            \"maxtransactionsperblock\": 150000,\n" +
                         "            \"memorypoolmaxtransactions\": 34000,\n" +
-                        "            \"initialgasdistribution\": 14\n" +
+                        "            \"initialgasdistribution\": 14,\n" +
+                        "            \"hardforks\":  []\n" +
                         "        }\n" +
                         "    }\n" +
                         "}"
@@ -1696,14 +1735,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
-        assertThat(protocol.getAddressVersion(), is(22));
         assertThat(protocol.getNetwork(), is(4232068425L));
+        assertThat(protocol.getValidatorsCount(), is(3));
         assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
         assertThat(protocol.getMaxTraceableBlocks(), is(3L));
+        assertThat(protocol.getAddressVersion(), is(22));
         assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
         assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
         assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
+        assertThat(protocol.getHardforks(), is(hasSize(0)));
     }
 
     @Test
@@ -1748,7 +1789,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"wh8MFnRva2Vuc1dpdGhXaXRuZXNzQ2hlY2sMFFdiWCF05OK8ywVb+rl30RPV3+zlQWJ9W1I=\",\n" +
+                        "        \"script\": \"wh8MFnRva2Vuc1dpdGhXaXRuZXNzQ2hlY2sMFFdiWCF05OK8ywVb+rl30RPV3" +
+                        "+zlQWJ9W1I=\",\n" +
                         "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"12908980\",\n" +
                         "        \"exception\": null,\n" +
@@ -1847,7 +1889,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"script\": " +
+                         "\"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"2007570\",\n" +
                         "        \"exception\": null,\n" +
@@ -1936,7 +1979,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"script\": " +
+                        "\"0c14e6c1013654af113d8a968bdca52c9948a82b953d11c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"2007570\",\n" +
                         "        \"exception\": null,\n" +
@@ -1957,49 +2001,53 @@ public class ResponseTest extends ResponseTester {
     public void testInvokeFunction_pending_signatures() {
         buildResponse(
                 "{\n" +
-                "    \"jsonrpc\": \"2.0\",\n" +
-                "    \"id\": 1,\n" +
-                "    \"result\": {\n" +
-                "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
-                "        \"state\": \"HALT\",\n" +
-                "        \"gasconsumed\": \"2.489\",\n" +
-                "        \"stack\": [],\n" +
-                "        \"pendingsignature\": {\n" +
-                "            \"type\": \"Transaction\",\n" +
-                "            \"data\": \"base64 string of the tx bytes\",\n" +
-                "            \"network\": 305419896, \n" +
-                "            \"items\": {\n" +
-                "                \"0x69ecca587293047be4c59159bf8bc399985c160d\": {\n" +
-                "                    \"script\": \"base64 script\",\n" +
-                "                    \"parameters\": [\n" +
-                "                        {\n" +
-                "                            \"type\": \"Signature\",\n" +
-                "                            \"value\": \"\"\n" +
-                "                        }\n" +
-                "                    ],\n" +
-                "                    \"signatures\": {\n" +
-                "                        \"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": \"base64 string of signature\"\n" +
-                "                    }\n" +
-                "                },\n" +
-                "                \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
-                "                    \"script\": \"base64 script\",\n" +
-                "                    \"parameters\": [\n" +
-                "                        {\n" +
-                "                            \"type\": \"Signature\"\n" +
-                "                        },\n" +
-                "                        {\n" +
-                "                            \"type\": \"Signature\"\n" +
-                "                        }\n" +
-                "                    ],\n" +
-                "                    \"signatures\": {\n" +
-                "                        \"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81\": \"base64 string of signature\",\n" +
-                "                        \"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10\": \"base64 string of signature\"\n" +
-                "                    }\n" +
-                "                }\n" +
-                "            }\n" +
-                "        }\n" +
-                "    }\n" +
-                "}"
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"script\": \"00046e616d65675f0e5a86edd8e1f62b68d2b3f7c0a761fc5a67dc\",\n" +
+                        "        \"state\": \"HALT\",\n" +
+                        "        \"gasconsumed\": \"2.489\",\n" +
+                        "        \"stack\": [],\n" +
+                        "        \"pendingsignature\": {\n" +
+                        "            \"type\": \"Transaction\",\n" +
+                        "            \"data\": \"base64 string of the tx bytes\",\n" +
+                        "            \"network\": 305419896, \n" +
+                        "            \"items\": {\n" +
+                        "                \"0x69ecca587293047be4c59159bf8bc399985c160d\": {\n" +
+                        "                    \"script\": \"base64 script\",\n" +
+                        "                    \"parameters\": [\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Signature\",\n" +
+                        "                            \"value\": \"\"\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"signatures\": {\n" +
+                        "                        " +
+                         "\"<033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b>\": \"base64 string " +
+                        "of signature\"\n" +
+                        "                    }\n" +
+                        "                },\n" +
+                        "                \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
+                        "                    \"script\": \"base64 script\",\n" +
+                        "                    \"parameters\": [\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Signature\"\n" +
+                        "                        },\n" +
+                        "                        {\n" +
+                        "                            \"type\": \"Signature\"\n" +
+                        "                        }\n" +
+                        "                    ],\n" +
+                        "                    \"signatures\": {\n" +
+                        "                        \"033a1d0a3b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7957783f81" +
+                        "\": \"base64 string of signature\",\n" +
+                        "                        \"033a4c051b09b77c0230d2b1aaedfd5a84be279a5361a7358db665ad7d57787f10" +
+                         "\": \"base64 string of signature\"\n" +
+                        "                    }\n" +
+                        "                }\n" +
+                        "            }\n" +
+                        "        }\n" +
+                        "    }\n" +
+                        "}"
         );
 
         NeoInvokeFunction invokeFunction = deserialiseResponse(NeoInvokeFunction.class);
@@ -2030,7 +2078,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"script\": " +
+                        "\"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"FAULT\",\n" +
                         "        \"gasconsumed\": \"2007390\",\n" +
                         "        \"exception\": null,\n" +
@@ -2061,7 +2110,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
+                        "        \"script\": " +
+                        "\"10c00c0962616c616e63654f660c14897720d8cd76f4f00abfa37c0edd889c208fde9b41627d5b52\",\n" +
                         "        \"state\": \"\",\n" +
                         "        \"gasconsumed\": \"2007390\",\n" +
                         "        \"stack\": []\n" +
@@ -2216,7 +2266,8 @@ public class ResponseTest extends ResponseTester {
                         "    \"jsonrpc\": \"2.0\",\n" +
                         "    \"id\": 3,\n" +
                         "    \"result\": {\n" +
-                        "        \"script\": \"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\",\n" +
+                        "        \"script\": " +
+                        "\"10c00c08646563696d616c730c1425059ecb4878d3a875f91c51ceded330d4575fde41627d5b52\",\n" +
                         "        \"state\": \"HALT\",\n" +
                         "        \"gasconsumed\": \"0.161\",\n" +
                         "        \"stack\": [\n" +
@@ -2298,7 +2349,9 @@ public class ResponseTest extends ResponseTester {
                         + "    \"script\": \"VgEMFJOtFXKks1xLklSDzhcBt4dC3EYPYEBXAAIhXwAhQfgn7IxA\",\n"
                         + "    \"state\": \"FAULT\",\n"
                         + "    \"gasconsumed\": \"0.0103542\",\n"
-                        + "    \"exception\": \"Specified argument was out of the range of valid values. (Parameter 'index')\",\n"
+                        +
+                        "    \"exception\": \"Specified argument was out of the range of valid values. (Parameter " +
+                        "'index')\",\n"
                         + "    \"stack\": [\n"
                         + "            {\n"
                         + "                \"type\": \"Buffer\",\n"
@@ -2541,13 +2594,13 @@ public class ResponseTest extends ResponseTester {
     @Test
     public void testGetUnclaimedGas() {
         buildResponse("{\n"
-                        + "  \"jsonrpc\": \"2.0\",\n"
-                        + "  \"id\": 1,\n"
-                        + "  \"result\": {\n"
-                        + "    \"unclaimed\": \"79199824176\",\n"
-                        + "    \"address\": \"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"\n"
-                        + "  }\n"
-                        + "}"
+                + "  \"jsonrpc\": \"2.0\",\n"
+                + "  \"id\": 1,\n"
+                + "  \"result\": {\n"
+                + "    \"unclaimed\": \"79199824176\",\n"
+                + "    \"address\": \"AGZLEiwUyCC4wiL5sRZA3LbxWPs9WrZeyN\"\n"
+                + "  }\n"
+                + "}"
         );
 
         NeoGetUnclaimedGas getUnclaimedGas = deserialiseResponse(NeoGetUnclaimedGas.class);
@@ -2592,6 +2645,32 @@ public class ResponseTest extends ResponseTester {
         assertThat(importPrivKey.getAddresses().getLabel(), is(nullValue()));
         assertThat(importPrivKey.getAddresses().getWatchOnly(), is(false));
     }
+
+    @Test
+    public void testCancelTransaction() {
+        buildResponse(
+                "{\"jsonrpc\":\"2.0\",\"id\":3," +
+                        "\"result\":{\"hash\":\"0x8916c94bb7c4a63f117ca873c9224955bf9ad00b1149a0173e33614559713425\"," +
+                        "\"size\":192,\"version\":0,\"nonce\":1749194511," +
+                        "\"sender\":\"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\"," +
+                        "\"sysfee\":\"0\",\"netfee\":\"2343101\",\"validuntilblock\":86401," +
+                        "\"signers\":[{\"account\":\"0x69ecca587293047be4c59159bf8bc399985c160d\"," +
+                        "\"scopes\":\"None\"}]," +
+                        "\"attributes\":[" +
+                        "{\"type\":\"Conflicts\"," +
+                        "\"hash\":\"0x830869b930477c50c91a11569821a4d665d4a61af78a092e3c1a8690f846fc82\"}]," +
+                        "\"script\":\"QA==\"," +
+                        "\"witnesses\":[{\"invocation\":\"DEBoureAXZRM9wyjX/xZP3Di8Q006H3mb" +
+                        "\\u002B6DqWbjAjnIVP/Zd/uG57SecDqO2mZAX\\u002B5eoHQYAGRI6/nrOuwP\\u002BrLU\"," +
+                        "\"verification\":\"DCEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtBVuezJw==\"}]}}\n"
+        );
+
+        NeoCancelTransaction cancelTxResponse = deserialiseResponse(NeoCancelTransaction.class);
+        Transaction tx = cancelTxResponse.getTransaction();
+        assertThat(tx.getHash(), is(new Hash256("0x8916c94bb7c4a63f117ca873c9224955bf9ad00b1149a0173e33614559713425")));
+        // Not testing more fields as they are tested in testGetTransaction
+    }
+
 
     @Test
     public void testListAddress() {
@@ -2655,11 +2734,15 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "        ],\n" +
                         "        \"attributes\": []," +
-                        "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
+                        "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI" +
+                        "/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEAZaoPvbyaQyUYqIBc4MyDCGxGhxlPCuBbcHn5cYMpHPi2JD4PX2I1EsDPNtrEESPo//WBnsKyl5o5ViR5YDcJR\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": " +
+                         "\"DEAZaoPvbyaQyUYqIBc4MyDCGxGhxlPCuBbcHn5cYMpHPi2JD4PX2I1EsDPNtrEESPo//WBnsKyl5o5ViR5YDcJR" +
+                        "\",\n" +
+                        "                \"verification\": " +
+                         "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2694,14 +2777,16 @@ public class ResponseTest extends ResponseTester {
         assertThat(thrown.getMessage(), containsString("does not have any attributes"));
 
         assertThat(transaction.getScript(),
-                is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
+                is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq" +
+                        "/o3wO3YicII/em0FifVtSOA=="));
 
         assertThat(transaction.getWitnesses(), is(notNullValue()));
         assertThat(transaction.getWitnesses(), hasSize(1));
         assertThat(transaction.getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DEAZaoPvbyaQyUYqIBc4MyDCGxGhxlPCuBbcHn5cYMpHPi2JD4PX2I1EsDPNtrEESPo//WBnsKyl5o5ViR5YDcJR",
+                                "DEAZaoPvbyaQyUYqIBc4MyDCGxGhxlPCuBbcHn5cYMpHPi2JD4PX2I1EsDPNtrEESPo" +
+                                        "//WBnsKyl5o5ViR5YDcJR",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
@@ -2733,11 +2818,15 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "        ],\n" +
                         "        \"attributes\": []," +
-                        "        \"script\": \"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjgaDBQP7O1Ep0MA2doEn6k2cKQxFxiP9gwUD+ztRKdDANnaBJ+pNnCkMRcYj/YTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4\",\n" +
+                        "        \"script\": " +
+                         "\"AGQMFObBATZUrxE9ipaL3KUsmUioK5U9DBQP7O1Ep0MA2doEn6k2cKQxFxiP9hPADAh0cmFuc2ZlcgwUiXcg2M129PAKv6N8Dt2InCCP3ptBYn1bUjgaDBQP7O1Ep0MA2doEn6k2cKQxFxiP9gwUD+ztRKdDANnaBJ+pNnCkMRcYj/YTwAwIdHJhbnNmZXIMFIl3INjNdvTwCr+jfA7diJwgj96bQWJ9W1I4\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DEDjHdgTfdXKx1R9f4D1lRklhisjDOkkMt7t1fO1CPO31gVQZUiWJc7GvJqjkR35iDjJjGIwd3s/Lm7q71rwdVC4\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": " +
+                         "\"DEDjHdgTfdXKx1R9f4D1lRklhisjDOkkMt7t1fO1CPO31gVQZUiWJc7GvJqjkR35iDjJjGIwd3s/Lm7q71rwdVC4" +
+                          "\",\n" +
+                        "                \"verification\": " +
+                         "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2790,7 +2879,8 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendMany.getSendMany().getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DEDjHdgTfdXKx1R9f4D1lRklhisjDOkkMt7t1fO1CPO31gVQZUiWJc7GvJqjkR35iDjJjGIwd3s/Lm7q71rwdVC4",
+                                "DEDjHdgTfdXKx1R9f4D1lRklhisjDOkkMt7t1fO1CPO31gVQZUiWJc7GvJqjkR35iDjJjGIwd3s" +
+                                "/Lm7q71rwdVC4",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
@@ -2835,15 +2925,21 @@ public class ResponseTest extends ResponseTester {
                         "            }\n" +
                         "        ],\n" +
                         "        \"attributes\": []," +
-                        "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
+                        "        \"script\": \"GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI" +
+                         "/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA==\",\n" +
                         "        \"witnesses\": [\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DECstBmb75AW65NjA35fFlSxszuLRDUzd0nnbfyH8MlnSA02f6B1XlvItpZQBsAd7Pvqa7S+olPAKDO0qtq3ZtOB\",\n" +
-                        "                \"verification\": \"DCED8ew8Hig+iA3m6cSJ8PJ8GQB8UzhaqkwMkXwyAHntrfILQQqQatQ=\"\n" +
+                        "                \"invocation\": " +
+                        "\"DECstBmb75AW65NjA35fFlSxszuLRDUzd0nnbfyH8MlnSA02f6B1XlvItpZQBsAd7Pvqa7S+olPAKDO0qtq3ZtOB" +
+                          "\",\n" +
+                        "                \"verification\": \"DCED8ew8Hig+iA3m6cSJ8PJ8GQB8UzhaqkwMkXwyAHntrfILQQqQatQ" +
+                         "=\"\n" +
                         "            },\n" +
                         "            {\n" +
-                        "                \"invocation\": \"DED6KQHcomjUhyLcmIcPwM1iWkbOlgDnidWZP+PLDWLQRk2rKLg5B/sY1YD1bqylF0zmtDCSIQKeMivAGJyOSXi4\",\n" +
-                        "                \"verification\": \"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
+                        "                \"invocation\": \"DED6KQHcomjUhyLcmIcPwM1iWkbOlgDnidWZP+PLDWLQRk2rKLg5B" +
+                         "/sY1YD1bqylF0zmtDCSIQKeMivAGJyOSXi4\",\n" +
+                        "                \"verification\": " +
+                        "\"EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw==\"\n" +
                         "            }\n" +
                         "        ]\n" +
                         "    }\n" +
@@ -2872,17 +2968,20 @@ public class ResponseTest extends ResponseTester {
         assertThat(sendToAddress.getSendToAddress().getAttributes(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getAttributes(), hasSize(0));
         assertThat(sendToAddress.getSendToAddress().getScript(),
-                is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq/o3wO3YicII/em0FifVtSOA=="));
+                is("GgwU5sEBNlSvET2KlovcpSyZSKgrlT0MFA/s7USnQwDZ2gSfqTZwpDEXGI/2E8AMCHRyYW5zZmVyDBSJdyDYzXb08Aq" +
+                 "/o3wO3YicII/em0FifVtSOA=="));
         assertThat(sendToAddress.getSendToAddress().getWitnesses(), is(notNullValue()));
         assertThat(sendToAddress.getSendToAddress().getWitnesses(), hasSize(2));
         assertThat(sendToAddress.getSendToAddress().getWitnesses(),
                 containsInAnyOrder(
                         new NeoWitness(
-                                "DECstBmb75AW65NjA35fFlSxszuLRDUzd0nnbfyH8MlnSA02f6B1XlvItpZQBsAd7Pvqa7S+olPAKDO0qtq3ZtOB",
+                                "DECstBmb75AW65NjA35fFlSxszuLRDUzd0nnbfyH8MlnSA02f6B1XlvItpZQBsAd7Pvqa7S" +
+                                 "+olPAKDO0qtq3ZtOB",
                                 "DCED8ew8Hig+iA3m6cSJ8PJ8GQB8UzhaqkwMkXwyAHntrfILQQqQatQ="
                         ),
                         new NeoWitness(
-                                "DED6KQHcomjUhyLcmIcPwM1iWkbOlgDnidWZP+PLDWLQRk2rKLg5B/sY1YD1bqylF0zmtDCSIQKeMivAGJyOSXi4",
+                                "DED6KQHcomjUhyLcmIcPwM1iWkbOlgDnidWZP+PLDWLQRk2rKLg5B" +
+                                 "/sY1YD1bqylF0zmtDCSIQKeMivAGJyOSXi4",
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
@@ -2905,7 +3004,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"100000000000\",\n" +
                         "                \"blockindex\": 368082,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
+                        "                \"txhash\": " +
+                         "\"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
                         "            },\n" +
                         "            {\n" +
                         "                \"timestamp\": 1554880287,\n" +
@@ -2914,7 +3014,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"100000000000\",\n" +
                         "                \"blockindex\": 397769,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
+                        "                \"txhash\": " +
+                         "\"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"received\": [\n" +
@@ -2925,7 +3026,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"1000000\",\n" +
                         "                \"blockindex\": 436036,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
+                        "                \"txhash\": " +
+                         "\"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"address\": \"AbHgdBaWEnHkCiLtDZXjhvhaAK2cwFh5pF\"\n" +
@@ -3250,8 +3352,15 @@ public class ResponseTest extends ResponseTester {
                 "        \"roothash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
                 "        \"witnesses\": [\n" +
                 "            {\n" +
-                "                \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs\",\n" +
-                "                \"verification\": \"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
+                "                \"invocation\": \"DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe" +
+                        "/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R" +
+                  "+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40" +
+                   "+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr" +
+ "/ma66ISs\",\n" +
+                "                \"verification\": " +
+                 "\"EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji" +
+                  "/a1GIEJU2EMIQKXhyDsbFxYdeA0d" +
+                   "+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw==\"\n" +
                 "            }\n" +
                 "        ]\n" +
                 "    }\n" +
@@ -3268,9 +3377,15 @@ public class ResponseTest extends ResponseTester {
         assertNotNull(stateRoot.getWitnesses());
         assertThat(stateRoot.getWitnesses(), hasSize(1));
         assertThat(stateRoot.getWitnesses().get(0).getInvocation(),
-                is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr/ma66ISs"));
+                is("DEDN8o6cmOUt/pfRIexVzO2shhX2vTYFd+cU8vZDQ2Dvn3pe" +
+                 "/vHcYOSlY3lPRKecb5zBuLCqaKSvZsC1FAbT00dWDEDoPojyFw66R" +
+                  "+pKQsOy0MFmeBBgaC6Z1XGLAigVDHi2VuhAxfpwFpXSTUv3Uv5cIOY+V5g40" +
+                   "+2zpU19YQIAWyOJDEDPfitQTjK90KnrloPXKvgTNFPn1520dxDCzQxhl/Wfp7S8dW91/3x3GrF1EaIi32aJtF8W8jUH1Spr" +
+                        "/ma66ISs"));
         assertThat(stateRoot.getWitnesses().get(0).getVerification(),
-                is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji/a1GIEJU2EMIQKXhyDsbFxYdeA0d+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
+                is("EwwhAwAqLhjDnN7Qb8Yd2UoHuOnz+gNqcFvu+HZCUpVOgtDXDCECAM1gQDlYokm5qzKbbAjI/955zDMJc2eji" +
+                 "/a1GIEJU2EMIQKXhyDsbFxYdeA0d" +
+                  "+FsbZj5AQhamA13R64ysGgh19j6UwwhA8klCeQozdf3pP3UqXxniRC0DxRl3d5PBJ9zJa8zgHkpFAtBE43vrw=="));
     }
 
     @Test
@@ -3278,14 +3393,23 @@ public class ResponseTest extends ResponseTester {
         buildResponse("{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": \"1\",\n" +
-                "    \"result\": \"Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA=\"\n" +
+                "    \"result\": " +
+                 "\"Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA" +
+                  "+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me" +
+                   "+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z" +
+                    "/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI" +
+                     "+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA=\"\n" +
                 "}"
         );
 
         NeoGetProof neoGetProof = deserialiseResponse(NeoGetProof.class);
 
         assertThat(neoGetProof.getProof(),
-                is("Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA="));
+                is("Bfv///8XBiQBAQ8DRzb6Vkdw0r5nxMBp6Z5nvbyXiupMvffwm0v5GdB6jHvyAAQEBAQEBAQEA7l84HFtRI5V11s58vA" +
+                 "+8CZ5GArFLkGUYLO98RLaMaYmA5MEnx0upnVI45XTpoUDRvwrlPD59uWy9aIrdS4T0D2cA6Rwv/l3GmrctRzL1me" +
+                  "+iTUFdDgooaz+esFHFXJdDANfA2bdshZMp5ox2goVAOMjvoxNIWWOqjJoRPu6ZOw2kdj6A8xovEK1Mp6cAG9z" +
+                   "/jfFDrSEM60kuo97MNaVOP/cDZ1wA1nf4WdI" +
+                    "+jksYz0EJgzBukK8rEzz8jE2cb2Zx2fytVyQBANC7v2RaLMCRF1XgLpSri12L2IwL9Zcjz5LZiaB5nHKNgQpAQYPDw8PDw8DggFffnsVMyqAfZjg+4gu97N/gKpOsAK8Q27s56tijRlSAAMm26DYxOdf/IjEgkE/u/CoRL6dDnzvs1dxCg/00esMvgPGioeOqQCkDOTfliOnCxYjbY/0XvVUOXkceuDm1W0FzQQEBAQEBAQEBAQEBAQEBJIABAPH1PnX/P8NOgV4KHnogwD7xIsD8KvNhkTcDxgCo7Ec6gPQs1zD4igSJB4M9jTREq+7lQ5PbTH/6d138yUVvtM8bQP9Df1kh7asXrYjZolKhLcQ1NoClQgEzbcJfYkCHXv6DQQEBAOUw9zNl/7FJrWD7rCv0mbOoy6nLlHWiWuyGsA12ohRuAQEBAQEBAQEBAYCBAIAAgA="));
     }
 
     @Test
@@ -3342,8 +3466,22 @@ public class ResponseTest extends ResponseTester {
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
-                "        \"firstProof\": \"Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=\",\n" +
-                "        \"lastProof\": \"Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==\",\n" +
+                "        \"firstProof\": " +
+                 "\"Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB" +
+                  "/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh" +
+                   "/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA" +
+                    "+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R" +
+ "/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq" +
+                      "+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG" +
+                       "+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=\",\n" +
+                "        \"lastProof\": " +
+                 "\"Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB" +
+                  "/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh" +
+                   "/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA" +
+                    "+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R" +
+                     "/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq" +
+                        "+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG" +
+                       "+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==\",\n" +
                 "        \"truncated\": false,\n" +
                 "        \"results\": [\n" +
                 "            {\n" +
@@ -3362,9 +3500,19 @@ public class ResponseTest extends ResponseTester {
         NeoFindStates neoFindStates = deserialiseResponse(NeoFindStates.class);
         NeoFindStates.States states = neoFindStates.getStates();
 
-        String firstProof = "Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=";
+        String firstProof = "Gfr///8UDRZcmJnDi79ZkcXkewSTcljK7GkIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB" +
+         "/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh" +
+          "/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA" +
+           "+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R" +
+            "/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG" +
+             "+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScNAQYFDAkICQkMAwgLCw8FCQkBDAUOBAcLAAQJAwcCBQgMCg4MBgkDzXuGD6B7eZe7+IxNOv1j48vZn5A9qz4nzzvdSqSQRr8LAglBASEFACrPdwI=";
         assertThat(states.getFirstProof(), is(firstProof));
-        String lastProof = "Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==";
+        String lastProof = "Gfr///8Uf2XUNDYnCLJV8OBoVr3LXOmdhQUIJAEBDwOakA9CYtxDPpx00gKk0RCLmrtNtpTsY2rXB" +
+         "/RqfGHIPLIABAQEBAQEBAMe+jlFz2/5ZKl+ycxczvmS75mO9ssmFZef+WHov7XIHQQDiT6zHh" +
+          "/siCZ0c2bfBEymPmRNTiXSAKFIammjmnnBnJYDh0IX5YfZdqNZkfFN/6VaLZ6kX+N+bBGdlNVUyP7pwJ4DrpFUvhWA" +
+           "+kXVxDLE8qKtLcQimKQY1RcWw14bsjURuRYEBAQDsyA6/WuQyV98xH99kDVz3bhQHmUNBIQqJd0x0R" +
+            "/+TGwEKQEGDw8PDw8PAzKhCJmqIIilFwEfMQJDUEMXInq+AbRk8Jfnoi1weu8aUgADo6udX84sFVzKZLdtwtJ6TIMgQOrYZQ+7yKG" +
+             "+5TlliscDzboXdiwLKASBJeAVtNTl7NHqclD6UBe4XrwJQQYJIDQEBAQEBAQEBAQEBAQEBAQkAQEEA6pd1tKBerO8Qub4cvuKEpXDlGCJsktZ4Vk0xT+D6Av5UgADBr2ExYHjKsB15w2Ra40oWm7iPwdhWEVf6nHV6St/W8gEBAQEBAQDufefqjG8jPxPHOFpyF8LE16aXEzlFeuts4vaQ+wGCL4EBAQEBAQEBARKAScPBgUNBAMEAwYCBwAICwIFBQ8ADgAGCAUGCw0MCwUMDgkJDQgFAAUDkvma2Sek54h+A0fdKAxoUjETufDdw3bX/Crnad92qPUNAgtBASEHAADVWF95Eg==";
         assertThat(states.getLastProof(), is(lastProof));
         assertFalse(states.isTruncated());
         List<NeoFindStates.States.Result> results = states.getResults();
@@ -3389,7 +3537,14 @@ public class ResponseTest extends ResponseTester {
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
-                "        \"firstProof\": \"Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku+ZjvbLJhWXn/lh6L+1yB0EA4k+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ/dr4V494mGlwcp9DAkCBwCY0uJieRI=\",\n" +
+                "        \"firstProof\": \"Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK" +
+                 "+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku+ZjvbLJhWXn/lh6L+1yB0EA4k" +
+                  "+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU" +
+                   "+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR" +
+                    "/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY" +
+                     "/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm" +
+                      "/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ" +
+                       "/dr4V494mGlwcp9DAkCBwCY0uJieRI=\",\n" +
                 "        \"truncated\": true,\n" +
                 "        \"results\": [\n" +
                 "            {\n" +
@@ -3404,7 +3559,14 @@ public class ResponseTest extends ResponseTester {
         NeoFindStates neoFindStates = deserialiseResponse(NeoFindStates.class);
         NeoFindStates.States states = neoFindStates.getStates();
 
-        assertThat(states.getFirstProof(), is("Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku+ZjvbLJhWXn/lh6L+1yB0EA4k+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ/dr4V494mGlwcp9DAkCBwCY0uJieRI="));
+        assertThat(states.getFirstProof(),
+                is("Bfr///8LBiQBAQ8DqDawCFNqYkkQC+no3z6WbmuP8DJmy9e4MMK+QzHITdGyAAQEBAQEBAQDHvo5Rc9v+WSpfsnMXM75ku" +
+                 "+ZjvbLJhWXn/lh6L+1yB0EA4k+sx4f7IgmdHNm3wRMpj5kTU4l0gChSGppo5p5wZyWA7QRkH8fw1R6WnCQfRWk96ZKPBPSeOU" +
+                  "+gvwQuwjznHjfA66RVL4VgPpF1cQyxPKirS3EIpikGNUXFsNeG7I1EbkWBAQEA7MgOv1rkMlffMR" +
+                        "/fZA1c924UB5lDQSEKiXdMdEf/kxsBCkBBg8PDw8PDwMJqhMyRWjael2lcsob2BXims/yMjMrrSkkWY" +
+                    "/MsReC7lIAAzP6dmF3DTZHkfcXYHO6On6KQucSwUv9UryMqImoBKrLA27ebHC45rpr3EGcLJ7D7EAm" +
+                     "/JihcES3pIzYVxgh6hSrBAQEBAQEBAQEBAQEBAQEJAEBCwMWm2J/uEa8sf+ET9RUiBXqOLuLQ" +
+                      "/dr4V494mGlwcp9DAkCBwCY0uJieRI="));
         assertNull(states.getLastProof());
         assertThat(states.getResults(), hasSize(1));
     }
@@ -3516,7 +3678,8 @@ public class ResponseTest extends ResponseTester {
                 "        },\n" +
                 "        {\n" +
                 "            \"key\": \"0e\",\n" +
-                "            \"value\": \"40014102282102c2f3870c8805f83881e93cddaac2b2130ad4a2ca44a327ac64e18322862b19ee2100\"\n" +
+                "            \"value\": " +
+                 "\"40014102282102c2f3870c8805f83881e93cddaac2b2130ad4a2ca44a327ac64e18322862b19ee2100\"\n" +
                 "        },\n" +
                 "        {\n" +
                 "            \"key\": \"14b65d362f086196286c2cd6868afbe0cf75f732a3\",\n" +
@@ -3568,7 +3731,8 @@ public class ResponseTest extends ResponseTester {
                 "    \"result\": [\n" +
                 "        {\n" +
                 "            \"requestid\": 0,\n" +
-                "            \"originaltxid\": \"0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a\",\n" +
+                "            \"originaltxid\": \"0x0b2327b9c4a6445a3e1d85ae9f99184a9cf5d7234602be54800057968332180a" +
+                 "\",\n" +
                 "            \"gasforresponse\": 1000000000,\n" +
                 "            \"url\": \"https://www.neow3j.io\",\n" +
                 "            \"filter\": \"$.nftinfo\",\n" +
@@ -3609,13 +3773,18 @@ public class ResponseTest extends ResponseTester {
         buildResponse("{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
-                "    \"result\": \"AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6\"\n" +
+                "    \"result\": \"AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS" +
+                 "/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J" +
+                  "/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6\"\n" +
                 "}");
 
         NeoExpressCreateOracleResponseTx neoExpressCreateOracleResponseTx =
                 deserialiseResponse(NeoExpressCreateOracleResponseTx.class);
         String oracleResponseTx = neoExpressCreateOracleResponseTx.getOracleResponseTx();
-        assertThat(oracleResponseTx, is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
+        assertThat(oracleResponseTx,
+                is("AAAAAAD+KXk7AAAAAAKgIQAAAAAA5BcAAAJYhxcRfgqoEHKvq3HS3Yn+fEuS" +
+                        "/gDWpJ16ac8mblfxSXP0i4whCH8cRgABEQAAAAAAAAAAAAZuZW93M2olwh8MBmZpbmlzaAwUWIcXEX4KqBByr6tx0t2J" +
+                  "/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
     }
 
     @Test
@@ -3700,8 +3869,8 @@ public class ResponseTest extends ResponseTester {
                                 "FCS",
                                 "0",
                                 asList(
-                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", "1", 12345L),
-                                     new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", "1", 123456L)
+                                        new NeoGetNep11Balances.Nep11Balance.Nep11Token("1", "1", 12345L),
+                                        new NeoGetNep11Balances.Nep11Balance.Nep11Token("2", "1", 123456L)
                                 )
                         ),
                         new NeoGetNep11Balances.Nep11Balance(
@@ -3759,7 +3928,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"100000000000\",\n" +
                         "                \"blockindex\": 368082,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
+                        "                \"txhash\": " +
+                         "\"240ab1369712ad2782b99a02a8f9fcaa41d1e96322017ae90d0449a3ba52a564\"\n" +
                         "            },\n" +
                         "            {\n" +
                         "                \"tokenid\": \"2\",\n" +
@@ -3769,7 +3939,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"100000000000\",\n" +
                         "                \"blockindex\": 397769,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
+                        "                \"txhash\": " +
+                         "\"12fdf7ce8b2388d23ab223854cb29e5114d8288c878de23b7924880f82dfc834\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"received\": [\n" +
@@ -3781,7 +3952,8 @@ public class ResponseTest extends ResponseTester {
                         "                \"amount\": \"1000000\",\n" +
                         "                \"blockindex\": 436036,\n" +
                         "                \"transfernotifyindex\": 0,\n" +
-                        "                \"txhash\": \"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
+                        "                \"txhash\": " +
+                         "\"df7683ece554ecfb85cf41492c5f143215dd43ef9ec61181a28f922da06aba58\"\n" +
                         "            }\n" +
                         "        ],\n" +
                         "        \"address\": \"AbHgdBaWEnHkCiLtDZXjhvhaAK2cwFh5pF\"\n" +

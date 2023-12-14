@@ -3,6 +3,8 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
+import io.neow3j.protocol.core.response.NeoCancelTransaction;
+import io.neow3j.protocol.core.response.NeoGetTransaction;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -30,11 +32,13 @@ import java.math.BigInteger;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -159,7 +163,7 @@ public class Neow3jWriteIntegrationTest {
         Transaction tx = response.getSendMany();
         assertThat(tx.getSender(), is(committeeAccountAddress()));
 
-        Await.waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
+        waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
         Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send()
                 .getApplicationLog().getExecutions().get(0);
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
@@ -210,6 +214,45 @@ public class Neow3jWriteIntegrationTest {
         Transaction tx = sendToAddress.getSendToAddress();
 
         assertNotNull(tx);
+    }
+
+    @Test
+    public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException {
+        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
+                defaultAccountAddress());
+        Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
+
+        waitUntilTransactionIsExecuted(tx.getHash(), getNeow3j());
+
+        NeoCancelTransaction cancel = getNeow3j()
+                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
+                .send();
+
+        assertThat(cancel.getError().getMessage(), is("This tx is already confirmed, can't be cancelled."));
+    }
+
+    /*
+     * This test can have timing issues. The transaction is sent and then immediately cancelled. But, if the
+     * transaction is included in a block before the cancellation is processed, the test will fail.
+     */
+    @Test
+    public void cancelTransactionSucceedsWithSingleSigner() throws IOException {
+        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
+                defaultAccountAddress());
+        Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
+
+        NeoCancelTransaction cancel = getNeow3j()
+                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
+                .send();
+
+        assertFalse(cancel.hasError());
+        Transaction cancelTx = cancel.getTransaction();
+        assertNotNull(cancelTx.getHash());
+        assertThat(cancelTx.getSender(), is(defaultAccountAddress()));
+
+        NeoGetTransaction cancelled = getNeow3j().getTransaction(tx.getHash()).send();
+        assertTrue(cancelled.hasError());
+        assertThat(cancelled.getError().getMessage(), is("Unknown transaction"));
     }
 
 }
