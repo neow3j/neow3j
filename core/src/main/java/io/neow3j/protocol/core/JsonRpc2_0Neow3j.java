@@ -1056,11 +1056,11 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * Attempt to cancel a transaction that has been sent to the network if it is not yet confirmed. This is achieved by
      * creating a conflicting transaction (using the 'conflicts' transaction attribute). The conflicting transaction
      * has a minimally higher network fee than the transaction to cancel. You can also add an extra network fee to boost
-     * priority. Make sure that the involved signers are the same as in the transaction to cancel. The first signer will
-     * be used to pay for GAS costs. Signers can also be contracts that have a verify method.
+     * priority. At least one of the signers has to overlap with the signers on the transaction to be cancelled.
+     * The first signer will be used to pay for GAS costs.
      *
      * @param txHash   the hash of the transaction to cancel.
-     * @param signers  the signers used to perform the cancellation. The first signer will be used to pay for GAS costs.
+     * @param signers  the signers used to perform the cancellation.
      * @param extraFee an extra network fee to boost priority of the cancellation transaction. Pass the fee in fractions
      *                 of GAS. Pass null if you don't want to add an extra fee.
      * @return the request object.
