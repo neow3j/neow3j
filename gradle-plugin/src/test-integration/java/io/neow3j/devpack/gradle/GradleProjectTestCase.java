@@ -1,11 +1,9 @@
 package io.neow3j.devpack.gradle;
 
-import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
-import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
-import static io.neow3j.devpack.gradle.Neow3jPlugin.DEFAULT_OUTPUT_DIR;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEFDBGNFO_SUFFIX;
-import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEF_SUFFIX;
-import static io.neow3j.devpack.gradle.TestCaseUtils.appendFile;
+import org.gradle.testkit.runner.BuildResult;
+import org.gradle.testkit.runner.GradleRunner;
+import org.gradle.testkit.runner.UnexpectedBuildFailure;
+import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -19,10 +17,13 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.gradle.testkit.runner.BuildResult;
-import org.gradle.testkit.runner.GradleRunner;
-import org.gradle.testkit.runner.UnexpectedBuildFailure;
-import org.junit.rules.TemporaryFolder;
+
+import static io.neow3j.contract.ContractUtils.getContractManifestFilename;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.DEFAULT_OUTPUT_DIR;
+import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEFDBGNFO_SUFFIX;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.NEF_SUFFIX;
+import static io.neow3j.devpack.gradle.TestCaseUtils.appendFile;
 
 public class GradleProjectTestCase {
 
@@ -94,7 +95,7 @@ public class GradleProjectTestCase {
             throws IOException {
         String content = "" +
                 "dependencies {" + "\n" +
-                "    compile files(" + classPathFilesList + ")" + "\n" +
+                "    implementation files(" + classPathFilesList + ")" + "\n" +
                 "}" + "\n";
         appendFile(destination, content);
     }

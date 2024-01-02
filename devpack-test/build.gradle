@@ -1,7 +1,7 @@
 description 'test framework for neow3j'
 
 dependencies {
-    compile project(":test-tools"),
+    api project(":test-tools"),
             project(":contract"),
             project(":core")
 

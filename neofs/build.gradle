@@ -11,9 +11,9 @@ repositories {
 }
 
 dependencies {
-    compile project(":core")
+    api project(":core")
 
-    compile "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
+    api "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
             "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",

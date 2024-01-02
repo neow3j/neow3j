@@ -1,7 +1,7 @@
 description 'neow3j: Java/Kotlin/Android Development Toolkit for the Neo Blockchain'
 
 dependencies {
-    compile "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion",
+    api "org.bouncycastle:bcprov-jdk15on:$bouncycastleVersion",
             "com.squareup.okhttp3:okhttp:$okhttpVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
             "io.reactivex.rxjava2:rxjava:$rxjavaVersion"

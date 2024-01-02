@@ -3,7 +3,7 @@ package io.neow3j.devpack.gradle;
 import io.neow3j.compiler.DebugInfo;
 import io.neow3j.protocol.ObjectMapperFactory;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginConvention;
+import org.gradle.api.plugins.JavaPluginExtension;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -24,9 +24,9 @@ public class Neow3jPluginUtils {
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
     static List<File> getOutputDirs(Project project) {
-        final JavaPluginConvention pluginConv = project.getConvention().getPlugin(JavaPluginConvention.class);
+        final JavaPluginExtension pluginExt = project.getExtensions().getByType(JavaPluginExtension.class);
         List<File> dirs = new ArrayList<>();
-        pluginConv.getSourceSets().forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
+        pluginExt.getSourceSets().forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
         return dirs;
     }
 

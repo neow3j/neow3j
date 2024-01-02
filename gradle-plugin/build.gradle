@@ -5,29 +5,16 @@ testSets {
 }
 
 gradlePlugin {
+    website = "https://github.com/neow3j/neow3j"
+    vcsUrl = "https://github.com/neow3j/neow3j"
+
     plugins {
         neow3jDevpackGradlePlugin {
             id = "io.neow3j.gradle-plugin"
             implementationClass = "io.neow3j.devpack.gradle.Neow3jPlugin"
-        }
-    }
-}
-
-pluginBundle {
-    website = "https://github.com/neow3j/neow3j"
-    vcsUrl = "https://github.com/neow3j/neow3j"
-    description = "Gradle plugin to compile Java smart contracts to NeoVM"
-    tags = ["javac", "neo", "blockchain", "neow3j", "java"]
-
-    mavenCoordinates {
-        groupId = project.group.toString()
-        artifactId = project.name
-    }
-
-    plugins {
-        neow3jDevpackGradlePlugin {
-            id = "io.neow3j.gradle-plugin"
             displayName = 'Gradle plugin for neow3j compiler'
+            description = "Gradle plugin to compile Java smart contracts to NeoVM"
+            tags = ["javac", "neo", "blockchain", "neow3j", "java"]
         }
     }
 }
@@ -50,12 +37,13 @@ task createClasspathManifest {
 }
 
 dependencies {
-    implementation project(':compiler'),
+    implementation project(":core"),
+            project(':compiler'),
             project(':contract'),
             gradleApi()
 
     testImplementation "junit:junit:$junitVersion",
             gradleTestKit()
 
-    testRuntime files(createClasspathManifest)
+    testRuntimeOnly files(createClasspathManifest)
 }
