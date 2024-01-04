@@ -3,7 +3,6 @@ package io.neow3j.devpack.gradle;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
 import org.gradle.testkit.runner.UnexpectedBuildFailure;
-import org.junit.rules.TemporaryFolder;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -31,7 +30,7 @@ public class GradleProjectTestCase {
     public static final String BUILD_FILENAME = "build.gradle";
     public static final String DEFAULT_BUILD_OUTPUT_DIR_NAME = "build";
 
-    private TemporaryFolder projectRootDir;
+    private Path projectRootDir;
     private String contractName;
     private String contractSourceFileName;
     private File settingsFile;
@@ -44,17 +43,17 @@ public class GradleProjectTestCase {
     private BuildResult gradleBuildResult;
     private List<File> pluginClasspath;
 
-    public GradleProjectTestCase(TemporaryFolder projectRootDir) throws IOException {
+    public GradleProjectTestCase(Path projectRootDir) throws IOException {
         this.projectRootDir = projectRootDir;
 
-        this.settingsFile = this.projectRootDir.newFile(SETTINGS_FILENAME);
-        this.buildFile = this.projectRootDir.newFile(BUILD_FILENAME);
-        this.defaultBaseBuildOutputDir = this.projectRootDir
-                .newFolder(DEFAULT_BUILD_OUTPUT_DIR_NAME);
+        this.settingsFile = Files.createFile(projectRootDir.resolve(SETTINGS_FILENAME)).toFile();
+        this.buildFile = Files.createFile(projectRootDir.resolve(BUILD_FILENAME)).toFile();
+        this.defaultBaseBuildOutputDir = Files.createDirectories(projectRootDir.resolve(DEFAULT_BUILD_OUTPUT_DIR_NAME))
+                .toFile();
         this.buildNeow3jOutputDir = Paths.get(defaultBaseBuildOutputDir.getAbsolutePath(),
                 DEFAULT_OUTPUT_DIR).toFile();
-        this.smartContractPackageDir = projectRootDir.newFolder("src", "main",
-                "java", "io", "neow3j", "devpack", "gradle");
+        this.smartContractPackageDir = Files.createDirectories(projectRootDir.resolve(Paths.get("src", "main",
+                "java", "io", "neow3j", "devpack", "gradle"))).toFile();
         this.smartContractPackageDir.mkdirs();
 
         appendFile(this.settingsFile, "rootProject.name = 'test-smart-contract'");
@@ -143,7 +142,7 @@ public class GradleProjectTestCase {
         this.withGradleArgument(TASK_NAME);
         try {
             this.gradleBuildResult = GradleRunner.create()
-                    .withProjectDir(this.projectRootDir.getRoot())
+                    .withProjectDir(this.projectRootDir.toFile())
                     .withPluginClasspath()
                     .withArguments(this.gradleArguments)
                     .build();
@@ -198,7 +197,7 @@ public class GradleProjectTestCase {
                 .getResourceAsStream("/" + this.contractSourceFileName);
     }
 
-    public TemporaryFolder getProjectRootDir() {
+    public Path getProjectRootDir() {
         return projectRootDir;
     }
 

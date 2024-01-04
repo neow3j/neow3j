@@ -1,12 +1,13 @@
 package io.neow3j.devpack.gradle;
 
 import org.gradle.testkit.runner.BuildResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
 import static java.util.Objects.requireNonNull;
@@ -16,14 +17,14 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Neow3jCompilePluginIntegrationTest {
 
-    @Rule
-    public final TemporaryFolder projectRootDir = new TemporaryFolder();
+    @TempDir
+    public Path projectRootDir;
 
     @Test
     public void testTaskHappyPath() throws IOException {
@@ -299,7 +300,7 @@ public class Neow3jCompilePluginIntegrationTest {
     public void testTaskHappyPath_BuildOutputDir()
             throws IOException {
 
-        File newOutputDir = this.projectRootDir.newFolder("someDir");
+        File newOutputDir = Files.createDirectory(this.projectRootDir.resolve("someDir")).toFile();
 
         String buildFileContent = "" +
                 "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +

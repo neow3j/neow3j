@@ -20,6 +20,3 @@ configurations {
     testArtifacts.extendsFrom testRuntime
 }
 
-artifacts {
-    testArtifacts testJar
-}

@@ -1,9 +1,5 @@
 description 'neow3j: Gradle Plugin'
 
-testSets {
-    integrationTest { dirName = 'test-integration' }
-}
-
 gradlePlugin {
     website = "https://github.com/neow3j/neow3j"
     vcsUrl = "https://github.com/neow3j/neow3j"
@@ -42,8 +38,7 @@ dependencies {
             project(':contract'),
             gradleApi()
 
-    testImplementation "junit:junit:$junitVersion",
-            gradleTestKit()
+    testImplementation gradleTestKit()
 
     testRuntimeOnly files(createClasspathManifest)
 }

@@ -7,7 +7,7 @@ buildscript {
     ext.jnaVersion = '5.12.1'
     ext.neofsApiJavaVersion = '2.14.0-SNAPSHOT' // Replace with non-snapshot version once officially released.
     ext.neofsSharedLibVersion = '0.0.11'
-    ext.okhttpVersion = '4.11.0'
+    ext.okhttpVersion = '4.12.0'
     ext.protobufJavaUtilVersion = '3.21.9'
     ext.rxjavaVersion = '2.2.21'
     ext.slf4jVersion = '2.0.9'
@@ -16,11 +16,9 @@ buildscript {
     ext.awaitility = '4.2.0'
     ext.equalsverifierVersion = '3.15.2'
     ext.hamcrestVersion = '1.3'
-    ext.junitVersion = '4.13.2'
-    ext.junitBenchmarkVersion = '0.7.2'
     ext.jupiterVersion = '5.10.0'
     ext.logbackVersion = '1.3.11'
-    ext.mockitoVersion = '3.6.0'
+    ext.mockitoVersion = '5.8.0'
     ext.testcontainersVersion = '1.19.3'
     ext.wiremockVersion = '2.35.1'
 
@@ -31,7 +29,6 @@ buildscript {
 }
 
 plugins {
-    id 'org.unbroken-dome.test-sets' version '4.1.0' apply false
     id 'io.github.gradle-nexus.publish-plugin' version '1.3.0' apply true
     id 'com.gradle.plugin-publish' version '1.2.1' apply false
     id 'jacoco' apply true
@@ -111,8 +108,10 @@ allprojects { thisproject ->
         }
     }
 
-    tasks.withType(Test) {
-        reports.html.destination = file("${reporting.baseDir}/${name}")
+    tasks.withType(Test).tap {
+        configureEach {
+            reports.html.getOutputLocation().set(file("${reporting.baseDir}/${name}"))
+        }
     }
 
 //    checkstyle {
@@ -121,22 +120,47 @@ allprojects { thisproject ->
 //    }
 }
 
-subprojects {
-    apply plugin: 'org.unbroken-dome.test-sets'
+subprojects { project ->
+
+    apply plugin: 'jvm-test-suite'
 
     if (project.name.startsWith('gradle-plugin')) {
         apply plugin: 'java-gradle-plugin'
         apply plugin: 'com.gradle.plugin-publish'
     }
 
-    dependencies {
-        testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
-                "org.mockito:mockito-core:$mockitoVersion",
-                "org.hamcrest:hamcrest-all:$hamcrestVersion"
+    project.testing {
+        suites {
+            configureEach {task ->
+                useJUnitJupiter()
+                dependencies {
+                    implementation("org.junit.jupiter:junit-jupiter:$jupiterVersion")
+                    implementation("org.mockito:mockito-core:$mockitoVersion")
+                    implementation("org.hamcrest:hamcrest-all:$hamcrestVersion")
+                }
+            }
+            test(JvmTestSuite) {
+                testType = TestSuiteType.UNIT_TEST
+            }
+            integrationTest(JvmTestSuite) {
+                testType = TestSuiteType.INTEGRATION_TEST
+                sources {
+                    java {
+                        srcDirs = ['src/test-integration/java']
+                    }
+                    resources {
+                        srcDirs = ['src/test-integration/resources']
+                    }
+                    compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+                    runtimeClasspath += output + compileClasspath
+                }
+            }
+        }
     }
 
-    test {
-        useJUnitPlatform()
+    configurations {
+        integrationTestImplementation.extendsFrom testImplementation
+        integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     }
 
     task javadocsJar(type: Jar) {

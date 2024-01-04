@@ -25,10 +25,6 @@ configurations {
     testArtifacts.extendsFrom testRuntime
 }
 
-artifacts {
-    testArtifacts testJar
-}
-
 // Todo: build task of this module should depend on the download tasks below
 // Todo: Include all the .so files inside the jar (might be automatically done, but need to check)
 
