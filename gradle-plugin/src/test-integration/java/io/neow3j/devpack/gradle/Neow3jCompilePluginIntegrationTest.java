@@ -107,9 +107,19 @@ public class Neow3jCompilePluginIntegrationTest {
         BuildResult buildResult = testCase.getGradleBuildResult();
 
         // build success/failure check
-        assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
-        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+
+        // The particularity of this test is that it fails on the compilation of the Java code
+        // if the targetCompatibility is higher than the Java version used to compile the code.
+        // Then, in this case we need to first test if the compilation succeeded and then if the
+        // neow3jCompile task failed, consequently.
+
+        if (buildResult.task(":" + "compileJava").getOutcome() == SUCCESS) {
+            assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
+            assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+            assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+        } else {
+            assertEquals(FAILED, buildResult.task(":" + "compileJava").getOutcome());
+        }
     }
 
     @Test
