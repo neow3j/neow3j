@@ -72,8 +72,12 @@ allprojects { thisproject ->
     version '3.21.2'
     archivesBaseName = "${thisproject.name}"
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+            targetCompatibility = JavaLanguageVersion.of(8)
+        }
+    }
 
     if (project.hasProperty('snapshot')) {
         version = version + '-SNAPSHOT'
