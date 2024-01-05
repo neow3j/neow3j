@@ -18,7 +18,7 @@ jobs:
         uses: actions/setup-java@v2
         with:
           distribution: temurin
-          java-version: '11'
+          java-version: '8'
           cache: 'gradle'
       - name: Compile
         run: ./gradlew compileJava compileTestJava compileIntegrationTestJava
