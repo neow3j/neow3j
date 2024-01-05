@@ -19,15 +19,7 @@ jobs:
         with:
           distribution: 'adopt'
           java-version: '8'
-      - name: Cache Gradle dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-20240105
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          cache: 'gradle'
       - name: Compile
         run: ./gradlew compileJava compileTestJava compileIntegrationTestJava
       - name: Build with Unit Tests
