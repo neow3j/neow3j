@@ -19,7 +19,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '11'
-          cache: 'gradle'
+          cache: 'gradle-jdk-11'
       - name: Compile
         run: ./gradlew compileJava compileTestJava compileIntegrationTestJava
       - name: Build with Unit Tests
