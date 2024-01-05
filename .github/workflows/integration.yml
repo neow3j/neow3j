@@ -16,7 +16,16 @@ jobs:
         with:
           distribution: temurin
           java-version: '11'
-          cache: 'gradle'
+          cache: 'none'
+      - name: Cache Gradle dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}-20240105
+          restore-keys: |
+            ${{ runner.os }}-gradle-
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v1
         with:
