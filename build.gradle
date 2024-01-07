@@ -289,6 +289,10 @@ subprojects { project ->
                     dependsOn signPluginMavenPublication
                     dependsOn signMavenJavaPublication
                 }
+                tasks.named("publish${name.capitalize()}PublicationToSonatypeRepository") {
+                    dependsOn signPluginMavenPublication
+                    dependsOn signMavenJavaPublication
+                }
             }
         }
 
