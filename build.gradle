@@ -69,7 +69,7 @@ allprojects { thisproject ->
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.21.2'
+    version '3.22.0'
     archivesBaseName = "${thisproject.name}"
 
     java {
@@ -184,8 +184,6 @@ subprojects { project ->
 
     javadoc { options.encoding = 'UTF-8' }
 
-    artifacts { archives sourcesJar, javadocsJar, testsJar }
-
     // We just avoid to publish the root project and the test-properties project.
     // The gradle-plugin module is fine and desirable to publish to JFrog/SonaType.
     // In addition the gradle-plugin module should be published to the Gradle Plugin
@@ -203,9 +201,7 @@ subprojects { project ->
 
                     from components.java
 
-                    artifact sourcesJar
-                    artifact javadocsJar
-                    artifact testsJar
+                    artifacts { archives sourcesJar, javadocsJar, testsJar }
 
                     pom {
                         name = 'neow3j'
@@ -279,6 +275,20 @@ subprojects { project ->
                 include 'pom-default.xml'
                 rename 'pom-default.xml.asc', "${project.name}-${project.version}.pom.asc"
                 rename 'pom-default.xml', "${project.name}-${project.version}.pom"
+            }
+        }
+
+        publishing.publications.all {
+            if (project.name.startsWith('gradle-plugin')) {
+                tasks.named("generateMetadataFileFor${name.capitalize()}Publication") {
+                    dependsOn javadocsJar
+                    dependsOn sourcesJar
+                    dependsOn testsJar
+                }
+                tasks.named("publish${name.capitalize()}PublicationToMavenLocal") {
+                    dependsOn signPluginMavenPublication
+                    dependsOn signMavenJavaPublication
+                }
             }
         }
 
