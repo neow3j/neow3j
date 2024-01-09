@@ -84,9 +84,14 @@ public class AsmHelper {
      */
     public static ClassNode getAsmClass(String fullyQualifiedClassName, ClassLoader classLoader) throws IOException {
         if (classLoader != null) {
-            return getAsmClass(getClassInputStreamForClassName(fullyQualifiedClassName, classLoader));
+            try (InputStream is = getClassInputStreamForClassName(fullyQualifiedClassName, classLoader)){
+                return getAsmClass(is);
+            }
         }
-        return getAsmClass(getClassInputStreamForClassName(fullyQualifiedClassName, AsmHelper.class.getClassLoader()));
+        try (InputStream is = getClassInputStreamForClassName(fullyQualifiedClassName,
+                AsmHelper.class.getClassLoader())) {
+            return getAsmClass(is);
+        }
     }
 
     /**
