@@ -3,7 +3,9 @@ package io.neow3j.devpack.gradle;
 import io.neow3j.compiler.DebugInfo;
 import io.neow3j.protocol.ObjectMapperFactory;
 import org.gradle.api.Project;
+import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.plugins.JavaPluginExtension;
+import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -19,15 +21,28 @@ import java.util.zip.ZipOutputStream;
 public class Neow3jPluginUtils {
 
     protected static final String NEF_SUFFIX = ".nef";
-    protected static final String DEFAULT_FILENAME = "output" + NEF_SUFFIX;
     protected static final String NEFDBGNFO_SUFFIX = ".nefdbgnfo";
     protected static final String DEBUG_JSON_SUFFIX = ".debug.json";
 
     static List<File> getOutputDirs(Project project) {
-        final JavaPluginExtension pluginExt = project.getExtensions().getByType(JavaPluginExtension.class);
         List<File> dirs = new ArrayList<>();
-        pluginExt.getSourceSets().forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
+        getSourceSets(project).forEach(ss -> dirs.addAll(ss.getOutput().getClassesDirs().getFiles()));
         return dirs;
+    }
+
+    public static SourceSetContainer getSourceSets(Project project) {
+        try {
+            // First try with JavaPluginExtension (for Gradle 8+)
+            JavaPluginExtension pluginExt = project.getExtensions().getByType(JavaPluginExtension.class);
+            return pluginExt.getSourceSets();
+        } catch (NoSuchMethodError | UnsupportedOperationException e) {
+            // Fallback for Gradle 6 using JavaPluginConvention
+            JavaPluginConvention pluginConv = project.getConvention().findPlugin(JavaPluginConvention.class);
+            if (pluginConv != null) {
+                return pluginConv.getSourceSets();
+            }
+        }
+        throw new IllegalStateException("Java plugin not applied to the project");
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {

@@ -6,7 +6,6 @@ import io.neow3j.compiler.sourcelookup.DirectorySourceContainer;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
 import org.gradle.api.Action;
 import org.gradle.api.logging.configuration.ShowStacktrace;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
@@ -24,6 +23,7 @@ import static io.neow3j.contract.ContractUtils.writeNefFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPlugin.EXTENSION_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getOutputDirs;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSets;
 import static java.lang.String.format;
 import static java.nio.file.Files.createDirectories;
 
@@ -103,8 +103,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     }
 
     private List<ISourceContainer> constructSourceContainers(Neow3jCompileTask neow3jPluginCompile) {
-        SourceSetContainer sourceSets =
-                neow3jPluginCompile.getProject().getExtensions().getByType(JavaPluginExtension.class).getSourceSets();
+        SourceSetContainer sourceSets = getSourceSets(neow3jPluginCompile.getProject());
         Set<File> sourceDirs = new HashSet<>();
         sourceSets.forEach(sc -> sourceDirs.addAll(sc.getAllJava().getSrcDirs()));
         return sourceDirs.stream()

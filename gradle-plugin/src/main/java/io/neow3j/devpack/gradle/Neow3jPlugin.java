@@ -14,7 +14,7 @@ public class Neow3jPlugin implements Plugin<Project> {
 
     private static final String PLUGIN_ID = "io.neow3j.devpack.gradle-plugin";
     static final String TASK_NAME = "neow3jCompile";
-    private static final String GRADLE_MIN_VERSION = "5.2";
+    private static final String GRADLE_MIN_VERSION = "6.0";
     static final String EXTENSION_NAME = "neow3jCompiler";
     static final String DEFAULT_OUTPUT_DIR = "neow3j";
 
