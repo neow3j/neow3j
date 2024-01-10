@@ -42,7 +42,7 @@ public class Neow3jPluginUtils {
                 return pluginConv.getSourceSets();
             }
         }
-        throw new IllegalStateException("Java plugin not applied to the project");
+        throw new IllegalStateException("Gradle plugin 'java' missing. Make sure to apply it to your project.");
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {
