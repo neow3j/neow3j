@@ -14,7 +14,7 @@ import java.util.Objects;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ContractState extends CoreContractState {
+public class ContractState extends NativeContractState {
 
     @JsonProperty("updatecounter")
     private Integer updateCounter;

@@ -2,41 +2,55 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NativeContractState extends CoreContractState {
+public class NativeContractState extends ExpressContractState {
 
-    @JsonProperty("updatehistory")
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<Integer> updateHistory = new ArrayList<>();
+    @JsonProperty("id")
+    private BigInteger id;
+
+    @JsonProperty("nef")
+    private ContractNef nef;
 
     public NativeContractState() {
-        super();
     }
 
-    public NativeContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest,
-            List<Integer> updateHistory) {
-
-        super(id, hash, nef, manifest);
-        this.updateHistory = updateHistory;
+    public NativeContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest) {
+        super(hash, manifest);
+        this.id = id;
+        this.nef = nef;
     }
 
-    @Deprecated
-    public List<Integer> getUpdateHistory() {
-        return updateHistory;
+    public BigInteger getId() {
+        return id;
+    }
+
+    public ContractNef getNef() {
+        return nef;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        NativeContractState that = (NativeContractState) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getNef(), that.getNef());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getHash(), getNef(), getManifest());
+        return Objects.hash(super.hashCode(), getId(), getNef());
     }
 
     @Override
@@ -48,5 +62,4 @@ public class NativeContractState extends CoreContractState {
                 ", manifest=" + getManifest() +
                 '}';
     }
-
 }
