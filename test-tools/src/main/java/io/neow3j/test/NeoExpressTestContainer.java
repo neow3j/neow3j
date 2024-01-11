@@ -10,6 +10,8 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
@@ -222,7 +224,14 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         if (execResult.getExitCode() != 0) {
             throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
         }
-        return execResult.getStdout().replaceAll(" ", "").split("\n")[1];
+        String resultString = execResult.getStdout();
+        Pattern pattern = Pattern.compile("Address:\\s[0-9A-Za-z&&[^0OIl]]+");
+        Matcher matcher = pattern.matcher(execResult.getStdout());
+        if (!matcher.find()) {
+            throw new IllegalStateException("Couldn't extract address from result string: " + resultString);
+        }
+        String match = matcher.group(0);
+        return match.substring(9);
     }
 
     /**
