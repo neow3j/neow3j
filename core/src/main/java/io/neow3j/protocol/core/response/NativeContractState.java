@@ -2,51 +2,34 @@ package io.neow3j.protocol.core.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.annotation.Nulls;
 import io.neow3j.types.Hash160;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NativeContractState extends CoreContractState {
+public class NativeContractState extends ExpressContractState {
 
-    @JsonProperty("updatehistory")
-    @JsonSetter(nulls = Nulls.AS_EMPTY)
-    private List<Integer> updateHistory = new ArrayList<>();
+    @JsonProperty("id")
+    private BigInteger id;
+
+    @JsonProperty("nef")
+    private ContractNef nef;
 
     public NativeContractState() {
-        super();
     }
 
-    public NativeContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest,
-            List<Integer> updateHistory) {
-
-        super(id, hash, nef, manifest);
-        this.updateHistory = updateHistory;
+    public NativeContractState(BigInteger id, Hash160 hash, ContractNef nef, ContractManifest manifest) {
+        super(hash, manifest);
+        this.id = id;
+        this.nef = nef;
     }
 
-    @Deprecated
-    public List<Integer> getUpdateHistory() {
-        return updateHistory;
+    public BigInteger getId() {
+        return id;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(getId(), getHash(), getNef(), getManifest());
-    }
-
-    @Override
-    public String toString() {
-        return "ContractState{" +
-                "id=" + getId() +
-                ", hash='" + getHash() + '\'' +
-                ", nef=" + getNef() +
-                ", manifest=" + getManifest() +
-                '}';
+    public ContractNef getNef() {
+        return nef;
     }
 
 }
