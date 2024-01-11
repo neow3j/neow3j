@@ -117,17 +117,30 @@ public class ManifestBuilder {
                 .map(ManifestBuilder::getContractPermission)
                 .collect(Collectors.toList());
 
-        if (permissions.isEmpty()) {
-            return new ArrayList<>();
+        // If there is one permission with the wildcard character '*', it must be the only one.
+        boolean wildcardPermission = permissions.stream()
+                .anyMatch(p -> p.getContract().equals("*"));
+        if (wildcardPermission && permissions.size() > 1) {
+            throw new CompilerException("A contract permission with the wildcard character '*' can only be used " +
+                    "exclusively and not in combination with other permissions.");
         }
         return permissions;
     }
 
     private static List<String> buildTrusts(ClassNode asmClass) {
-        return checkForSingleOrMultipleAnnotations(asmClass, Trusts.class, Trust.class)
+        List<String> trusts = checkForSingleOrMultipleAnnotations(asmClass, Trusts.class, Trust.class)
                 .stream()
                 .map(ManifestBuilder::getContractTrust)
                 .collect(Collectors.toList());
+
+        // If there is one trust with the wildcard character '*', it must be the only one.
+        boolean wildcardPermission = trusts.stream()
+                .anyMatch(t -> t.equals("*"));
+        if (wildcardPermission && trusts.size() > 1) {
+            throw new CompilerException("A contract trust with the wildcard character '*' can only be used " +
+                    "exclusively and not in combination with other trusts.");
+        }
+        return trusts;
     }
 
     private static String getSupportedStandard(AnnotationNode ann) {
@@ -147,7 +160,7 @@ public class ManifestBuilder {
     }
 
     private static ContractPermission getContractPermission(AnnotationNode ann) {
-        String hashOrPubKey = getHashOrPubKey(ann);
+        String hashOrPubKeyOrWildcard = getHashOrPubKey(ann);
         int i = ann.values.indexOf("methods");
         List<String> methods = new ArrayList<>();
         // if 'methods' is not found, it means we need to add a "wildcard" to that manifest
@@ -160,14 +173,15 @@ public class ManifestBuilder {
             methods.addAll((List<String>) methodsValues);
         }
 
-        return new ContractPermission(hashOrPubKey, methods);
+        return new ContractPermission(hashOrPubKeyOrWildcard, methods);
     }
 
     private static String getContractTrust(AnnotationNode ann) {
         return getHashOrPubKey(ann);
     }
 
-    // Retrieves the hash or public key from annotations which allow both fields 'contract' and 'nativeContract'.
+    // Retrieves the hash or public key from annotations which allow both fields 'contract' and 'nativeContract'. The
+    // returned string can also be the wildcard character '*'.
     private static String getHashOrPubKey(AnnotationNode ann) {
         if (ann.values == null) {
             throw new CompilerException("This annotation requires either the attribute 'contract' or 'nativeContract'" +
