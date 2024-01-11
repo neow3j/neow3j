@@ -231,6 +231,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             throw new IllegalStateException("Couldn't extract address from result string: " + resultString);
         }
         String match = matcher.group(0);
+        // Ignores the first 9 chars that match the regex expression (i.e., "Address: ") to produce the address string.
         return match.substring(9);
     }
 
