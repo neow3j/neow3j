@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.neow3j.types.Hash160;
 
 import java.math.BigInteger;
+import java.util.Objects;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NativeContractState extends ExpressContractState {
@@ -32,4 +33,33 @@ public class NativeContractState extends ExpressContractState {
         return nef;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        NativeContractState that = (NativeContractState) o;
+        return Objects.equals(getId(), that.getId()) && Objects.equals(getNef(), that.getNef());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(super.hashCode(), getId(), getNef());
+    }
+
+    @Override
+    public String toString() {
+        return "ContractState{" +
+                "id=" + getId() +
+                ", hash='" + getHash() + '\'' +
+                ", nef=" + getNef() +
+                ", manifest=" + getManifest() +
+                '}';
+    }
 }
