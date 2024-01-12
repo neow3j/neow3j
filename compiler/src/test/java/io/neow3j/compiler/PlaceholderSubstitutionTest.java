@@ -33,23 +33,23 @@ public class PlaceholderSubstitutionTest {
     @Test
     public void testMultiAnnotationReplacement() throws IOException {
         Map<String, String> replaceMap = new HashMap<>();
-        replaceMap.put("INVALID_TRUST_HASH1", "*");
-        replaceMap.put("INVALID_TRUST_HASH2", "*");
+        replaceMap.put("TRUST_HASH1", "0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
+        replaceMap.put("TRUST_HASH2", "0xd2a4cff31913016155e38e474a2c06d08be276cf");
         replaceMap.put("PERMISSION_HASH", "*");
         replaceMap.put("PERMISSION_METHOD", "*");
         CompilationUnit res = new Compiler().compile(
                 PlaceholderSubstitutionTest.MultiAnnotationReplaceTest.class.getName(),
                 replaceMap
         );
-        assertEquals(res.getManifest().getTrusts().get(0), "*");
-        assertEquals(res.getManifest().getTrusts().get(1), "*");
+        assertEquals(res.getManifest().getTrusts().get(0), "0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
+        assertEquals(res.getManifest().getTrusts().get(1), "0xd2a4cff31913016155e38e474a2c06d08be276cf");
         assertEquals(res.getManifest().getPermissions().get(0).getContract(), "*");
         assertEquals(res.getManifest().getPermissions().get(0).getMethods().get(0), "*");
     }
 
     // Annotations.value = List{key, List{trustNode1, trustNode2}}
-    @Trust(contract = "${INVALID_TRUST_HASH1}")
-    @Trust(contract = "${INVALID_TRUST_HASH2}")
+    @Trust(contract = "${TRUST_HASH1}")
+    @Trust(contract = "${TRUST_HASH2}")
     @Permission(contract = "${PERMISSION_HASH}", methods = "${PERMISSION_METHOD}")
     static class MultiAnnotationReplaceTest {
         public static void main() {

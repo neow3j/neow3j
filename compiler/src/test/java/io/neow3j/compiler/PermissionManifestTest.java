@@ -156,6 +156,16 @@ public class PermissionManifestTest {
         assertThat(thrown.getMessage(), containsString("The provided native contract does not exist."));
     }
 
+    // Tests a combination of a permission with a wildcard and other permissions that should not be there.
+    @Test
+    public void withRedundantPermissions() {
+        CompilerException thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
+                PermissionManifestTestContractWithRedundantPermissions.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("A contract permission with the wildcard character '*' can only be used " +
+                        "exclusively and not in combination with other permissions."));
+    }
+
     @Test
     public void nativeContractFromHash() {
         NativeContract nativeContract = NativeContract.valueOf(GasToken.SCRIPT_HASH);
@@ -258,6 +268,16 @@ public class PermissionManifestTest {
 
     @Permission(nativeContract = NativeContract.None)
     static class PermissionManifestTestContractWithNoneNativeContractValue {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(nativeContract = NativeContract.LedgerContract)
+    @Permission(contract = CONTRACT_HASH_1)
+    @Permission(contract = "*")
+    static class PermissionManifestTestContractWithRedundantPermissions {
 
         public static void main() {
         }

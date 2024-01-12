@@ -103,6 +103,17 @@ public class TrustManifestTest {
         assertThat(thrown.getMessage(), containsString("The provided native contract does not exist."));
     }
 
+    // Tests a combination of a trusts with a wildcard and other trusts that should not be there.
+    @Test
+    public void withRedundantTrusts() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TrustManifestTestWithRedundantTrusts.class.getName()));
+        assertThat(thrown.getMessage(),
+                containsString("A contract trust with the wildcard character '*' can only be used " +
+                        "exclusively and not in combination with other trusts."));
+    }
+
+
     @Trust(contract = CONTRACT_HASH_1)
     @Trust(contract = CONTRACT_HASH_2)
     static class TrustManifestTestContract {
@@ -179,4 +190,13 @@ public class TrustManifestTest {
 
     }
 
+    @Trust(contract = "*")
+    @Trust(nativeContract = NativeContract.GasToken)
+    @Trust(contract = CONTRACT_HASH_1)
+    static class TrustManifestTestWithRedundantTrusts {
+
+        public static void main() {
+        }
+
+    }
 }
