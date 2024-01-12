@@ -1,4 +1,4 @@
-description 'test tools for neow3j'
+description 'neow3j: test tools'
 
 dependencies {
     api "org.testcontainers:testcontainers:$testcontainersVersion",

@@ -1,4 +1,4 @@
-description 'test framework for neow3j'
+description 'neow3j: test framework'
 
 dependencies {
     api project(":test-tools"),
