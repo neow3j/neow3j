@@ -33,8 +33,7 @@ task createClasspathManifest {
 }
 
 dependencies {
-    implementation project(":core"),
-            project(':compiler'),
+    implementation project(':compiler'),
             project(':contract'),
             gradleApi()
 

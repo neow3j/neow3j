@@ -1,12 +1,12 @@
 description 'neow3j: JVM Compiler to NeoVM'
 
 dependencies {
-    api "org.ow2.asm:asm-tree:$asmVersion",
-            project(':contract')
+    api "org.ow2.asm:asm-tree:$asmVersion"
 
     implementation "org.ow2.asm:asm-util:$asmVersion",
             "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
-            project(':devpack')
+            project(':devpack'),
+            project(':contract')
 
     testImplementation "ch.qos.logback:logback-classic:$logbackVersion",
             project(':core'),
