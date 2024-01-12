@@ -135,7 +135,7 @@ subprojects { project ->
 
     project.testing {
         suites {
-            configureEach {task ->
+            configureEach { task ->
                 useJUnitJupiter()
                 dependencies {
                     implementation("org.junit.jupiter:junit-jupiter:$jupiterVersion")
@@ -184,12 +184,20 @@ subprojects { project ->
 
     javadoc { options.encoding = 'UTF-8' }
 
-    // We just avoid to publish the root project and the test-properties project.
-    // The gradle-plugin module is fine and desirable to publish to JFrog/SonaType.
-    // In addition the gradle-plugin module should be published to the Gradle Plugin
+    // We avoid building Maven artifacts for the root project, the gradle-plugin,
+    // and the int-tests modules. Those don't need to be published to the
+    // productive Maven central repo.
+    //
+    // However, the gradle-plugin should be published to the Sonatype snapshot repo
+    // due to development purposes (e.g., testing the plugin in other projects).
+    //
+    // The gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (project.name != rootProject.name && !project.name.startsWith('gradle-plugin')) {
+    if (project.name != rootProject.name
+            && !project.name.startsWith('gradle-plugin')
+            && !project.name.startsWith('int-tests')
+    ) {
 
         apply plugin: 'maven-publish'
 
