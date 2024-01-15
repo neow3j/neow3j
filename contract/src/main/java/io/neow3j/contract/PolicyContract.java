@@ -71,6 +71,9 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
+     * Gets the GAS fee for using a transaction attribute.
+     *
+     * @param attributeType the type of the transaction attribute.
      * @return the GAS fee for using a transaction attribute.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -135,6 +138,7 @@ public class PolicyContract extends SmartContract {
      * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
      * committee members.
      *
+     * @param attributeType the type of the transaction attribute.
      * @param fee the attribute fee.
      * @return a {@link TransactionBuilder}.
      */
