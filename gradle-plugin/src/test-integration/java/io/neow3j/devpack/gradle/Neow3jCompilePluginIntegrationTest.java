@@ -1,32 +1,37 @@
 package io.neow3j.devpack.gradle;
 
+import org.gradle.testkit.runner.BuildResult;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+
 import java.io.File;
 import java.io.IOException;
-
-import org.gradle.testkit.runner.BuildResult;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
+import static java.util.Objects.requireNonNull;
 import static org.gradle.testkit.runner.TaskOutcome.FAILED;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Neow3jCompilePluginIntegrationTest {
 
-    @Rule
-    public final TemporaryFolder projectRootDir = new TemporaryFolder();
+    @TempDir
+    public Path projectRootDir;
 
     @Test
     public void testTaskHappyPath() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "}" + "\n";
@@ -58,10 +63,11 @@ public class Neow3jCompilePluginIntegrationTest {
     }
 
     @Test
-    public void testTaskHappyPath_wrongJavaTargetCompatibility() throws IOException {
+    public void testTaskHappyPath_wrongJavaTargetCompatibility_lower() throws IOException {
         String buildFileContent = "" +
                 "sourceCompatibility = JavaVersion.VERSION_1_7" + "\n" +
                 "targetCompatibility = JavaVersion.VERSION_1_7" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "}" + "\n";
@@ -77,12 +83,51 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // build success/failure check
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
+        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+    }
+
+    @Test
+    public void testTaskHappyPath_wrongJavaTargetCompatibility_higher() throws IOException {
+        String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_10" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_10" + "\n" +
+                "\n" +
+                "neow3jCompiler {" + "\n" +
+                "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+                "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+                .withDefaultDependencies()
+                .appendToBuildFile(buildFileContent)
+                .withContractName("ContractTest")
+                .withContractSourceFileName("ContractTest.java")
+                .runBuild();
+
+        BuildResult buildResult = testCase.getGradleBuildResult();
+
+        // build success/failure check
+
+        // The particularity of this test is that it fails on the compilation of the Java code
+        // if the targetCompatibility is higher than the Java version used to compile the code.
+        // Then, in this case we need to first test if the compilation succeeded and then if the
+        // neow3jCompile task failed, consequently.
+
+        if (buildResult.task(":" + "compileJava").getOutcome() == SUCCESS) {
+            assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
+            assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+            assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+        } else {
+            assertEquals(FAILED, buildResult.task(":" + "compileJava").getOutcome());
+        }
     }
 
     @Test
     public void testTaskWithDebugSetToFalse() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "    debug=false" + "\n" +
@@ -116,6 +161,9 @@ public class Neow3jCompilePluginIntegrationTest {
     @Test
     public void testTaskWithoutClassName() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "}" + "\n";
 
@@ -130,12 +178,16 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
+        // Here the output dir doesn't exist yet because of a missing option.
         assertFalse(testCase.getBuildNeow3jOutputDir().exists());
     }
 
     @Test
     public void testTaskCompilationError_className_notFound() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ShouldNeverExist\"" + "\n" +
                 "}" + "\n";
@@ -150,12 +202,16 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
+        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
     }
 
     @Test
     public void testTaskHappyPath_DisplayName() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "}" + "\n";
@@ -189,6 +245,9 @@ public class Neow3jCompilePluginIntegrationTest {
     @Test
     public void testTaskCompilationError_SmartContract_NotValid() throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "}" + "\n";
@@ -204,7 +263,8 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
+        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
         assertThat(
                 buildResult.getOutput(),
                 not(
@@ -217,6 +277,9 @@ public class Neow3jCompilePluginIntegrationTest {
     public void testTaskCompilationError_SmartContract_NotValid_With_StackTrace()
             throws IOException {
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "}" + "\n";
@@ -233,7 +296,8 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
+        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
+        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
         assertThat(
                 buildResult.getOutput(),
                 containsString(
@@ -246,9 +310,12 @@ public class Neow3jCompilePluginIntegrationTest {
     public void testTaskHappyPath_BuildOutputDir()
             throws IOException {
 
-        File newOutputDir = this.projectRootDir.newFolder("someDir");
+        File newOutputDir = Files.createDirectory(this.projectRootDir.resolve("someDir")).toFile();
 
         String buildFileContent = "" +
+                "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+                "\n" +
                 "neow3jCompiler {" + "\n" +
                 "    className=\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
                 "    outputDir=file(\"" + newOutputDir.getAbsolutePath() + "\")" + "\n" +

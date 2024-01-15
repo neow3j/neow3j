@@ -7,7 +7,7 @@ buildscript {
     ext.jnaVersion = '5.12.1'
     ext.neofsApiJavaVersion = '2.14.0-SNAPSHOT' // Replace with non-snapshot version once officially released.
     ext.neofsSharedLibVersion = '0.0.11'
-    ext.okhttpVersion = '4.11.0'
+    ext.okhttpVersion = '4.12.0'
     ext.protobufJavaUtilVersion = '3.21.9'
     ext.rxjavaVersion = '2.2.21'
     ext.slf4jVersion = '2.0.9'
@@ -16,12 +16,10 @@ buildscript {
     ext.awaitility = '4.2.0'
     ext.equalsverifierVersion = '3.15.2'
     ext.hamcrestVersion = '1.3'
-    ext.junitVersion = '4.13.2'
-    ext.junitBenchmarkVersion = '0.7.2'
     ext.jupiterVersion = '5.10.0'
-    ext.logbackVersion = '1.3.11'
-    ext.mockitoVersion = '3.6.0'
-    ext.testcontainersVersion = '1.19.1'
+    ext.logbackVersion = '1.3.14'
+    ext.mockitoVersion = '4.11.0'
+    ext.testcontainersVersion = '1.19.3'
     ext.wiremockVersion = '2.35.1'
 
     repositories {
@@ -31,9 +29,8 @@ buildscript {
 }
 
 plugins {
-    id 'org.unbroken-dome.test-sets' version '3.0.1' apply false
-    id 'io.github.gradle-nexus.publish-plugin' version '1.0.0' apply true
-    id 'com.gradle.plugin-publish' version '0.12.0' apply false
+    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0' apply true
+    id 'com.gradle.plugin-publish' version '1.2.1' apply false
     id 'jacoco' apply true
 }
 
@@ -65,18 +62,22 @@ nexusPublishing {
 
 allprojects { thisproject ->
 
-    apply plugin: 'java'
+    apply plugin: 'java-library'
     apply plugin: 'jacoco'
     apply plugin: 'idea'
     apply plugin: 'signing'
     //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
-    version '3.21.2'
+    version '3.22.0'
     archivesBaseName = "${thisproject.name}"
 
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(8)
+            targetCompatibility = JavaLanguageVersion.of(8)
+        }
+    }
 
     if (project.hasProperty('snapshot')) {
         version = version + '-SNAPSHOT'
@@ -101,18 +102,20 @@ allprojects { thisproject ->
     }
 
     jacoco {
-        toolVersion = '0.8.6' // See http://www.eclemma.org/jacoco/.
+        toolVersion = '0.8.9' // See http://www.eclemma.org/jacoco/.
     }
 
     jacocoTestReport {
         reports {
-            xml.enabled true
-            html.enabled true
+            xml.required = true
+            html.required = true
         }
     }
 
-    tasks.withType(Test) {
-        reports.html.destination = file("${reporting.baseDir}/${name}")
+    tasks.withType(Test).tap {
+        configureEach {
+            reports.html.getOutputLocation().set(file("${reporting.baseDir}/${name}"))
+        }
     }
 
 //    checkstyle {
@@ -121,23 +124,47 @@ allprojects { thisproject ->
 //    }
 }
 
-subprojects {
-    apply plugin: 'java'
-    apply plugin: 'org.unbroken-dome.test-sets'
+subprojects { project ->
+
+    apply plugin: 'jvm-test-suite'
 
     if (project.name.startsWith('gradle-plugin')) {
         apply plugin: 'java-gradle-plugin'
         apply plugin: 'com.gradle.plugin-publish'
     }
 
-    dependencies {
-        testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion",
-                "org.mockito:mockito-core:$mockitoVersion",
-                "org.hamcrest:hamcrest-all:$hamcrestVersion"
+    project.testing {
+        suites {
+            configureEach { task ->
+                useJUnitJupiter()
+                dependencies {
+                    implementation("org.junit.jupiter:junit-jupiter:$jupiterVersion")
+                    implementation("org.mockito:mockito-core:$mockitoVersion")
+                    implementation("org.hamcrest:hamcrest-all:$hamcrestVersion")
+                }
+            }
+            test(JvmTestSuite) {
+                testType = TestSuiteType.UNIT_TEST
+            }
+            integrationTest(JvmTestSuite) {
+                testType = TestSuiteType.INTEGRATION_TEST
+                sources {
+                    java {
+                        srcDirs = ['src/test-integration/java']
+                    }
+                    resources {
+                        srcDirs = ['src/test-integration/resources']
+                    }
+                    compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+                    runtimeClasspath += output + compileClasspath
+                }
+            }
+        }
     }
 
-    test {
-        useJUnitPlatform()
+    configurations {
+        integrationTestImplementation.extendsFrom testImplementation
+        integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     }
 
     task javadocsJar(type: Jar) {
@@ -157,14 +184,20 @@ subprojects {
 
     javadoc { options.encoding = 'UTF-8' }
 
-    artifacts { archives sourcesJar, javadocsJar, testsJar }
-
-    // We just avoid to publish the root project and the test-properties project.
-    // The gradle-plugin module is fine and desirable to publish to JFrog/SonaType.
-    // In addition the gradle-plugin module should be published to the Gradle Plugin
+    // We avoid building Maven artifacts for the root project, the gradle-plugin,
+    // and the int-tests modules. Those don't need to be published to the
+    // productive Maven central repo.
+    //
+    // However, the gradle-plugin should be published to the Sonatype snapshot repo
+    // due to development purposes (e.g., testing the plugin in other projects).
+    //
+    // The gradle-plugin module should be published to the Gradle Plugin
     // global repository. See "gradle-plugin/README.md" for Gradle Plugin
     // release procedures.
-    if (project.name != rootProject.name) {
+    if (project.name != rootProject.name
+            && !project.name.startsWith('gradle-plugin')
+            && !project.name.startsWith('int-tests')
+    ) {
 
         apply plugin: 'maven-publish'
 
@@ -176,9 +209,7 @@ subprojects {
 
                     from components.java
 
-                    artifact sourcesJar
-                    artifact javadocsJar
-                    artifact testsJar
+                    artifacts { archives sourcesJar, javadocsJar, testsJar }
 
                     pom {
                         name = 'neow3j'
@@ -273,8 +304,8 @@ task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     getExecutionData().from(files(subprojects.jacocoTestReport.executionData).filter { f -> f.exists() })
 
     reports {
-        xml.enabled = true
-        html.enabled = true
+        xml.required = true
+        html.required = true
     }
 
     afterEvaluate {

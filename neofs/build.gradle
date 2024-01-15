@@ -2,7 +2,7 @@ plugins {
     id "de.undercouch.download" version "4.1.2"
 }
 
-description 'NeoFS Java API'
+description 'neow3j: NeoFS Java API'
 
 repositories {
     mavenCentral()
@@ -11,9 +11,9 @@ repositories {
 }
 
 dependencies {
-    compile project(":core")
+    api project(":core")
 
-    compile "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
+    api "io.neow3j:neofs-api-java:$neofsApiJavaVersion",
             "com.google.protobuf:protobuf-java-util:$protobufJavaUtilVersion"
 
     implementation "com.fasterxml.jackson.core:jackson-databind:$jacksonVersion",
@@ -23,10 +23,6 @@ dependencies {
 
 configurations {
     testArtifacts.extendsFrom testRuntime
-}
-
-artifacts {
-    testArtifacts testJar
 }
 
 // Todo: build task of this module should depend on the download tasks below

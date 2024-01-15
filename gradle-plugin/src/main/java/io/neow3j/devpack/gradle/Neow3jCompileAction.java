@@ -6,7 +6,6 @@ import io.neow3j.compiler.sourcelookup.DirectorySourceContainer;
 import io.neow3j.compiler.sourcelookup.ISourceContainer;
 import org.gradle.api.Action;
 import org.gradle.api.logging.configuration.ShowStacktrace;
-import org.gradle.api.plugins.JavaPluginConvention;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
@@ -24,6 +23,7 @@ import static io.neow3j.contract.ContractUtils.writeNefFile;
 import static io.neow3j.devpack.gradle.Neow3jCompileTask.CLASSNAME_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPlugin.EXTENSION_NAME;
 import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getOutputDirs;
+import static io.neow3j.devpack.gradle.Neow3jPluginUtils.getSourceSets;
 import static java.lang.String.format;
 import static java.nio.file.Files.createDirectories;
 
@@ -36,7 +36,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
                     "your build.gradle file.", CLASSNAME_NAME, EXTENSION_NAME));
         }
         String canonicalClassName = neow3jPluginCompile.getClassName().get();
-        File projectBuildDir = neow3jPluginCompile.getProject().getBuildDir();
+        File projectBuildDir = neow3jPluginCompile.getProject().getLayout().getBuildDirectory().getAsFile().get();
         Boolean debugSymbols = neow3jPluginCompile.getDebug().get();
         File outputDir = neow3jPluginCompile.getOutputDir().getAsFile().get();
 
@@ -44,12 +44,12 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
         CompilationUnit compilationUnit = compile(neow3jPluginCompile, canonicalClassName, debugSymbols, classLoader);
 
         try {
-            Path outDir = createDirectories(outputDir.toPath());
             String contractName = compilationUnit.getManifest().getName();
-            if (contractName == null || contractName.length() == 0) {
+            if (contractName == null || contractName.isEmpty()) {
                 throw new IllegalStateException("No contract name is set in the contract's manifest.");
             }
 
+            Path outDir = createDirectories(outputDir.toPath());
             String nefFileName = writeNefFile(compilationUnit.getNefFile(), contractName, outDir);
             String manifestFileName = writeContractManifestFile(compilationUnit.getManifest(), outDir);
 
@@ -103,8 +103,7 @@ public class Neow3jCompileAction implements Action<Neow3jCompileTask> {
     }
 
     private List<ISourceContainer> constructSourceContainers(Neow3jCompileTask neow3jPluginCompile) {
-        SourceSetContainer sourceSets =
-                neow3jPluginCompile.getProject().getConvention().getPlugin(JavaPluginConvention.class).getSourceSets();
+        SourceSetContainer sourceSets = getSourceSets(neow3jPluginCompile.getProject());
         Set<File> sourceDirs = new HashSet<>();
         sourceSets.forEach(sc -> sourceDirs.addAll(sc.getAllJava().getSrcDirs()));
         return sourceDirs.stream()

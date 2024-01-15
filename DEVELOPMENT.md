@@ -40,7 +40,7 @@ debug things.
 -s CR_PAT=<YOUR_GITHUB_PAT_TOKEN>
 ```
 
-4. If you would like to run the `.github/workflows/intergation.yml`, run the following command:
+4. If you would like to run the `.github/workflows/integration.yml`, run the following command:
 
 ```
 act --detect-event -W .github/workflows/integration.yml

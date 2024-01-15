@@ -1,6 +1,6 @@
 package io.neow3j.devpack.gradle;
 
-import org.gradle.api.file.RegularFileProperty;
+import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 
 abstract public class Neow3jPluginExtension {
@@ -9,6 +9,6 @@ abstract public class Neow3jPluginExtension {
 
     public abstract Property<Boolean> getDebug();
 
-    public abstract RegularFileProperty getOutputDir();
+    public abstract DirectoryProperty getOutputDir();
 
 }
