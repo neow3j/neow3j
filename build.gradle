@@ -1,6 +1,6 @@
 buildscript {
     ext.asmVersion = '9.6'
-    ext.bouncycastleVersion = '1.70'
+    ext.bouncycastleVersion = '1.77'
     ext.grpcProtobufVersion = '1.49.0'
     ext.jacksonVersion = '2.13.4.2'
     ext.javaWebSocketVersion = '1.5.3'
