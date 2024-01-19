@@ -71,6 +71,8 @@ subprojects { subproject ->
             languageVersion = JavaLanguageVersion.of(8)
             targetCompatibility = JavaLanguageVersion.of(8)
         }
+        withSourcesJar()
+        withJavadocJar()
     }
 
     // We don't want any compiler warnings
@@ -134,16 +136,6 @@ subprojects { subproject ->
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     }
 
-    task javadocsJar(type: Jar) {
-        archiveClassifier = 'javadoc'
-        from javadoc
-    }
-
-    task sourcesJar(type: Jar) {
-        archiveClassifier = 'sources'
-        from sourceSets.main.allSource
-    }
-
     task testsJar(type: Jar) {
         archiveClassifier = 'tests'
         from sourceSets.test.output
@@ -165,7 +157,6 @@ subprojects { subproject ->
                 mavenJava(MavenPublication) {
                     artifactId "${subproject.name}"
                     from components.java
-                    artifacts { archives sourcesJar, javadocsJar, testsJar }
                     pom {
                         name = 'neow3j'
                         description.set(subproject.provider({ subproject.description }))
@@ -217,7 +208,7 @@ subprojects { subproject ->
             manifest.from jar.manifest
             archiveClassifier = 'all'
 
-            from(javadocsJar, sourcesJar, javadocsJar, testsJar, jar)
+            from(javadocJar, sourcesJar, testsJar, jar)
 
             from("${buildDir}/libs") {
                 include '*.jar.asc'
