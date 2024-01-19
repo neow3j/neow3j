@@ -64,8 +64,8 @@ nexusPublishing {
 //            snapshotRepositoryUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
             // `sonatypeUsername` and `sonatypePassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_sonatypeUsername and ORG_GRADLE_PROJECT_sonatypePassword.
-            username = sonatypeUsername
-            password = sonatypePassword
+            username = project.findProperty("sonatypeUsername")
+            password = project.findProperty("sonatypePassword")
         }
     }
 }
@@ -127,11 +127,6 @@ allprojects { thisproject ->
             reports.html.getOutputLocation().set(file("${reporting.baseDir}/${name}"))
         }
     }
-
-//    checkstyle {
-//        toolVersion = "7.7"
-//        configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
-//    }
 }
 
 subprojects { project ->
@@ -261,11 +256,12 @@ subprojects { project ->
             }
         }
 
+
         signing {
             // `signingKey` and `signingPassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_signingKey and ORG_GRADLE_PROJECT_signingPassword.
             // The signing key has to be the ASCII-armored, encrypted PGP private key for neow3j.
-            useInMemoryPgpKeys(signingKey, signingPassword)
+            useInMemoryPgpKeys(project.findProperty("signingKey"), project.findProperty("signingPassword"))
             sign publishing.publications.mavenJava
         }
 
@@ -297,13 +293,6 @@ subprojects { project ->
         }
 
     }
-}
-
-task allJars {
-    // Adds as dependency all tasks in sub-projects that
-    // has the type "Jar". This includes, for example, the
-    // integration tests.
-    dependsOn subprojects.collect { it.tasks.withType(Jar) }
 }
 
 task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
