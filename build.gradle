@@ -1,6 +1,7 @@
 plugins {
     // The Nexus publishing Plugin dictates that it has to applied to the root project.
     id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    id 'jacoco'
 }
 
 ext {
@@ -26,6 +27,12 @@ ext {
     wiremockVersion = '2.35.1'
 }
 
+group 'io.neow3j'
+version '3.22.0'
+if (project.hasProperty('snapshot')) {
+    version = version + '-SNAPSHOT'
+}
+
 // The Nexus publishing Plugin dictates that this has to be set on the root project.
 nexusPublishing {
     repositories {
@@ -40,17 +47,19 @@ nexusPublishing {
     }
 }
 
+// Root project requires this for the jacoco plugin.
+repositories {
+    mavenCentral()
+}
+
 subprojects { subproject ->
     apply plugin: 'jvm-test-suite'
     apply plugin: 'java-library'
     apply plugin: 'jacoco'
     apply plugin: 'idea'
 
-    group 'io.neow3j'
-    version '3.22.0'
-    if (project.hasProperty('snapshot')) {
-        version = version + '-SNAPSHOT'
-    }
+    group parent.group
+    version parent.version
     archivesBaseName = "${subproject.name}"
 
     repositories {
@@ -76,10 +85,6 @@ subprojects { subproject ->
 
     javadoc {
         options.encoding = 'UTF-8'
-    }
-
-    jacoco {
-        toolVersion = '0.8.9' // See http://www.eclemma.org/jacoco/.
     }
 
     jacocoTestReport {
@@ -129,17 +134,17 @@ subprojects { subproject ->
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     }
 
-    tasks.register('javadocsJar', Jar) {
+    task javadocsJar(type: Jar) {
         archiveClassifier = 'javadoc'
         from javadoc
     }
 
-    tasks.register('sourcesJar', Jar) {
+    task sourcesJar(type: Jar) {
         archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 
-    tasks.register('testsJar', Jar) {
+    task testsJar(type: Jar) {
         archiveClassifier = 'tests'
         from sourceSets.test.output
     }
@@ -206,7 +211,7 @@ subprojects { subproject ->
             sign publishing.publications.mavenJava
         }
 
-        tasks.register('bundleJar', Jar) {
+        task bundleJar(type: Jar) {
             dependsOn publishToMavenLocal
 
             manifest.from jar.manifest
@@ -228,7 +233,7 @@ subprojects { subproject ->
     }
 }
 
-tasks.register('jacocoRootTestReport', JacocoReport) {
+task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
     dependsOn = subprojects.test
     getAdditionalSourceDirs().from(subprojects.sourceSets.main.allSource.srcDirs)
     getSourceDirectories().from(subprojects.sourceSets.main.allSource.srcDirs)
