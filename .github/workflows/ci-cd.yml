@@ -7,6 +7,10 @@ on:
         description: 'Publish snapshot?'
         required: false
         default: 'false'
+      publish:
+        description: 'Publish to Sonatype Staging Repo?'
+        required: false
+        default: 'false'
   push:
 
 jobs:
@@ -36,3 +40,11 @@ jobs:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         run: ./gradlew --info --warning-mode=all -x test publishToSonatype -Psnapshot
+      - name: Publish to Sonatype Staging Repository
+        if: github.event.inputs.publish == 'true'
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY_ARMORED }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+        run: ./gradlew --info -x test :compiler:publishToSonaType :contract:publishToSonaType :core:publishToSonaType :devpack:publishToSonaType :devpack-test:publishToSonaType :test-tools:publishToSonaType closeSonatypeStagingRepository
