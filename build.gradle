@@ -129,17 +129,17 @@ subprojects { subproject ->
         integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
     }
 
-    task javadocsJar(type: Jar) {
+    tasks.register('javadocsJar', Jar) {
         archiveClassifier = 'javadoc'
         from javadoc
     }
 
-    task sourcesJar(type: Jar) {
+    tasks.register('sourcesJar', Jar) {
         archiveClassifier = 'sources'
         from sourceSets.main.allSource
     }
 
-    task testsJar(type: Jar) {
+    tasks.register('testsJar', Jar) {
         archiveClassifier = 'tests'
         from sourceSets.test.output
     }
@@ -206,7 +206,7 @@ subprojects { subproject ->
             sign publishing.publications.mavenJava
         }
 
-        task bundleJar(type: Jar) {
+        tasks.register('bundleJar', Jar) {
             dependsOn publishToMavenLocal
 
             manifest.from jar.manifest
@@ -228,7 +228,7 @@ subprojects { subproject ->
     }
 }
 
-task jacocoRootTestReport(type: org.gradle.testing.jacoco.tasks.JacocoReport) {
+tasks.register('jacocoRootTestReport', JacocoReport) {
     dependsOn = subprojects.test
     getAdditionalSourceDirs().from(subprojects.sourceSets.main.allSource.srcDirs)
     getSourceDirectories().from(subprojects.sourceSets.main.allSource.srcDirs)
