@@ -3,6 +3,8 @@ plugins {
     id 'com.gradle.plugin-publish' version '1.2.1'
 }
 
+description = "Gradle plugin to compile Java smart contracts to NeoVM"
+
 gradlePlugin {
     website = "https://github.com/neow3j/neow3j"
     vcsUrl = "https://github.com/neow3j/neow3j"
