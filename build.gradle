@@ -1,7 +1,6 @@
 plugins {
-    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0' apply true
-    id 'com.gradle.plugin-publish' version '1.2.1' apply false
-    id 'jacoco' apply true
+    // The Nexus publishing Plugin dictates that it has to applied to the root project.
+    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
 }
 
 ext {
@@ -27,11 +26,12 @@ ext {
     wiremockVersion = '2.35.1'
 }
 
+// The Nexus publishing Plugin dictates that this has to be set on the root project.
 nexusPublishing {
     repositories {
         sonatype {
-//            nexusUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-//            snapshotRepositoryUrl = uri("https://oss.sonatype.org/content/repositories/snapshots/")
+            // Default nexusUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
+            // Default snapshotRepositoryUrl is "https://oss.sonatype.org/content/repositories/snapshots/"
             // `sonatypeUsername` and `sonatypePassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_sonatypeUsername and ORG_GRADLE_PROJECT_sonatypePassword.
             username = project.findProperty("sonatypeUsername")
@@ -40,17 +40,22 @@ nexusPublishing {
     }
 }
 
-allprojects { thisproject ->
-
+subprojects { subproject ->
+    apply plugin: 'jvm-test-suite'
     apply plugin: 'java-library'
     apply plugin: 'jacoco'
     apply plugin: 'idea'
-    apply plugin: 'signing'
-    //apply plugin: 'checkstyle'
 
     group 'io.neow3j'
     version '3.22.0'
-    archivesBaseName = "${thisproject.name}"
+    if (project.hasProperty('snapshot')) {
+        version = version + '-SNAPSHOT'
+    }
+    archivesBaseName = "${subproject.name}"
+
+    repositories {
+        mavenCentral()
+    }
 
     java {
         toolchain {
@@ -59,20 +64,12 @@ allprojects { thisproject ->
         }
     }
 
-    if (project.hasProperty('snapshot')) {
-        version = version + '-SNAPSHOT'
-    }
-
-    repositories {
-        mavenLocal()
-        mavenCentral()
-    }
-
     // We don't want any compiler warnings
     compileJava {
         options.encoding = 'UTF-8'
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
+
     compileTestJava {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
     }
@@ -97,18 +94,8 @@ allprojects { thisproject ->
             reports.html.getOutputLocation().set(file("${reporting.baseDir}/${name}"))
         }
     }
-}
 
-subprojects { project ->
-
-    apply plugin: 'jvm-test-suite'
-
-    if (project.name.startsWith('gradle-plugin')) {
-        apply plugin: 'java-gradle-plugin'
-        apply plugin: 'com.gradle.plugin-publish'
-    }
-
-    project.testing {
+    subproject.testing {
         suites {
             configureEach { task ->
                 useJUnitJupiter()
@@ -159,51 +146,36 @@ subprojects { project ->
 
     javadoc { options.encoding = 'UTF-8' }
 
-    // We avoid building Maven artifacts for the root project, the gradle-plugin,
-    // and the int-tests modules. Those don't need to be published to the
-    // productive Maven central repo.
-    //
-    // However, the gradle-plugin should be published to the Sonatype snapshot repo
-    // due to development purposes (e.g., testing the plugin in other projects).
-    //
-    // The gradle-plugin module should be published to the Gradle Plugin
-    // global repository. See "gradle-plugin/README.md" for Gradle Plugin
-    // release procedures.
-    if (project.name != rootProject.name
-            && !project.name.startsWith('gradle-plugin')
-            && !project.name.startsWith('int-tests')
-    ) {
-
+    // The publishing logic is not applied to the gradle-plugin and the int-tests modules. Those don't need to be
+    // published to the productive Maven central repo. However, the nexus.puhlish-plugin nontheless adds a
+    // 'publishToSonatype' task to our gradle-plugin module. Thus, if you run `./gradlew publishToSonatype` you will
+    // also see the task run for the gradle-plugin module
+    // For releasing the gradle-plugin to the Gradle Plugin Repository see "gradle-plugin/README.md".
+    if (subproject.name != 'gradle-plugin' && subproject.name != 'int-tests') {
         apply plugin: 'maven-publish'
+        apply plugin: 'signing'
 
         publishing {
             publications {
                 mavenJava(MavenPublication) {
-
-                    artifactId "${project.name}"
-
+                    artifactId "${subproject.name}"
                     from components.java
-
                     artifacts { archives sourcesJar, javadocsJar, testsJar }
-
                     pom {
                         name = 'neow3j'
-                        description.set(project.provider({ project.description }))
+                        description.set(subproject.provider({ subproject.description }))
                         url = 'https://neow3j.io'
-
                         scm {
                             url = 'https://github.com/neow3j/neow3j'
                             connection = 'scm:https://github.com/neow3j/neow3j.git'
                             developerConnection = 'scm:https://github.com/neow3j/neow3j.git'
                         }
-
                         licenses {
                             license {
                                 name = 'The Apache License, Version 2.0'
                                 url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
                             }
                         }
-
                         developers {
                             developer {
                                 id = 'gsmachado'
@@ -226,20 +198,12 @@ subprojects { project ->
             }
         }
 
-
         signing {
             // `signingKey` and `signingPassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_signingKey and ORG_GRADLE_PROJECT_signingPassword.
             // The signing key has to be the ASCII-armored, encrypted PGP private key for neow3j.
-            useInMemoryPgpKeys(project.findProperty("signingKey"), project.findProperty("signingPassword"))
+            useInMemoryPgpKeys(subproject.findProperty("signingKey"), subproject.findProperty("signingPassword"))
             sign publishing.publications.mavenJava
-        }
-
-        task release {
-            dependsOn 'build'
-            dependsOn 'publish'
-
-            tasks.findByName('publish').mustRunAfter 'build'
         }
 
         task bundleJar(type: Jar) {
@@ -257,11 +221,10 @@ subprojects { project ->
             from("${buildDir}/publications/mavenJava") {
                 include 'pom-default.xml.asc'
                 include 'pom-default.xml'
-                rename 'pom-default.xml.asc', "${project.name}-${project.version}.pom.asc"
-                rename 'pom-default.xml', "${project.name}-${project.version}.pom"
+                rename 'pom-default.xml.asc', "${subproject.name}-${subproject.version}.pom.asc"
+                rename 'pom-default.xml', "${subproject.name}-${subproject.version}.pom"
             }
         }
-
     }
 }
 

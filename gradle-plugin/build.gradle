@@ -1,4 +1,7 @@
-description 'neow3j: Gradle Plugin'
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '1.2.1'
+}
 
 gradlePlugin {
     website = "https://github.com/neow3j/neow3j"
