@@ -31,14 +31,8 @@ jobs:
       - name: Publish SNAPSHOT to Sonatype
         if: github.event.inputs.snapshot == 'true'
         env:
-          GPG_KEY_ARMOR: "${{ secrets.GPG_KEY_ARMOR }}"
-          GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-          GPG_KEY_PASSPHRASE: ${{ secrets.GPG_KEY_PASSPHRASE }}
-          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
-          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
-        run: |
-          echo "Create .gpg key..."
-          echo ${GPG_KEY_ARMOR} | base64 --decode > ./neow3j.asc
-          gpg --quiet --output ${GITHUB_WORKSPACE}/neow3j.gpg --dearmor ./neow3j.asc
-          echo "Build and Publish to Sonatype..."
-          ./gradlew --info --warning-mode=all -x test build publishToSonatype -Psnapshot -PnexusUsername=${SONATYPE_USERNAME} -PnexusPassword=${SONATYPE_PASSWORD} -Psigning.keyId=${GPG_KEY_ID} -Psigning.password=${GPG_KEY_PASSPHRASE} -Psigning.secretKeyRingFile=${GITHUB_WORKSPACE}/neow3j.gpg
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY_ARMORED }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+        run: ./gradlew --info --warning-mode=all -x test publishToSonatype -Psnapshot
