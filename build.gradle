@@ -143,12 +143,11 @@ subprojects { subproject ->
 
     javadoc { options.encoding = 'UTF-8' }
 
-    // The publishing logic is not applied to the gradle-plugin and the int-tests modules. Those don't need to be
-    // published to the productive Maven central repo. However, the nexus.puhlish-plugin nontheless adds a
-    // 'publishToSonatype' task to our gradle-plugin module. Thus, if you run `./gradlew publishToSonatype` you will
-    // also see the task run for the gradle-plugin module
-    // For releasing the gradle-plugin to the Gradle Plugin Repository see "gradle-plugin/README.md".
-    if (subproject.name != 'gradle-plugin' && subproject.name != 'int-tests') {
+    // The publishing logic is not applied to the int-tests modules because it should not be published.
+    // The gradle-plugin module is also not for publishing to Maven repos, but the nexus.publish-plugin includes it
+    // either way because the module uses the maven-publish plugin implicitly. Thus, we don't even attempt to skip it
+    // here.
+    if (subproject.name != 'int-tests') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
@@ -198,7 +197,7 @@ subprojects { subproject ->
             // `signingKey` and `signingPassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_signingKey and ORG_GRADLE_PROJECT_signingPassword.
             // The signing key has to be the ASCII-armored, encrypted PGP private key for neow3j.
-            useInMemoryPgpKeys(subproject.findProperty("signingKey"), subproject.findProperty("signingPassword"))
+            useInMemoryPgpKeys(project.findProperty("signingKey"), project.findProperty("signingPassword"))
             sign publishing.publications.mavenJava
         }
 
