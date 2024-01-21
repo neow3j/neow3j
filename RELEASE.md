@@ -63,16 +63,16 @@ To publish the Gradle plugin from your currently checked out code base run:
 ## After Releasing the Artefacts
 
 - Create Release Notes on GitHub
-   - Title format: "neow3j: 3.x.x"
-   - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If
+  - Title format: "neow3j: 3.x.x"
+  - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If
      one section doesn't have content it can be omitted.
-   - It's important that users know what actions they need to take if they want to move to the new version.
+  - It's important that users know what actions they need to take if they want to move to the new version.
  
 - Update the dependencies in the following repositories and test whether the build still works. Depending on the 
   changes in the new release, update these repositories, e.g., by adding new examples or updating existing ones.
-   - `neow3j-examples`
-   - `neow3j-boilerplate-sdk`
-   - `neow3j-boilerplate-contracts`
+  - `neow3j-examples`
+  - `neow3j-boilerplate-sdk`
+  - `neow3j-boilerplate-contracts`
 
 - Update `neow3j-docs` according to the changes in the new release. At the very least, update the version number 
 
