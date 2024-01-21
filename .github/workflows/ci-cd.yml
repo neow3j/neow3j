@@ -1,4 +1,4 @@
-name: neow3j-ci-cd
+name: Unit Tests & Code Coverage
 
 on:
   workflow_dispatch:
