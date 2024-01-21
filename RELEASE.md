@@ -51,9 +51,7 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked out code base run:
 ```bash
-./gradlew --info :compiler:publishToSonaType :contract:publishToSonaType :core:publishToSonaType \
-  :devpack:publishToSonaType :devpack-test:publishToSonaType :test-tools:publishToSonaType \
-  closeAndReleaseSonatypeStagingRepository
+./gradlew --info -x :gradle-plugin:publishToSonaType -x :neofs::publishToSonaType  publishToSonaType closeAndReleaseSonatypeStagingRepository
 ```
 
 To publish the Gradle plugin from your currently checked out code base run:
