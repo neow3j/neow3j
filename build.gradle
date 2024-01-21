@@ -143,11 +143,12 @@ subprojects { subproject ->
 
     javadoc { options.encoding = 'UTF-8' }
 
-    // The publishing logic is not applied to the int-tests modules because it should not be published.
-    // The gradle-plugin module is also not for publishing to Maven repos, but the nexus.publish-plugin includes it
-    // either way because the module uses the maven-publish plugin implicitly. Thus, we don't even attempt to skip it
-    // here.
-    if (subproject.name != 'int-tests') {
+    // The publishing extension is not applied to the 'int-tests' and 'gradle-plugin' modules. We don't want 'int-tests'
+    // to be published anywhere. Note that the gradle-plugin module implicitly uses the maven-publish plugin. This
+    // leads to the nexus.publish-plugin plugin automatically including the gradle-plugin module when running tasks like
+    // `publishToSonatype`. We can't do much against that. But, in any case we do not want the below build logic to
+    // apply to the gradle-plugin because it uses different publishing and singing attributes.
+    if (subproject.name != 'int-tests' && subproject.name != 'gradle-plugin') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
 
