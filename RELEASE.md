@@ -3,98 +3,99 @@
 This file describes the required steps to release neow3j. Before releasing make sure that the external documentation
 at [neow3j.io](https://neow3j.io) is up-to-date.
 
-## Prepare for Source Code Release
+> If this release contains changes for a new Neo release, make sure that the `test-tools` module is equipped 
+> with an updated neo-express version. This requires an update of the `neow3j-test-docker` Docker image. 
+> See section [Updating neow3j-test-docker](#updating-neow3j-test-docker) for more details. It is possible that 
+> at the time of release there is no new `neo-express` version available that supports the new Neo version. 
 
-> If this release considers a major Neo version update (e.g., `3.4.x` &rarr; `3.5.x`): Check whether the [Neo-Express
-> version](https://github.com/neo-project/neo-express/releases) used in the
-> [resources](test-tools/src/main/resources/test.properties) of neow3j's `test-tools` module (`neoExpressDockerImage`
-> property) supports that new Neo version. If yes, start the release process. Otherwise, wait with this release until an
-> according `neo-express` version is released, update its version in the `test-tools` resources and only then start the
-> release process.
+
+## Releasing with GitHub Actions
 
 1. Create a branch `release` from `main`.
-2. Change the neow3j version on that branch to the release version. Do a global search with the previous version number
-   and replace it with the new version number. Files that have to contain the new version number are `README.md`,
-   `build.gradle` and `Compiler.java`.
-3. Create a Pull Request from `release` to `main` -- this is called a "Release Pull Request".
-    - Set the name as "Release x.x.x".
-    - Set the correct milestone, project and a reviewer.
-4. Review the Release Pull Request, mainly checking for critical changes **or** changes that shouldn't be in the
-   release.
-5. Merge the Pull Request, and then, delete the `release` branch.
-6. Tag the `main` branch at the commit to be release (e.g., `3.14.0`).
+2. Set the release version number in:
+   - build.gradle, in the `version` property
+   - Compiler.java, in the `COMPILER_NAME` constant
+   - README.md, in the sections that explain how to import neow3j
+3. Tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. Note, that the release workflow currently 
+   doesn't support releasing anything else than the top commit of a branch.
+4. Run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow on the `main` branch. It will publish the packages
+   compiler, contract, core, devpack, devpack-test, test-tools to Maven Central via Sonatype and the Gradle plugin to
+   the Gradle Plugin Repository.
 
-## Publish the Release Artifacts
 
-### Credentials
+## Releasing from a Local Machine
 
-Make sure you have a `gradle.properties` file with the following:
+The following properties are required to create a release:
+- `signingKey`, the PGP key used to sign neow3j artifacts, ASCII armored and encrypted
+- `signingPassword`, the password for the PGP key
+- `sonatypeUsername`, the username for the Sonatype account, should be a token and not the actual username
+- `sonatypePassword`, the password for the Sonatype account, should be a token and not the actual password 
+- `gradle.publish.key`, the API key for the Gradle Plugin Repository
+- `gradle.publish.secret`, the API secret for the Gradle Plugin Repository
+
+You can set those properties in the `gradle.properties` file in the project root. Or via in the command line with a 
+`-P` prefix, e.g., `-PsigningKey=...`.
+
+Putting the armored PGP key in the `gradle.properties` file is a bit ugly but doable. You have to add `\n\` at the 
+end of every line - also on empty lines - to make it a valid property value. It will look something like this:
+```
+signingKey=-----BEGIN PGP PRIVATE KEY BLOCK-----\n\
+\n\
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxa0W8BM\n\
+...
+xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx9e\n\
+xxx9E\n\
+-----END PGP PRIVATE KEY BLOCK-----
 
 ```
-signing.keyId=E76D91F5
-signing.password=XXXXXXXXX
-signing.secretKeyRingFile=/path/to/neow3j-info_at_neow3j.io.gpg
 
-gradle.publish.key=XXXXXXXXX
-gradle.publish.secret=XXXXXXXXX
+To publish the SDK and devpack artifacts from the currently checked out code base run:
+```bash
+./gradlew --info :compiler:publishToSonaType :contract:publishToSonaType :core:publishToSonaType \
+  :devpack:publishToSonaType :devpack-test:publishToSonaType :test-tools:publishToSonaType \
+  closeAndReleaseSonatypeStagingRepository
 ```
 
-Where:
+To publish the Gradle plugin from your currently checked out code base run:
+```bash
+./gradlew :gradle-plugin:publishPlugin 
+```
 
-- `signing.keyId`: is the ID of the neow3j public key
-- `signing.password`: is the password for the encrypted neow3j private key file
-- `signing.secretKeyRingFile`: is the path where the GPG private key file is located
-- `gradle.publish.key`: is the API key for the [Gradle Plugin](https://plugins.gradle.org) repository
-- `gradle.publish.secret`: is the API secret for the [Gradle Plugin](https://plugins.gradle.org) repository
 
-### Publishing Steps
+## After Releasing the Artefacts
 
-1. Check if you're in the main branch (i.e., `main` or `master-2.x`).
-2. Is the current commit tagged with the release version, i.e., the one to be released?
-3. Run `./gradlew clean build` making sure no old artifacts are present and the project is build.
-4. Run `./gradlew bundleJar` to sign the artifacts. For each module, this will produce a bundle Jar (e.g.,
-   ./core/build/libs/core-3.8.0-all.jar) of all the artifacts that need to be released for that module.
-5. Go to [https://oss.sonatype.org/](https://oss.sonatype.org/), log in and go to the *Staging Upload* section.
-6. Choose *Artifact Bundle* as the *Upload Mode* and upload the bundle jars (i.e., the files ending with `-all.jar`) for
-   each module except for the `gradle-plugin` and `int-tests` modules. A confirmation for a successful upload should be
-   displayed in the GUI.
-7. All uploaded bundles should show up in the *Staging Repositories* section as separate repositories. Once they reach
-   the Status **closed** the **Release** button becomes available. Select all repositories and click **Release**.
-8. Search for `io.neow3j` in the *Artifact Search* section to make sure that the process worked.
-9. Finally, run `./gradlew :gradle-plugin:publishPlugin` to publish the compiler Gradle plugin to the Gradle Plugins
-   Repository.
+- Create Release Notes on GitHub
+   - Title format: "neow3j: 3.x.x"
+   - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If
+     one section doesn't have content it can be omitted.
+   - It's important that users know what actions they need to take if they want to move to the new version.
+ 
+- Update the dependencies in the following repositories and test whether the build still works. Depending on the 
+  changes in the new release, update these repositories, e.g., by adding new examples or updating existing ones.
+   - `neow3j-examples`
+   - `neow3j-boilerplate-sdk`
+   - `neow3j-boilerplate-contracts`
 
-## Finish Source Code Release Process
+- Update `neow3j-docs` according to the changes in the new release. At the very least, update the version number 
 
-1. Go to the `main` branch and bump the version in the `build.gradle` and `Compiler.java` file on the `main` branch.
+- Update the `neo-dev-portal` repository by first updating our [fork](https://github.com/AxLabs/neo-dev-portal) and then
+  opening a PR to the origin repo. The PR should target the `dev` branch. Usually the changes are only about the new
+  version number.
 
-## Update `neow3j-examples` Repositories and Run Smoke Tests
 
-1. Update the neow3j-examples repository to use the new neow3j version.
-2. Run some examples as smoke tests. Compile example smart contracts with the Gradle plugin and programmatically.
-3. Correct broken examples according to the changes in neow3j.
-4. Add examples that cover new features.
+## Releasing a SNAPSHOT
 
-## Update `neow3j-docs`
+- Either run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow with the "Snapshot" flag set to true. It 
+  will not publish the gradle-plugin, just snapshot artifacts for compiler, contract, core, devpack, devpack-test,
+  test-tools 
+- Or run `./gradlew --info publishToSonatype -Psnapshot` locally. Requires the same properties as for a normal release.
 
-1. Update the version number in the documentation where necessary.
-2. Update the documentation to reflect the changes and features of the release.
-3. Merge the changes into the master branch of the neow3j-docs repository. That will automatically update the neow3j.io
-   website.
+Note that both approaches will generate snapshot artifacts for all modules, but the 'int-tests' module. Even the 
+gradle-plugin module is published as a Maven artifact. You could prevent that by excluding the gradle-plugin module 
+from the command with the `-x` flag: `./gradlew publishToSonatype -x :gradle-plugin:publishToSonatype: -Psnapshot`.
+ 
 
-## Update `neo-dev-portal` Repository
-
-Update the forked [neo-dev-portal](https://github.com/AxLabs/neo-dev-portal) repository and open a Pull Request to its
-origin [repository](https://github.com/neo-project/neo-dev-portal). Make sure to target the `dev` branch on both
-repositories.
-
-## Update `neow3j-boilerplate` Repositories
-
-Update the boilerplate repos (i.e., [sdk template](https://github.com/neow3j/neow3j-boilerplate-sdk) and
-[contracts template](https://github.com/neow3j/neow3j-boilerplate-sdk)) gradle.build file and possibly the example
-contract if major changes happened.
-
-## Update neow3j-test-docker
+## Updating neow3j-test-docker
 
 1. Clone repo: `git clone git@github.com:neow3j/neow3j-test-docker.git`
 2. Open the `Dockerfile` and modify the version in the neo-express installation line:
@@ -117,13 +118,3 @@ contract if major changes happened.
 4. To publish the new docker image run the GitHub workflow called "Build and Publish container" on the
    neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g.,
    `neoxp-3.4.18`.
-
-## Publish GitHub Release
-
-1. Update the README.md in all neow3j repositories if necessary.
-2. Create a release draft on GitHub
-    - Title format: "neow3j: 3.x.x"
-    - The body should contain the sections "Breaking Changes", "Changes", "New Features", and "Fixes" in that order. If
-      one section doesn't have content it can be omitted.
-3. Let the team review the draft.
-4. Publish the release.
