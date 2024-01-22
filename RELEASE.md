@@ -51,7 +51,7 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked out code base run:
 ```bash
-./gradlew --info -x :gradle-plugin:publishToSonaType -x :neofs::publishToSonaType  publishToSonaType closeAndReleaseSonatypeStagingRepository
+./gradlew --info -x :gradle-plugin:publishToSonatype -x :neofs::publishToSonatype  publishToSonatype closeAndReleaseSonatypeStagingRepository
 ```
 
 To publish the Gradle plugin from your currently checked out code base run:
@@ -90,7 +90,7 @@ To publish the Gradle plugin from your currently checked out code base run:
 
 Note that both approaches will generate snapshot artifacts for all modules, but the 'int-tests' module. Even the 
 gradle-plugin module is published as a Maven artifact. You could prevent that by excluding the gradle-plugin module 
-from the command with the `-x` flag: `./gradlew publishToSonatype -x :gradle-plugin:publishToSonatype: -Psnapshot`.
+from the command with the `-x` flag: `./gradlew -x :gradle-plugin:publishToSonatype publishToSonatype -Psnapshot`.
  
 
 ## Updating neow3j-test-docker
