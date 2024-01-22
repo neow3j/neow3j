@@ -37,8 +37,6 @@ if (project.hasProperty('snapshot')) {
 nexusPublishing {
     repositories {
         sonatype {
-            // Default nexusUrl = uri("https://oss.sonatype.org/service/local/staging/deploy/maven2/")
-            // Default snapshotRepositoryUrl is "https://oss.sonatype.org/content/repositories/snapshots/"
             // `sonatypeUsername` and `sonatypePassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_sonatypeUsername and ORG_GRADLE_PROJECT_sonatypePassword.
             username = project.findProperty("sonatypeUsername")
