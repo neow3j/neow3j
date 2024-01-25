@@ -19,7 +19,7 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 3. Tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. Note, that the release workflow currently 
    doesn't support releasing anything else than the top commit of a branch.
 4. Run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow on the `main` branch. It will publish the packages
-   compiler, contract, core, devpack, devpack-test, test-tools to Maven Central via Sonatype and the Gradle plugin to
+   `compiler`, `contract`, `core`, `devpack`, `devpack-test`, `test-tools` to Maven Central via Sonatype and the `gradle-plugin` to
    the Gradle Plugin Repository.
 
 
