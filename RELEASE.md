@@ -64,7 +64,7 @@ To publish the Gradle plugin from your currently checked out code base run:
 ./gradlew :gradle-plugin:publishPlugin 
 ```
 
-## After Releasing the Artefacts
+## After Releasing the Artifacts
 
 - Create Release Notes on GitHub
   - Title format: "neow3j: 3.x.x"
