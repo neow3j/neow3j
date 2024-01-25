@@ -8,7 +8,7 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 > See section [Updating neow3j-test-docker](#updating-neow3j-test-docker) for more details. It is possible that 
 > at the time of release there is no new `neo-express` version available that supports the new Neo version. 
 
-> For instuctions on how to produce snapshot versions or release locally see DEVLOPMENT.md
+> For instructions on how to produce snapshot versions or release locally see `DEVELOPMENT.md`.
 
 ## Releasing with GitHub Actions
 
