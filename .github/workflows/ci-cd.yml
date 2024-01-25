@@ -1,16 +1,6 @@
 name: Unit Tests & Code Coverage
 
 on:
-  workflow_dispatch:
-    inputs:
-      snapshot:
-        description: 'Publish snapshot?'
-        required: false
-        default: 'false'
-      publish:
-        description: 'Publish to Sonatype Staging Repo?'
-        required: false
-        default: 'false'
   push:
 
 jobs:
