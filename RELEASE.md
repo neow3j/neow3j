@@ -78,7 +78,7 @@ To publish the Gradle plugin from your currently checked out code base run:
   - `neow3j-boilerplate-sdk`
   - `neow3j-boilerplate-contracts`
 
-- Update `neow3j-docs` according to the changes in the new release. At the very least, update the version number 
+- Update `neow3j-docs` according to the changes in the new release. At the very least, update the version number.
 
 - Update the `neo-dev-portal` repository by first updating our [fork](https://github.com/AxLabs/neo-dev-portal) and then
   opening a PR to the origin repo. The PR should target the `dev` branch. Usually the changes are only about the new
