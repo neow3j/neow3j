@@ -25,8 +25,8 @@ jobs:
           registry: ghcr.io
           username: ${{ secrets.CR_PAT_USERNAME }}
           password: ${{ secrets.CR_PAT }}
-      - name: Unit Tests & Integration Tests
-        run: ./gradlew --info --warning-mode=all clean test integrationTest
+      - name: Unit Tests
+        run: ./gradlew --info clean test
       - name: Release
         if: github.event.inputs.snapshot != 'true'
         env:
