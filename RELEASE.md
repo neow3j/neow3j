@@ -110,5 +110,5 @@ To publish the Gradle plugin from your currently checked out code base run:
 
 [^1]: It is not easy to exclude the `gradle-plugin` subproject from the `publishToSonatype` task in the build script.
 The `nexus.publish-plugin` automatically includes all projects that use the `maven-publish` plugin and the 
-`gradl-plugin` subproject does implicitly use that plugin. Thus, it is always included when executing `./gradlew
+`gradle-plugin` subproject does implicitly use that plugin. Thus, it is always included when executing `./gradlew
 publishToSonatype` and has to be explicitly excluded with the `-x` flag.
