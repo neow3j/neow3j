@@ -41,6 +41,6 @@ jobs:
           ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
           ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
         run: | # If you want to release a snapshot of gradle-plugin, remove the -x :gradle-plugin:publishToSonatype
-          ./gradlew --info -x test -x :gradle-plugin:publishToSonatype publishToSonatype -Psnapshot 
+          ./gradlew --info -x test publishToSonatype -Psnapshot 
 
 
