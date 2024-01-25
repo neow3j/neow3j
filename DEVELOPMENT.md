@@ -1,27 +1,125 @@
 # Development
 
-This file describes configurations and nuances for developing in the neow3j project.
+## Publishing and Using a Snapshot to/from Sonatype
 
-## Using the SNAPSHOT versions
+- Either run the "_Release SDK, devpack, Gradle plugin_" workflow on Github with the "Snapshot" flag set to true.
+- Or run `./gradlew --info publishToSonatype -Psnapshot` locally. Requires the same properties as for a normal
+  release (check the `RELEASE.md` file).
 
-If you would like to use the "latest and greatest" version of newo3j (for development *only*), then
-add the Sonatype Snapshot repository to your `build.gradle`:
+Note that both approaches will generate snapshot artifacts for all modules including the `gradle-plugin` but excluding 
+the `int-tests` module. 
+
+### Using the SDK and Devpack Snapshot 
+
+To use the SDK and Devpack artifacts in your project, add the following to the `repositories` section of your 
+project's build file. It tells Gradle to use the Sonatype Snapshot repository as a dependency repository.
 
 ```groovy
 repositories {
-    mavenCentral()
+    mavenCentral() 
     maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
 }
 ```
 
-Then you would be able to use the snapshot versions:
+The dependencies can be used as usual. Of course, with the snapshot version. For example:
 
 ```groovy
-implementation 'io.neow3j:contract:3.x.x-SNAPSHOT'
-implementation 'io.neow3j:devpack:3.x.x-SNAPSHOT'
+dependencies {
+    implementation 'io.neow3j:contract:x.y.z-SNAPSHOT'
+    implementation 'io.neow3j:devpack:x.y.z-SNAPSHOT'
+}
 ```
 
-> TODO: Add instructions for creating a snapshot.
+### Using the Gradle Plugin Snapshot
+
+To use the snapshot version of the `gradle-plugin` in your project, add the following to the `settings.gradle` file. It
+tells Gradle to use the Sonatype Snapshot repository as a plugin repository.
+
+```properties
+pluginManagement {
+    repositories {
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'io.neow3j.gradle-plugin') {
+                useModule("io.neow3j:gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+```
+
+Then use the plugin as usual in the `plugins` section of your project's build file but with the snapshot version
+sepcified.
+
+```groovy
+plugins {
+    id 'java'
+    id 'io.neow3j.gradle-plugin' version "x.y.z-SNAPSHOT"
+}
+```
+
+
+## Publishing and Using a Local Release
+
+Run the following command to publish the SDK, Devpack and Gradle plugin to your local Maven repository.
+
+```bash
+rm -rf ~/.m2/repository/io/neow3j && ./gradlew clean publishToMavenLocal
+```
+
+### Using the Local SDK and Devpack Release
+
+To use the SDK and Devpack artifacts in your project, add the following to the `repositories` section of your
+project's build file. It tells Gradle to use your local Maven repository as a dependency repository first.
+
+```groovy
+repositories {
+    mavenLocal()
+    mavenCentral() 
+}
+```
+
+The dependencies can be used as usual. Of course, with the current version set in neow3j. For example:
+
+```groovy
+dependencies {
+    implementation 'io.neow3j:contract:x.y.z'
+    implementation 'io.neow3j:devpack:x.y.z'
+}
+```
+
+### Using Local Gradle Plugin Release 
+
+To use local release of the `gradle-plugin` in your project, add the following to the `settings.gradle` file. It
+tells Gradle to use your local Maven repository as a plugin repository first.
+
+```properties
+pluginManagement {
+    repositories {
+        mavenLocal()
+        gradlePluginPortal()
+    }
+    resolutionStrategy {
+        eachPlugin {
+            if (requested.id.id == 'io.neow3j.gradle-plugin') {
+                useModule("io.neow3j:gradle-plugin:${requested.version}")
+            }
+        }
+    }
+}
+```
+
+Then use the plugin as usual in the `plugins` section of your project's build file 
+
+```groovy
+plugins {
+    id 'java'
+    id 'io.neow3j.gradle-plugin'
+}
+```
 
 ## Locally Testing GitHub Action Workflows
 
@@ -31,7 +129,8 @@ debug things.
 
 1. Follow the [installation steps](https://github.com/nektos/act#installation).
 
-2. [Create a PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) for your GitHub user, for reading container registries (i.e., ghcr.io).
+2. [Create a PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) for your
+   GitHub user, for reading container registries (i.e., ghcr.io).
 
 3. Edit your local `~/.actrc` file and add the following lines in the end:
 
@@ -47,7 +146,6 @@ act --detect-event -W .github/workflows/integration.yml
 ```
 
 That's it. :rocket:
-
 
 ## Generate armored PGP file for GitHub Action
 

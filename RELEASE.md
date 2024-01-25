@@ -8,6 +8,7 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 > See section [Updating neow3j-test-docker](#updating-neow3j-test-docker) for more details. It is possible that 
 > at the time of release there is no new `neo-express` version available that supports the new Neo version. 
 
+> For instuctions on how to produce snapshot versions or release locally see DEVLOPMENT.md
 
 ## Releasing with GitHub Actions
 
@@ -63,7 +64,6 @@ To publish the Gradle plugin from your currently checked out code base run:
 ./gradlew :gradle-plugin:publishPlugin 
 ```
 
-
 ## After Releasing the Artefacts
 
 - Create Release Notes on GitHub
@@ -83,19 +83,6 @@ To publish the Gradle plugin from your currently checked out code base run:
 - Update the `neo-dev-portal` repository by first updating our [fork](https://github.com/AxLabs/neo-dev-portal) and then
   opening a PR to the origin repo. The PR should target the `dev` branch. Usually the changes are only about the new
   version number.
-
-
-## Releasing a SNAPSHOT
-
-- Either run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow with the "Snapshot" flag set to true. It 
-  will not publish the gradle-plugin, just snapshot artifacts for compiler, contract, core, devpack, devpack-test,
-  test-tools 
-- Or run `./gradlew --info publishToSonatype -Psnapshot` locally. Requires the same properties as for a normal release.
-
-Note that both approaches will generate snapshot artifacts for all modules, but the 'int-tests' module. Even the 
-gradle-plugin module is published as a Maven artifact. You could prevent that by excluding the gradle-plugin module 
-from the command with the `-x` flag: `./gradlew -x :gradle-plugin:publishToSonatype publishToSonatype -Psnapshot`.
- 
 
 ## Updating neow3j-test-docker
 
