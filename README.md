@@ -30,8 +30,8 @@ developed by the community and maintained by [AxLabs](https://axlabs.com).
       </picture> 
     </td>
     <td>
-      If you are in need of a testnet or mainnet Neo node for your dApp, but, don't want to spend hours on setup, check 
-      out [1ClickNode](https://marketplace.digitalocean.com/apps/1clicknode-for-neo).
+      If you are in need of a testnet or mainnet Neo node for your dApp but don't want to spend hours on setup, check 
+      out <a href="https://marketplace.digitalocean.com/apps/1clicknode-for-neo">1ClickNode</a>.
     </td>
   </tr>
 </table>
