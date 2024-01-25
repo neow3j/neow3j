@@ -1,4 +1,9 @@
-description 'neow3j: Gradle Plugin'
+plugins {
+    id 'java-gradle-plugin'
+    id 'com.gradle.plugin-publish' version '1.2.1'
+}
+
+description = "neow3j: Gradle plugin to compile Java smart contracts to NeoVM"
 
 gradlePlugin {
     website = "https://github.com/neow3j/neow3j"

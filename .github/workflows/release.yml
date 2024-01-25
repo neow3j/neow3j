@@ -1,0 +1,46 @@
+name: Release SDK, devpack, Gradle plugin
+
+on:
+  workflow_dispatch:
+    inputs:
+      snapshot:
+        description: 'Publish snapshot?'
+        required: false
+        default: 'false'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '8'
+          cache: 'gradle'
+      - name: Unit Tests
+        run: ./gradlew --info clean test
+      - name: Release
+        if: github.event.inputs.snapshot != 'true'
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY_ARMORED }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+          GRADLE_PUBLISH_KEY: ${{ secrets.GRADLE_PUBLISH_KEY }}
+          GRADLE_PUBLISH_SECRET: ${{ secrets.GRADLE_PUBLISH_SECRET }}
+        run: | # If the neofs module is to be published in the future, remove the -x :neofs:publishToSonatype
+          ./gradlew --info -x test -x :gradle-plugin:publishToSonatype -x :neofs:publishToSonatype publishToSonatype closeAndReleaseSonatypeStagingRepository
+          ./gradlew :gradle-plugin:publishPlugin -Pgradle.publish.key=$GRADLE_PUBLISH_KEY -Pgradle.publish.secret=$GRADLE_PUBLISH_SECRET
+      - name: Release Snapshot
+        if: github.event.inputs.snapshot == 'true'
+        env:
+          ORG_GRADLE_PROJECT_signingKey: ${{ secrets.GPG_KEY_ARMORED }}
+          ORG_GRADLE_PROJECT_signingPassword: ${{ secrets.GPG_KEY_PASSWORD }}
+          ORG_GRADLE_PROJECT_sonatypeUsername: ${{ secrets.SONATYPE_USERNAME }}
+          ORG_GRADLE_PROJECT_sonatypePassword: ${{ secrets.SONATYPE_PASSWORD }}
+        run: | # If you want to release a snapshot of gradle-plugin, remove the -x :gradle-plugin:publishToSonatype
+          ./gradlew --info -x test publishToSonatype -Psnapshot 
+
+
