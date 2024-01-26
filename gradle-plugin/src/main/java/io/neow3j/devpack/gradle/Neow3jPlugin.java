@@ -6,6 +6,8 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.util.GradleVersion;
+import org.gradle.api.specs.Spec;
+import org.gradle.api.specs.Specs;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
@@ -32,7 +34,10 @@ public class Neow3jPlugin implements Plugin<Project> {
         extension.getDebug().set(true);
         extension.getOutputDir().set(new File(buildDir.getAsFile().get(), DEFAULT_OUTPUT_DIR));
 
+        Spec<boolean>cacheFlagSpec = value -> value;
+
         project.getTasks().create(TASK_NAME, Neow3jCompileTask.class, task -> {
+            task.getOutputs().cacheIf(cacheFlagSpec -> getCacheFlag());
             task.getClassName().set(extension.getClassName());
             task.getDebug().set(extension.getDebug());
             task.getOutputDir().set(extension.getOutputDir());
