@@ -1,4 +1,4 @@
-name: neow3j-integration
+name: Integration Tests
 
 on:
   pull_request:
