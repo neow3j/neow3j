@@ -4,6 +4,8 @@ import org.gradle.api.file.DirectoryProperty;
 import org.gradle.api.provider.Property;
 
 abstract public class Neow3jPluginExtension {
+    
+    public abstract Property<Boolean> getCacheFlag();
 
     public abstract Property<String> getClassName();
 
