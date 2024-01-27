@@ -11,13 +11,13 @@ import org.gradle.api.tasks.options.Option;
 
 abstract public class Neow3jCompileTask extends DefaultTask {
 
-    static final String CACHE_FLAG = "cacheFlag";
+    static final String CACHEABLE_NAME = "cacheable";
     static final String CLASSNAME_NAME = "className";
     private static final String DEBUG_NAME = "debug";
     private static final String OUTPUT_DIR_NAME = "outputDir";
 
     @Input
-    @Option(option = CACHE_FLAG, description = "Sets the cache flag for compiling")
+    @Option(option = CACHEABLE_NAME, description = "Sets wheter the neow3j compiler should cache the compilation output.")
     public abstract Property<Boolean> getCacheFlag();
 
     @Input
