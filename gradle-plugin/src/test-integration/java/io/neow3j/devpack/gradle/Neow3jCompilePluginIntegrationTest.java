@@ -20,11 +20,47 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class Neow3jCompilePluginIntegrationTest {
 
     @TempDir
     public Path projectRootDir;
+
+    @Test
+    public void testTaskCompilationCache() {
+        String buildFileContent = "" +
+              "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "\n" +
+              "neow3jCompiler {" + "\n" +
+              "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+              "    cacheable=false\n" +
+              "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+              .withDefaultDependencies()
+              .appendToBuildFile(buildFileContent)
+              .withContractName("ContractTest")
+              .withContractSourceFileName("ContractTest.java")
+              .runBuild();
+
+        BuildResult firstBuildResult = testCase.getGradleBuildResult();
+
+        assertEquals(SUCCESS, firstBuildResult.task(":" + TASK_NAME).getOutcome());
+
+        // run for the second time to assert cache was not used
+        GradleProjectTestCase testCacheNotUsed = new GradleProjectTestCase(this.projectRootDir)
+              .withDefaultDependencies()
+              .appendToBuildFile(buildFileContent)
+              .withContractName("ContractTest")
+              .withContractSourceFileName("ContractTest.java")
+              .runBuild();
+
+        BuildResult buildResult = testCacheNotUsed.getGradleBuildResult();
+        assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+    }
 
     @Test
     public void testTaskHappyPath() throws IOException {
