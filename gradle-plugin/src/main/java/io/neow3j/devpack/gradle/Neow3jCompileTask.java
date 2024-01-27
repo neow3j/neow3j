@@ -18,7 +18,7 @@ abstract public class Neow3jCompileTask extends DefaultTask {
 
     @Input
     @Option(option = CACHEABLE_NAME, description = "Sets wheter the neow3j compiler should cache the compilation output.")
-    public abstract Property<Boolean> getCacheFlag();
+    public abstract Property<Boolean> getCacheable();
 
     @Input
     @Option(option = CLASSNAME_NAME, description = "Sets the smart contract class name (fully qualified name) to be " +
