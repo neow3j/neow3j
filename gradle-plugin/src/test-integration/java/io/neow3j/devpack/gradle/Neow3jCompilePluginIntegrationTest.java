@@ -13,6 +13,8 @@ import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
 import static java.util.Objects.requireNonNull;
 import static org.gradle.testkit.runner.TaskOutcome.FAILED;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
+import static org.gradle.testkit.runner.TaskOutcome.FROM_CACHE;
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -28,7 +30,7 @@ public class Neow3jCompilePluginIntegrationTest {
     public Path projectRootDir;
 
     @Test
-    public void testTaskCompilationCache() {
+    public void testTaskCompilationCache() throws IOException {
         String buildFileContent = "" +
               "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
               "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
@@ -50,16 +52,10 @@ public class Neow3jCompilePluginIntegrationTest {
         assertEquals(SUCCESS, firstBuildResult.task(":" + TASK_NAME).getOutcome());
 
         // run for the second time to assert cache was not used
-        GradleProjectTestCase testCacheNotUsed = new GradleProjectTestCase(this.projectRootDir)
-              .withDefaultDependencies()
-              .appendToBuildFile(buildFileContent)
-              .withContractName("ContractTest")
-              .withContractSourceFileName("ContractTest.java")
-              .runBuild();
-
-        BuildResult buildResult = testCacheNotUsed.getGradleBuildResult();
+        testCase.runBuild();
+        BuildResult buildResult = testCase.getGradleBuildResult();
         assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
     }
 
     @Test
