@@ -30,14 +30,13 @@ public class Neow3jCompilePluginIntegrationTest {
     public Path projectRootDir;
 
     @Test
-    public void testTaskCompilationCache() throws IOException {
+    public void testTaskCompilationCacheIfFileChanges() throws IOException {
         String buildFileContent = "" +
               "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
               "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
               "\n" +
               "neow3jCompiler {" + "\n" +
               "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
-              "    cacheable=false\n" +
               "}" + "\n";
 
         GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
@@ -47,13 +46,39 @@ public class Neow3jCompilePluginIntegrationTest {
               .withContractSourceFileName("ContractTest.java")
               .runBuild();
 
-        BuildResult firstBuildResult = testCase.getGradleBuildResult();
+        BuildResult buildResult = testCase.getGradleBuildResult();
 
-        assertEquals(SUCCESS, firstBuildResult.task(":" + TASK_NAME).getOutcome());
-
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        testCase = testCase.replaceMethodName("test", "testCached");
         // run for the second time to assert cache was not used
         testCase.runBuild();
+        buildResult = testCase.getGradleBuildResult();
+        assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+    }
+
+    @Test
+    public void testTaskCompilationCacheIfFileNotChanged() throws IOException {
+        String buildFileContent = "" +
+              "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "\n" +
+              "neow3jCompiler {" + "\n" +
+              "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+              "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+              .withDefaultDependencies()
+              .appendToBuildFile(buildFileContent)
+              .withContractName("ContractTest")
+              .withContractSourceFileName("ContractTest.java")
+              .runBuild();
+
         BuildResult buildResult = testCase.getGradleBuildResult();
+
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        testCase.runBuild();
+        buildResult = testCase.getGradleBuildResult();
         assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
         assertEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
     }
