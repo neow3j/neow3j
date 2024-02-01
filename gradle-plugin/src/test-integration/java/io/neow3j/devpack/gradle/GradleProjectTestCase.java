@@ -99,6 +99,12 @@ public class GradleProjectTestCase {
         appendFile(destination, content);
     }
 
+    protected GradleProjectTestCase replaceMethodName(String oldMethodName, String newMethodName)
+            throws IOException {
+        TestCaseUtils.replaceMethodName(this.smartContractSourceFile.getAbsolutePath(), oldMethodName, newMethodName);
+        return this;
+    }
+
     public GradleProjectTestCase withContractSourceFileName(String contractSourceFileName)
             throws IOException {
         this.contractSourceFileName = contractSourceFileName;
