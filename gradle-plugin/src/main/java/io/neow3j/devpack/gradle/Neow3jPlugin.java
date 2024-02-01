@@ -31,11 +31,8 @@ public class Neow3jPlugin implements Plugin<Project> {
         // Set default values that will be overwritten by the values set in dev's build.gradle.
         extension.getDebug().set(true);
         extension.getOutputDir().set(new File(buildDir.getAsFile().get(), DEFAULT_OUTPUT_DIR));
-        extension.getCacheable().set(false);
 
         project.getTasks().create(TASK_NAME, Neow3jCompileTask.class, task -> {
-            task.getCacheable().set(extension.getCacheable());
-            task.getOutputs().cacheIf(value -> extension.getCacheable().get());
             task.getClassName().set(extension.getClassName());
             task.getDebug().set(extension.getDebug());
             task.getOutputDir().set(extension.getOutputDir());
