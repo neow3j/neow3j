@@ -2,6 +2,7 @@ name: Unit Tests & Code Coverage
 
 on:
   push:
+  pull_request:
 
 jobs:
   build:
