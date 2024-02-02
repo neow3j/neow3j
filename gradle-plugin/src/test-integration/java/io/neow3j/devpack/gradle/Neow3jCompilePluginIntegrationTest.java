@@ -261,8 +261,7 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
-        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
     }
 
     @Test
