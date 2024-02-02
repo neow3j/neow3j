@@ -17,6 +17,26 @@ developed by the community and maintained by [AxLabs](https://axlabs.com).
 
 **Visit [neow3j.io](https://neow3j.io) for more information and technical documentation.**
 
+<table>
+  <tr>
+    <td>
+      <a href="https://marketplace.digitalocean.com/apps/1clicknode-for-neo">
+      <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://cdn.axlabs.net/1clicknode-logos/1clicknode-logo-for-dark.png"
+          width="200">
+        <source media="(prefers-color-scheme: light)" srcset="https://cdn.axlabs.net/1clicknode-logos/1clicknode-logo-for-light.png"
+          width="200">
+        <img alt="1ClickNode Logo" src="">
+      </picture> 
+    </a>
+    </td>
+    <td>
+      If you are in need of a testnet or mainnet Neo node for your dApp but don't want to spend hours on setup, check 
+      out <a href="https://marketplace.digitalocean.com/apps/1clicknode-for-neo">1ClickNode</a>.
+    </td>
+  </tr>
+</table>
+
 # Quickstart
 
 Neow3j is composed of an **SDK** for dApp development and a **devpack** for smart contract
@@ -30,16 +50,17 @@ To make use of all neow3j SDK features, add `io.neow3j:contract` to your depende
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:contract:3.21.2'
+implementation 'io.neow3j:contract:3.22.0'
 ```
 
 __Maven__
 
 ```xml
+
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>contract</artifactId>
-    <version>3.21.2</version>
+    <version>3.22.0</version>
 </dependency>
 ```
 
@@ -56,21 +77,22 @@ Then, add the following dependency to your project.
 __Gradle__
 
 ```groovy
-implementation 'io.neow3j:devpack:3.21.2'
+implementation 'io.neow3j:devpack:3.22.0'
 ```
 
 __Maven__
 
 ```xml
+
 <dependency>
     <groupId>io.neow3j</groupId>
     <artifactId>devpack</artifactId>
-    <version>3.21.2</version>
+    <version>3.22.0</version>
 </dependency>
 ```
 
 > **Note:** The devpack and compiler are only available for Neo N3. Thus, Java cannot be used to
-compile smart contracts that are compatible with Neo Legacy.
+> compile smart contracts that are compatible with Neo Legacy.
 
 ## Who's using neow3j? :rocket:
 
@@ -86,7 +108,8 @@ compile smart contracts that are compatible with Neo Legacy.
 * [Neo Playground](https://neo-playground.dev)
 * [Elements](https://www.getelements.dev)
 * [intellij-neo](https://github.com/intellij-neo/intellij-neo)
-* Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
+* Would like to be listed here? [Contact us](mailto:info@neow3j.io)
+  or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
 
@@ -99,8 +122,9 @@ Help the development of neow3j by sponsoring us using the following addresses:
 | ETH        | `0xe85EbabD96943655e2DcaC44d3F21DC75F403B2f` |
 | BTC        | `3L4br7KQ8DCJEZ77nBjJfrukWEdVRXoKiy`         |
 
-
 ## Thanks and Credits :pray:
 
 * [NEO Foundation](https://neo.org/contributors) & [NEO Global Development (NGD)](https://neo.org/contributors)
-* This project was strongly based on [web3j](https://web3j.io) latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254). We are really thankful for it. :smiley:
+* This project was strongly based on [web3j](https://web3j.io) latest
+  on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254). We are really
+  thankful for it. :smiley:
