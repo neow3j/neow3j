@@ -54,6 +54,7 @@ public class Neow3jCompilePluginIntegrationTest {
         testCase.runBuild();
         buildResult = testCase.getGradleBuildResult();
         assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertNotEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
         assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
     }
 
@@ -80,6 +81,7 @@ public class Neow3jCompilePluginIntegrationTest {
         testCase.runBuild();
         buildResult = testCase.getGradleBuildResult();
         assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertNotEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
         assertEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
     }
 
