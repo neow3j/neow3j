@@ -13,6 +13,8 @@ import static io.neow3j.devpack.gradle.Neow3jPlugin.TASK_NAME;
 import static java.util.Objects.requireNonNull;
 import static org.gradle.testkit.runner.TaskOutcome.FAILED;
 import static org.gradle.testkit.runner.TaskOutcome.SUCCESS;
+import static org.gradle.testkit.runner.TaskOutcome.FROM_CACHE;
+import static org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
@@ -20,11 +22,68 @@ import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class Neow3jCompilePluginIntegrationTest {
 
     @TempDir
     public Path projectRootDir;
+
+    @Test
+    public void testTaskCompilationCacheIfFileChanges() throws IOException {
+        String buildFileContent = "" +
+              "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "\n" +
+              "neow3jCompiler {" + "\n" +
+              "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+              "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+              .withDefaultDependencies()
+              .appendToBuildFile(buildFileContent)
+              .withContractName("ContractTest")
+              .withContractSourceFileName("ContractTest.java")
+              .runBuild();
+
+        BuildResult buildResult = testCase.getGradleBuildResult();
+
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        testCase = testCase.replaceMethodName("test", "testCached");
+        // run for the second time to assert cache was not used
+        testCase.runBuild();
+        buildResult = testCase.getGradleBuildResult();
+        assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertNotEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+    }
+
+    @Test
+    public void testTaskCompilationCacheIfFileNotChanged() throws IOException {
+        String buildFileContent = "" +
+              "sourceCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "targetCompatibility = JavaVersion.VERSION_1_8" + "\n" +
+              "\n" +
+              "neow3jCompiler {" + "\n" +
+              "    className=" + "\"io.neow3j.devpack.gradle.ContractTest\"" + "\n" +
+              "}" + "\n";
+
+        GradleProjectTestCase testCase = new GradleProjectTestCase(this.projectRootDir)
+              .withDefaultDependencies()
+              .appendToBuildFile(buildFileContent)
+              .withContractName("ContractTest")
+              .withContractSourceFileName("ContractTest.java")
+              .runBuild();
+
+        BuildResult buildResult = testCase.getGradleBuildResult();
+
+        assertEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        testCase.runBuild();
+        buildResult = testCase.getGradleBuildResult();
+        assertNotEquals(FROM_CACHE, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertNotEquals(SUCCESS, buildResult.task(":" + TASK_NAME).getOutcome());
+        assertEquals(UP_TO_DATE, buildResult.task(":" + TASK_NAME).getOutcome());
+    }
 
     @Test
     public void testTaskHappyPath() throws IOException {
@@ -202,8 +261,7 @@ public class Neow3jCompilePluginIntegrationTest {
 
         // check whether the compilation miserably failed :-)
         assertEquals(FAILED, buildResult.task(":" + TASK_NAME).getOutcome());
-        assertTrue(testCase.getBuildNeow3jOutputDir().exists());
-        assertEquals(0, requireNonNull(testCase.getBuildNeow3jOutputDir().listFiles()).length);
+        assertFalse(testCase.getBuildNeow3jOutputDir().exists());
     }
 
     @Test

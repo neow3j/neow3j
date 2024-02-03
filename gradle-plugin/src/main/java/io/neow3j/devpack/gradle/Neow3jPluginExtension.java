@@ -5,6 +5,8 @@ import org.gradle.api.provider.Property;
 
 abstract public class Neow3jPluginExtension {
 
+    public abstract DirectoryProperty getBuildDirectory();
+
     public abstract Property<String> getClassName();
 
     public abstract Property<Boolean> getDebug();

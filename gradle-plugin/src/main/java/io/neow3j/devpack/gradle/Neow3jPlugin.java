@@ -3,6 +3,7 @@ package io.neow3j.devpack.gradle;
 import org.gradle.api.Plugin;
 import org.gradle.api.Project;
 import org.gradle.api.file.DirectoryProperty;
+import org.gradle.api.tasks.compile.JavaCompile;
 import org.gradle.api.plugins.JavaLibraryPlugin;
 import org.gradle.api.plugins.JavaPlugin;
 import org.gradle.util.GradleVersion;
@@ -37,6 +38,8 @@ public class Neow3jPlugin implements Plugin<Project> {
             task.getDebug().set(extension.getDebug());
             task.getOutputDir().set(extension.getOutputDir());
             task.getProject().getPluginManager().apply(JavaLibraryPlugin.class);
+            JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
+            task.getBuildDirectory().set(compileJava.getDestinationDir());
             task.dependsOn(JavaPlugin.COMPILE_JAVA_TASK_NAME);
         });
     }
