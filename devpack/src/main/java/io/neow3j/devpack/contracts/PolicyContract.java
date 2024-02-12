@@ -2,6 +2,9 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.annotations.CallFlags;
+import static io.neow3j.devpack.constants.CallFlags.ReadStates;
+import static io.neow3j.devpack.constants.CallFlags.States;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
@@ -33,6 +36,7 @@ public class PolicyContract extends ContractInterface {
     /**
      * @return the GAS cost per transaction byte, i.e., the fee per byte.
      */
+    @CallFlags(ReadStates)
     public native int getFeePerByte();
 
     /**
@@ -60,7 +64,9 @@ public class PolicyContract extends ContractInterface {
      * Sets the fee to be paid per transaction byte.
      *
      * @param fee the desired fee per byte.
+    @CallFlags(value = CallFlags.ReadStates)
      */
+    @CallFlags(States)
     public native void setFeePerByte(int fee);
 
     /**
@@ -69,6 +75,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the account to block.
      * @return true if successful. False, otherwise.
      */
+    @CallFlags(States)
     public native boolean blockAccount(Hash160 scriptHash);
 
     /**
@@ -77,6 +84,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the account to unblock.
      * @return true if successful. False, otherwise.
      */
+    @CallFlags(States)
     public native boolean unblockAccount(Hash160 scriptHash);
 
     /**
@@ -85,6 +93,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the script hash of the account.
      * @return true if the account is blocked. False, otherwise.
      */
+    @CallFlags(ReadStates)
     public native boolean isBlocked(Hash160 scriptHash);
 
     /**
@@ -95,6 +104,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @return the execution fee factor.
      */
+    @CallFlags(ReadStates)
     public native int getExecFeeFactor();
 
     /**
@@ -105,11 +115,13 @@ public class PolicyContract extends ContractInterface {
      *
      * @param factor the desired factor.
      */
+    @CallFlags(States)
     public native void setExecFeeFactor(int factor);
 
     /**
      * @return the GAS price for one byte of contract storage.
      */
+    @CallFlags(ReadStates)
     public native int getStoragePrice();
 
     /**
@@ -117,6 +129,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param price the desired price for one byte of storage.
      */
+    @CallFlags(States)
     public native void setStoragePrice(int price);
 
     /**
@@ -125,6 +138,7 @@ public class PolicyContract extends ContractInterface {
      * @param attributeType the attribute type.
      * @return the GAS fee for the given attribute type.
      */
+    @CallFlags(ReadStates)
     public native int getAttributeFee(byte attributeType);
 
     /**
@@ -133,6 +147,7 @@ public class PolicyContract extends ContractInterface {
      * @param attributeType the attribute type.
      * @param fee the GAS fee.
      */
+    @CallFlags(States)
     public native void setAttributeFee(byte attributeType, int fee);
 
 }

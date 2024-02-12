@@ -5,6 +5,8 @@ import io.neow3j.devpack.Hash256;
 import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.annotations.CallFlags;
+import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 
 /**
  * Represents an interface to the native LedgerContract that stores all blocks and transactions.
@@ -21,11 +23,13 @@ public class LedgerContract extends ContractInterface {
     /**
      * @return the latest block hash.
      */
+    @CallFlags(ReadStates)
     public native Hash256 currentHash();
 
     /**
      * @return the current block height.
      */
+    @CallFlags(ReadStates)
     public native int currentIndex();
 
     /**
@@ -34,6 +38,7 @@ public class LedgerContract extends ContractInterface {
      * @param index the block index.
      * @return the block at the given index or {@code null} if it doesn't exist.
      */
+    @CallFlags(ReadStates)
     public native Block getBlock(int index);
 
     /**
@@ -59,6 +64,7 @@ public class LedgerContract extends ContractInterface {
      * @param index     the transaction index in the block.
      * @return the transaction or {@code null} if it doesn't exist.
      */
+    @CallFlags(ReadStates)
     public native Transaction getTransactionFromBlock(Hash256 blockHash, int index);
 
     /**
