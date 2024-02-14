@@ -9,6 +9,7 @@ import io.neow3j.devpack.annotations.CallFlags;
 import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.States;
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
+import static io.neow3j.devpack.constants.CallFlags.All;
 
 /**
  * Represents an interface to the native ContractManagement contract that is used to manage all deployed smart
@@ -77,6 +78,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest the manifest of the contract to deploy.
      * @return the deployed {@code Contract}.
      */
+    @CallFlags(All)
     public native Contract deploy(ByteString nefFile, String manifest);
 
     /**
@@ -87,6 +89,7 @@ public class ContractManagement extends ContractInterface {
      * @param data     data that is passed on to the {@code _deploy} method of the deployed contract if it exists.
      * @return the deployed {@code Contract}.
      */
+    @CallFlags(All)
     public native Contract deploy(ByteString nefFile, String manifest, Object data);
 
     /**
@@ -98,6 +101,7 @@ public class ContractManagement extends ContractInterface {
      * @param nefFile  the updated NEF file of the contract.
      * @param manifest the updated manifest of the contract.
      */
+    @CallFlags(All)
     public native void update(ByteString nefFile, String manifest);
 
     /**
@@ -110,6 +114,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest the updated manifest of the contract.
      * @param data     data passed {@code update} method of the contract being deployed.
      */
+    @CallFlags(All)
     public native void update(ByteString nefFile, String manifest, Object data);
 
     /**
