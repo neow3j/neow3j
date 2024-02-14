@@ -64,7 +64,6 @@ public class PolicyContract extends ContractInterface {
      * Sets the fee to be paid per transaction byte.
      *
      * @param fee the desired fee per byte.
-    @CallFlags(value = CallFlags.ReadStates)
      */
     @CallFlags(States)
     public native void setFeePerByte(int fee);

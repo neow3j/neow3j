@@ -47,6 +47,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the block hash.
      * @return the block with the given hash or {@code null} if it doesn't exist.
      */
+    @CallFlags(ReadStates)
     public native Block getBlock(Hash256 hash);
 
     /**
@@ -55,6 +56,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the transaction with the given hash or {@code null} if it doesn't exist.
      */
+    @CallFlags(ReadStates)
     public native Transaction getTransaction(Hash256 hash);
 
     /**
@@ -74,6 +76,7 @@ public class LedgerContract extends ContractInterface {
      * @param index      the transaction index in the block.
      * @return the transaction or {@code null} if it doesn't exist.
      */
+    @CallFlags(ReadStates)
     public native Transaction getTransactionFromBlock(int blockIndex, int index);
 
     /**
@@ -82,6 +85,7 @@ public class LedgerContract extends ContractInterface {
      * @param txHash the transaction hash.
      * @return the signers of the transaction with the specified hash.
      */
+    @CallFlags(ReadStates)
     public native Signer[] getTransactionSigners(Hash256 txHash);
 
     /**
@@ -92,6 +96,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the transaction's VM state.
      */
+    @CallFlags(ReadStates)
     public native byte getTransactionVMState(Hash256 hash);
 
     /**
@@ -100,6 +105,7 @@ public class LedgerContract extends ContractInterface {
      * @param hash the transaction hash.
      * @return the block index.
      */
+    @CallFlags(ReadStates)
     public native int getTransactionHeight(Hash256 hash);
 
 }
