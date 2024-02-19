@@ -3,6 +3,7 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 import static io.neow3j.devpack.constants.CallFlags.States;
 
@@ -144,7 +145,7 @@ public class PolicyContract extends ContractInterface {
      * Sets the GAS fee for the given attribute type.
      *
      * @param attributeType the attribute type.
-     * @param fee the GAS fee.
+     * @param fee           the GAS fee.
      */
     @CallFlags(States)
     public native void setAttributeFee(byte attributeType, int fee);

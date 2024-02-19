@@ -6,6 +6,7 @@ import io.neow3j.devpack.Signer;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 
 /**

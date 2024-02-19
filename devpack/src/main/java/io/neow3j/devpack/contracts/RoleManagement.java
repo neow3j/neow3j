@@ -4,6 +4,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.constants.Role;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 import static io.neow3j.devpack.constants.CallFlags.States;
 import static io.neow3j.devpack.constants.CallFlags.AllowNotify;

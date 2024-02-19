@@ -6,6 +6,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.States;
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
@@ -43,7 +44,7 @@ public class ContractManagement extends ContractInterface {
     public native Contract getContractById(int id);
 
     /**
-     * Gets the ids and hashes of all non native deployed contracts.
+     * Gets the ids and hashes of all non-native deployed contracts.
      * <p>
      * Each iterator entry is a struct with the id and the contract hash.
      * <p>
@@ -55,7 +56,7 @@ public class ContractManagement extends ContractInterface {
      * int idAsInt = new ByteString(id).toInt();
      * </pre>
      *
-     * @return an iterator of the ids and hashes of all non native deployed contracts.
+     * @return an iterator of the ids and hashes of all non-native deployed contracts.
      */
     @CallFlags(ReadStates)
     public native Iterator<Iterator.Struct<ByteString, Hash160>> getContractHashes();
@@ -127,7 +128,7 @@ public class ContractManagement extends ContractInterface {
     public native void destroy();
 
     /**
-     * @return the minumum deployment fee.
+     * @return the minimum deployment fee.
      */
     @CallFlags(ReadStates)
     public native int getMinimumDeploymentFee();

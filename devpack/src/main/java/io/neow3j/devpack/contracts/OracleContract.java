@@ -2,8 +2,10 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.States;
+
 /**
  * Represents an interface to the native OracleContract that provides oracle services.
  */

@@ -6,6 +6,7 @@ import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
+
 import static io.neow3j.devpack.constants.CallFlags.States;
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 
