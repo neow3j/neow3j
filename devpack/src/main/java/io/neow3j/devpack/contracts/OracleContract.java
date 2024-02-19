@@ -1,6 +1,10 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
+import static io.neow3j.devpack.constants.CallFlags.States;
 
 /**
  * Represents an interface to the native OracleContract that provides oracle services.
@@ -49,6 +53,7 @@ public class OracleContract extends ContractInterface {
      * @param userData       additional data.
      * @param gasForResponse the GAS amount to pay for the oracle response.
      */
+    @CallFlags(States | AllowNotify)
     public native void request(String url, String filter, String callback, Object userData, int gasForResponse);
 
 }

@@ -5,6 +5,12 @@ import io.neow3j.devpack.Contract;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.constants.NativeContract;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
+import static io.neow3j.devpack.constants.CallFlags.States;
+import static io.neow3j.devpack.constants.CallFlags.ReadStates;
+import static io.neow3j.devpack.constants.CallFlags.All;
 
 /**
  * Represents an interface to the native ContractManagement contract that is used to manage all deployed smart
@@ -25,6 +31,7 @@ public class ContractManagement extends ContractInterface {
      * @param hash the contract's script hash.
      * @return the contract.
      */
+    @CallFlags(ReadStates)
     public native Contract getContract(Hash160 hash);
 
     /**
@@ -33,10 +40,11 @@ public class ContractManagement extends ContractInterface {
      * @param id the contract id.
      * @return the contract.
      */
+    @CallFlags(ReadStates)
     public native Contract getContractById(int id);
 
     /**
-     * Gets the ids and hashes of all non native deployed contracts.
+     * Gets the ids and hashes of all non-native deployed contracts.
      * <p>
      * Each iterator entry is a struct with the id and the contract hash.
      * <p>
@@ -48,8 +56,9 @@ public class ContractManagement extends ContractInterface {
      * int idAsInt = new ByteString(id).toInt();
      * </pre>
      *
-     * @return an iterator of the ids and hashes of all non native deployed contracts.
+     * @return an iterator of the ids and hashes of all non-native deployed contracts.
      */
+    @CallFlags(ReadStates)
     public native Iterator<Iterator.Struct<ByteString, Hash160>> getContractHashes();
 
     /**
@@ -60,6 +69,7 @@ public class ContractManagement extends ContractInterface {
      * @param paramCount   the number of parameters.
      * @return true if the method exists. False otherwise.
      */
+    @CallFlags(ReadStates)
     public native boolean hasMethod(Hash160 contractHash, String method, int paramCount);
 
     /**
@@ -69,6 +79,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest the manifest of the contract to deploy.
      * @return the deployed {@code Contract}.
      */
+    @CallFlags(All)
     public native Contract deploy(ByteString nefFile, String manifest);
 
     /**
@@ -79,6 +90,7 @@ public class ContractManagement extends ContractInterface {
      * @param data     data that is passed on to the {@code _deploy} method of the deployed contract if it exists.
      * @return the deployed {@code Contract}.
      */
+    @CallFlags(All)
     public native Contract deploy(ByteString nefFile, String manifest, Object data);
 
     /**
@@ -90,6 +102,7 @@ public class ContractManagement extends ContractInterface {
      * @param nefFile  the updated NEF file of the contract.
      * @param manifest the updated manifest of the contract.
      */
+    @CallFlags(All)
     public native void update(ByteString nefFile, String manifest);
 
     /**
@@ -102,6 +115,7 @@ public class ContractManagement extends ContractInterface {
      * @param manifest the updated manifest of the contract.
      * @param data     data passed {@code update} method of the contract being deployed.
      */
+    @CallFlags(All)
     public native void update(ByteString nefFile, String manifest, Object data);
 
     /**
@@ -110,11 +124,13 @@ public class ContractManagement extends ContractInterface {
      * A deployed smart contract cannot be destroyed from the outside. Thus, if the contract should be destroyable,
      * the logic has to be written into the contract during development.
      */
+    @CallFlags(States | AllowNotify)
     public native void destroy();
 
     /**
-     * @return the minumum deployment fee.
+     * @return the minimum deployment fee.
      */
+    @CallFlags(ReadStates)
     public native int getMinimumDeploymentFee();
 
 }
