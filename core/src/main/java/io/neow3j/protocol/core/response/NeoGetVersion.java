@@ -48,16 +48,8 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             return tcpPort;
         }
 
-        public Integer getWSPort() {
-            return wsPort;
-        }
-
         public void setTCPPort(int tcpPort) {
             this.tcpPort = tcpPort;
-        }
-
-        public void setWSPort(int wsPort) {
-            this.wsPort = wsPort;
         }
 
         public Long getNonce() {
@@ -90,7 +82,6 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             }
             NeoVersion that = (NeoVersion) o;
             return Objects.equals(getTCPPort(), that.getTCPPort()) &&
-                    Objects.equals(getWSPort(), that.getWSPort()) &&
                     Objects.equals(getNonce(), that.getNonce()) &&
                     Objects.equals(getUserAgent(), that.getUserAgent()) &&
                     Objects.equals(getProtocol(), that.getProtocol());
@@ -98,7 +89,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTCPPort(), getWSPort(), getNonce(), getUserAgent(),
+            return Objects.hash(getTCPPort(), getNonce(), getUserAgent(),
                     getProtocol());
         }
 
