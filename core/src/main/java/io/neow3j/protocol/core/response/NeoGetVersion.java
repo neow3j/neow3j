@@ -29,9 +29,6 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         @JsonProperty("tcpport")
         private Integer tcpPort;
 
-        @JsonProperty("wsport")
-        private Integer wsPort;
-
         @JsonProperty("nonce")
         private Long nonce;
 
@@ -97,7 +94,6 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         public String toString() {
             return "Result{" +
                     "tcpport=" + tcpPort +
-                    ", wsport=" + wsPort +
                     ", nonce=" + nonce +
                     ", useragent='" + userAgent + '\'' +
                     ", protocol=" + protocol +

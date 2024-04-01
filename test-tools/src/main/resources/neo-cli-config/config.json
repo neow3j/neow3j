@@ -8,8 +8,7 @@
       "Chain": "Consensus_Chain_{0}"
     },
     "P2P": {
-      "Port": 40333,
-      "WsPort": 40334
+      "Port": 40333
     },
     "UnlockWallet": {
       "Path": "wallet.json",
