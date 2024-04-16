@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.OpCode;
 
 /**
  * The rule used to describe the scope of the witness.

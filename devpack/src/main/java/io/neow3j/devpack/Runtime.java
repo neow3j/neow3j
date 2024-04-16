@@ -2,16 +2,16 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.TriggerType;
-import io.neow3j.script.InteropService;
+import io.neow3j.devpack.constants.InteropService;
 
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_CHECKWITNESS;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GASLEFT;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GETINVOCATIONCOUNTER;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GETNOTIFICATIONS;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GETTIME;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_GETTRIGGER;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_LOG;
-import static io.neow3j.script.InteropService.SYSTEM_RUNTIME_PLATFORM;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_CHECKWITNESS;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_GASLEFT;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_GETINVOCATIONCOUNTER;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_GETNOTIFICATIONS;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_GETTIME;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_GETTRIGGER;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_LOG;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_RUNTIME_PLATFORM;
 
 /**
  * Provides a set of general methods for usage in smart contracts.

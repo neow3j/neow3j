@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.OpCode;
 
 /**
  * A notification consists of a script hash (the sender of the notification) as a {@link Hash160} and content itself

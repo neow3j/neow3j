@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.OpCode;
 
 /**
  * Represents a block and provides block-related information. It is returned for example when calling

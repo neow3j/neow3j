@@ -1,9 +1,9 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.OpCode;
 
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_ASREADONLY;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_ASREADONLY;
 
 /**
  * A {@code StorageContext} is the gateway to a contract's storage. It can be passed to other contracts as an
