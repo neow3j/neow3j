@@ -23,7 +23,7 @@ public enum InteropService {
      */
     SYSTEM_CONTRACT_CALL,
 
-    // This is for internal use only.
+    // Not meant to be used by non-native smart contracts. Thus, not exposed in the devpack, but here for completeness.
     // SYSTEM_CONTRACT_CALLNATIVE,
 
     /**
@@ -41,10 +41,10 @@ public enum InteropService {
      */
     SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT,
 
-    // This is for internal use only
+    // Not meant to be used by non-native smart contracts. Thus, not exposed in the devpack, but here for completeness.
     // SYSTEM_CONTRACT_NATIVEONPERSIST,
 
-    // This is for internal use only
+    // Not meant to be used by non-native smart contracts. Thus, not exposed in the devpack, but here for completeness.
     // SYSTEM_CONTRACT_NATIVEPOSTPERSIST,
 
     /**
