@@ -72,7 +72,7 @@ public class StringConcatenationTest {
         assertThat(instructions.get(17).getOpcode(), is(OpCode.CALL_L));
         assertThat(instructions.get(22).getOpcode(), is(OpCode.CAT));
         assertThat(instructions.get(23).getOpcode(), is(OpCode.CONVERT));
-        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING_CODE}));
+        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING.byteValue()}));
         assertThat(instructions.get(25).getOpcode(), is(OpCode.RET));
     }
 
@@ -103,7 +103,7 @@ public class StringConcatenationTest {
         assertThat(instructions.get(17).getOpcode(), is(OpCode.CALL_L));
         assertThat(instructions.get(22).getOpcode(), is(OpCode.CAT));
         assertThat(instructions.get(23).getOpcode(), is(OpCode.CONVERT));
-        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING_CODE}));
+        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING.byteValue()}));
         assertThat(instructions.get(25).getOpcode(), is(OpCode.RET));
     }
 
@@ -134,7 +134,7 @@ public class StringConcatenationTest {
         assertThat(instructions.get(17).getOpcode(), is(OpCode.CALL_L));
         assertThat(instructions.get(22).getOpcode(), is(OpCode.CAT));
         assertThat(instructions.get(23).getOpcode(), is(OpCode.CONVERT));
-        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING_CODE}));
+        assertThat(instructions.get(23).getOperand(), is(new byte[]{StackItemType.BYTE_STRING.byteValue()}));
         assertThat(instructions.get(25).getOpcode(), is(OpCode.RET));
     }
 
