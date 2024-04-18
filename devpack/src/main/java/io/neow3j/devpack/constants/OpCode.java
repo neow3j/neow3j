@@ -1,10 +1,14 @@
 package io.neow3j.devpack.constants;
 
 /**
- * This enum contains a <b>subset</b> of NeoVM opcodes.
+ * NeoVM opcodes.
  * <p>
- * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/Neo.VM/OpCode.cs">here</a> for a complete list.
+ * See the OpCode class in the NeoVM
+ * <a href="https://github.com/neo-project/neo/blob/master/src/Neo.VM/OpCode.cs">C# implementation</a>
+ * for the actual byte values of the opcodes.
  */
+// This enum can also be found in the neow3j core module (io.neow3j.script.OpCode). Make sure to update it here and in
+// the core, when things change.
 public enum OpCode {
 
     // region Constants

@@ -11,6 +11,8 @@ import static java.lang.String.format;
  * <p>
  * See <a href="https://github.com/neo-project/neo-vm/blob/master/src/Neo.VM/OpCode.cs">here</a> for a complete list.
  */
+// This enum can also be found in the neow3j devpack module (io.neow3j.devpack.constants.OpCode). Make sure to update it
+// here and in the core, when things change.
 public enum OpCode {
 
     // region Constants
