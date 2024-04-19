@@ -1,8 +1,8 @@
 package io.neow3j.devpack.annotations;
 
 import io.neow3j.devpack.annotations.Instruction.Instructions;
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.InteropService;
+import io.neow3j.devpack.constants.OpCode;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;

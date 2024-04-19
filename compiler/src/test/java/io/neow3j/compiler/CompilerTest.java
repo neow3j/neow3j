@@ -180,14 +180,14 @@ public class CompilerTest {
 
     static class InstructionAnnotationWithOperandPrefixAndOperandContract {
 
-        @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = 0x03, operand = {0x01, 0x02, 0x03})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.PUSHDATA1, operandPrefix = 0x03, operand = {0x01, 0x02, 0x03})
         public static native void annotatedMethod();
 
     }
 
     static class InstructionAnnotationWithOperandContract {
 
-        @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.PUSHINT16, operand = {0x22, 0x33})
         public static native void annotatedMethod();
 
     }

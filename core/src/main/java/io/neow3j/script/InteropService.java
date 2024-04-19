@@ -12,6 +12,8 @@ import static java.lang.String.format;
  * Enumerates all the interoperability services that a neo-node should provide to the NeoVM execution environment.
  * These services can be used in smart contract code via the {@link OpCode#SYSCALL} instruction.
  */
+// This enum can also be found in the neow3j devpack module (io.neow3j.devpack.constants.InteropService). Make sure to
+// update it here and in the core, when things change.
 public enum InteropService {
 
     SYSTEM_CRYPTO_CHECKSIG("System.Crypto.CheckSig", 1 << 15),
@@ -40,14 +42,6 @@ public enum InteropService {
     SYSTEM_RUNTIME_CHECKWITNESS("System.Runtime.CheckWitness", 1 << 10),
     SYSTEM_RUNTIME_GETINVOCATIONCOUNTER("System.Runtime.GetInvocationCounter", 1 << 4),
     SYSTEM_RUNTIME_LOG("System.Runtime.Log", 1 << 15),
-
-    /**
-     * This syscall is used to fire events. It consumes the top stack item as event name, and another array stack item
-     * that contains the event's state entries. When using this interoperability service manually in the devpack (i.e.,
-     * in {@code Instruction} annotations), note, that the event name that is read from the stack MUST
-     * exist in the contract manifest's ABI. Otherwise, the NeoVM will exit with an error as soon as it reaches
-     * this syscall.
-     */
     SYSTEM_RUNTIME_NOTIFY("System.Runtime.Notify", 1 << 15),
     SYSTEM_RUNTIME_GETNOTIFICATIONS("System.Runtime.GetNotifications", 1 << 12),
     SYSTEM_RUNTIME_GASLEFT("System.Runtime.GasLeft", 1 << 4),
