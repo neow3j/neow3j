@@ -152,6 +152,11 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETRANDOM,
 
     /**
+     * Gets the address version of the current network.
+     */
+    SYSTEM_RUNTIME_GETADDRESSVERSION,
+
+    /**
      * Gets the storage context for the current contract.
      */
     SYSTEM_STORAGE_GETCONTEXT,
