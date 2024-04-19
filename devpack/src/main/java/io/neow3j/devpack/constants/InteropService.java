@@ -147,11 +147,6 @@ public enum InteropService {
     SYSTEM_RUNTIME_GETNETWORK,
 
     /**
-     * Gets the address version of the current network.
-     */
-    SYSTEM_RUNTIME_GETADDRESSVERSION,
-
-    /**
      * Gets the next random number.
      */
     SYSTEM_RUNTIME_GETRANDOM,
