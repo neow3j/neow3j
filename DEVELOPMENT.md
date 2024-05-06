@@ -35,7 +35,7 @@ dependencies {
 To use the snapshot version of the `gradle-plugin` in your project, add the following to the `settings.gradle` file. It
 tells Gradle to use the Sonatype Snapshot repository as a plugin repository.
 
-```properties
+```groovy
 pluginManagement {
     repositories {
         maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
@@ -96,7 +96,7 @@ dependencies {
 To use local release of the `gradle-plugin` in your project, add the following to the `settings.gradle` file. It
 tells Gradle to use your local Maven repository as a plugin repository first.
 
-```properties
+```groovy
 pluginManagement {
     repositories {
         mavenLocal()
