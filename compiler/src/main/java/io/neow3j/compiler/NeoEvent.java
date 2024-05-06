@@ -56,7 +56,9 @@ public class NeoEvent {
                     .collect(Collectors.toList());
             // After the lambda, all parameter names should have been used, i.e., the atomic int paramNr should now be
             // equal to the number of parameters.
-            if (paramNames.size() != paramNr.get()) {
+            assert paramNames.size() >= paramNr.get() : "The size of the parameter names list should be greater or " +
+                    "equal to the current atomic int value.";
+            if (paramNames.size() > paramNr.get()) {
                 throw new CompilerException(format("Too many parameter names provided for event %s.", displayName));
             }
         } else {
