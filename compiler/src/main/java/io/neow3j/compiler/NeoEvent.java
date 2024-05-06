@@ -1,9 +1,12 @@
 package io.neow3j.compiler;
 
+import io.neow3j.devpack.annotations.EventParameterNames;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.utils.ClassUtils;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,6 +17,7 @@ import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 
 import static io.neow3j.compiler.AsmHelper.extractTypeParametersFromSignature;
+import static java.lang.String.format;
 
 public class NeoEvent {
 
@@ -25,17 +29,45 @@ public class NeoEvent {
     private final FieldNode asmVariable;
 
     public NeoEvent(FieldNode asmVariable, ClassNode owner) {
-        Optional<AnnotationNode> annOpt = AsmHelper.getAnnotationNode(asmVariable, DisplayName.class);
-        if (annOpt.isPresent()) {
-            displayName = (String) annOpt.get().values.get(1);
+        Optional<AnnotationNode> displayNameAnnOpt = AsmHelper.getAnnotationNode(asmVariable, DisplayName.class);
+        if (displayNameAnnOpt.isPresent()) {
+            displayName = (String) displayNameAnnOpt.get().values.get(1);
         } else {
             displayName = asmVariable.name;
         }
 
-        AtomicInteger argNr = new AtomicInteger(1);
-        params = extractTypeParametersFromSignature(asmVariable).stream()
-                .map(t -> new Param(PARAM_NAME_PREFIX + argNr.getAndIncrement(), Type.getType(t)))
-                .collect(Collectors.toList());
+        Optional<AnnotationNode> paramNamesAnnOpt = AsmHelper.getAnnotationNode(asmVariable, EventParameterNames.class);
+        if (paramNamesAnnOpt.isPresent()) {
+            List<Object> eventParamNameValues = paramNamesAnnOpt.get().values;
+            assert eventParamNameValues.size() >= 2 : "The EventParameterNames annotation should never have less than" +
+                    " 2 entries.";
+            ArrayList paramNames = (ArrayList) eventParamNameValues.get(1);
+
+            AtomicInteger paramNr = new AtomicInteger(0);
+            params = extractTypeParametersFromSignature(asmVariable).stream()
+                    .map(t -> {
+                        // Check if there are enough parameter names provided for the event.
+                        if (paramNames.size() < paramNr.get() + 1) {
+                            throw new CompilerException(format("Not enough parameter names provided for event %s.",
+                                    displayName));
+                        }
+                        return new Param((String) paramNames.get(paramNr.getAndIncrement()), Type.getType(t));
+                    })
+                    .collect(Collectors.toList());
+            // After the lambda, all parameter names should have been used, i.e., the atomic int paramNr should now be
+            // equal to the number of parameters.
+            assert paramNames.size() >= paramNr.get() : "The size of the parameter names list should be greater or " +
+                    "equal to the current atomic int value.";
+            if (paramNames.size() > paramNr.get()) {
+                throw new CompilerException(format("Too many parameter names provided for event %s.", displayName));
+            }
+        } else {
+            // Add the parameters with default names based on their position in the parameter list.
+            AtomicInteger argNr = new AtomicInteger(1);
+            params = extractTypeParametersFromSignature(asmVariable).stream()
+                    .map(t -> new Param(PARAM_NAME_PREFIX + argNr.getAndIncrement(), Type.getType(t)))
+                    .collect(Collectors.toList());
+        }
 
         namespace = ClassUtils.getFullyQualifiedNameForInternalName(owner.name);
         this.asmVariable = asmVariable;

@@ -3,6 +3,7 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.annotations.EventParameterNames;
 import io.neow3j.devpack.contracts.PolicyContract;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
@@ -19,8 +20,10 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.util.List;
 
+import static io.neow3j.types.ContractParameter.bool;
 import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -105,12 +108,29 @@ public class ContractEventsIntegrationTest {
         assertThat(notification.getState().getList().get(0).getAddress(), is("NXq2KbEeaSGaKcjkMgErcpWspGZqkSTWVA"));
     }
 
+    @Test
+    public void fireEventWithParameterNames() throws Throwable {
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution(testName, string("John"), bool(true));
+        NeoApplicationLog log = ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog();
+        List<NeoApplicationLog.Execution> executions = log.getExecutions();
+        assertThat(executions, hasSize(1));
+        List<Notification> notifications = executions.get(0).getNotifications();
+        Notification event = notifications.get(0);
+        List<StackItem> state = event.getState().getList();
+        assertThat(state.get(0).getString(), is("John"));
+        assertThat(state.get(1).getBoolean(), is(true));
+    }
+
     static class ContractEventsIntegrationTestContract {
 
         private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
         private static Event5Args<String, Integer, Boolean, String, Object> event2;
+
+        @DisplayName("Result")
+        @EventParameterNames({"Name", "Certified"})
+        private static Event2Args<String, Boolean> onCreate;
 
         private static Event3Args<byte[], byte[], int[]> event3;
 
@@ -128,6 +148,10 @@ public class ContractEventsIntegrationTest {
 
         public static void fireEventWithMethodReturnValueAsArgument() {
             event4.fire(new PolicyContract().getFeePerByte(), new PolicyContract().getExecFeeFactor());
+        }
+
+        public static void fireEventWithParameterNames(String name, Boolean certified) {
+            onCreate.fire(name, certified);
         }
 
         public static void fireEvent(byte[] from, byte[] to, int i) {
