@@ -15,17 +15,17 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
     static final String WALLET_FILE_SOURCE = CONFIG_BASE_DIR + "wallet.json";
     static final String WALLET_FILE_DESTINATION = "/neo-cli/wallet.json";
     static final String RPCCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "rpcserver.config.json";
-    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/config.json";
+    static final String RPCCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/RpcServer/RpcServer.json";
     static final String DBFTCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "dbft.config.json";
-    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/config.json";
+    static final String DBFTCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/DBFTPlugin/DBFTPlugin.json";
     static final String ORACLECONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "oracle.config.json";
-    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/config.json";
+    static final String ORACLECONFIG_FILE_DESTINATION = "/neo-cli/Plugins/OracleService/OracleService.json";
     static final String APPLOGSCONFIG_FILE_SOURCE = CONFIG_BASE_DIR + "applicationlogs.config.json";
-    static final String APPLOGSCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/ApplicationLogs/config.json";
+    static final String APPLOGSCONFIG_FILE_DESTINATION = "/neo-cli/Plugins/ApplicationLogs/ApplicationLogs.json";
     static final String TOKEN_TRACKER_FILE_SOURCE = CONFIG_BASE_DIR + "tokentracker.config.json";
-    static final String RPCNEP17TRACKER_FILE_DESTINATION = "/neo-cli/Plugins/TokensTracker/config.json";
+    static final String RPCNEP17TRACKER_FILE_DESTINATION = "/neo-cli/Plugins/TokensTracker/TokensTracker.json";
     static final String STATE_SERVICE_FILE_SOURCE = CONFIG_BASE_DIR + "stateservice.config.json";
-    static final String STATE_SERVICE_FILE_DESTINATION = "/neo-cli/Plugins/StateService/config.json";
+    static final String STATE_SERVICE_FILE_DESTINATION = "/neo-cli/Plugins/StateService/StateService.json";
 
     // This is the port of one of the .NET nodes which is exposed internally by the container.
     static final int EXPOSED_JSONRPC_PORT = 40332;
