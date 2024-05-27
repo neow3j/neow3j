@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.StackItemType;
+import io.neow3j.devpack.constants.OpCode;
+import io.neow3j.devpack.constants.StackItemType;
 
 /**
  * Provides helper methods to be used in a smart contract.
@@ -58,7 +58,7 @@ public class Helper {
      * @param source the string to convert.
      * @return the converted byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] toByteArray(String source);
 
     /**
@@ -73,7 +73,7 @@ public class Helper {
      * @param value the value to convert.
      * @return the converted byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] toByteArray(int value);
 
     /**
@@ -147,7 +147,7 @@ public class Helper {
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x03)
     @Instruction(opcode = OpCode.ABORT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native int toInteger(byte[] source);
 
     /**
@@ -165,7 +165,7 @@ public class Helper {
      * @param source the byte array to cast.
      * @return the string.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native static String toString(byte[] source);
 
     /**
@@ -232,7 +232,7 @@ public class Helper {
      * @return the defined range of the given string.
      */
     @Instruction(opcode = OpCode.SUBSTR)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public static native String range(String source, int index, int n);
 
     /**
@@ -264,7 +264,7 @@ public class Helper {
      * @return the first n characters.
      */
     @Instruction(opcode = OpCode.LEFT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public static native String take(String source, int n);
 
     /**
@@ -285,7 +285,7 @@ public class Helper {
      * @return the last n characters.
      */
     @Instruction(opcode = OpCode.RIGHT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public static native String last(String source, int n);
 
     /**

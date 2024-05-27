@@ -1,7 +1,7 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.InteropService;
+import io.neow3j.devpack.constants.InteropService;
 
 /**
  * Offers cryptographic functions for use in smart contracts.

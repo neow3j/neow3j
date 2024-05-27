@@ -2,15 +2,15 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.FindOptions;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.StackItemType;
+import io.neow3j.devpack.constants.OpCode;
+import io.neow3j.devpack.constants.StackItemType;
 
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_DELETE;
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_FIND;
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GET;
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GETCONTEXT;
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_GETREADONLYCONTEXT;
-import static io.neow3j.script.InteropService.SYSTEM_STORAGE_PUT;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_DELETE;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_FIND;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_GET;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_GETCONTEXT;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_GETREADONLYCONTEXT;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_PUT;
 
 /**
  * Provides a set of methods to insert, query, and delete data in the persistent storage of smart contracts.
@@ -96,7 +96,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] getByteArray(StorageContext context, byte[] key);
 
     /**
@@ -138,7 +138,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getInt(StorageContext context, byte[] key);
 
     /**
@@ -161,7 +161,7 @@ public class Storage {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getIntOrZero(StorageContext context, byte[] key);
 
     // endregion get bytearray key
@@ -227,7 +227,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] getByteArray(StorageContext context, ByteStringType key);
 
     /**
@@ -269,7 +269,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getInt(StorageContext context, ByteStringType key);
 
     /**
@@ -292,7 +292,7 @@ public class Storage {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getIntOrZero(StorageContext context, ByteStringType key);
 
     // endregion get bytestring key
@@ -358,7 +358,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] getByteArray(StorageContext context, String key);
 
     /**
@@ -400,7 +400,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getInt(StorageContext context, String key);
 
     /**
@@ -423,7 +423,7 @@ public class Storage {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getIntOrZero(StorageContext context, String key);
 
     // endregion get string key
@@ -489,7 +489,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public static native byte[] getByteArray(StorageContext context, int key);
 
     /**
@@ -531,7 +531,7 @@ public class Storage {
      */
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(interopService = SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getInt(StorageContext context, int key);
 
     /**
@@ -554,7 +554,7 @@ public class Storage {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public static native Integer getIntOrZero(StorageContext context, int key);
 
     // endregion

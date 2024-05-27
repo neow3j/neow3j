@@ -70,9 +70,9 @@ public class Hash {
      * @param hexInput hex-encoded input data with optional 0x prefix.
      * @return hash value as hex-encoded string.
      */
-    public static String sha3(String hexInput) {
+    public static String keccak256(String hexInput) {
         byte[] bytes = Numeric.hexStringToByteArray(hexInput);
-        byte[] result = sha3(bytes);
+        byte[] result = keccak256(bytes);
         return toHexString(result);
     }
 
@@ -84,7 +84,7 @@ public class Hash {
      * @param length the length of the data.
      * @return the hash value.
      */
-    public static byte[] sha3(byte[] input, int offset, int length) {
+    public static byte[] keccak256(byte[] input, int offset, int length) {
         Keccak.DigestKeccak kecc = new Keccak.Digest256();
         kecc.update(input, offset, length);
         return kecc.digest();
@@ -96,8 +96,8 @@ public class Hash {
      * @param input the binary encoded input data.
      * @return the hash value.
      */
-    public static byte[] sha3(byte[] input) {
-        return sha3(input, 0, input.length);
+    public static byte[] keccak256(byte[] input) {
+        return keccak256(input, 0, input.length);
     }
 
     /**
@@ -106,8 +106,8 @@ public class Hash {
      * @param utf8String a UTF-8 encoded string.
      * @return the hash value as hex-encoded string.
      */
-    public static String sha3String(String utf8String) {
-        return toHexString(sha3(utf8String.getBytes(StandardCharsets.UTF_8)));
+    public static String keccak256String(String utf8String) {
+        return toHexString(keccak256(utf8String.getBytes(StandardCharsets.UTF_8)));
     }
 
     /**

@@ -2,9 +2,9 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.FindOptions;
-import io.neow3j.script.InteropService;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.StackItemType;
+import io.neow3j.devpack.constants.InteropService;
+import io.neow3j.devpack.constants.OpCode;
+import io.neow3j.devpack.constants.StackItemType;
 
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
@@ -174,7 +174,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] getByteArray(byte[] key);
 
     /**
@@ -232,7 +232,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getInt(byte[] key);
 
     /**
@@ -262,7 +262,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getIntOrZero(byte[] key);
 
     // endregion
@@ -360,7 +360,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] getByteArray(ByteStringType key);
 
     /**
@@ -420,7 +420,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getInt(ByteStringType key);
 
     /**
@@ -450,7 +450,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getIntOrZero(ByteStringType key);
 
     // endregion get bytestring key
@@ -549,7 +549,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] getByteArray(String key);
 
     /**
@@ -609,7 +609,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getInt(String key);
 
     /**
@@ -639,7 +639,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getIntOrZero(String key);
 
     // endregion
@@ -738,7 +738,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] getByteArray(int key);
 
     /**
@@ -798,7 +798,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.PICKITEM)
     @Instruction(interopService = InteropService.SYSTEM_STORAGE_GET)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getInt(int key);
 
     /**
@@ -828,7 +828,7 @@ public class StorageMap {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native Integer getIntOrZero(int key);
 
     // endregion

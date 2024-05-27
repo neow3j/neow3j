@@ -350,22 +350,22 @@ public class CompilerExceptionsTest {
     }
 
     static class InstructionAnnotationWithWrongSizeOperandContract {
-        @Instruction(opcode = OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.PUSHINT16, operand = {0x22, 0x33, 0x44})
         public static native void annotatedMethod();
     }
 
     static class InstructionAnnotationWithWrongSizeOperandPrefixContract {
-        @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = {0x00, 0x03}, operand = {0x11, 0x22, 0x33})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.PUSHDATA1, operandPrefix = {0x00, 0x03}, operand = {0x11, 0x22, 0x33})
         public static native void annotatedMethod();
     }
 
     static class InstructionAnnotationWithWrongSizeOperandAccordingToCorrectPrefixContract {
-        @Instruction(opcode = OpCode.PUSHDATA1, operandPrefix = {0x01}, operand = {0x11, 0x22})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.PUSHDATA1, operandPrefix = {0x01}, operand = {0x11, 0x22})
         public static native void annotatedMethod();
     }
 
     static class InstructionAnnotationWithOpcodeThatDoesntTakeAnOperand {
-        @Instruction(opcode = OpCode.ASSERT, operand = {0x11, 0x22})
+        @Instruction(opcode = io.neow3j.devpack.constants.OpCode.ASSERT, operand = {0x11, 0x22})
         public static native void annotatedMethod();
     }
 

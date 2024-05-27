@@ -2,10 +2,10 @@ package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.constants.CallFlags;
-import io.neow3j.script.OpCode;
+import io.neow3j.devpack.constants.OpCode;
 
-import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_CALL;
-import static io.neow3j.script.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_CONTRACT_CALL;
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_CONTRACT_GETCALLFLAGS;
 
 /**
  * Represents a Neo smart contract and provides several contract-related methods for use in smart contracts.

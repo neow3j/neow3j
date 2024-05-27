@@ -9,6 +9,8 @@ import java.util.List;
 
 import static java.lang.String.format;
 
+// This enum can also be found in the neow3j devpack module (io.neow3j.devpack.constants.WitnessScope). Make sure to update
+// it here and in the core, when things change.
 public enum WitnessScope {
 
     /**

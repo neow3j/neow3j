@@ -34,7 +34,7 @@ public class NeoModule {
 
     // Holds this module's events. The keys are the variable names used when defining the events in the smart
     // contract class.
-    private final Map<String, NeoEvent> events = new HashMap<>();
+    private final List<NeoEvent> events = new ArrayList<>();
 
     // An ordered list of static method calls that are referenced by their index in this list. Used in CALLT
     // instructions.
@@ -45,7 +45,7 @@ public class NeoModule {
     private Map<String, NeoContractVariable> contractVariables = new HashMap<>();
 
     public List<NeoEvent> getEvents() {
-        return new ArrayList<>(events.values());
+        return events;
     }
 
     /**
@@ -54,7 +54,6 @@ public class NeoModule {
     public List<NeoContractVariable> getContractVariables() {
         return new ArrayList<>(contractVariables.values());
     }
-
 
     /**
      * Gets the corresponding contract variable for the variable found in the given instruction.
@@ -146,11 +145,11 @@ public class NeoModule {
     }
 
     public void addEvent(NeoEvent event) {
-        if (events.containsKey(event.getDisplayName())) {
+        if (events.stream().anyMatch(e -> e.getDisplayName().equals(event.getDisplayName()))) {
             throw new CompilerException(format("Two events with the name '%s' are defined. Make sure that every event" +
                     " has a different name.", event.getDisplayName()));
         }
-        events.put(event.getDisplayName(), event);
+        events.add(event);
     }
 
     void finalizeModule() {
@@ -209,7 +208,7 @@ public class NeoModule {
 
     /**
      * Concatenates all of this module's methods together into one script. Should only be called after
-     * {@link NeoModule#finalizeModule()} becuase otherwise the {@link NeoModule#sortedMethods} is not yet initialized.
+     * {@link NeoModule#finalizeModule()} because otherwise the {@link NeoModule#sortedMethods} is not yet initialized.
      */
     byte[] toByteArray() {
         ByteBuffer b = ByteBuffer.allocate(byteSize());

@@ -5,13 +5,16 @@ import io.neow3j.compiler.sourcelookup.MockSourceContainer;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.annotations.DisplayName;
+import io.neow3j.devpack.annotations.EventParameterNames;
 import io.neow3j.devpack.events.Event1Arg;
 import io.neow3j.devpack.events.Event2Args;
+import io.neow3j.devpack.events.Event3Args;
 import io.neow3j.devpack.events.Event5Args;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractManifest.ContractABI.ContractEvent;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
+import io.neow3j.types.Hash256;
 import org.junit.jupiter.api.Test;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
@@ -28,6 +31,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class ContractEventsTest {
 
@@ -147,13 +151,13 @@ public class ContractEventsTest {
 
     public static class ContractEventsTestContract {
 
-        @DisplayName("EventWithoutParameters")
-        private static io.neow3j.devpack.events.Event event0;
-
         private static Event2Args<String, Integer> event1;
 
         @DisplayName("displayName")
         private static Event5Args<String, Integer, Boolean, String, Object> event2;
+
+        @DisplayName("EventWithoutParameters")
+        private static io.neow3j.devpack.events.Event event0;
 
         public static void main() {
             event0.fire();
@@ -187,6 +191,138 @@ public class ContractEventsTest {
         public static void fireEvent() {
             onCall.fire(contractOwner());
         }
+    }
+
+    @Test
+    public void testTwoEventsWithSameDisplayName() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(TwoEventsWithSameDisplayName.class.getName()));
+        assertThat(thrown.getMessage(), is("Two events with the name 'SameName' are defined. Make sure that every " +
+                "event has a different name."));
+    }
+
+    static class TwoEventsWithSameDisplayName {
+        @DisplayName("SameName")
+        public static Event1Arg<String> event1;
+
+        @DisplayName("SameName")
+        public static Event1Arg<String> event2;
+    }
+
+    @Test
+    public void testEventParameterNames() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(EventParameterNamesContract.class.getName());
+
+        List<ContractManifest.ContractABI.ContractEvent> events = compUnit.getManifest().getAbi().getEvents();
+        assertThat(events, hasSize(3));
+        assertThat(events.get(0).getName(), is("First"));
+        assertThat(events.get(0).getParameters(), hasSize(1));
+        assertThat(events.get(0).getParameters().get(0).getName(), is("Name"));
+
+        assertThat(events.get(1).getName(), is("Second"));
+        assertThat(events.get(1).getParameters(), hasSize(2));
+        assertThat(events.get(1).getParameters().get(0).getName(), is("To"));
+        assertThat(events.get(1).getParameters().get(1).getName(), is("Amount"));
+
+        assertThat(events.get(2).getName(), is("Third"));
+        assertThat(events.get(2).getParameters(), hasSize(5));
+        assertThat(events.get(2).getParameters().get(0).getName(), is("Amount"));
+        assertThat(events.get(2).getParameters().get(1).getName(), is("Sender"));
+        assertThat(events.get(2).getParameters().get(2).getName(), is("Hash"));
+        assertThat(events.get(2).getParameters().get(3).getName(), is("Data"));
+        assertThat(events.get(2).getParameters().get(4).getName(), is("Success"));
+    }
+
+    static class EventParameterNamesContract {
+        @DisplayName("First")
+        @EventParameterNames({"Name"})
+        public static Event1Arg<String> onFirstEvent;
+
+        private static final String TO_PARAM = "To";
+
+        @DisplayName("Second")
+        @EventParameterNames({TO_PARAM, "Amount"})
+        public static Event2Args<Hash160, Integer> onSecondEvent;
+
+        @DisplayName("Third")
+        @EventParameterNames({"Amount", "Sender", "Hash", "Data", "Success"})
+        public static Event5Args<Integer, Hash160, Hash256, Object, Boolean> onThirdEvent;
+
+        public static void sayHello() {
+            onFirstEvent.fire("Hello");
+        }
+    }
+
+    @Test
+    public void testEventParameterNamesWithTooManyNames() throws IOException {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(EventParameterNamesContract_TooMany.class.getName()));
+        assertThat(thrown.getMessage(), is("Too many parameter names provided for event Transfer."));
+    }
+
+    static class EventParameterNamesContract_TooMany {
+        @DisplayName("Transfer")
+        @EventParameterNames({"Amount", "Sender", "Hash", "Data", "Success"})
+        public static Event3Args<Integer, Hash160, Hash256> onTransfer;
+    }
+
+    @Test
+    public void testEventParameterNamesWithTooManyNamesButNoneExpected() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(EventParameterNamesContract_TooManyWhenNoneExpected.class.getName()));
+        assertThat(thrown.getMessage(), is("Too many parameter names provided for event Transfer."));
+    }
+
+    static class EventParameterNamesContract_TooManyWhenNoneExpected {
+        @DisplayName("Transfer")
+        @EventParameterNames({"Anything"})
+        public static io.neow3j.devpack.events.Event onTransfer;
+    }
+
+    @Test
+    public void testEventParameterNamesWithNoNameButNoneExpected() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(
+                EventParameterNamesContract_NoneWhenNoneExpected.class.getName());
+        List<ContractEvent> events = compUnit.getManifest().getAbi().getEvents();
+        assertThat(events, hasSize(1));
+        assertThat(events.get(0).getName(), is("Hello"));
+        assertThat(events.get(0).getParameters(), hasSize(0));
+    }
+
+    static class EventParameterNamesContract_NoneWhenNoneExpected {
+        @DisplayName("Hello")
+        @EventParameterNames({})
+        public static io.neow3j.devpack.events.Event onHello;
+
+        public static void sayHello() {
+            onHello.fire();
+        }
+    }
+
+    @Test
+    public void testEventParameterNamesWithTooFewNames() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(EventParameterNamesContract_TooFew.class.getName()));
+        assertThat(thrown.getMessage(), is("Not enough parameter names provided for event Sending."));
+    }
+
+    static class EventParameterNamesContract_TooFew {
+        @DisplayName("Sending")
+        @EventParameterNames({"Amount", "Sender"})
+        public static Event3Args<Integer, Hash160, Hash256> onSending;
+    }
+
+    @Test
+    public void testEventParameterNamesWithNoNames() {
+        CompilerException thrown = assertThrows(CompilerException.class,
+                () -> new Compiler().compile(EventParameterNamesContract_None.class.getName()));
+        assertThat(thrown.getMessage(), is("Not enough parameter names provided for event Call."));
+    }
+
+    static class EventParameterNamesContract_None {
+        @DisplayName("Call")
+        @EventParameterNames({})
+        public static Event3Args<Integer, Hash160, Hash256> onCall;
     }
 
 }

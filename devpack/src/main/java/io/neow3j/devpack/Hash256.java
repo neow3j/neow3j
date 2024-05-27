@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.StackItemType;
+import io.neow3j.devpack.constants.OpCode;
+import io.neow3j.devpack.constants.StackItemType;
 
 /**
  * Represents a hash with length of 256 bit that was created by applying SHA-256 twice. Use this class when working
@@ -34,7 +34,7 @@ public class Hash256 extends ByteStringType {
      *
      * @param buffer the hash as a byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public Hash256(byte[] buffer) {
     }
 
@@ -74,9 +74,9 @@ public class Hash256 extends ByteStringType {
      */
     @Instruction(opcode = OpCode.DUP)
     @Instruction(opcode = OpCode.DUP)
-    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BYTE_STRING)
     @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.ISTYPE, operand = StackItemType.BUFFER)
     @Instruction(opcode = OpCode.BOOLOR)
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.SIZE)
@@ -90,7 +90,7 @@ public class Hash256 extends ByteStringType {
      *
      * @return the byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] toByteArray();
 
     /**

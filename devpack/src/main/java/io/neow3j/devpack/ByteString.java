@@ -1,8 +1,8 @@
 package io.neow3j.devpack;
 
 import io.neow3j.devpack.annotations.Instruction;
-import io.neow3j.script.OpCode;
-import io.neow3j.types.StackItemType;
+import io.neow3j.devpack.constants.OpCode;
+import io.neow3j.devpack.constants.StackItemType;
 
 /**
  * A {@code ByteString} is an immutable byte array. Otherwise, it behaves the same as a normal Java byte array
@@ -33,7 +33,7 @@ public class ByteString extends ByteStringType {
      *
      * @param buffer the byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public ByteString(byte[] buffer) {
     }
 
@@ -43,7 +43,7 @@ public class ByteString extends ByteStringType {
      *
      * @param integer the integer.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public ByteString(int integer) {
     }
 
@@ -82,7 +82,7 @@ public class ByteString extends ByteStringType {
      *
      * @return the byte array.
      */
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BUFFER)
     public native byte[] toByteArray();
 
     /**
@@ -95,7 +95,7 @@ public class ByteString extends ByteStringType {
     @Instruction(opcode = OpCode.ISNULL)
     @Instruction(opcode = OpCode.JMPIFNOT, operand = 0x03)
     @Instruction(opcode = OpCode.ABORT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native int toInt();
 
     /**
@@ -111,7 +111,7 @@ public class ByteString extends ByteStringType {
     @Instruction(opcode = OpCode.DROP)
     @Instruction(opcode = OpCode.PUSH0)
     @Instruction(opcode = OpCode.JMP, operand = 0x04)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.INTEGER)
     public native int toIntOrZero();
 
     /**
@@ -121,7 +121,7 @@ public class ByteString extends ByteStringType {
      * @return the concatenated byte string.
      */
     @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString concat(ByteStringType other);
 
     /**
@@ -131,7 +131,7 @@ public class ByteString extends ByteStringType {
      * @return the concatenated byte string.
      */
     @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString concat(byte[] other);
 
     /**
@@ -143,7 +143,7 @@ public class ByteString extends ByteStringType {
      * @return the concatenated byte string.
      */
     @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString concat(String other);
 
     /**
@@ -153,7 +153,7 @@ public class ByteString extends ByteStringType {
      * @return the concatenated byte string.
      */
     @Instruction(opcode = OpCode.CAT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString concat(int other);
 
     /**
@@ -164,7 +164,7 @@ public class ByteString extends ByteStringType {
      * @return the defined range of the given string.
      */
     @Instruction(opcode = OpCode.SUBSTR)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString range(int index, int n);
 
     /**
@@ -174,7 +174,7 @@ public class ByteString extends ByteStringType {
      * @return the first n bytes.
      */
     @Instruction(opcode = OpCode.LEFT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString take(int n);
 
     /**
@@ -184,7 +184,7 @@ public class ByteString extends ByteStringType {
      * @return the last n bytes.
      */
     @Instruction(opcode = OpCode.RIGHT)
-    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING_CODE)
+    @Instruction(opcode = OpCode.CONVERT, operand = StackItemType.BYTE_STRING)
     public native ByteString last(int n);
 
     /**
