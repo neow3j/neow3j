@@ -52,6 +52,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -286,6 +287,9 @@ public class ContractManagementIntegrationTest {
 
         Hash160 contractHash = SmartContract.calcContractHash(ct.getCommittee().getScriptHash(),
                 res.getNefFile().getCheckSumAsInteger(), res.getManifest().getName());
+        NeoGetContractState contractState = ct.getNeow3j().getContractState(contractHash).send();
+        assertThat(contractState.getError(), nullValue());
+
         SmartContract sc = new SmartContract(contractHash, ct.getNeow3j());
         tx = sc.invokeFunction("destroy")
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
@@ -296,8 +300,8 @@ public class ContractManagementIntegrationTest {
         txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
 
-        NeoGetContractState contractState = ct.getNeow3j().getContractState(contractHash).send();
-        assertThat(contractState.getError().getMessage(), is("Unknown contract"));
+        contractState = ct.getNeow3j().getContractState(contractHash).send();
+        assertThat(contractState.getError(), notNullValue());
     }
 
     @Test
