@@ -63,6 +63,13 @@ public class CryptoLibIntegrationTest {
     }
 
     @Test
+    public void keccak256() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("68656c6c6f20776f726c64"));
+        assertThat(response.getInvocationResult().getFirstStackItem().getHexString(),
+                is("47173285a8d7341e5e972fc677286384f802f8ef42a5ec5f03bbfa254cb01fad"));
+    }
+
+    @Test
     public void verifyWithECDsa() throws IOException {
         String message = "0102030405";
         String pubKey = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
@@ -109,6 +116,10 @@ public class CryptoLibIntegrationTest {
 
         public static ByteString murmur32(ByteString value, int seed) {
             return new CryptoLib().murmur32(value, seed);
+        }
+
+        public static ByteString keccak256(ByteString value) {
+            return new CryptoLib().keccak256(value);
         }
 
         public static boolean verifyWithECDsa(ByteString message, ECPoint pubKey,
