@@ -56,6 +56,15 @@ public class CryptoLib extends ContractInterface {
     public native ByteString murmur32(ByteString data, int seed);
 
     /**
+     * Computes the hash value for the specified byte array using the keccak256 algorithm.
+     *
+     * @param data the input to compute the hash code for.
+     * @return the computed hash.
+     */
+    @CallFlags(None)
+    public native ByteString keccak256(ByteString data);
+
+    /**
      * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code curve}
      * can be one of the curves defined in {@link NamedCurve}.
      *
