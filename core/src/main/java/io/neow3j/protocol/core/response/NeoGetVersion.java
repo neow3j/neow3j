@@ -35,6 +35,9 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         @JsonProperty("useragent")
         private String userAgent;
 
+        @JsonProperty("rpc")
+        private Rpc rpc;
+
         @JsonProperty("protocol")
         private Protocol protocol;
 
@@ -65,6 +68,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             this.userAgent = userAgent;
         }
 
+        public Rpc getRpc() {
+            return rpc;
+        }
+
         public Protocol getProtocol() {
             return protocol;
         }
@@ -81,13 +88,13 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             return Objects.equals(getTCPPort(), that.getTCPPort()) &&
                     Objects.equals(getNonce(), that.getNonce()) &&
                     Objects.equals(getUserAgent(), that.getUserAgent()) &&
+                    Objects.equals(getRpc(), that.getRpc()) &&
                     Objects.equals(getProtocol(), that.getProtocol());
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(getTCPPort(), getNonce(), getUserAgent(),
-                    getProtocol());
+            return Objects.hash(getTCPPort(), getNonce(), getUserAgent(), getRpc(), getProtocol());
         }
 
         @Override
@@ -96,8 +103,52 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                     "tcpport=" + tcpPort +
                     ", nonce=" + nonce +
                     ", useragent='" + userAgent + '\'' +
+                    ", rpc=" + rpc +
                     ", protocol=" + protocol +
                     '}';
+        }
+
+        public static class Rpc {
+            @JsonProperty("maxiteratorresultitems")
+            private Integer maxIteratorResultItems;
+
+            @JsonProperty("sessionenabled")
+            private Boolean sessionEnabled;
+
+            public Rpc() {}
+            public Integer getMaxIteratorResultItems() {
+                return maxIteratorResultItems;
+            }
+
+            public Boolean sessionEnabled() {
+                return sessionEnabled;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                if (this == o) {
+                    return true;
+                }
+                if (!(o instanceof Rpc)) {
+                    return false;
+                }
+                Rpc that = (Rpc) o;
+                return Objects.equals(getMaxIteratorResultItems(), that.getMaxIteratorResultItems()) &&
+                        Objects.equals(sessionEnabled(), that.sessionEnabled());
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(getMaxIteratorResultItems(), sessionEnabled());
+            }
+
+            @Override
+            public String toString() {
+                return "Rpc{" +
+                        "maxIteratorResultItems=" + maxIteratorResultItems +
+                        ", sessionEnabled=" + sessionEnabled +
+                        '}';
+            }
         }
 
         public static class Protocol {
