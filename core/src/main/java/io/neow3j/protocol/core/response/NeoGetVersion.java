@@ -109,13 +109,16 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
         }
 
         public static class Rpc {
+
             @JsonProperty("maxiteratorresultitems")
             private Integer maxIteratorResultItems;
 
             @JsonProperty("sessionenabled")
             private Boolean sessionEnabled;
 
-            public Rpc() {}
+            public Rpc() {
+            }
+
             public Integer getMaxIteratorResultItems() {
                 return maxIteratorResultItems;
             }
