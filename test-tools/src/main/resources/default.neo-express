@@ -4,7 +4,6 @@
   "consensus-nodes": [
     {
       "tcp-port": 40333,
-      "ws-port": 40334,
       "rpc-port": 40332,
       "wallet": {
         "name": "consensus-node1",

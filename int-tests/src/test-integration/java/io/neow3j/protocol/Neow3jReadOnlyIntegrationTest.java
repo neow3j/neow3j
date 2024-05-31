@@ -718,6 +718,10 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(neoVersion.getNonce(), is(greaterThanOrEqualTo(0L)));
         assertThat(neoVersion.getTCPPort(), is(greaterThanOrEqualTo(0)));
 
+        NeoGetVersion.NeoVersion.Rpc rpc = neoVersion.getRpc();
+        assertThat(rpc.getMaxIteratorResultItems(), is(100));
+        assertTrue(rpc.sessionEnabled());
+
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
         assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));

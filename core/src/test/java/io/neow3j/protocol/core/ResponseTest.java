@@ -1649,9 +1649,12 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"tcpport\": 40333,\n" +
-                        "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"rpc\": {\n" +
+                        "            \"maxiteratorresultitems\": 10,\n" +
+                        "            \"sessionenabled\": false\n" +
+                        "        }," +
                         "        \"protocol\": {\n" +
                         "            \"network\": 769,\n" +
                         "            \"validatorscount\": 7,\n" +
@@ -1677,9 +1680,12 @@ public class ResponseTest extends ResponseTester {
         NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
         assertThat(version, is(notNullValue()));
         assertThat(version.getTCPPort(), is(40333));
-        assertThat(version.getWSPort(), is(40334));
         assertThat(version.getNonce(), is(224036820L));
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Rpc rpc = version.getRpc();
+        assertThat(rpc.getMaxIteratorResultItems(), is(10));
+        assertFalse(rpc.sessionEnabled());
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
         assertThat(protocol.getAddressVersion(), is(22));
@@ -1707,9 +1713,12 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"tcpport\": 40333,\n" +
-                        "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"rpc\": {\n" +
+                        "            \"maxiteratorresultitems\": 10,\n" +
+                        "            \"sessionenabled\": false\n" +
+                        "        }," +
                         "        \"protocol\": {\n" +
                         "            \"network\": 4232068425,\n" +
                         "            \"validatorscount\": 3,\n" +
@@ -1730,9 +1739,12 @@ public class ResponseTest extends ResponseTester {
         NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
         assertThat(version, is(notNullValue()));
         assertThat(version.getTCPPort(), is(40333));
-        assertThat(version.getWSPort(), is(40334));
         assertThat(version.getNonce(), is(224036820L));
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Rpc rpc = version.getRpc();
+        assertThat(rpc.getMaxIteratorResultItems(), is(10));
+        assertFalse(rpc.sessionEnabled());
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
         assertThat(protocol.getNetwork(), is(4232068425L));
