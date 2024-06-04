@@ -10,7 +10,6 @@ import io.neow3j.protocol.core.response.ContractNef;
 import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.core.response.ContractStorageEntry;
 import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -338,14 +337,15 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testGetNativeContracts() throws IOException {
-        List<NativeContractState> nativeContracts = getNeow3j()
+        List<ContractState> nativeContracts = getNeow3j()
                 .getNativeContracts()
                 .send()
                 .getNativeContracts();
 
         assertThat(nativeContracts, hasSize(9));
-        NativeContractState contractState1 = nativeContracts.get(0);
+        ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId().intValue(), is(-1));
+        assertThat(contractState1.getUpdateCounter(), is(0));
         assertThat(contractState1.getHash(), is(new Hash160(contractManagementHash())));
 
         ContractNef nef1 = contractState1.getNef();
@@ -382,7 +382,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getTrusts(), hasSize(0));
         assertNull(manifest1.getExtra());
 
-        NativeContractState contractState8 = nativeContracts.get(8);
+        ContractState contractState8 = nativeContracts.get(8);
         assertThat(contractState8.getId().intValue(), is(-9));
         assertThat(contractState8.getHash(), is(new Hash160(oracleContractHash())));
 
