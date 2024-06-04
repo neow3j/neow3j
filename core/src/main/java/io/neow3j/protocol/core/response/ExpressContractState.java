@@ -9,9 +9,15 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExpressContractState {
 
+    /**
+     * The hash of the contract.
+     */
     @JsonProperty("hash")
     private Hash160 hash;
 
+    /**
+     * The manifest of the contract.
+     */
     @JsonProperty("manifest")
     private ContractManifest manifest;
 

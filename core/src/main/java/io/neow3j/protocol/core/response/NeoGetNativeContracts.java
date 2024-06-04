@@ -5,13 +5,13 @@ import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
 import java.util.List;
 
-public class NeoGetNativeContracts extends Response<List<NativeContractState>> {
+public class NeoGetNativeContracts extends Response<List<ContractState>> {
 
     /**
      * @return the result.
      * @throws RpcResponseErrorException if the Neo node returned an error.
      */
-    public List<NativeContractState> getNativeContracts() {
+    public List<ContractState> getNativeContracts() {
         return getResult();
     }
 
