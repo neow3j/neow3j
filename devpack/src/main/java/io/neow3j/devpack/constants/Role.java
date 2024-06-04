@@ -20,4 +20,9 @@ public class Role {
      */
     public static final byte NeoFSAlphabetNode = 1 << 4;
 
+    /**
+     * P2P Notary nodes used to process P2P notary requests.
+     */
+    public static final byte P2PNotary = 1 << 5;
+
 }
