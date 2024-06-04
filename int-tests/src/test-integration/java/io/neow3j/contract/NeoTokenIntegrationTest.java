@@ -8,6 +8,7 @@ import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.Witness;
+import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
@@ -375,6 +376,12 @@ public class NeoTokenIntegrationTest {
         assertThat(stateWithVote.getLastGasPerVote(), is(BigInteger.ZERO));
 
         unregisterAsCandidate(candidate);
+    }
+
+    @Test
+    public void testGetCommitteeAddress() throws IOException {
+        Hash160 committeeAddress = neoToken.getCommitteeAddress();
+        assertThat(committeeAddress, is(COMMITTEE_ACCOUNT.getScriptHash()));
     }
 
     private void registerAsCandidate(Account candidate) throws Throwable {

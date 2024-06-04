@@ -55,6 +55,7 @@ public class NeoToken extends FungibleToken {
     private static final String SET_REGISTER_PRICE = "setRegisterPrice";
     private static final String GET_REGISTER_PRICE = "getRegisterPrice";
     private static final String GET_ACCOUNT_STATE = "getAccountState";
+    private static final String GET_COMMITTEE_ADDRESS = "getCommitteeAddress";
 
     /**
      * Constructs a new {@code NeoToken} that uses the given {@link Neow3j} instance for invocations.
@@ -456,6 +457,16 @@ public class NeoToken extends FungibleToken {
         }
         return new NeoAccountState(balance, updateHeight, new ECPublicKey(publicKeyItem.getHexString()),
                 lastGasPerVote);
+    }
+
+    /**
+     * Gets the address of the committee.
+     *
+     * @return the address of the committee.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Hash160 getCommitteeAddress() throws IOException {
+        return callFunctionReturningScriptHash(GET_COMMITTEE_ADDRESS);
     }
 
     /**
