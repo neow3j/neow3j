@@ -276,6 +276,12 @@ public class NeoTokenIntegrationTest {
     }
 
     @Test
+    public void getCommitteeAddress() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName);
+        assertThat(response.getInvocationResult().getFirstStackItem().getAddress(), is(ct.getCommittee().getAddress()));
+    }
+
+    @Test
     public void getHash() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
@@ -363,6 +369,10 @@ public class NeoTokenIntegrationTest {
             neoToken.registerCandidate(publicKey);
             neoToken.vote(voter, publicKey);
             return neoToken.getAccountState(voter);
+        }
+
+        public static Hash160 getCommitteeAddress() {
+            return neoToken.getCommitteeAddress();
         }
 
     }

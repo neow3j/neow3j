@@ -63,6 +63,7 @@ public class NeoTokenTest {
     private static final String GET_REGISTER_PRICE = "getRegisterPrice";
     private static final String SET_REGISTER_PRICE = "setRegisterPrice";
     private static final String GET_ACCOUNT_STATE = "getAccountState";
+    private static final String GET_COMMITTEE_ADDRESS = "getCommitteeAddress";
 
     private Neow3j neow;
 
@@ -453,6 +454,14 @@ public class NeoTokenTest {
         assertThat(neoAccountState.getBalanceHeight(), is(BigInteger.valueOf(820)));
         assertNull(neoAccountState.getPublicKey());
         assertThat(neoAccountState.getLastGasPerVote(), is(new BigInteger("17861939882879230")));
+    }
+
+    @Test
+    public void testGetCommitteeAddress() throws IOException {
+        setUpWireMockForInvokeFunction(GET_COMMITTEE_ADDRESS, "neoToken_getCommitteeAddress.json");
+        Hash160 committeeAddress = new NeoToken(neow).getCommitteeAddress();
+
+        assertThat(committeeAddress, is(new Hash160("0xeca55c77583192b23bc419922c35f8b4b319f0f4")));
     }
 
     @Test
