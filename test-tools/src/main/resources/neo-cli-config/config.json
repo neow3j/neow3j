@@ -9,19 +9,26 @@
     },
     "P2P": {
       "Port": 40333,
-      "WsPort": 40334
+      "MinDesiredConnections": 10,
+      "MaxConnections": 40,
+      "MaxConnectionsPerAddress": 3
     },
     "UnlockWallet": {
       "Path": "wallet.json",
       "Password": "neo",
       "IsActive": true
     },
-    "PluginURL": "https://github.com/neo-project/neo-modules/releases/download/v{1}/{0}.zip"
+    "Plugins": {
+      "DownloadUrl": "https://api.github.com/repos/neo-project/neo-modules/releases"
+    }
   },
   "ProtocolConfiguration": {
     "Network": 5195086,
     "MillisecondsPerBlock": 1000,
+    "MaxTransactionsPerBlock": 512,
+    "MemoryPoolMaxTransactions": 50000,
     "MaxTraceableBlocks": 2102400,
+    "InitialGasDistribution": 5200000000000000,
     "ValidatorsCount": 1,
     "StandbyCommittee": [
       "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"

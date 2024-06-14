@@ -121,4 +121,29 @@ public class RoleManagementIntegrationTest {
         assertThat(designatedByRole.get(0), is(account.getECKeyPair().getPublicKey()));
     }
 
+    @Test
+    public void testDesignateByRoleAndGetDesignated_p2pNotary() throws Throwable {
+        Account account = Account.create();
+        Transaction tx = roleManagement.designateAsRole(Role.P2P_NOTARY,
+                        asList(account.getECKeyPair().getPublicKey()))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        // The designation is active starting on the next block after the designate transaction
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        waitUntilBlockCountIsGreaterThan(neow3j, blockCount);
+        BigInteger nextBlockIndex = blockCount.add(BigInteger.ONE);
+
+        List<ECKeyPair.ECPublicKey> designatedByRole =
+                roleManagement.getDesignatedByRole(Role.P2P_NOTARY, nextBlockIndex);
+
+        assertThat(designatedByRole, hasSize(1));
+        assertThat(designatedByRole.get(0), is(account.getECKeyPair().getPublicKey()));
+    }
+
 }

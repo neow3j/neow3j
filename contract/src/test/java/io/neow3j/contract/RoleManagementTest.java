@@ -38,8 +38,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class RoleManagementTest {
 
-    private static final Hash160 ROLEMANAGEMENT_HASH =
-            new Hash160("49cf4e5378ffcd4dec034fd98a174c5491e395e2");
+    private static final Hash160 ROLEMANAGEMENT_HASH = new Hash160("49cf4e5378ffcd4dec034fd98a174c5491e395e2");
 
     private RoleManagement roleManagement;
     private Account account1;
@@ -57,10 +56,8 @@ public class RoleManagementTest {
         Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         roleManagement = new RoleManagement(neow3j);
 
-        account1 = new Account(
-                ECKeyPair.create(hexStringToByteArray(
-                        "0f7d2f77f3229178650b958eb286258f0e6533d0b86ec389b862c440c6511a4b"
-                )));
+        account1 = new Account(ECKeyPair.create(
+                hexStringToByteArray("0f7d2f77f3229178650b958eb286258f0e6533d0b86ec389b862c440c6511a4b")));
     }
 
     @Test
@@ -68,6 +65,7 @@ public class RoleManagementTest {
         assertThat((int) Role.STATE_VALIDATOR.byteValue(), is(4));
         assertThat((int) Role.ORACLE.byteValue(), is(8));
         assertThat((int) Role.NEO_FS_ALPHABET_NODE.byteValue(), is(16));
+        assertThat((int) Role.P2P_NOTARY.byteValue(), is(32));
     }
 
     @Test
@@ -76,9 +74,7 @@ public class RoleManagementTest {
         setUpWireMockForCall("invokefunction", "designation_getByRole.json",
                 String.valueOf(Role.STATE_VALIDATOR.byteValue()), "10");
 
-        List<ECPublicKey> list =
-                roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, BigInteger.TEN);
-
+        List<ECPublicKey> list = roleManagement.getDesignatedByRole(Role.STATE_VALIDATOR, BigInteger.TEN);
         assertThat(list, contains(account1.getECKeyPair().getPublicKey()));
     }
 
@@ -88,9 +84,7 @@ public class RoleManagementTest {
         setUpWireMockForCall("invokefunction", "designation_getByRole_empty.json",
                 String.valueOf(Role.STATE_VALIDATOR.byteValue()), "12");
 
-        List<ECPublicKey> list =
-                roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("12"));
-
+        List<ECPublicKey> list = roleManagement.getDesignatedByRole(Role.ORACLE, new BigInteger("12"));
         assertThat(list, hasSize(0));
     }
 

@@ -138,6 +138,12 @@ public class NeoToken extends FungibleToken {
     public native AccountState getAccountState(Hash160 scriptHash);
 
     /**
+     * @return the address of the committee.
+     */
+    @CallFlags(ReadStates)
+    public native Hash160 getCommitteeAddress();
+
+    /**
      * The state of an account regarding its NEO balance and voting target.
      */
     @Struct

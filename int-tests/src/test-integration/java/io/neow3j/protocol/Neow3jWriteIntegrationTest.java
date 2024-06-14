@@ -188,7 +188,7 @@ public class Neow3jWriteIntegrationTest {
         assertThrows(RpcResponseErrorException.class, sendMany::getSendMany);
         assertNotNull(sendMany.getError());
         assertThat(sendMany.getError().getCode(), is(INVALID_PARAMS_CODE));
-        assertThat(sendMany.getError().getMessage(), is(INVALID_PARAMS_MESSAGE));
+        assertThat(sendMany.getError().getMessage(), is(INVALID_PARAMS_MESSAGE + " - Argument 'to' can't be empty."));
     }
 
     @Test
@@ -228,7 +228,8 @@ public class Neow3jWriteIntegrationTest {
                 .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
                 .send();
 
-        assertThat(cancel.getError().getMessage(), is("This tx is already confirmed, can't be cancelled."));
+        assertThat(cancel.getError().getMessage(),
+                is("Inventory already exists - This tx is already confirmed, can't be cancelled."));
     }
 
     /*

@@ -10,6 +10,10 @@
         "TrustedAuthorities": [],
         "RpcUser": "",
         "RpcPass": "",
+        "EnableCors": false,
+        "AllowOrigins": [],
+        "KeepAliveTimeout": 60,
+        "RequestHeadersTimeout": 15,
         "MaxGasInvoke": 100000,
         "MaxFee": 0.1,
         "MaxConcurrentConnections": 40,
@@ -18,7 +22,8 @@
         "MaxStackSize": 65535,
         "DisabledMethods": [ ],
         "SessionEnabled": true,
-        "SessionExpirationTime": 60
+        "SessionExpirationTime": 60,
+        "FindStoragePageSize": 50
       }
     ]
   }

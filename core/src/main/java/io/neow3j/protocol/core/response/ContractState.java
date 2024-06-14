@@ -14,27 +14,69 @@ import java.util.Objects;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ContractState extends NativeContractState {
+public class ContractState extends ExpressContractState {
 
+    /**
+     * The id of the contract.
+     */
+    @JsonProperty("id")
+    private BigInteger id;
+
+    /**
+     * Indicates the number of times the contract has been updated.
+     */
     @JsonProperty("updatecounter")
     private Integer updateCounter;
 
+    /**
+     * The nef of the contract.
+     */
+    @JsonProperty("nef")
+    private ContractNef nef;
+
     public ContractState() {
-        super();
     }
 
-    public ContractState(BigInteger id, int updateCounter, Hash160 hash, ContractNef nef, ContractManifest manifest) {
-        super(id, hash, nef, manifest);
+    public ContractState(BigInteger id, Integer updateCounter, Hash160 hash, ContractNef nef,
+            ContractManifest manifest) {
+        super(hash, manifest);
+        this.id = id;
         this.updateCounter = updateCounter;
+        this.nef = nef;
+    }
+
+    public BigInteger getId() {
+        return id;
     }
 
     public Integer getUpdateCounter() {
         return updateCounter;
     }
 
+    public ContractNef getNef() {
+        return nef;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        if (!super.equals(o)) {
+            return false;
+        }
+        ContractState that = (ContractState) o;
+        return Objects.equals(getId(), that.getId()) &&
+                Objects.equals(getUpdateCounter(), that.getUpdateCounter()) &&
+                Objects.equals(getNef(), that.getNef());
+    }
+
     @Override
     public int hashCode() {
-        return Objects.hash(getId(), getHash(), getNef(), getManifest(), getUpdateCounter());
+        return Objects.hash(super.hashCode(), getId(), getUpdateCounter(), getNef());
     }
 
     @Override
@@ -42,7 +84,7 @@ public class ContractState extends NativeContractState {
         return "ContractState{" +
                 "id=" + getId() +
                 ", updateCounter=" + getUpdateCounter() +
-                ", hash='" + getHash() + '\'' +
+                ", hash=" + getHash() +
                 ", nef=" + getNef() +
                 ", manifest=" + getManifest() +
                 '}';

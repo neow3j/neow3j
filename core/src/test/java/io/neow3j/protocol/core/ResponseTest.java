@@ -14,7 +14,6 @@ import io.neow3j.protocol.core.response.ExpressContractState;
 import io.neow3j.protocol.core.response.ExpressContractStorageEntry;
 import io.neow3j.protocol.core.response.HighPriorityAttribute;
 import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.protocol.core.response.NativeContractState;
 import io.neow3j.protocol.core.response.NeoAddress;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlockCount;
@@ -526,6 +525,7 @@ public class ResponseTest extends ResponseTester {
                 "    \"result\": [\n" +
                 "        {\n" +
                 "            \"id\": -6,\n" +
+                "            \"updatecounter\": 3,\n" +
                 "            \"hash\": \"0xd2a4cff31913016155e38e474a2c06d08be276cf\",\n" +
                 "            \"nef\": {\n" +
                 "                \"magic\": 860243278,\n" +
@@ -538,6 +538,7 @@ public class ResponseTest extends ResponseTester {
                 "            \"manifest\": {\n" +
                 "                \"name\": \"GasToken\",\n" +
                 "                \"groups\": [],\n" +
+                "                \"features\": {},\n" +
                 "                \"supportedstandards\": [\n" +
                 "                    \"NEP-17\"\n" +
                 "                ],\n" +
@@ -633,6 +634,7 @@ public class ResponseTest extends ResponseTester {
                 "        },\n" +
                 "        {\n" +
                 "            \"id\": -8,\n" +
+                "            \"updatecounter\": 0,\n" +
                 "            \"hash\": \"0x49cf4e5378ffcd4dec034fd98a174c5491e395e2\",\n" +
                 "            \"nef\": {\n" +
                 "                \"magic\": 860243278,\n" +
@@ -645,6 +647,7 @@ public class ResponseTest extends ResponseTester {
                 "            \"manifest\": {\n" +
                 "                \"name\": \"RoleManagement\",\n" +
                 "                \"groups\": [],\n" +
+                "                \"features\": {},\n" +
                 "                \"supportedstandards\": [],\n" +
                 "                \"abi\": {\n" +
                 "                    \"methods\": [\n" +
@@ -681,7 +684,21 @@ public class ResponseTest extends ResponseTester {
                 "                            \"safe\": true\n" +
                 "                        }\n" +
                 "                    ],\n" +
-                "                    \"events\": []\n" +
+                "                    \"events\": [\n" +
+                "                        {\n" +
+                "                            \"name\": \"Designation\",\n" +
+                "                            \"parameters\": [\n" +
+                "                                {\n" +
+                "                                    \"name\": \"Role\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                },\n" +
+                "                                {\n" +
+                "                                    \"name\": \"BlockIndex\",\n" +
+                "                                    \"type\": \"Integer\"\n" +
+                "                                }\n" +
+                "                            ]\n" +
+                "                        }\n" +
+                "                    ]\n" +
                 "                },\n" +
                 "                \"permissions\": [\n" +
                 "                    {\n" +
@@ -695,6 +712,7 @@ public class ResponseTest extends ResponseTester {
                 "        },\n" +
                 "        {\n" +
                 "            \"id\": -9,\n" +
+                "            \"updatecounter\": 0,\n" +
                 "            \"hash\": \"0xfe924b7cfe89ddd271abaf7210a80a7e11178758\",\n" +
                 "            \"nef\": {\n" +
                 "                \"magic\": 860243278,\n" +
@@ -707,6 +725,7 @@ public class ResponseTest extends ResponseTester {
                 "            \"manifest\": {\n" +
                 "                \"name\": \"OracleContract\",\n" +
                 "                \"groups\": [],\n" +
+                "                \"features\": {},\n" +
                 "                \"supportedstandards\": [],\n" +
                 "                \"abi\": {\n" +
                 "                    \"methods\": [\n" +
@@ -824,10 +843,11 @@ public class ResponseTest extends ResponseTester {
         );
 
         NeoGetNativeContracts getNativeContracts = deserialiseResponse(NeoGetNativeContracts.class);
-        List<NativeContractState> nativeContracts = getNativeContracts.getNativeContracts();
+        List<ContractState> nativeContracts = getNativeContracts.getNativeContracts();
         assertThat(nativeContracts, hasSize(3));
-        NativeContractState c1 = nativeContracts.get(0);
+        ContractState c1 = nativeContracts.get(0);
         assertThat(c1.getId().intValue(), is(-6));
+        assertThat(c1.getUpdateCounter(), is(3));
         assertThat(c1.getHash(), is(new Hash160("0xd2a4cff31913016155e38e474a2c06d08be276cf")));
         ContractNef nef1 = c1.getNef();
         assertThat(nef1.getMagic(), is(860243278L));
@@ -843,6 +863,7 @@ public class ResponseTest extends ResponseTester {
         ContractManifest manifest1 = c1.getManifest();
         assertThat(manifest1.getName(), is("GasToken"));
         assertThat(manifest1.getGroups(), hasSize(0));
+        assertThat(manifest1.getFeatures().entrySet(), hasSize(0));
         assertThat(manifest1.getSupportedStandards(), hasSize(1));
         assertThat(manifest1.getSupportedStandard(0), is("NEP-17"));
         assertThat(manifest1.getFirstSupportedStandard(), is(manifest1.getSupportedStandard(0)));
@@ -854,8 +875,9 @@ public class ResponseTest extends ResponseTester {
         thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest1.getAbi().getEvent(1));
         assertThat(thrown.getMessage(), containsString("only has 1 events"));
 
-        NativeContractState c2 = nativeContracts.get(1);
+        ContractState c2 = nativeContracts.get(1);
         assertThat(c2.getId().intValue(), is(-8));
+        assertThat(c2.getUpdateCounter(), is(0));
         assertThat(c2.getHash(), is(new Hash160("0x49cf4e5378ffcd4dec034fd98a174c5491e395e2")));
         ContractNef nef2 = c2.getNef();
         assertThat(nef2.getMagic(), is(860243278L));
@@ -867,16 +889,23 @@ public class ResponseTest extends ResponseTester {
         ContractManifest manifest2 = c2.getManifest();
         assertThat(manifest2.getName(), is("RoleManagement"));
         assertThat(manifest2.getGroups(), hasSize(0));
+        assertThat(manifest2.getFeatures().entrySet(), hasSize(0));
         assertThat(manifest2.getSupportedStandards(), hasSize(0));
         thrown = assertThrows(IndexOutOfBoundsException.class, manifest2::getFirstSupportedStandard);
         assertThat(thrown.getMessage(), containsString("does not support any standard"));
         assertThat(manifest2.getAbi().getMethods(), hasSize(2));
-        assertThat(manifest2.getAbi().getEvents(), hasSize(0));
-        thrown = assertThrows(IndexOutOfBoundsException.class, () -> manifest2.getAbi().getFirstEvent());
-        assertThat(thrown.getMessage(), containsString("does not have any events"));
+        assertThat(manifest2.getAbi().getEvents(), hasSize(1));
+        ContractABI.ContractEvent firstEvent = manifest2.getAbi().getFirstEvent();
+        assertThat(firstEvent.getName(), is("Designation"));
+        assertThat(firstEvent.getParameters(), hasSize(2));
+        assertThat(firstEvent.getParameters().get(0).getName(), is("Role"));
+        assertThat(firstEvent.getParameters().get(0).getType(), is(ContractParameterType.INTEGER));
+        assertThat(firstEvent.getParameters().get(1).getName(), is("BlockIndex"));
+        assertThat(firstEvent.getParameters().get(1).getType(), is(ContractParameterType.INTEGER));
 
-        NativeContractState c3 = nativeContracts.get(2);
+        ContractState c3 = nativeContracts.get(2);
         assertThat(c3.getId().intValue(), is(-9));
+        assertThat(c3.getUpdateCounter(), is(0));
         assertThat(c3.getHash(), is(new Hash160("0xfe924b7cfe89ddd271abaf7210a80a7e11178758")));
         ContractNef nef3 = c3.getNef();
         assertThat(nef3.getMagic(), is(860243278L));
@@ -888,6 +917,7 @@ public class ResponseTest extends ResponseTester {
         ContractManifest manifest3 = c3.getManifest();
         assertThat(manifest3.getName(), is("OracleContract"));
         assertThat(manifest3.getGroups(), hasSize(0));
+        assertThat(manifest3.getFeatures().entrySet(), hasSize(0));
         assertThat(manifest3.getSupportedStandards(), hasSize(0));
         assertThat(manifest3.getAbi().getMethods(), hasSize(5));
         assertThat(manifest3.getAbi().getEvents(), hasSize(2));
@@ -992,6 +1022,8 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(abi.getEvents(), is(notNullValue()));
         assertThat(abi.getEvents(), hasSize(0));
+        thrown = assertThrows(IndexOutOfBoundsException.class, abi::getFirstEvent);
+        assertThat(thrown.getMessage(), containsString("does not have any events"));
 
         assertThat(manifest.getPermissions(), is(notNullValue()));
         assertThat(manifest.getPermissions(), hasSize(1));
@@ -1649,9 +1681,12 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"tcpport\": 40333,\n" +
-                        "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"rpc\": {\n" +
+                        "            \"maxiteratorresultitems\": 10,\n" +
+                        "            \"sessionenabled\": false\n" +
+                        "        }," +
                         "        \"protocol\": {\n" +
                         "            \"network\": 769,\n" +
                         "            \"validatorscount\": 7,\n" +
@@ -1677,9 +1712,12 @@ public class ResponseTest extends ResponseTester {
         NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
         assertThat(version, is(notNullValue()));
         assertThat(version.getTCPPort(), is(40333));
-        assertThat(version.getWSPort(), is(40334));
         assertThat(version.getNonce(), is(224036820L));
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Rpc rpc = version.getRpc();
+        assertThat(rpc.getMaxIteratorResultItems(), is(10));
+        assertFalse(rpc.sessionEnabled());
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
         assertThat(protocol.getAddressVersion(), is(22));
@@ -1707,9 +1745,12 @@ public class ResponseTest extends ResponseTester {
                         "    \"id\": 1,\n" +
                         "    \"result\": {\n" +
                         "        \"tcpport\": 40333,\n" +
-                        "        \"wsport\": 40334,\n" +
                         "        \"nonce\": 224036820,\n" +
                         "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"rpc\": {\n" +
+                        "            \"maxiteratorresultitems\": 10,\n" +
+                        "            \"sessionenabled\": false\n" +
+                        "        }," +
                         "        \"protocol\": {\n" +
                         "            \"network\": 4232068425,\n" +
                         "            \"validatorscount\": 3,\n" +
@@ -1730,9 +1771,12 @@ public class ResponseTest extends ResponseTester {
         NeoGetVersion.NeoVersion version = neoGetVersion.getVersion();
         assertThat(version, is(notNullValue()));
         assertThat(version.getTCPPort(), is(40333));
-        assertThat(version.getWSPort(), is(40334));
         assertThat(version.getNonce(), is(224036820L));
         assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+
+        NeoGetVersion.NeoVersion.Rpc rpc = version.getRpc();
+        assertThat(rpc.getMaxIteratorResultItems(), is(10));
+        assertFalse(rpc.sessionEnabled());
 
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
         assertThat(protocol.getNetwork(), is(4232068425L));
