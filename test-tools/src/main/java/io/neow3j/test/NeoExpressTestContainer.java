@@ -9,14 +9,20 @@ import org.testcontainers.utility.MountableFile;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> implements TestBlockchain {
+
+    public static final String NEOXP_COMMAND = "neoxp";
+    private static final String NEOXP_INPUT_FLAG = "--input";
 
     public static final String DEFAULT_NEOXP_CONFIG = "default.neo-express";
 
@@ -153,12 +159,12 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         String nefFileName = nefFile;
         int nefFileNameIdx = nefFile.lastIndexOf('/');
         if (nefFileNameIdx > -1) {
-           nefFileName = nefFile.substring(nefFileNameIdx+1);
+            nefFileName = nefFile.substring(nefFileNameIdx + 1);
         }
         String manifestFileName = manifestFile;
         int manifestFileNameIdx = manifestFile.lastIndexOf('/');
         if (manifestFileNameIdx > -1) {
-            manifestFileName = manifestFile.substring(manifestFileNameIdx+1);
+            manifestFileName = manifestFile.substring(manifestFileNameIdx + 1);
         }
         withCopyFileToContainer(MountableFile.forClasspathResource(nefFile, 777), CONTAINER_WORKDIR + nefFileName);
         withCopyFileToContainer(MountableFile.forClasspathResource(manifestFile, 777),
@@ -184,17 +190,14 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String resume() throws Exception {
-        String cmd;
+        List<String> cmds = new ArrayList<>();
         if (secondsPerBlock != 0) {
-            cmd = NEOXP_RUN_SCRIPT + " " + secondsPerBlock;
+            cmds.add(NEOXP_RUN_SCRIPT);
+            cmds.add(String.valueOf(secondsPerBlock));
         } else {
-            cmd = NEOXP_RUN_SCRIPT;
+            cmds.add(NEOXP_RUN_SCRIPT);
         }
-        ExecResult execResult = execInContainer(cmd);
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        return execResult.getStdout();
+        return execCommand(cmds.toArray(new String[0]));
     }
 
     /**
@@ -205,11 +208,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String halt() throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "stop");
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        return execResult.getStdout();
+        return execNeoxpCommandWithDefaultConfig("stop");
     }
 
     /**
@@ -220,13 +219,9 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String createAccount() throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "wallet", "create", "acc" + accountCtr++);
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        String resultString = execResult.getStdout();
+        String resultString = execNeoxpCommandWithDefaultConfig("wallet", "create", "acc" + accountCtr++);
         Pattern pattern = Pattern.compile("Address:\\s[0-9A-Za-z&&[^0OIl]]+");
-        Matcher matcher = pattern.matcher(execResult.getStdout());
+        Matcher matcher = pattern.matcher(resultString);
         if (!matcher.find()) {
             throw new IllegalStateException("Couldn't extract address from result string: " + resultString);
         }
@@ -243,11 +238,8 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String enableOracle() throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "oracle", "enable", "genesis");
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        return execResult.getStdout().split(" ")[3];
+        String execResult = execNeoxpCommandWithDefaultConfig("oracle", "enable", "genesis");
+        return execResult.split(" ")[3];
     }
 
     /**
@@ -260,11 +252,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String fastForward(int n) throws Exception {
-        ExecResult execResult = execInContainer("neoxp", "fastfwd", Integer.toString(n));
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        return execResult.getStdout();
+        return execNeoxpCommandWithDefaultConfig("fastfwd", Integer.toString(n));
     }
 
     /**
@@ -277,19 +265,17 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
      */
     @Override
     public String fastForward(int seconds, int n) throws Exception {
-        ExecResult execResult =
-                execInContainer("neoxp", "fastfwd", "-t", Integer.toString(seconds), Integer.toString(n));
-        if (execResult.getExitCode() != 0) {
-            throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
-        }
-        return execResult.getStdout();
+        return execNeoxpCommandWithDefaultConfig("fastfwd", "-t", Integer.toString(seconds), Integer.toString(n));
     }
 
     /**
-     * Executes the given command on the neo-express instance.
+     * Executes the given command in the test container.
      * <p>
-     * The command has to be provided in its separate parts, e.g., {@code "neoxp", "contract", "run", "NeoToken",
-     * "balanceOf", "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP", "--account genesis"}
+     * The command has to be provided in separate parts, e.g., {@code "neoxp", "contract", "run", "NeoToken",
+     * "balanceOf", "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP", "--account", "genesis"}
+     * <p>
+     * If the command requires the default neo-express config file path as input, use
+     * {@link #execNeoxpCommandWithDefaultConfig(String...)}.
      *
      * @param commandParts the command separated into its parts.
      * @return the message emitted by neo-express on minting the blocks.
@@ -302,6 +288,64 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
             throw new Exception("Failed executing command in container. Error was: \n " + execResult.getStderr());
         }
         return execResult.getStdout();
+    }
+
+    /**
+     * Executes a {@code neoxp} command with the given command parts using the test container's default neo-express
+     * file path as input to the command.
+     * <p>
+     * The command has to be provided in separate parts, e.g., {@code "contract", "run", "NeoToken", "balanceOf",
+     * "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP", "--account", "genesis"}
+     * <p>
+     * If a <i>--input</i> flag is provided in the command parts, its subsequent command is replaced with the default
+     * neo-express file path used in the test container, i.e., {@code /neoxp/default.neo-express}.
+     * <p>
+     * If the command does not support the <i>--input</i> flag, or a different neo-express config file should be used,
+     * use {@link #execCommand(String...)} either without the <i>--input</i> flag or with it and with the path pointing
+     * to the neo-express file to be used, respectively.
+     *
+     * @param commandParts the command separated into its parts.
+     * @return the message emitted by neo-express on minting the blocks.
+     * @throws Exception if the execution failed.
+     */
+    @Override
+    public String execNeoxpCommandWithDefaultConfig(String... commandParts) throws Exception {
+        ArrayList<String> commandList = new ArrayList<>(asList(commandParts));
+        addNeoxpCommand(commandList);
+        addDefaultConfigInput(commandList);
+        return execCommand(commandList.toArray(new String[0]));
+    }
+
+    /**
+     * Makes sure that the command list contains the <i>--input</i> flag followed by the test container's default
+     * neo-express file path.
+     * <p>
+     * If the <i>--input</i> flag does not exist in the command list, it is added followed by the test container's
+     * default neo-express file path. Otherwise, its subsequent command is replaced with the default neo-express file
+     * path.
+     *
+     * @param commandList the command list.
+     */
+    static void addDefaultConfigInput(ArrayList<String> commandList) {
+        if (!commandList.contains(NEOXP_INPUT_FLAG)) {
+            commandList.add(NEOXP_INPUT_FLAG);
+            commandList.add(NEOXP_CONFIG_DEST);
+            return;
+        }
+        int configPathIndex = commandList.indexOf(NEOXP_INPUT_FLAG) + 1;
+        commandList.remove(configPathIndex);
+        commandList.add(configPathIndex, NEOXP_CONFIG_DEST);
+    }
+
+    /**
+     * Makes sure the command list starts with the {@code neoxp} command.
+     *
+     * @param commandList the command list.
+     */
+    static void addNeoxpCommand(ArrayList<String> commandList) {
+        if (!commandList.get(0).equals(NEOXP_COMMAND)) {
+            commandList.add(0, NEOXP_COMMAND);
+        }
     }
 
     @Override
