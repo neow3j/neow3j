@@ -19,6 +19,7 @@ import io.neow3j.types.Hash256;
 import io.neow3j.utils.Await;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.testcontainers.junit.jupiter.Container;
@@ -29,6 +30,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -38,8 +40,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@TestMethodOrder(MethodOrderer.MethodName.class)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
 public class Neow3jExpressIntegrationTest {
 
@@ -69,6 +72,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressGetPopulatedBlocks() throws IOException {
         PopulatedBlocks populatedBlocks = getNeow3jExpress()
                 .expressGetPopulatedBlocks()
@@ -81,6 +85,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressGetNep17Contracts() throws IOException {
         List<Nep17Contract> nep17Contracts = getNeow3jExpress()
                 .expressGetNep17Contracts()
@@ -95,6 +100,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressGetContractStorage() throws IOException {
         List<ExpressContractStorageEntry> contractStorage = getNeow3jExpress()
                 .expressGetContractStorage(IntegrationTestHelper.GAS_HASH)
@@ -107,6 +113,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressListContracts() throws IOException {
         List<ExpressContractState> contracts = getNeow3jExpress()
                 .expressListContracts()
@@ -122,6 +129,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressCreateCheckpoint() throws IOException {
         String filename = getNeow3jExpress()
                 .expressCreateCheckpoint("checkpoint-1.neoxp-checkpoint")
@@ -132,6 +140,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressListOracleRequests() throws IOException {
         List<OracleRequest> oracleRequests = getNeow3jExpress()
                 .expressListOracleRequests()
@@ -159,6 +168,7 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
     public void testExpressCreateOracleResponseTx() throws Exception {
         Hash256 txHash = new Hash256(container.enableOracle());
         Await.waitUntilTransactionIsExecuted(txHash, getNeow3jExpress());
@@ -178,6 +188,34 @@ public class Neow3jExpressIntegrationTest {
     }
 
     @Test
+    @Order(1)
+    public void testExecCommand_failingToExecute() {
+        Exception thrown = assertThrows(Exception.class, () -> container.execCommand("neoxp", "invalid-command"));
+        assertThat(thrown.getMessage(), containsString("Failed executing command in container. Error was: \n " +
+                "Unrecognized command or argument 'invalid-command'"));
+    }
+
+    @Test
+    @Order(10)
+    public void testStopAndResume() throws Exception {
+        BigInteger blockCountBeforeStopping = getNeow3jExpress().getBlockCount().send().getBlockCount();
+        assertThat(blockCountBeforeStopping.intValue(), is(greaterThan(0)));
+
+        String haltMessage = container.halt();
+        assertThat(haltMessage, containsString("node 0 stopped"));
+
+        IOException thrown = assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
+        assertThat(thrown.getMessage(), containsString("unexpected end of stream"));
+
+        String resumeMessage = container.resume();
+        assertThat(resumeMessage, containsString("Neo-express started.\nNeo express is running"));
+
+        BigInteger blockCountAfterResuming = getNeow3jExpress().getBlockCount().send().getBlockCount();
+        assertThat(blockCountAfterResuming.intValue(), is(greaterThanOrEqualTo(blockCountBeforeStopping.intValue())));
+    }
+
+    @Test
+    @Order(20)
     public void testShutdown() throws IOException {
         // This test must be executed last!
         // If more tests are added, make sure that the name of this test is the last in

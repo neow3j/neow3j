@@ -733,7 +733,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(3));
+        assertThat(protocol.getHardforks(), hasSize(4));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -743,6 +743,9 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks cockatrice = protocol.getHardforks().get(2);
         assertThat(cockatrice.getName(), is("Cockatrice"));
         assertThat(cockatrice.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks domovoi = protocol.getHardforks().get(3);
+        assertThat(domovoi.getName(), is("Domovoi"));
+        assertThat(domovoi.getBlockHeight(), is(BigInteger.ZERO));
     }
 
     // SmartContract Methods
@@ -901,7 +904,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(11));
+        assertThat(plugins, hasSize(10));
     }
 
     @Test

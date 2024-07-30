@@ -101,13 +101,23 @@ public interface TestBlockchain {
     String fastForward(int seconds, int n) throws Exception;
 
     /**
-     * Executes the given command.
+     * Executes the given command in the test container.
      *
      * @param commandParts the command separated into its parts.
      * @return the message emitted on executing the command or null if no message is emitted.
      * @throws Exception if an error occurred when trying to execute the command on the blockchain.
      */
     String execCommand(String... commandParts) throws Exception;
+
+    /**
+     * Executes a {@code neoxp} command with the given command parts using the test container's default neo-express
+     * file path as input to the command.
+     *
+     * @param commandParts the neoxp command parts.
+     * @return the message emitted on executing the command or null if no message is emitted.
+     * @throws Exception if an error occurred when trying to execute the command on the blockchain.
+     */
+    String execNeoxpCommandWithDefaultConfig(String... commandParts) throws Exception;
 
     /**
      * Starts the blockchain, i.e., the process that includes the blockchain.
