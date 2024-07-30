@@ -13,16 +13,16 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 ## Releasing with GitHub Actions
 
 1. Create a branch `release` from `main`.
-2. Set the release version number in:
-   - build.gradle, in the `version` property
-   - Compiler.java, in the `COMPILER_NAME` constant
-   - README.md, in the sections that explain how to import neow3j
-3. Tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. Note, that the release workflow currently 
-   doesn't support releasing anything else than the top commit of a branch.
-4. Run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow on the `main` branch. It will publish the packages
-   `compiler`, `contract`, `core`, `devpack`, `devpack-test`, `test-tools` to Maven Central via Sonatype and the `gradle-plugin` to
-   the Gradle Plugin Repository.
-
+2. Make sure the release version number is set in the following files:
+   - `build.gradle`, in the `version` property
+   - `Compiler.java`, in the `COMPILER_NAME` constant
+   - `README.md`, in the sections that explain how to import neow3j
+3. Commit and push the `release` branch, and open a pull request to `main`.
+4. Once the pull request has been merged, tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. 
+   Note, that the release workflow currently doesn't support releasing anything else than the top commit of a branch.
+5. Run the "_Release SDK, devpack, Gradle plugin_" GitHub workflow on the `main` branch. It will publish the packages
+   `compiler`, `contract`, `core`, `devpack`, `devpack-test`, `test-tools` to Maven Central via Sonatype and the 
+   `gradle-plugin` to the Gradle Plugin Repository.
 
 ## Releasing from a Local Machine
 
@@ -47,7 +47,6 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxa0W8BM\n\
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx9e\n\
 xxx9E\n\
 -----END PGP PRIVATE KEY BLOCK-----
-
 ```
 
 To publish the SDK and devpack artifacts from the currently checked-out code base, run:
