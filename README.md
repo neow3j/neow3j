@@ -94,6 +94,31 @@ __Maven__
 > **Note:** The devpack and compiler are only available for Neo N3. Thus, Java cannot be used to
 > compile smart contracts that are compatible with Neo Legacy.
 
+## Contribute
+
+Contributors are welcome!  
+
+Take a look at our open [issues](https://github.com/neow3j/neow3j/issues). We’re collecting all issues in the main neow3j repository, including issues related to documentation, tutorials, and coding examples. Some issues are labelled with a level of difficulty ([beginner](https://github.com/neow3j/neow3j/labels/beginner), [intermediate](https://github.com/neow3j/neow3j/labels/intermediate), [advanced](https://github.com/neow3j/neow3j/labels/advanced)). Create new issues if you want something not on the list.
+
+Join the AxLabs Discord server to chat with us and ask questions. Here are some points that should help you get started with the code base.
+
+- **Setup** 🔰
+    - [Fork](https://github.com/neow3j/neow3j/fork) the repository and git-clone the fork.
+    - Branch out from the `main` branch. PRs are merged directly into `main`.
+- **Java 🍵**
+    - The language version for compilation is set to Java 8 in the Gradle build file. Thus, if you don’t have a Java 8 installation, Gradle might attempt to download one automatically.
+    - Of course you need an installed JDK for Gradle to be able to run. The Java version active in your environment can be higher than 8.
+- **Tests 🧪**
+    - Run unit tests with `./gradlew test`
+    - Run integration tests with `./gradlew integrationTest`. They require Docker for spinning up a containerized blockchain node.
+- **Linting and formatting** 🧹
+    - Compiler warnings are turned off in the build configuration, so when you execute a Gradle task in the command line you will not see any warnings, but your IDE might give you many.
+    - There is no Gradle task for auto-formatting or validating code formatting. I.e., your formatting will go unchecked. However, there is a code style configuration in the `.idea` folder committed to the repo that you could use if you work with IntelliJ.
+- **Code Structure** 🏗️
+    - The code is split into multiple sub-projects based on Gradle’s multi-project feature. Though, we do not support Java 9’s module system.
+    - Some sub-project’s depend on others, e.g., `contract` and `devpack` depend on `core`, or`compiler` depends on `contract` and `devpack`.
+    - All integration tests live in their own sub-project called `int-tests`. The reason being dependency issues if we place the tests in their respective project. 
+
 ## Who's using neow3j? :rocket:
 
 * [Binance](https://binance.com)
