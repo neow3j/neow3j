@@ -67,7 +67,6 @@ subprojects { subproject ->
     java {
         toolchain {
             languageVersion = JavaLanguageVersion.of(8)
-            targetCompatibility = JavaLanguageVersion.of(8)
         }
         withSourcesJar()
         withJavadocJar()
