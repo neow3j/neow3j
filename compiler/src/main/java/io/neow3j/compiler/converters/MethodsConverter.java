@@ -336,10 +336,6 @@ public class MethodsConverter implements Converter {
         return isContractInterface;
     }
 
-    private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
-        return hasAnnotations(asmMethod, Instructions.class, Instruction.class);
-    }
-
     // Converts the instructions of a string switch from JVM bytecode to NeoVM code. The `MethodInsnNode` is expected
     // represent a call to the `String.hashCode()` method.
     private static AbstractInsnNode handleStringSwitch(NeoMethod callingNeoMethod, MethodInsnNode methodInsn) {
