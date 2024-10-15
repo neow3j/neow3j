@@ -57,6 +57,9 @@ public class ConstantsConverter implements Converter {
             case SIPUSH: // Has an operand with an int value from -32768 to 32767.
                 addPushNumber(((IntInsnNode) insn).operand, neoMethod);
                 break;
+            default:
+                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

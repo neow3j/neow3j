@@ -57,6 +57,9 @@ public class LocalVariablesConverter implements Converter {
                 // instruction and not on the operand stack.
                 addLoadLocalVariable(((VarInsnNode) insn).var, neoMethod);
                 break;
+            default:
+                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

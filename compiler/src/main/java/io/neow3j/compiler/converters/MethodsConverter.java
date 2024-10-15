@@ -101,6 +101,9 @@ public class MethodsConverter implements Converter {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
                 throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
+            default:
+                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }
