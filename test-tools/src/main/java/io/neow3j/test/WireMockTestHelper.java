@@ -71,8 +71,9 @@ public class WireMockTestHelper {
 
     public static String loadFile(String fileName) throws IOException {
         String absFileName = WireMockTestHelper.class.getResource(fileName).getFile();
-        FileInputStream inStream = new FileInputStream(new File(absFileName));
-        return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8).reduce((a, b) -> a + b).get();
+        try (FileInputStream inStream = new FileInputStream(new File(absFileName))) {
+            return Files.lines(new File(absFileName).toPath(), StandardCharsets.UTF_8).reduce((a, b) -> a + b).get();
+        }
     }
 
 }
