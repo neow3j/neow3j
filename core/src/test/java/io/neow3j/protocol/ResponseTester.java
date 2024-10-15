@@ -40,10 +40,10 @@ public abstract class ResponseTester {
         neow3jService = new HttpService(okHttpClient, includeRawResponses);
     }
 
-    protected <T extends Response> T deserialiseResponse(Class<T> type) {
+    protected <T extends Response<?>> T deserialiseResponse(Class<T> type) {
         T response = null;
         try {
-            response = neow3jService.send(new Request(), type);
+            response = neow3jService.send(new Request<>(), type);
         } catch (IOException e) {
             fail(e.getMessage());
         }
@@ -59,7 +59,8 @@ public abstract class ResponseTester {
         }
 
         @Override
-        public okhttp3.@NotNull Response intercept(@NotNull Chain chain) {
+        @NotNull
+        public okhttp3.Response intercept(@NotNull Chain chain) {
 
             if (jsonResponse == null) {
                 throw new UnsupportedOperationException("Response has not been configured");

@@ -58,7 +58,8 @@ public abstract class RequestTester {
         private RequestBody requestBody;
 
         @Override
-        public okhttp3.@NotNull Response intercept(Chain chain) {
+        @NotNull 
+        public okhttp3.Response intercept(Chain chain) {
 
             Request request = chain.request();
             this.requestBody = request.body();
