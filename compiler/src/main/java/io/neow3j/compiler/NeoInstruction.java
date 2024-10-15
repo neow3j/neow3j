@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.OperandSize;
 import io.neow3j.serialization.BinaryReader;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 
