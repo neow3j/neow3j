@@ -113,7 +113,7 @@ Join the AxLabs Discord server to chat with us and ask questions. Here are some 
     - Run integration tests with `./gradlew integrationTest`. They require Docker for spinning up a containerized blockchain node.
 - **Linting and formatting** 🧹
     - Compiler warnings are turned off in the build configuration, so when you execute a Gradle task in the command line you will not see any warnings, but your IDE might give you many.
-    - There is no Gradle task for auto-formatting or validating code formatting. I.e., your formatting will go unchecked. However, there is a code style configuration in the `.idea` folder committed to the repo that you could use if you work with IntelliJ.
+    - There is no Gradle task for auto-formatting or validating code formatting, i.e., your formatting will go unchecked. However, there is a code style configuration in the `.idea` folder committed to the repo that you could use if you work with IntelliJ.
 - **Code Structure** 🏗️
     - The code is split into multiple sub-projects based on Gradle’s multi-project feature. Though, we do not support Java 9’s module system.
     - Some sub-project’s depend on others, e.g., `contract` and `devpack` depend on `core`, or`compiler` depends on `contract` and `devpack`.
