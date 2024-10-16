@@ -124,13 +124,9 @@ public class VerificationScript extends NeoSerializable {
         if (isSingleSigScript()) {
             return 1;
         } else if (isMultiSigScript()) {
-            try {
-                try (BinaryReader reader = new BinaryReader(script)) {
-                    return reader.readPushInteger();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            } catch (DeserializationException e) {
+            try (BinaryReader reader = new BinaryReader(script)) {
+                return reader.readPushInteger();
+            } catch (DeserializationException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
