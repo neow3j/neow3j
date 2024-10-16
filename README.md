@@ -109,7 +109,7 @@ Join the AxLabs Discord server to chat with us and ask questions. Here are some 
     - The language version for compilation is set to Java 8 in the Gradle build file. Thus, if you don’t have a Java 8 installation, Gradle might attempt to download one automatically.
     - Of course you need an installed JDK for Gradle to be able to run. The Java version active in your environment can be higher than 8.
 - **Tests 🧪**
-    - Run unit tests with `./gradlew test`
+    - Run unit tests with `./gradlew test`.
     - Run integration tests with `./gradlew integrationTest`. They require Docker for spinning up a containerized blockchain node.
 - **Linting and formatting** 🧹
     - Compiler warnings are turned off in the build configuration, so when you execute a Gradle task in the command line you will not see any warnings, but your IDE might give you many.
