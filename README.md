@@ -100,7 +100,7 @@ Contributors are welcome!
 
 Take a look at our open [issues](https://github.com/neow3j/neow3j/issues). We’re collecting all issues in the main neow3j repository, including issues related to documentation, tutorials, and coding examples. Some issues are labelled with a level of difficulty ([beginner](https://github.com/neow3j/neow3j/labels/beginner), [intermediate](https://github.com/neow3j/neow3j/labels/intermediate), [advanced](https://github.com/neow3j/neow3j/labels/advanced)). Create new issues if you want something not on the list.
 
-Join the AxLabs Discord server to chat with us and ask questions. Here are some points that should help you get started with the code base.
+Join the [AxLabs Discord](https://discord.gg/UxQDsAzH) server to chat with us and ask questions. Here are some points that should help you get started with the code base.
 
 - **Setup** 🔰
     - [Fork](https://github.com/neow3j/neow3j/fork) the repository and git-clone the fork.
