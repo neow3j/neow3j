@@ -116,7 +116,7 @@ Join the AxLabs Discord server to chat with us and ask questions. Here are some 
     - There is no Gradle task for auto-formatting or validating code formatting, i.e., your formatting will go unchecked. However, there is a code style configuration in the `.idea` folder committed to the repo that you could use if you work with IntelliJ.
 - **Code Structure** 🏗️
     - The code is split into multiple sub-projects based on Gradle’s multi-project feature. Though, we do not support Java 9’s module system.
-    - Some sub-project’s depend on others, e.g., `contract` and `devpack` depend on `core`, or`compiler` depends on `contract` and `devpack`.
+    - Some sub-projects depend on others, e.g., `contract` and `devpack` depend on `core`, or`compiler` depends on `contract` and `devpack`.
     - All integration tests live in their own sub-project called `int-tests`. The reason being dependency issues if we place the tests in their respective project. 
 
 ## Who's using neow3j? :rocket:
