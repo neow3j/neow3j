@@ -100,7 +100,7 @@ public class ObjectsConverter implements Converter {
                 handleInstanceOf((TypeInsnNode) insn, neoMethod);
                 break;
             default:
-                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                throw new UnsupportedOperationException(format("The opcode %s is not supported in the %s.",
                         opcode.name(), this.getClass().getName()));
         }
         return insn;

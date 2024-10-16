@@ -106,7 +106,7 @@ public class MiscConverter implements Converter {
                 throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
                 // endregion ### MISCELLANEOUS ###
             default:
-                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                throw new UnsupportedOperationException(format("The opcode %s is not supported in the %s.",
                         opcode.name(), this.getClass().getName()));
         }
         return insn;
