@@ -173,3 +173,6 @@ gradle.properties
 # Ignore .idea folder but not project styling
 .idea/*
 !.idea/codeStyles/
+
+# Ignore VSCode workspace settings
+.vscode/*

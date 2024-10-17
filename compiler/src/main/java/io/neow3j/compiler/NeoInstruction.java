@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.OperandSize;
 import io.neow3j.serialization.BinaryReader;
-import io.neow3j.utils.Numeric;
 
 import java.io.IOException;
 
@@ -244,9 +243,8 @@ public class NeoInstruction {
             }
 
             // Check if operand has correct length according to specified operand prefix.
-            BinaryReader reader = new BinaryReader(operandPrefix);
             long specifiedOperandSize = 0;
-            try {
+            try (BinaryReader reader = new BinaryReader(operandPrefix)) {
                 if (operandSize.prefixSize() == 1) {
                     specifiedOperandSize = reader.readUnsignedByte();
                 } else if (operandSize.prefixSize() == 2) {

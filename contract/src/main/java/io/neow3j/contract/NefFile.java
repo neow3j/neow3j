@@ -278,8 +278,8 @@ public class NefFile extends NeoSerializable {
             throw new IllegalArgumentException("The given NEF file is too large. File was " + nefFileSize +
                     " bytes, but a max of 2^20 bytes is allowed.");
         }
-        try (FileInputStream nefStream = new FileInputStream(nefFile)) {
-            BinaryReader reader = new BinaryReader(nefStream);
+        try (FileInputStream nefStream = new FileInputStream(nefFile);
+             BinaryReader reader = new BinaryReader(nefStream)) {
             return reader.readSerializable(NefFile.class);
         }
     }
@@ -301,8 +301,8 @@ public class NefFile extends NeoSerializable {
             throw new UnexpectedReturnTypeException(stackItem.getType(), BYTE_STRING);
         }
         byte[] nefBytes = stackItem.getByteArray();
-        try (ByteArrayInputStream nefStream = new ByteArrayInputStream(nefBytes)) {
-            BinaryReader reader = new BinaryReader(nefStream);
+        try (ByteArrayInputStream nefStream = new ByteArrayInputStream(nefBytes);
+             BinaryReader reader = new BinaryReader(nefStream)) {
             return reader.readSerializable(NefFile.class);
         } catch (IOException ignore) {
             // doesn't happen because we are reading from a byte array.

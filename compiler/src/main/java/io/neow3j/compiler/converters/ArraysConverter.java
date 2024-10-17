@@ -84,6 +84,9 @@ public class ArraysConverter implements Converter {
             case MULTIANEWARRAY:
                 throw new CompilerException(neoMethod, "Only the first dimension of a multi-dimensional array " +
                         "declaration can be defined, e.g., new int[10][].");
+            default:
+                throw new UnsupportedOperationException(format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

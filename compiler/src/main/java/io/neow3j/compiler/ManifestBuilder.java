@@ -1,7 +1,6 @@
 package io.neow3j.compiler;
 
 import io.neow3j.constants.NeoConstants;
-import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.ManifestExtra;
@@ -229,16 +228,6 @@ public class ManifestBuilder {
         if (nativeContract == NativeContract.None) {
             throw new CompilerException("The provided native contract does not exist. The None value exists for the " +
                     "sole purpose to serve as an internal default value and is not meant to be used.");
-        }
-    }
-
-    private static void throwIfNotValidSignature(String signature) {
-        try {
-            Base64.decode(signature);
-        } catch (Exception e) {
-            throw new CompilerException(
-                    format("Invalid signature: %s. Please, add a valid signature in base64 format.", signature)
-            );
         }
     }
 

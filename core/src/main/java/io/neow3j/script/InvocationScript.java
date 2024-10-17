@@ -137,9 +137,8 @@ public class InvocationScript extends NeoSerializable {
      * @return the list of signatures found in this script.
      */
     public List<SignatureData> getSignatures() {
-        BinaryReader r = new BinaryReader(script);
         List<SignatureData> sigs = new ArrayList<>();
-        try {
+        try (BinaryReader r = new BinaryReader(script)) {
             while (r.available() > 0 && OpCode.PUSHDATA1.getCode() == r.readByte()) {
                 r.readByte();
                 sigs.add(SignatureData.fromByteArray(r.readBytes(NeoConstants.SIGNATURE_SIZE)));

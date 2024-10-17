@@ -124,9 +124,9 @@ public class VerificationScript extends NeoSerializable {
         if (isSingleSigScript()) {
             return 1;
         } else if (isMultiSigScript()) {
-            try {
-                return new BinaryReader(script).readPushInteger();
-            } catch (DeserializationException e) {
+            try (BinaryReader reader = new BinaryReader(script)) {
+                return reader.readPushInteger();
+            } catch (DeserializationException | IOException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -170,8 +170,7 @@ public class VerificationScript extends NeoSerializable {
         if (script.length < 42) {
             return false;
         }
-        try {
-            BinaryReader reader = new BinaryReader(this.script);
+        try (BinaryReader reader = new BinaryReader(this.script)) {
             int n = reader.readPushInteger(); // Signing Threshold (n of m)
             if (n < 1 || n > NeoConstants.MAX_PUBLIC_KEYS_PER_MULTISIG_ACCOUNT) {
                 return false;
@@ -226,9 +225,8 @@ public class VerificationScript extends NeoSerializable {
      * @return the list of public keys encoded in this script.
      */
     public List<ECPublicKey> getPublicKeys() {
-        BinaryReader reader = new BinaryReader(this.script);
         List<ECPublicKey> keys = new ArrayList<>();
-        try {
+        try (BinaryReader reader = new BinaryReader(this.script)) {
             if (isSingleSigScript()) {
                 reader.readByte(); // OpCode.PUSHDATA1;
                 reader.readByte(); // size byte

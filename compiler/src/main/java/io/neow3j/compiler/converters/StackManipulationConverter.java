@@ -80,6 +80,9 @@ public class StackManipulationConverter implements Converter {
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PUSH3));
                 neoMethod.addInstruction(new NeoInstruction(OpCode.PICK));
                 break;
+            default:
+                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

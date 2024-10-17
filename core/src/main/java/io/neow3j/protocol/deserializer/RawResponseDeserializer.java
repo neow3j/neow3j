@@ -41,6 +41,7 @@ public class RawResponseDeserializer
         ((ResolvableDeserializer) defaultDeserializer).resolve(ctxt);
     }
 
+    @SuppressWarnings("resource") // Underlying resource is outside of this method's control.
     private String getRawResponse(JsonParser jp) throws IOException {
         final InputStream inputSource = (InputStream) jp.getInputSource();
 
@@ -50,11 +51,7 @@ public class RawResponseDeserializer
 
         inputSource.reset();
 
-        return streamToString(inputSource);
-    }
-
-    private String streamToString(InputStream input) {
-        return new Scanner(input, StandardCharsets.UTF_8.name()).useDelimiter("\\Z").next();
+        return new Scanner(inputSource, StandardCharsets.UTF_8.name()).useDelimiter("\\Z").next();
     }
 
 }

@@ -105,6 +105,9 @@ public class MiscConverter implements Converter {
                 // byte. See https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html#jvms-6.5.wide
                 throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
                 // endregion ### MISCELLANEOUS ###
+            default:
+                throw new UnsupportedOperationException(format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

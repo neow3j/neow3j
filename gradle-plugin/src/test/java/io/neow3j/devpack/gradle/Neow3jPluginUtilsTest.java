@@ -41,16 +41,17 @@ public class Neow3jPluginUtilsTest {
         String zipFilePath = Neow3jPluginUtils.writeDebugInfoZip(dbgnfo, contractName, outDir);
         assertThat(zipFilePath,
                 is(outDir.toFile().getAbsolutePath() + File.separator + contractName + NEFDBGNFO_SUFFIX));
-        ZipFile generatedZipFile = new ZipFile(zipFilePath);
-        Enumeration<? extends ZipEntry> entries = generatedZipFile.entries();
-        if (!entries.hasMoreElements()) {
-            fail("Zip file didn't contain an entry.");
-        }
-        ZipEntry entry = entries.nextElement();
-        assertThat(entry.getName(), is(contractName + DEBUG_JSON_SUFFIX));
-        objectMapper.readValue(generatedZipFile.getInputStream(entry), DebugInfo.class);
-        if (entries.hasMoreElements()) {
-            fail("Zip file contained more than one entry.");
+        try (ZipFile generatedZipFile = new ZipFile(zipFilePath)) {
+            Enumeration<? extends ZipEntry> entries = generatedZipFile.entries();
+            if (!entries.hasMoreElements()) {
+                fail("Zip file didn't contain an entry.");
+            }
+            ZipEntry entry = entries.nextElement();
+            assertThat(entry.getName(), is(contractName + DEBUG_JSON_SUFFIX));
+            objectMapper.readValue(generatedZipFile.getInputStream(entry), DebugInfo.class);
+            if (entries.hasMoreElements()) {
+                fail("Zip file contained more than one entry.");
+            }
         }
 
     }

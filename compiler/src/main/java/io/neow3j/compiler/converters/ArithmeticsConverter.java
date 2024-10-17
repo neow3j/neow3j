@@ -46,6 +46,9 @@ public class ArithmeticsConverter implements Converter {
             case LNEG:
                 neoMethod.addInstruction(new NeoInstruction(OpCode.NEGATE));
                 break;
+            default:
+                throw new UnsupportedOperationException(String.format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }

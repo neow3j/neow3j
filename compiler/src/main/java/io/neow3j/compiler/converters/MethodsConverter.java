@@ -101,6 +101,9 @@ public class MethodsConverter implements Converter {
             case INVOKEINTERFACE:
             case INVOKEDYNAMIC:
                 throw new CompilerException(neoMethod, format("JVM opcode %s is not supported.", opcode.name()));
+            default:
+                throw new UnsupportedOperationException(format("The opcode %s is not supported in the %s.",
+                        opcode.name(), this.getClass().getName()));
         }
         return insn;
     }
@@ -331,10 +334,6 @@ public class MethodsConverter implements Converter {
             clazz = getAsmClassForInternalName(clazz.superName, compUnit.getClassLoader());
         }
         return isContractInterface;
-    }
-
-    private static boolean hasInstructionAnnotation(MethodNode asmMethod) {
-        return hasAnnotations(asmMethod, Instructions.class, Instruction.class);
     }
 
     // Converts the instructions of a string switch from JVM bytecode to NeoVM code. The `MethodInsnNode` is expected
