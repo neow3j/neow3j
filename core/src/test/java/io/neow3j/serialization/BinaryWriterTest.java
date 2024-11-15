@@ -8,6 +8,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -39,6 +40,27 @@ public class BinaryWriterTest {
         uint = 12345L;
         writer.writeUInt32(uint);
         assertAndResetStreamContents(new byte[]{0x39, 0x30, 0, 0});
+    }
+
+    @Test
+    public void writeUInt64() throws IOException {
+        BigInteger uint = BigInteger.valueOf(2).pow(64).subtract(BigInteger.ONE);
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff});
+
+        uint = BigInteger.ZERO;
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
+
+        uint = BigInteger.valueOf(12345L);
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{0x39, 0x30, 0, 0, 0, 0, 0, 0});
+
+        BigInteger largeUint = BigInteger.valueOf(2).pow(64);
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt64(largeUint));
+
+        BigInteger smallUint = BigInteger.ZERO.subtract(BigInteger.ONE);
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt64(smallUint));
     }
 
     @Test
