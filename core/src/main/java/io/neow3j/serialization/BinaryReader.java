@@ -43,9 +43,9 @@ import java.util.List;
 
 public class BinaryReader implements AutoCloseable {
 
-    private DataInputStream reader;
-    private byte[] array = new byte[8];
-    private ByteBuffer buffer = ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN);
+    private final DataInputStream reader;
+    private final byte[] array = new byte[8];
+    private final ByteBuffer buffer = ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN);
     private int position = 0;
     private int mark = -1;
 
@@ -174,9 +174,27 @@ public class BinaryReader implements AutoCloseable {
     }
 
     /**
+     * Reads a 64-bit unsigned integer in little-endian format from the underlying input stream.
+     * <p>
+     * Since Java does not support unsigned numeral types, the unsigned integer is represented by a BigInteger.
+     *
+     * @return the 64-bit unsigned integer.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public BigInteger readUInt64() throws IOException {
+        reader.readFully(array, 0, 8);
+        position += 8;
+        // long actually has enough space for the correct value,
+        // so we get that from the ByteBuffer b/c of byte order,
+        // then we use the hex value because that doesn't care about signs
+        String hUint64 = Long.toHexString(buffer.getLong(0));
+        return new BigInteger(hUint64, 16);
+    }
+
+    /**
      * Reads a 64-bit signed integer in little-endian format from the underlying input stream.
      *
-     * @return the 34-bit unsigned integer represented as a long.
+     * @return the 64-bit unsigned integer represented as a long.
      * @throws IOException if an I/O exception occurs.
      */
     public long readInt64() throws IOException {

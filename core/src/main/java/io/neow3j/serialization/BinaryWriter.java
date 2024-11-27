@@ -29,16 +29,18 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+
 import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryWriter implements AutoCloseable {
 
-    private DataOutputStream writer;
-    private byte[] array = new byte[8];
-    private ByteBuffer buffer = ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN);
+    private final DataOutputStream writer;
+    private final byte[] array = new byte[8];
+    private final ByteBuffer buffer = ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN);
 
     public BinaryWriter(OutputStream stream) {
         this.writer = new DataOutputStream(stream);
@@ -100,21 +102,32 @@ public class BinaryWriter implements AutoCloseable {
         writer.write(array, 0, 4);
     }
 
-    public void writeInt32(int v) throws IOException {
+    /**
+     * Writes the first (least-significant) 16 bits of the given int (signed 32-bit integer) to the underlying output
+     * stream in little-endian order. I.e. the byte output represents an unsigned 16-bit integer in the range [0, 2^16).
+     *
+     * @param v the value which needs to be in the range [0, 2^16).
+     * @throws IOException              if an I/O exception occurs.
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^16).
+     */
+    public void writeUInt16(int v) throws IOException {
+        if (v < 0 || v >= (int) Math.pow(2, 16)) {
+            throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in interval [0, 2^16).");
+        }
         buffer.putInt(0, v);
-        writer.write(array, 0, 4);
+        writer.write(array, 0, 2);
     }
 
     /**
-     * Writes the given long (signed 64-bit integer) to the underlying output stream in little-endian order. The
-     * long's byte representation is its two's complement.
+     * Writes the given short (signed 16-bit integer) to the underlying output stream in little-endian order.
+     * The short's byte representation is its two's complement.
      *
-     * @param v the value.
-     * @throws IOException if an I/O exception occurs.
+     * @param v the short value to be written
+     * @throws IOException if an I/O exception occurs on writing to the buffer.
      */
-    public void writeInt64(long v) throws IOException {
-        buffer.putLong(0, v);
-        writer.write(array, 0, 8);
+    public void writeInt16(short v) throws IOException {
+        buffer.putShort(0, v);
+        writer.write(array, 0, 2);
     }
 
     /**
@@ -132,6 +145,49 @@ public class BinaryWriter implements AutoCloseable {
         }
         buffer.putLong(0, v);
         writer.write(array, 0, 4);
+    }
+
+    /**
+     * Writes the given int (signed 32-bit integer) to the underlying output stream in little-endian order.
+     * The int's byte representation is its two's complement.
+     *
+     * @param v the int value to be written
+     * @throws IOException if an I/O exception occurs on writing to the buffer.
+     */
+    public void writeInt32(int v) throws IOException {
+        buffer.putInt(0, v);
+        writer.write(array, 0, 4);
+    }
+
+    /**
+     * Writes the first (least-significant) 64 bits of the given long (signed 64-bit integer) to the underlying
+     * output stream in little-endian order. I.e. the byte output represents an unsigned 32-bit integer in the range
+     * [0, 2^64).
+     *
+     * @param v the value which needs to be in the range [0, 2^64).
+     * @throws IOException              if an I/O exception occurs.
+     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^64).
+     */
+    public void writeUInt64(BigInteger v) throws IOException {
+        if ((v.compareTo(BigInteger.ZERO) < 0) || v.compareTo(BigInteger.valueOf(2).pow(64)) > 0) {
+            throw new IllegalArgumentException("Value of 64-bit unsigned integer was not in interval [0, 2^64).");
+        }
+        // the unsigned value fits in a long, so we write a regular long to the buffer in the right byte-order
+        String hexValue = v.toString(16);
+        buffer.putLong(0, Long.parseUnsignedLong(hexValue, 16));
+        writer.write(array, 0, 8);
+    }
+
+    /**
+     * Writes the given long (signed 64-bit integer) to the underlying output stream in little-endian order.
+     * The long's byte representation is its two's complement.
+     *
+     * @param v the value.
+     * @throws IOException if an I/O exception occurs.
+     */
+    public void writeInt64(long v) throws IOException {
+        buffer.putLong(0, v);
+        writer.write(array, 0, 8);
     }
 
     public void writeSerializableVariableBytes(NeoSerializable v) throws IOException {
@@ -161,22 +217,6 @@ public class BinaryWriter implements AutoCloseable {
         for (int i = 0; i < v.size(); i++) {
             v.get(i).serialize(this);
         }
-    }
-
-    /**
-     * Writes the first (least-significant) 16 bits of the given int (signed 32-bit integer) to the underlying output
-     * stream in little-endian order. I.e. the byte output represents an unsigned 16-bit integer in the range [0, 2^16).
-     *
-     * @param v the value which needs to be in the range [0, 2^16).
-     * @throws IOException              if an I/O exception occurs.
-     * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^16).
-     */
-    public void writeUInt16(int v) throws IOException {
-        if (v < 0 || v >= (int) Math.pow(2, 16)) {
-            throw new IllegalArgumentException("Value of 16-bit unsigned integer was not in interval [0, 2^16).");
-        }
-        buffer.putInt(0, v);
-        writer.write(array, 0, 2);
     }
 
     public void writeVarBytes(byte[] v) throws IOException {

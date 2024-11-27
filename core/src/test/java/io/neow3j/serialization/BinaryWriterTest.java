@@ -8,6 +8,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -26,6 +27,25 @@ public class BinaryWriterTest {
     }
 
     @Test
+    public void writeInt16() throws IOException {
+        short s = Short.MAX_VALUE;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0x7f});
+
+        s = Short.MIN_VALUE;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x80});
+
+        s = 0;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00});
+
+        s = 12345;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x39, (byte) 0x30});
+    }
+
+    @Test
     public void writeUInt32() throws IOException {
         long uint = (long) Math.pow(2, 32) - 1;
         writer.writeUInt32(uint);
@@ -39,6 +59,46 @@ public class BinaryWriterTest {
         uint = 12345L;
         writer.writeUInt32(uint);
         assertAndResetStreamContents(new byte[]{0x39, 0x30, 0, 0});
+    }
+
+    @Test
+    public void writeInt32() throws IOException {
+        int i = Integer.MAX_VALUE;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x7f});
+
+        i = Integer.MIN_VALUE;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80});
+
+        i = 0;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00});
+
+        i = 1234567890;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0xd2, (byte) 0x02, (byte) 0x96, (byte) 0x49});
+    }
+
+    @Test
+    public void writeUInt64() throws IOException {
+        BigInteger uint = BigInteger.valueOf(2).pow(64).subtract(BigInteger.ONE);
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff});
+
+        uint = BigInteger.ZERO;
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{0, 0, 0, 0, 0, 0, 0, 0});
+
+        uint = BigInteger.valueOf(12345L);
+        writer.writeUInt64(uint);
+        assertAndResetStreamContents(new byte[]{0x39, 0x30, 0, 0, 0, 0, 0, 0});
+
+        BigInteger largeUint = BigInteger.valueOf(2).pow(64);
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt64(largeUint));
+
+        BigInteger smallUint = BigInteger.ZERO.subtract(BigInteger.ONE);
+        assertThrows(IllegalArgumentException.class, () -> writer.writeUInt64(smallUint));
     }
 
     @Test

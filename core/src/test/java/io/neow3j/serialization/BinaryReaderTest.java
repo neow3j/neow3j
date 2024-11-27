@@ -271,6 +271,33 @@ public class BinaryReaderTest extends TestBinaryUtils {
     }
 
     @Test
+    public void readUInt64() throws IOException {
+        // Max value
+        byte[] data = new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff};
+        buildBinaryReader(data);
+        BigInteger value = this.testBinaryReader.readUInt64();
+        assertThat(value, is(BigInteger.valueOf(2).pow(64).subtract(BigInteger.ONE)));
+
+        // Value 1
+        data = new byte[]{(byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt64();
+        assertThat(value, is(BigInteger.valueOf(1)));
+
+        // Min value
+        data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt64();
+        assertThat(value, is(BigInteger.valueOf(0)));
+
+        // Any value with longer input than needed. Last 0xff should be ignored.
+        data = new byte[]{(byte) 0x8c, (byte) 0xae, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff};
+        buildBinaryReader(data);
+        value = this.testBinaryReader.readUInt64();
+        assertThat(value, is(BigInteger.valueOf(44_684)));
+    }
+
+    @Test
     public void readInt64() throws IOException {
         // Min value (-2^63)
         byte[] data = new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00,
