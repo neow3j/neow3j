@@ -33,6 +33,7 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+
 import org.bouncycastle.math.ec.ECPoint;
 
 public class BinaryWriter implements AutoCloseable {
@@ -117,6 +118,13 @@ public class BinaryWriter implements AutoCloseable {
         writer.write(array, 0, 2);
     }
 
+    /**
+     * Writes the given short (signed 16-bit integer) to the underlying output stream in little-endian order.
+     * The short's byte representation is its two's complement.
+     *
+     * @param v the short value to be written
+     * @throws IOException if an I/O exception occurs on writing to the buffer.
+     */
     public void writeInt16(short v) throws IOException {
         buffer.putShort(0, v);
         writer.write(array, 0, 2);
@@ -139,11 +147,17 @@ public class BinaryWriter implements AutoCloseable {
         writer.write(array, 0, 4);
     }
 
+    /**
+     * Writes the given int (signed 32-bit integer) to the underlying output stream in little-endian order.
+     * The int's byte representation is its two's complement.
+     *
+     * @param v the int value to be written
+     * @throws IOException if an I/O exception occurs on writing to the buffer.
+     */
     public void writeInt32(int v) throws IOException {
         buffer.putInt(0, v);
         writer.write(array, 0, 4);
     }
-
 
     /**
      * Writes the first (least-significant) 64 bits of the given long (signed 64-bit integer) to the underlying
@@ -155,10 +169,7 @@ public class BinaryWriter implements AutoCloseable {
      * @throws IllegalArgumentException if the arguments value does not lie in the interval [0, 2^64).
      */
     public void writeUInt64(BigInteger v) throws IOException {
-        if (
-                (v.compareTo(BigInteger.ZERO) < 0)
-                        || v.compareTo(BigInteger.valueOf(2).pow(64)) > 0
-        ) {
+        if ((v.compareTo(BigInteger.ZERO) < 0) || v.compareTo(BigInteger.valueOf(2).pow(64)) > 0) {
             throw new IllegalArgumentException("Value of 64-bit unsigned integer was not in interval [0, 2^64).");
         }
         // the unsigned value fits in a long, so we write a regular long to the buffer in the right byte-order
@@ -168,8 +179,8 @@ public class BinaryWriter implements AutoCloseable {
     }
 
     /**
-     * Writes the given long (signed 64-bit integer) to the underlying output stream in little-endian order. The
-     * long's byte representation is its two's complement.
+     * Writes the given long (signed 64-bit integer) to the underlying output stream in little-endian order.
+     * The long's byte representation is its two's complement.
      *
      * @param v the value.
      * @throws IOException if an I/O exception occurs.
