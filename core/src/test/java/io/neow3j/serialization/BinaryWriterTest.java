@@ -27,6 +27,25 @@ public class BinaryWriterTest {
     }
 
     @Test
+    public void writeInt16() throws IOException {
+        short s = Short.MAX_VALUE;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0x7f});
+
+        s = Short.MIN_VALUE;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x80});
+
+        s = 0;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00});
+
+        s = 12345;
+        writer.writeInt16(s);
+        assertAndResetStreamContents(new byte[]{(byte) 0x39, (byte) 0x30});
+    }
+
+    @Test
     public void writeUInt32() throws IOException {
         long uint = (long) Math.pow(2, 32) - 1;
         writer.writeUInt32(uint);
@@ -40,6 +59,25 @@ public class BinaryWriterTest {
         uint = 12345L;
         writer.writeUInt32(uint);
         assertAndResetStreamContents(new byte[]{0x39, 0x30, 0, 0});
+    }
+
+    @Test
+    public void writeInt32() throws IOException {
+        int i = Integer.MAX_VALUE;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x7f});
+
+        i = Integer.MIN_VALUE;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80});
+
+        i = 0;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00});
+
+        i = 1234567890;
+        writer.writeInt32(i);
+        assertAndResetStreamContents(new byte[]{(byte) 0xd2, (byte) 0x02, (byte) 0x96, (byte) 0x49});
     }
 
     @Test
