@@ -116,12 +116,16 @@ public class ManifestBuilder {
                 .map(ManifestBuilder::getContractPermission)
                 .collect(Collectors.toList());
 
-        // If there is one permission with the wildcard character '*', it must be the only one.
-        boolean wildcardPermission = permissions.stream()
-                .anyMatch(p -> p.getContract().equals("*"));
-        if (wildcardPermission && permissions.size() > 1) {
-            throw new CompilerException("A contract permission with the wildcard character '*' can only be used " +
-                    "exclusively and not in combination with other permissions.");
+        // If there is one permission that has both a wildcard for contracts and a wildcard for methods, it should be
+        // the only permission of this contract as any other permission would be redundant. While it's technically
+        // allowed, neow3j will throw an exception to make sure the developer is aware and not left with a false
+        // promise.
+        boolean completeWildcardPermission = permissions.stream()
+                .anyMatch(p -> p.getContract().equals("*") &&
+                        p.getMethods().size() == 1 && p.getMethods().get(0).equals("*"));
+        if (completeWildcardPermission && permissions.size() > 1) {
+            throw new CompilerException("A contract permission with the wildcard character '*' for contracts and " +
+                    "methods should only be used exclusively and not in combination with other permissions.");
         }
         return permissions;
     }
