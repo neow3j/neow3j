@@ -1744,6 +1744,9 @@ public class ResponseTest extends ResponseTester {
 
         assertThat(protocol.getStandbyCommittee(), hasSize(1));
         assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        assertThat(protocol.getSeedList(), hasSize(1));
+        assertThat(protocol.getSeedList().get(0), is("localhost:40333"));
     }
 
 
