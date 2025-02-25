@@ -193,6 +193,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             @JsonSetter(nulls = Nulls.AS_EMPTY)
             private List<ECPublicKey> standbyCommittee;
 
+            @JsonProperty("seedlist")
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            private List<String> seedList;
+
             public Protocol() {
             }
 
@@ -240,6 +244,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return standbyCommittee;
             }
 
+            public List<String> getSeedList() {
+                return seedList;
+            }
+
             @Override
             public boolean equals(Object o) {
                 if (this == o) {
@@ -259,7 +267,8 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         Objects.equals(getMemoryPoolMaxTransactions(), that.getMemoryPoolMaxTransactions()) &&
                         Objects.equals(getInitialGasDistribution(), that.getInitialGasDistribution()) &&
                         Objects.equals(getHardforks(), that.getHardforks()) &&
-                        Objects.equals(getStandbyCommittee(), that.getStandbyCommittee());
+                        Objects.equals(getStandbyCommittee(), that.getStandbyCommittee()) &&
+                        Objects.equals(getSeedList(), that.getSeedList());
             }
 
             @Override
@@ -267,7 +276,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return Objects.hash(getAddressVersion(), getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
                         getMaxTraceableBlocks(), getMaxValidUntilBlockIncrement(), getMaxTransactionsPerBlock(),
                         getMemoryPoolMaxTransactions(), getInitialGasDistribution(), getHardforks(),
-                        getStandbyCommittee());
+                        getStandbyCommittee(), getSeedList());
             }
 
             @Override
@@ -284,6 +293,7 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         ", initialGasDistribution=" + initialGasDistribution +
                         ", hardforks=" + hardforks +
                         ", standbyCommittee=" + standbyCommittee +
+                        ", seedList=" + seedList +
                         '}';
             }
 
