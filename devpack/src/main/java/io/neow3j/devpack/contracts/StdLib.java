@@ -141,6 +141,24 @@ public class StdLib extends ContractInterface {
     public native ByteString base64Decode(String input);
 
     /**
+     * Encodes the given string into a Base64URL string.
+     *
+     * @param input the string to encode.
+     * @return the encoded string.
+     */
+    @CallFlags(None)
+    public native String base64UrlEncode(String data);
+
+    /**
+     * Decodes the given Base64URL-encoded string.
+     *
+     * @param input the Base64URL-encoded string.
+     * @return the decoded string.
+     */
+    @CallFlags(None)
+    public native String base64UrlDecode(String input);
+
+    /**
      * Encodes the given byte string to a Base58 string.
      *
      * @param input the bytes to encode.
