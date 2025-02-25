@@ -98,6 +98,17 @@ public class CryptoLibIntegrationTest {
     }
 
     @Test
+    public void verifyWithEd25519() throws IOException {
+        String message = "af82";
+        String publicKey = "fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025";
+        String signature =
+                "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message), byteArray(publicKey),
+                signature(signature));
+        assertTrue(response.getInvocationResult().getFirstStackItem().getBoolean());
+    }
+
+    @Test
     public void getHash() throws Throwable {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
@@ -130,6 +141,10 @@ public class CryptoLibIntegrationTest {
         public static boolean verifyWithECDsaWithSignatureData(ByteString message, ECPoint pubKey,
                 ByteString signature, byte curve) {
             return new CryptoLib().verifyWithECDsa(message, pubKey, signature, curve);
+        }
+
+        public static boolean verifyWithEd25519(ByteString message, ECPoint pubKey, ByteString signature) {
+            return new CryptoLib().verifyWithEd25519(message, pubKey, signature);
         }
 
         public static Hash160 getHash() {
