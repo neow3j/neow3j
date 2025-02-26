@@ -3,7 +3,7 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.InteropInterface;
-import io.neow3j.devpack.constants.NamedCurve;
+import io.neow3j.devpack.constants.NamedCurveHash;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
@@ -65,17 +65,17 @@ public class CryptoLib extends ContractInterface {
     public native ByteString keccak256(ByteString data);
 
     /**
-     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code curve}
-     * can be one of the curves defined in {@link NamedCurve}.
+     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code
+     * curveHash} can be one of the curve/hash-algorithm combinations defined in {@link NamedCurveHash}.
      *
      * @param message   the signed message.
      * @param publicKey the public key of the key pair used for signing.
      * @param signature the message signature.
-     * @param curve     the curve to use in the verification.
+     * @param curveHash the curve/hash-algorithm combination to use in the verification.
      * @return true if the signature is valid. False, otherwise.
      */
     @CallFlags(None)
-    public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curve);
+    public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curveHash);
 
     /**
      * Serializes a bls12381 point.
