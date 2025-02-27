@@ -51,7 +51,7 @@ public class IntegrationTestHelper {
         }
     }
 
-    static void fundAccountsWithNeo(Neow3j neow3j, BigInteger amount, Account... accounts)
+    public static void fundAccountsWithNeo(Neow3j neow3j, BigInteger amount, Account... accounts)
             throws Throwable {
         NeoToken neoToken = new NeoToken(neow3j);
         for (Account account : accounts) {

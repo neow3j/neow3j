@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.contract.FungibleToken;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
@@ -30,6 +30,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
+import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
+import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
@@ -60,16 +64,14 @@ public class NeoTokenIntegrationTest {
     @BeforeAll
     public void setUp() throws Throwable {
         neoToken = new io.neow3j.contract.NeoToken(ct.getNeow3j());
-        Hash256 fundHash1 = ct.transferGas(ct.getDefaultAccount().getScriptHash(), new BigInteger("1000000000"));
-        Hash256 fundHash2 = ct.transferNeo(ct.getDefaultAccount().getScriptHash(), new BigInteger("10000"));
-        Hash256 fundHash3 = ct.transferGas(ct.getClient1().getScriptHash(),
-                FungibleToken.toFractions(new BigDecimal("10000"), 8));
+        BigDecimal gasFundAmount = new BigDecimal("10000");
+        fundAccountsWithGas(ct.getNeow3j(), gasFundAmount, ct.getDefaultAccount(), CLIENT_1, CLIENT_2);
+
         client1NeoFunded = new BigInteger("10000");
-        Hash256 fundHash4 = ct.transferNeo(ct.getClient1().getScriptHash(), client1NeoFunded);
-        Await.waitUntilTransactionIsExecuted(fundHash1, ct.getNeow3j());
-        Await.waitUntilTransactionIsExecuted(fundHash2, ct.getNeow3j());
-        Await.waitUntilTransactionIsExecuted(fundHash3, ct.getNeow3j());
-        Await.waitUntilTransactionIsExecuted(fundHash4, ct.getNeow3j());
+        fundAccountsWithNeo(ct.getNeow3j(), client1NeoFunded, ct.getDefaultAccount(), CLIENT_1, CLIENT_2);
+
+        registerCandidate(ct.getDefaultAccount());
+        registerCandidate(CLIENT_2);
     }
 
     @Test
@@ -100,7 +102,7 @@ public class NeoTokenIntegrationTest {
                 publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
 
         List<StackItem> l = response.getInvocationResult().getStack().get(0).getList();
-        assertThat(l, hasSize(1));
+        assertThat(l, hasSize(2));
         List<StackItem> candidateStruct = l.get(0).getList();
         assertThat(candidateStruct.get(0).getByteArray(),
                 is(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
@@ -114,7 +116,7 @@ public class NeoTokenIntegrationTest {
         String iteratorId = response.getStack().get(0).getIteratorId();
 
         List<StackItem> allCandidates = ct.traverseIterator(sessionId, iteratorId);
-        assertThat(allCandidates, hasSize(0));
+        assertThat(allCandidates, hasSize(1));
 
         io.neow3j.contract.NeoToken neoToken = new io.neow3j.contract.NeoToken(ct.getNeow3j());
         registerCandidate(ct.getClient1());
@@ -126,7 +128,7 @@ public class NeoTokenIntegrationTest {
         iteratorId = response.getStack().get(0).getIteratorId();
 
         allCandidates = ct.traverseIterator(sessionId, iteratorId);
-        assertThat(allCandidates, hasSize(1));
+        assertThat(allCandidates, hasSize(2));
         assertThat(allCandidates.get(0).getType(), is(StackItemType.STRUCT));
         List<StackItem> candStruct = allCandidates.get(0).getList();
         assertThat(candStruct.get(0).getHexString(),
@@ -212,19 +214,15 @@ public class NeoTokenIntegrationTest {
     @Test
     public void vote() throws Throwable {
         ct.signWithDefaultAccount();
-        // Add the default account as a candidate
-        Hash256 txHash = new io.neow3j.contract.NeoToken(ct.getNeow3j())
-                .registerCandidate(ct.getDefaultAccount().getECKeyPair().getPublicKey())
-                .signers(AccountSigner.calledByEntry(ct.getDefaultAccount()))
-                .sign()
-                .send()
-                .getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
+        Account voter = ct.getDefaultAccount();
+        ECKeyPair.ECPublicKey voteTo = CLIENT_2.getECKeyPair().getPublicKey();
+        List<io.neow3j.contract.NeoToken.Candidate> candidates = new io.neow3j.contract.NeoToken(ct.getNeow3j())
+                .getCandidates();
+        assertThat(candidates.get(1).getPublicKey(), is(voteTo));
 
-        ct.signWithDefaultAccount();
         NeoInvokeFunction res = ct.callInvokeFunction(testName,
-                hash160(ct.getDefaultAccount().getScriptHash()),
-                publicKey(ct.getDefaultAccount().getECKeyPair().getPublicKey().getEncoded(true)));
+                hash160(voter.getScriptHash()),
+                publicKey(voteTo.getEncodedCompressedHex()));
 
         assertTrue(res.getInvocationResult().getStack().get(0).getBoolean());
     }
