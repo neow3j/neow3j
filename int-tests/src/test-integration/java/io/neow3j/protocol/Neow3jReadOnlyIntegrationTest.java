@@ -440,8 +440,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
         assertThat(nef.getScript(),
-                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef.getChecksum(), is(1325686241L));
+                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef.getChecksum(), is(1991619121L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -452,13 +452,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(20));
-        ContractMethod method = abi.getMethods().get(11);
+        assertThat(abi.getMethods(), hasSize(21));
+        ContractMethod method = abi.getMethods().get(12);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getType(),
                 is(ContractParameterType.PUBLIC_KEY));
-        assertThat(method.getOffset(), is(77));
+        assertThat(method.getOffset(), is(84));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
