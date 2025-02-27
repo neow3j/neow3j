@@ -628,6 +628,22 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testFindStorage() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(GAS_HASH, "")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(4)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(4));
+        assertThat(storageEntries.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(3).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_withStartIndex() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(GAS_HASH, "", BigInteger.ZERO)
                 .send()
                 .getFoundStorage();
@@ -643,6 +659,22 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testFindStorage_contractId() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(BigInteger.valueOf(-6), "14")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(3)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(3));
+        assertThat(storageEntries.get(2).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(2).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_contractId_withStartIndex() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(BigInteger.valueOf(-6), "14", BigInteger.ONE)
                 .send()
