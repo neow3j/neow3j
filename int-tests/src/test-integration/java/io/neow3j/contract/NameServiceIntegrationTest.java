@@ -29,11 +29,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.CLIENT_1;
+import static io.neow3j.helper.FundingHelper.CLIENT_2;
+import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;

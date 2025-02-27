@@ -30,10 +30,10 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
+import static io.neow3j.helper.FundingHelper.CLIENT_1;
+import static io.neow3j.helper.FundingHelper.CLIENT_2;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithNeo;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;

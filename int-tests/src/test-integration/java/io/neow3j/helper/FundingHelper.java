@@ -1,5 +1,8 @@
-package io.neow3j.contract;
+package io.neow3j.helper;
 
+import io.neow3j.contract.FungibleToken;
+import io.neow3j.contract.GasToken;
+import io.neow3j.contract.NeoToken;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.Witness;
@@ -24,11 +27,11 @@ import static io.neow3j.wallet.Account.fromWIF;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 
-public class IntegrationTestHelper {
+public class FundingHelper {
 
     // Native token hashes.
-    static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
-    static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
+    public static final Hash160 NEO_HASH = new Hash160(neoTokenHash());
+    public static final Hash160 GAS_HASH = new Hash160(gasTokenHash());
 
     public static final Account DEFAULT_ACCOUNT = fromWIF(defaultAccountWIF());
     public static final Account COMMITTEE_ACCOUNT =
@@ -59,7 +62,7 @@ public class IntegrationTestHelper {
         }
     }
 
-    static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
+    public static void transferFromGenesisToAccount(Neow3j neow3j, FungibleToken token,
             BigInteger amount, Account a) throws Throwable {
 
         Transaction unsignedTx = token.transfer(COMMITTEE_ACCOUNT, a.getScriptHash(), amount)
@@ -70,26 +73,6 @@ public class IntegrationTestHelper {
                 COMMITTEE_ACCOUNT.getVerificationScript());
 
         Hash256 txHash = unsignedTx.addWitness(multiSigWitness)
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, neow3j);
-    }
-
-    static void registerCandidateAndAwaitExecution(Neow3j neow3j, Account candidate) throws Throwable {
-        Hash256 txHash = new NeoToken(neow3j).registerCandidate(candidate.getECKeyPair().getPublicKey())
-                .signers(calledByEntry(candidate))
-                .sign()
-                .send()
-                .getSendRawTransaction()
-                .getHash();
-        waitUntilTransactionIsExecuted(txHash, neow3j);
-    }
-
-    static void unregisterCandidateAndAwaitExecution(Neow3j neow3j, Account candidate) throws Throwable {
-        Hash256 txHash = new NeoToken(neow3j).unregisterCandidate(candidate.getECKeyPair().getPublicKey())
-                .signers(calledByEntry(candidate))
-                .sign()
                 .send()
                 .getSendRawTransaction()
                 .getHash();
