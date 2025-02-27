@@ -89,6 +89,17 @@ public class CryptoLib extends ContractInterface {
     public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curve);
 
     /**
+     * Verifies that a digital signature is appropriate for the provided key and message using the Ed25519 algorithm.
+     *
+     * @param message   the signed message.
+     * @param publicKey the public key of the key pair used for signing.
+     * @param signature the signature to be verified.
+     * @return true if the signature is valid. False, otherwise.
+     */
+    @CallFlags(None)
+    public native boolean verifyWithEd25519(ByteString message, ECPoint publicKey, ByteString signature);
+
+    /**
      * Serializes a bls12381 point.
      *
      * @param g the point to be serialized.
