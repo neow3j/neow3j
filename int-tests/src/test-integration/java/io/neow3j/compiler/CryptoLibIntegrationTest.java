@@ -42,6 +42,15 @@ public class CryptoLibIntegrationTest {
     }
 
     @Test
+    public void recoverSecp256K1() throws IOException {
+        String messageHashHex = "5ae8317d34d1e595e3fa7247db80c0af4320cce1116de187f8f7e2e099c0d8d0";
+        String sigHex = "45c0b7f8c09a9e1f1cea0c25785594427b6bf8f9f878a8af0b1abbb48e16d0920d8becd0c220f67c51217eecfd7184ef0732481c843857e6bc7fc095c4f6b78801";
+        String expectedRecoveredPubKeyHex = "034a071e8a6e10aada2b8cf39fa3b5fb3400b04e99ea8ae64ceea1a977dbeaf5d5";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(messageHashHex), byteArray(sigHex));
+        assertThat(response.getInvocationResult().getFirstStackItem().getHexString(), is(expectedRecoveredPubKeyHex));
+    }
+
+    @Test
     public void sha256() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("0102030405"));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
@@ -105,6 +114,10 @@ public class CryptoLibIntegrationTest {
     }
 
     static class CryptoLibIntegrationTestContract {
+
+        public static ECPoint recoverSecp256K1(ByteString messageHash, ByteString signature) {
+            return new CryptoLib().recoverSecp256K1(messageHash, signature);
+        }
 
         public static ByteString sha256(ByteString value) {
             return new CryptoLib().sha256(value);

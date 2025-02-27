@@ -22,6 +22,17 @@ public class CryptoLib extends ContractInterface {
     }
 
     /**
+     * Recovers the public key from a secp256k1 signature in a single byte array format.
+     *
+     * @param messageHash the hash of the message that was signed.
+     * @param signature   the 65-byte signature in format: r[32] + s[32] + v[1]. 64-bytes for eip-2098, where v must
+     *                    be 27 or 28.
+     * @return the recovered public key in compressed format, or null if recovery fails.
+     */
+    @CallFlags(None)
+    public native ECPoint recoverSecp256K1(ByteString messageHash, ByteString signature);
+
+    /**
      * Calculates the SHA-256 hash of the given value.
      * <p>
      * Note, if you use this method twice to generate a hash256 byte string, that byte string will be in big-endian
