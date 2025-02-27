@@ -733,7 +733,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(4));
+        assertThat(protocol.getHardforks(), hasSize(5));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -746,6 +746,16 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks domovoi = protocol.getHardforks().get(3);
         assertThat(domovoi.getName(), is("Domovoi"));
         assertThat(domovoi.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks echidna = protocol.getHardforks().get(4);
+        assertThat(echidna.getName(), is("Echidna"));
+        assertThat(echidna.getBlockHeight(), is(BigInteger.ZERO));
+
+        assertThat(protocol.getStandbyCommittee(), hasSize(1));
+        assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(),
+                is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        assertThat(protocol.getSeedList(), hasSize(1));
+        assertThat(protocol.getSeedList().get(0), is("localhost:40333"));
     }
 
     // SmartContract Methods
