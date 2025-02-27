@@ -4,7 +4,7 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.constants.NamedCurve;
+import io.neow3j.devpack.constants.NamedCurveHash;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.wallet.Account;
@@ -85,12 +85,12 @@ public class CryptoLibIntegrationTest {
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
-                publicKey(pubKey), signature(signature), integer(NamedCurve.Secp256r1));
+                publicKey(pubKey), signature(signature), integer(NamedCurveHash.secp256r1SHA256));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         message = "0102030406"; // small change in message.
         response = ct.callInvokeFunction(testName, byteArray(message), publicKey(pubKey),
-                signature(signature), integer(NamedCurve.Secp256r1));
+                signature(signature), integer(NamedCurveHash.secp256r1SHA256));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -102,7 +102,7 @@ public class CryptoLibIntegrationTest {
                 account.getECKeyPair());
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
                 publicKey(account.getECKeyPair().getPublicKey().getEncoded(true)),
-                signature(signatureData), integer(NamedCurve.Secp256r1));
+                signature(signatureData), integer(NamedCurveHash.secp256r1SHA256));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
