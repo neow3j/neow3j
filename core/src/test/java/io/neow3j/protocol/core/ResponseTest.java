@@ -1682,26 +1682,32 @@ public class ResponseTest extends ResponseTester {
                         "    \"result\": {\n" +
                         "        \"tcpport\": 40333,\n" +
                         "        \"nonce\": 224036820,\n" +
-                        "        \"useragent\": \"/Neo:3.0.0/\",\n" +
+                        "        \"useragent\": \"/Neo:3.8.0/\",\n" +
                         "        \"rpc\": {\n" +
                         "            \"maxiteratorresultitems\": 10,\n" +
                         "            \"sessionenabled\": false\n" +
-                        "        }," +
+                        "        },\n" +
                         "        \"protocol\": {\n" +
-                        "            \"network\": 769,\n" +
-                        "            \"validatorscount\": 7,\n" +
-                        "            \"msperblock\": 15000,\n" +
-                        "            \"maxvaliduntilblockincrement\": 1,\n" +
-                        "            \"maxtraceableblocks\": 3,\n" +
                         "            \"addressversion\": 22,\n" +
-                        "            \"maxtransactionsperblock\": 150000,\n" +
-                        "            \"memorypoolmaxtransactions\": 34000,\n" +
-                        "            \"initialgasdistribution\": 14,\n" +
+                        "            \"network\": 769,\n" +
+                        "            \"validatorscount\": 1,\n" +
+                        "            \"msperblock\": 15000,\n" +
+                        "            \"maxtraceableblocks\": 2102400,\n" +
+                        "            \"maxvaliduntilblockincrement\": 5760,\n" +
+                        "            \"maxtransactionsperblock\": 512,\n" +
+                        "            \"memorypoolmaxtransactions\": 50000,\n" +
+                        "            \"initialgasdistribution\": 5200000000000000,\n" +
                         "            \"hardforks\": [\n" +
                         "                {\n" +
-                        "                    \"name\": \"HF_Aspidochelone\",\n" +
+                        "                    \"name\": \"Aspidochelone\",\n" +
                         "                    \"blockheight\": 0\n" +
                         "                }\n" +
+                        "            ],\n" +
+                        "            \"standbycommittee\": [\n" +
+                        "                \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\"\n" +
+                        "            ],\n" +
+                        "            \"seedlist\": [\n" +
+                        "                \"localhost:40333\"\n" +
                         "            ]\n" +
                         "        }\n" +
                         "    }\n" +
@@ -1713,7 +1719,7 @@ public class ResponseTest extends ResponseTester {
         assertThat(version, is(notNullValue()));
         assertThat(version.getTCPPort(), is(40333));
         assertThat(version.getNonce(), is(224036820L));
-        assertThat(version.getUserAgent(), is("/Neo:3.0.0/"));
+        assertThat(version.getUserAgent(), is("/Neo:3.8.0/"));
 
         NeoGetVersion.NeoVersion.Rpc rpc = version.getRpc();
         assertThat(rpc.getMaxIteratorResultItems(), is(10));
@@ -1722,18 +1728,22 @@ public class ResponseTest extends ResponseTester {
         NeoGetVersion.NeoVersion.Protocol protocol = version.getProtocol();
         assertThat(protocol.getAddressVersion(), is(22));
         assertThat(protocol.getNetwork(), is(769L));
+        assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(15000L));
-        assertThat(protocol.getMaxTraceableBlocks(), is(3L));
-        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(1L));
-        assertThat(protocol.getMaxTransactionsPerBlock(), is(150000L));
-        assertThat(protocol.getMemoryPoolMaxTransactions(), is(34000));
-        assertThat(protocol.getInitialGasDistribution(), is(BigInteger.valueOf(14)));
+        assertThat(protocol.getMaxTraceableBlocks(), is(2102400L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(5760L));
+        assertThat(protocol.getMaxTransactionsPerBlock(), is(512L));
+        assertThat(protocol.getMemoryPoolMaxTransactions(), is(50000));
+        assertThat(protocol.getInitialGasDistribution(), is(new BigInteger("5200000000000000")));
         assertThat(protocol.getHardforks(), hasSize(1));
 
         assertThat(protocol.getHardforks(), hasSize(1));
         NeoGetVersion.NeoVersion.Protocol.Hardforks firstHardfork = protocol.getHardforks().get(0);
-        assertThat(firstHardfork.getName(), is("HF_Aspidochelone"));
+        assertThat(firstHardfork.getName(), is("Aspidochelone"));
         assertThat(firstHardfork.getBlockHeight(), is(BigInteger.ZERO));
+
+        assertThat(protocol.getStandbyCommittee(), hasSize(1));
+        assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
     }
 
 
