@@ -96,25 +96,13 @@ public class Neow3jConfig {
     }
 
     /**
-     * Constructs a configuration instance with default values.
+     * @return constructs a configuration instance with default values.
      */
-    public Neow3jConfig() {
+    public static Neow3jConfig defaultNeow3jConfig() {
+        return new Neow3jConfig();
     }
 
-    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
-            ScheduledExecutorService scheduledExecutorService) {
-        this(networkMagic, blockInterval, pollingInterval, maxValidUntilBlockIncrement, scheduledExecutorService,
-                MAINNET_NNS_CONTRACT_HASH);
-    }
-
-    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
-            ScheduledExecutorService scheduledExecutorService, Hash160 neoNameServiceScriptHash) {
-        this.networkMagic = networkMagic;
-        this.blockInterval = blockInterval;
-        this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
-        this.pollingInterval = pollingInterval;
-        this.scheduledExecutorService = scheduledExecutorService;
-        this.nnsResolver = neoNameServiceScriptHash;
+    private Neow3jConfig() {
     }
 
     /**

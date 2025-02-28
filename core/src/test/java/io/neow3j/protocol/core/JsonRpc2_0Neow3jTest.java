@@ -1,13 +1,13 @@
 package io.neow3j.protocol.core;
 
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThrows;
@@ -21,7 +21,7 @@ public class JsonRpc2_0Neow3jTest {
             = mock(ScheduledExecutorService.class);
     private Neow3jService service = mock(Neow3jService.class);
 
-    private Neow3j neow3j = Neow3j.build(service, new Neow3jConfig()
+    private Neow3j neow3j = Neow3j.build(service, defaultNeow3jConfig()
             .setPollingInterval(10)
             .setScheduledExecutorService(scheduledExecutorService));
 
