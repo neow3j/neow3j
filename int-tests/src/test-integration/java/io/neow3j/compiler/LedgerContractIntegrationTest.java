@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.test.TestProperties.ledgerContractHash;
 import static io.neow3j.types.ContractParameter.hash256;
 import static io.neow3j.types.ContractParameter.integer;
@@ -108,7 +109,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(defaultNeow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -123,7 +124,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(defaultNeow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -275,7 +276,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(defaultNeow3jConfig().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 

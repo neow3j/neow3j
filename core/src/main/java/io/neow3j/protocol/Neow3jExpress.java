@@ -14,6 +14,7 @@ import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -33,7 +34,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      * @return the new Neow3jExpress instance
      */
     public static Neow3jExpress build(Neow3jService neow3jService) {
-        return new Neow3jExpress(neow3jService, new Neow3jConfig()) {
+        return new Neow3jExpress(neow3jService, defaultNeow3jConfig()) {
         };
     }
 

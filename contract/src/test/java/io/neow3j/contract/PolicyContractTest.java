@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Transaction;
@@ -19,6 +18,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
@@ -52,7 +52,7 @@ public class PolicyContractTest {
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
         Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
-                new Neow3jConfig().setNetworkMagic(769));
+                defaultNeow3jConfig().setNetworkMagic(769));
         policyContract = new PolicyContract(neow3j);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");

@@ -1,5 +1,6 @@
 package io.neow3j.protocol.rx;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -11,7 +12,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -43,7 +43,7 @@ public class JsonRpc2_0RxTest {
     @BeforeAll
     public void setUp() {
         neow3jService = mock(Neow3jService.class);
-        neow3j = Neow3j.build(neow3jService, new Neow3jConfig()
+        neow3j = Neow3j.build(neow3jService, defaultNeow3jConfig()
                 .setPollingInterval(1000)
                 .setScheduledExecutorService(Executors.newSingleThreadScheduledExecutor()));
     }

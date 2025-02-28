@@ -6,7 +6,6 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
@@ -33,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
@@ -330,7 +330,7 @@ public class TransactionTest {
     @Test
     public void getTxId() {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(5195086));
+                defaultNeow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.calledByEntry(account3));
@@ -354,7 +354,7 @@ public class TransactionTest {
     @Test
     public void toArrayWithoutWitness() {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(5195086));
+                defaultNeow3jConfig().setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.calledByEntry(account3));
@@ -378,7 +378,7 @@ public class TransactionTest {
     @Test
     public void getHashData() throws IOException {
         Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(769));
+                defaultNeow3jConfig().setNetworkMagic(769));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.none(Account.fromScriptHash(account1)));
@@ -451,7 +451,8 @@ public class TransactionTest {
 
     @Test
     public void testAddMultiSigWitnessWithPubKeySigMap() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
+                defaultNeow3jConfig().setNetworkMagic(768));
 
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
@@ -489,7 +490,7 @@ public class TransactionTest {
 
     @Test
     public void testAddMultiSigWitnessWithAccounts() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), defaultNeow3jConfig().setNetworkMagic(768));
 
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
@@ -527,7 +528,7 @@ public class TransactionTest {
     public void toContractParameterContextJson() throws IOException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), defaultNeow3jConfig().setNetworkMagic(769));
 
         ECKeyPair.ECPublicKey pubKey = ECKeyPair.createEcKeyPair().getPublicKey();
         Account multiSigAccount = Account.createMultiSigAccount(asList(pubKey, pubKey, pubKey), 2);
@@ -590,7 +591,7 @@ public class TransactionTest {
 
     @Test
     public void toContractParameterContextJson_unsupportedContractSigners() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
+        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), defaultNeow3jConfig().setNetworkMagic(769));
 
         Account singleSigAccount1 = Account.create();
         Hash160 dummyHash = new Hash160("f32bf2a3e36a9fd3411337ffcd48eed7bec727ce");

@@ -7,7 +7,6 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -43,6 +42,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
@@ -104,7 +104,7 @@ public class TransactionBuilderTest {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port), defaultNeow3jConfig().setNetworkMagic(769));
         account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(hexStringToByteArray(

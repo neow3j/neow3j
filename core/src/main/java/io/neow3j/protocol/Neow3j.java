@@ -12,6 +12,7 @@ import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.protocol.core.JsonRpc2_0Neow3j.initializedJsonRpc2_0Neow3j;
 
 /**
@@ -32,7 +33,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return the new Neow3j instance.
      */
     public static Neow3j build(Neow3jService neow3jService) {
-        return build(neow3jService, new Neow3jConfig());
+        return build(neow3jService, defaultNeow3jConfig());
     }
 
     /**
