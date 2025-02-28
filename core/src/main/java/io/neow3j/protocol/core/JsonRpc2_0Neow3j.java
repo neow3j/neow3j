@@ -94,6 +94,15 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
     }
 
+    public static JsonRpc2_0Neow3j initializedJsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config)
+            throws IOException {
+
+        JsonRpc2_0Neow3j jsonRpc20Neow3j = new JsonRpc2_0Neow3j(neow3jService, config);
+        NeoGetVersion.NeoVersion.Protocol protocol = jsonRpc20Neow3j.getVersion().send().getVersion().getProtocol();
+        jsonRpc20Neow3j.setNodeVersionInfo(protocol);
+        return jsonRpc20Neow3j;
+    }
+
     // region Blockchain Methods
 
     /**
