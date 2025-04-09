@@ -1,8 +1,10 @@
 package io.neow3j.protocol;
 
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.Async;
 
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
@@ -11,20 +13,87 @@ import java.util.concurrent.ScheduledExecutorService;
  */
 public class Neow3jConfig {
 
-    public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
+    // Static default values
     public static final byte DEFAULT_ADDRESS_VERSION = 0x35;
-    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE = 86400000;
-
-    private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
-    private Long networkMagic = null;
-    private int blockInterval = DEFAULT_BLOCK_TIME;
-    private long maxValidUntilBlockIncrement = MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / blockInterval;
-    private int pollingInterval = DEFAULT_BLOCK_TIME;
-    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
-    private boolean allowTransmissionOnFault = false;
+    public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
+    public static final int DEFAULT_MAX_VALID_UNTIL_BLOCK_INCREMENT = 86400000 / DEFAULT_BLOCK_TIME;
 
     private static final Hash160 MAINNET_NNS_CONTRACT_HASH = new Hash160("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
+
+    // Node-specific values
+    private Long networkMagic = null; // network
+    private int blockInterval = DEFAULT_BLOCK_TIME; // msPerBlock
+    private long maxValidUntilBlockIncrement = DEFAULT_MAX_VALID_UNTIL_BLOCK_INCREMENT;
+    // Address version is static because it is required by AddressUtils that does not need specific configuration.
+    private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
+
+    // Other configurable values
+    private int pollingInterval = blockInterval;
+    private boolean allowTransmissionOnFault = false;
     private Hash160 nnsResolver = MAINNET_NNS_CONTRACT_HASH;
+
+    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
+
+    /**
+     * Keeps track of which values have been set manually, so that these values are not overwritten with the value
+     * provided by the node when connecting.
+     */
+    private Set<ConfigValue> manualConfig;
+
+    // Sets protocol variable values based on the provided protocol. If
+    void setNodeVersionInfo(NeoGetVersion.NeoVersion.Protocol protocol) {
+        byte nodeAddressVersion = protocol.getAddressVersion().byteValue();
+        setNodeAddressVersion(nodeAddressVersion);
+
+        Long nodeNetwork = protocol.getNetwork();
+        setNodeNetwork(nodeNetwork);
+
+        int nodeMsPerBlock = protocol.getMilliSecondsPerBlock().intValue();
+        setNodeMsPerBlock(nodeMsPerBlock);
+
+        Long nodeMaxValidUntilBlockIncrement = protocol.getMaxValidUntilBlockIncrement();
+        setNodeMaxValidUntilBlockIncrement(nodeMaxValidUntilBlockIncrement);
+    }
+
+    private void setNodeAddressVersion(byte addressVersion) {
+        if (!hasBeenSetManually(ConfigValue.addressVersion)) {
+            setAddressVersion(addressVersion);
+        }
+    }
+
+    private void setNodeNetwork(Long nodeNetwork) {
+        if (!hasBeenSetManually(ConfigValue.network)) {
+            setNetworkMagic(nodeNetwork);
+        }
+    }
+
+    private void setNodeMsPerBlock(int nodeMsPerBlock) {
+        if (!hasBeenSetManually(ConfigValue.msPerBlock)) {
+            setBlockInterval(nodeMsPerBlock);
+        }
+    }
+
+    private void setNodeMaxValidUntilBlockIncrement(Long nodeMaxValidUntilBlockIncrement) {
+        if (!hasBeenSetManually(ConfigValue.maxValidUntilBlockIncrement)) {
+            setMaxValidUntilBlockIncrement(nodeMaxValidUntilBlockIncrement);
+        }
+    }
+
+    private boolean hasBeenSetManually(ConfigValue configValue) {
+        return manualConfig.contains(configValue);
+    }
+
+    /**
+     * The values that may be set manually. It only contains the values used in neow3j, i.e., values that are not
+     * required are not part of this enum. This includes: maxTraceableBlocks, maxTransactionsPerBlock, and
+     * memoryPoolMaxTransactions.
+     */
+    enum ConfigValue {
+        addressVersion,
+        network,
+        msPerBlock,
+        maxValidUntilBlockIncrement;
+    }
 
     /**
      * Constructs a configuration instance with default values.

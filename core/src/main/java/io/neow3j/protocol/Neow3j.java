@@ -2,6 +2,7 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.rx.Neow3jRx;
 import io.neow3j.types.Hash160;
 
@@ -10,6 +11,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import static io.neow3j.protocol.core.JsonRpc2_0Neow3j.initializedJsonRpc2_0Neow3j;
 
 /**
  * JSON-RPC Request object building factory.
@@ -29,7 +32,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return the new Neow3j instance.
      */
     public static Neow3j build(Neow3jService neow3jService) {
-        return new JsonRpc2_0Neow3j(neow3jService, new Neow3jConfig());
+        return build(neow3jService, new Neow3jConfig());
     }
 
     /**
@@ -41,6 +44,29 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
         return new JsonRpc2_0Neow3j(neow3jService, config);
+    }
+
+    /**
+     * Constructs a new Neow3j instance using the given configuration.
+     * <p>
+     * Fetches version specific information from the node to be used in this instance's configuration. This will
+     * overwrite variables in the config for the variables contained in {@link Neow3jConfig.ConfigValue}. Note, that
+     * it only overwrites default values. If a variable (e.g., msPerBlock) has been manually set in the config
+     * parameter (i.e., with {@link Neow3jConfig#setBlockInterval(int)}), this variable will NOT be overwritten by
+     * the node value. That means: {@code user-set value >> node-provided value >> default values} | where {@code a
+     * >> b} means that a will be used if a is present.
+     *
+     * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
+     * @param config        the configuration to use.
+     * @return the new Neow3j instance.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
+     */
+    public static Neow3j init(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
+        return initializedJsonRpc2_0Neow3j(neow3jService, config);
+    }
+
+    protected void setNodeVersionInfo(NeoGetVersion.NeoVersion.Protocol protocol) {
+         config.setNodeVersionInfo(protocol);
     }
 
     /**
@@ -156,9 +182,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
 
     /**
      * Gets the maximum time in milliseconds that can pass form the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed. @return the
-     * <p>
-     * Defaults to {@link Neow3jConfig#MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE} divided by the configured block interval.
+     * included in a block. A transaction becomes invalid after this time increment is surpassed.
      *
      * @return the maximum valid until block time increment.
      */
