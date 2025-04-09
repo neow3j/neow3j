@@ -162,8 +162,25 @@ public class PermissionManifestTest {
         CompilerException thrown = assertThrows(CompilerException.class, () -> new Compiler().compile(
                 PermissionManifestTestContractWithRedundantPermissions.class.getName()));
         assertThat(thrown.getMessage(),
-                containsString("A contract permission with the wildcard character '*' can only be used " +
-                        "exclusively and not in combination with other permissions."));
+                containsString("A contract permission with the wildcard character '*' for contracts and methods " +
+                        "should only be used exclusively and not in combination with other permissions."));
+    }
+
+    @Test
+    public void testWildcardContractsWithMethodsCombination() throws IOException {
+        CompilationUnit compUnit = new Compiler().compile(
+                PermissionManifestTestContractWithWildcardContractsWithSpecifiedMethodsAndOtherPermissions.class.getName());
+        List<ContractPermission> permissions = compUnit.getManifest().getPermissions();
+        assertThat(permissions, hasSize(3));
+        assertThat(new Hash160(permissions.get(0).getContract()), is(NativeContract.LedgerContract.getContractHash()));
+        assertThat(permissions.get(0).getMethods(), hasSize(1));
+        assertThat(permissions.get(0).getMethods().get(0), is("*"));
+        assertThat(permissions.get(1).getContract(), is(CONTRACT_HASH_1));
+        assertThat(permissions.get(1).getMethods(), hasSize(1));
+        assertThat(permissions.get(1).getMethods().get(0), is("*"));
+        assertThat(permissions.get(2).getContract(), is("*"));
+        assertThat(permissions.get(2).getMethods(), hasSize(1));
+        assertThat(permissions.get(2).getMethods().get(0), is("onNEP17Payment"));
     }
 
     @Test
@@ -276,8 +293,18 @@ public class PermissionManifestTest {
 
     @Permission(nativeContract = NativeContract.LedgerContract)
     @Permission(contract = CONTRACT_HASH_1)
-    @Permission(contract = "*")
+    @Permission(contract = "*", methods = {"*"})
     static class PermissionManifestTestContractWithRedundantPermissions {
+
+        public static void main() {
+        }
+
+    }
+
+    @Permission(nativeContract = NativeContract.LedgerContract)
+    @Permission(contract = CONTRACT_HASH_1)
+    @Permission(contract = "*", methods = "onNEP17Payment")
+    static class PermissionManifestTestContractWithWildcardContractsWithSpecifiedMethodsAndOtherPermissions {
 
         public static void main() {
         }
