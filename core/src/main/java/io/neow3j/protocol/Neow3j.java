@@ -29,7 +29,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return the new Neow3j instance.
      */
     public static Neow3j build(Neow3jService neow3jService) {
-        return new JsonRpc2_0Neow3j(neow3jService, new Neow3jConfig());
+        return build(neow3jService, new Neow3jConfig());
     }
 
     /**
