@@ -77,7 +77,7 @@ public interface Neow3jRx {
      * Creates an Observable that emits all blocks from the requested block number to the most current. Once it has
      * emitted the most current block, it starts emitting new blocks as they are created.
      *
-     * @param startBlock             the block number we wish to request from.
+     * @param startBlock             the block number of the first block that should be emitted.
      * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
      *                               responses.
      * @return an Observable to emit all requested blocks and future.
