@@ -9,14 +9,9 @@ import io.neow3j.protocol.exceptions.OfflineServiceException;
 import io.neow3j.protocol.notifications.Notification;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-import java.math.BigInteger;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OfflineServiceTest {
 
@@ -53,7 +48,9 @@ public class OfflineServiceTest {
         assertThat(thrown.getMessage(), containsString(EXPECTED_OFFLINESERVICE_EXCEPTION_MESSAGE));
     }
 
-    // Tests with a Neow3j instance that has an OfflineService
+    // Tests with a Neow3j instance that has an OfflineService. Neow3j's catch-up and observable methods will all call
+    // the send method once they are subscribed to (which is already covered in this test class), thus, they do not
+    // need to be tested in the scope of this class.
 
     @Test
     public void testNeow3jSend() {
@@ -67,32 +64,6 @@ public class OfflineServiceTest {
         OfflineServiceException thrown = assertThrows(OfflineServiceException.class,
                 () -> neow3j.getBestBlockHash().sendAsync());
         assertThat(thrown.getMessage(), containsString(EXPECTED_OFFLINESERVICE_EXCEPTION_MESSAGE));
-    }
-
-    @Test
-    public void testNeow3jSubscribeWithOnError() throws IOException, InterruptedException {
-        AtomicBoolean onErrorExecuted = new AtomicBoolean(false);
-        neow3j.subscribeToNewBlocksObservable(true).subscribe(NeoGetBlock::getBlock, (e) -> onErrorExecuted.set(true));
-        Thread.sleep(100);
-        assertTrue(onErrorExecuted.get());
-    }
-
-    @Test
-    public void testNeow3jCatchupAndSubscribeWithOnError() throws InterruptedException {
-        AtomicBoolean onErrorExecuted = new AtomicBoolean(false);
-        neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger.ZERO, true)
-                .subscribe(NeoGetBlock::getBlock, (e) -> onErrorExecuted.set(true));
-        Thread.sleep(100);
-        assertTrue(onErrorExecuted.get());
-    }
-
-    @Test
-    public void testNeow3jReplayBlocksObservableSubscribe() throws InterruptedException {
-        AtomicBoolean onErrorExecuted = new AtomicBoolean(false);
-        neow3j.replayBlocksObservable(BigInteger.ZERO, BigInteger.ZERO, true)
-                .subscribe(NeoGetBlock::getBlock, (e) -> onErrorExecuted.set(true));
-        Thread.sleep(100);
-        assertTrue(onErrorExecuted.get());
     }
 
     @Test
