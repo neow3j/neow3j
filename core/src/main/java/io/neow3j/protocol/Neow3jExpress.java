@@ -48,6 +48,17 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
         return new Neow3jExpress(neow3jService, config);
     }
 
+    /**
+     * Constructs a new Neow3jExpress instance with an offline service and the default configuration.
+     * <p>
+     * The returned Neow3jExpress instance will not be able to perform any requests to a Neo node.
+     *
+     * @return a new Neow3jExpress instance with an {@link OfflineService}.
+     */
+    public static Neow3jExpress build() {
+        return build(OfflineService.newInstance());
+    }
+
     @Override
     public Request<?, NeoExpressGetPopulatedBlocks> expressGetPopulatedBlocks() {
         return new Request<>(
