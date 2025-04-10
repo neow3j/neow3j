@@ -37,8 +37,8 @@ public class JsonRpc2_0Rx {
      * @return the block index observable.
      */
     public Observable<BigInteger> blockIndexObservable(long pollingInterval) {
-        return Observable.create(subscriber ->
-                new BlockIndexPolling().run(neow3j, subscriber, scheduledExecutorService, pollingInterval)
+        return Observable.create(emitter ->
+                new BlockIndexPolling().run(neow3j, emitter, scheduledExecutorService, pollingInterval)
         );
     }
 

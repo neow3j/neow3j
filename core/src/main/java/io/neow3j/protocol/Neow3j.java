@@ -23,17 +23,6 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Constructs a new Neow3j instance with an offline service and the default configuration.
-     * <p>
-     * The returned Neow3j instance will not be able to perform any requests to a Neo node.
-     *
-     * @return a new Neow3j instance with an {@link OfflineService}.
-     */
-    public static Neow3j build() {
-        return build(OfflineService.newInstance());
-    }
-
-    /**
      * Constructs a new Neow3j instance with the default configuration.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
@@ -52,6 +41,17 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
         return new JsonRpc2_0Neow3j(neow3jService, config);
+    }
+
+    /**
+     * Constructs a new Neow3j instance with an offline service and the default configuration.
+     * <p>
+     * The returned Neow3j instance will not be able to perform any requests to a Neo node.
+     *
+     * @return a new Neow3j instance with an {@link OfflineService}.
+     */
+    public static Neow3j build() {
+        return build(OfflineService.newInstance());
     }
 
     /**
