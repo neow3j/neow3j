@@ -8,8 +8,7 @@ import org.junit.jupiter.api.Test;
 
 public class GasTokenTest {
 
-    // The tests don't need an actual connection to a node.
-    private final Neow3j neow = Neow3j.build(null);
+    private final Neow3j neow = Neow3j.build();
     private final static String GASTOKEN_SCRIPTHASH = "d2a4cff31913016155e38e474a2c06d08be276cf";
 
     @Test
