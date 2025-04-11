@@ -4,6 +4,10 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the official NeoNameService smart contract.
@@ -52,11 +56,13 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      *
      * @param root the root domain to add.
      */
+    @CallFlags(All)
     public native void addRoot(String root);
 
     /**
      * @return an iterator to iterate over all roots.
      */
+    @CallFlags(ReadOnly)
     public native Iterator<String> roots();
 
     /**
@@ -66,6 +72,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      *
      * @param priceList the price list.
      */
+    @CallFlags(All)
     public native void setPrice(List<Integer> priceList);
 
     /**
@@ -74,6 +81,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param length the length of the domain name.
      * @return the fee to register or renew a domain name.
      */
+    @CallFlags(ReadOnly)
     public native int getPrice(int length);
 
     /**
@@ -82,6 +90,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @return true if the domain name is available. False, otherwise.
      */
+    @CallFlags(ReadOnly)
     public native boolean isAvailable(String name);
 
     /**
@@ -91,6 +100,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param owner the owner of the domain name.
      * @return true if the registration was successful. False, otherwise.
      */
+    @CallFlags(All)
     public native boolean register(String name, Hash160 owner);
 
     /**
@@ -99,6 +109,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @return the expiration time in milliseconds.
      */
+    @CallFlags(All)
     public native int renew(String name);
 
     /**
@@ -108,6 +119,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param years the number of years to renew this domain name. Has to be in the range of 1 to 10.
      * @return the expiration time in milliseconds.
      */
+    @CallFlags(All)
     public native int renew(String name, int years);
 
     /**
@@ -116,6 +128,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name  the domain name.
      * @param admin the administrator of the domain name.
      */
+    @CallFlags(All)
     public native void setAdmin(String name, Hash160 admin);
 
     /**
@@ -125,6 +138,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param type the data type.
      * @param data the data.
      */
+    @CallFlags(All)
     public native void setRecord(String name, int type, String data);
 
     /**
@@ -134,6 +148,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param type the data type.
      * @return the data.
      */
+    @CallFlags(ReadOnly)
     public native String getRecord(String name, int type);
 
     /**
@@ -142,6 +157,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @return an iterator to get all records of the domain name.
      */
+    @CallFlags(ReadOnly)
     public native Iterator<String> getAllRecords(String name);
 
     /**
@@ -150,6 +166,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @param type the data type.
      */
+    @CallFlags(All)
     public native void deleteRecord(String name, int type);
 
     /**
@@ -159,6 +176,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param type the data type.
      * @return the resolved domain name.
      */
+    @CallFlags(ReadOnly)
     public native String resolve(String name, int type);
 
     /**
@@ -167,6 +185,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @return the owner of the domain name.
      */
+    @CallFlags(ReadOnly)
     public native Hash160 ownerOf(String name);
 
     /**
@@ -175,6 +194,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @param name the domain name.
      * @return the properties of the domain name.
      */
+    @CallFlags(ReadOnly)
     public native Map<String, Object> properties(String name);
 
     /**
@@ -187,6 +207,7 @@ public class NeoNameService extends NonDivisibleNonFungibleToken {
      * @return true if the transfer is successful. False otherwise, e.g., if the receiver is a contract and does not
      * accept the token in its {@code onNEP11Payment} method.
      */
+    @CallFlags(All)
     public native boolean transfer(Hash160 to, String name, Object data);
 
 }

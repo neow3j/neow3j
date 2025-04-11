@@ -83,7 +83,7 @@ public class ContractInterfaceTest {
                 is(hexStringToByteArray(reverseHexString("ef4073a0f2b305a38ec4050e4d3d28bc40ea63f5")))); // hash
         assertThat(insns.get(22).getOpcode(), is(OpCode.NEWARRAY0)); // array, hash
         assertThat(insns.get(23).getOpcode(), is(OpCode.SWAP)); // hash, array
-        assertThat(insns.get(24).getOpcode(), is(OpCode.PUSH15)); // callflags, hash, array
+        assertThat(insns.get(24).getOpcode(), is(OpCode.PUSH5)); // callflags, hash, array
         assertThat(insns.get(25).getOpcode(), is(OpCode.SWAP)); // hash, callflags, array
         assertThat(insns.get(26).getOpcode(), is(OpCode.PUSHDATA1));
         assertThat(insns.get(26).getOperand(), is("decimals".getBytes())); // method, hash, callflags, array

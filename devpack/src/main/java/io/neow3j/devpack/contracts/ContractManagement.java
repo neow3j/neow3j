@@ -7,9 +7,7 @@ import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
-import static io.neow3j.devpack.constants.CallFlags.States;
-import static io.neow3j.devpack.constants.CallFlags.ReadStates;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 import static io.neow3j.devpack.constants.CallFlags.All;
 
 /**
@@ -31,7 +29,7 @@ public class ContractManagement extends ContractInterface {
      * @param hash the contract's script hash.
      * @return the contract.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Contract getContract(Hash160 hash);
 
     /**
@@ -40,7 +38,7 @@ public class ContractManagement extends ContractInterface {
      * @param id the contract id.
      * @return the contract.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Contract getContractById(int id);
 
     /**
@@ -58,7 +56,7 @@ public class ContractManagement extends ContractInterface {
      *
      * @return an iterator of the ids and hashes of all non-native deployed contracts.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Iterator<Iterator.Struct<ByteString, Hash160>> getContractHashes();
 
     /**
@@ -69,7 +67,7 @@ public class ContractManagement extends ContractInterface {
      * @param paramCount   the number of parameters.
      * @return true if the method exists. False otherwise.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native boolean hasMethod(Hash160 contractHash, String method, int paramCount);
 
     /**
@@ -124,13 +122,13 @@ public class ContractManagement extends ContractInterface {
      * A deployed smart contract cannot be destroyed from the outside. Thus, if the contract should be destroyable,
      * the logic has to be written into the contract during development.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native void destroy();
 
     /**
      * @return the minimum deployment fee.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getMinimumDeploymentFee();
 
 }

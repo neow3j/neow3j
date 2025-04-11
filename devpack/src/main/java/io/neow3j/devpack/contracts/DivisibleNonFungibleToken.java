@@ -3,6 +3,10 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Base class for divisible, non-fungible token contracts that are compliant with the NEP-11 standard. Initialize this
@@ -45,6 +49,7 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
      *                contract.
      * @return whether the transfer was successful.
      */
+    @CallFlags(All)
     public native boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data);
 
     /**
@@ -53,6 +58,7 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
      * @param tokenId the token id.
      * @return a list of owners of the token.
      */
+    @CallFlags(ReadOnly)
     public native Iterator<Hash160> ownerOf(ByteString tokenId);
 
     /**
@@ -62,6 +68,7 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
      * @param tokenId the token id.
      * @return the token balance of the given account.
      */
+    @CallFlags(ReadOnly)
     public native int balanceOf(Hash160 owner, ByteString tokenId);
 
 }

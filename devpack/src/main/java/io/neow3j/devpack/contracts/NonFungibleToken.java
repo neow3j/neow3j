@@ -4,6 +4,10 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * This class holds the common methods of contracts that are compliant with the NEP-11 standard.
@@ -39,6 +43,7 @@ public class NonFungibleToken extends Token {
      * @param owner the hash of the owner.
      * @return the iterator.
      */
+    @CallFlags(ReadOnly)
     public native Iterator<ByteString> tokensOf(Hash160 owner);
 
     /**
@@ -50,6 +55,7 @@ public class NonFungibleToken extends Token {
      *                deployed contract.
      * @return true if the transfer is successful. False, for example, if the token has more than one owner.
      */
+    @CallFlags(All)
     public native boolean transfer(Hash160 to, ByteString tokenId, Object data);
 
     /**
@@ -59,6 +65,7 @@ public class NonFungibleToken extends Token {
      *
      * @return a list of tokens that are minted on this contract.
      */
+    @CallFlags(ReadOnly)
     public native Iterator<ByteString> tokens();
 
     /**
@@ -69,6 +76,7 @@ public class NonFungibleToken extends Token {
      * @param tokenId the token id.
      * @return the properties of the token.
      */
+    @CallFlags(ReadOnly)
     public native Map<String, String> properties(ByteString tokenId);
 
 }

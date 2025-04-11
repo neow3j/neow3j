@@ -22,11 +22,15 @@ import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.types.ContractParameter.any;
+import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.byteArrayFromString;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.types.ContractParameter.map;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,6 +57,21 @@ public class NFTIntegrationTest {
     public static void setUp() throws Throwable {
         SmartContract sc = ct.deployContract(ConcreteNonFungibleToken.class.getName());
         ct.setHash(sc.getScriptHash());
+
+        // Populate the tokens stored in the contract for the tokens() method.
+        HashMap<Integer, String> map = new HashMap<>();
+        map.put(1, "tokenOne");
+        map.put(2, "tokenTwo");
+        map.put(3, "tokenThree");
+        map.put(4, "tokenFour");
+        ct.invokeFunctionAndAwaitExecution("storeTokens", map(map));
+
+        // Populate the tokens stored in the contract for the tokensOf() method.
+        ArrayList<String> list = new ArrayList<>();
+        list.add("tokenTen");
+        list.add("tokenEleven");
+        list.add("tokenTwelve");
+        ct.invokeFunctionAndAwaitExecution("storeTokensOf", hash160(dummyScriptHash), array(list));
     }
 
     @Test
@@ -83,9 +102,9 @@ public class NFTIntegrationTest {
     public void testTokensOf() throws IOException {
         List<StackItem> iter = ct.callAndTraverseIterator(testName, hash160(dummyScriptHash));
         assertThat(iter, hasItems(
-                new ByteStringStackItem(toHexStringNoPrefix("token1".getBytes(UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix("token2".getBytes(UTF_8))),
-                new ByteStringStackItem(toHexStringNoPrefix("token3".getBytes(UTF_8)))));
+                new ByteStringStackItem(toHexStringNoPrefix("tokenTen".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("tokenEleven".getBytes(UTF_8))),
+                new ByteStringStackItem(toHexStringNoPrefix("tokenTwelve".getBytes(UTF_8)))));
     }
 
     @Test
@@ -96,7 +115,7 @@ public class NFTIntegrationTest {
     }
 
     @Test
-    public void testTokens() throws IOException {
+    public void testTokens() throws Throwable {
         List<StackItem> iter = ct.callAndTraverseIterator(testName);
         assertThat(iter, hasItems(
                 new ByteStringStackItem(toHexStringNoPrefix("tokenOne".getBytes(UTF_8))),
@@ -133,6 +152,16 @@ public class NFTIntegrationTest {
             return new NonFungibleToken(getHash()).balanceOf(account);
         }
 
+        // Used to populate the tokens that then get returned by the tokens() method.
+        public static void storeTokens(Map<Integer, byte[]> tokenMap) {
+            new TestNFTContract(getHash()).storeTokens(tokenMap);
+        }
+
+        // Used to populate the tokens that then get returned by the tokensOf() method.
+        public static void storeTokensOf(Hash160 owner, List<String> tokens) {
+            new TestNFTContract(getHash()).storeTokensOf(owner, tokens);
+        }
+
         public static Iterator<ByteString> testTokensOf(Hash160 account) {
             return new NonFungibleToken(getHash()).tokensOf(account);
         }
@@ -158,10 +187,21 @@ public class NFTIntegrationTest {
         }
     }
 
+    static class TestNFTContract extends NonFungibleToken {
+        public TestNFTContract(Hash160 contractHash) {
+            super(contractHash);
+        }
+
+        public native void storeTokens(Map<Integer, byte[]> tokens);
+
+        public native void storeTokensOf(Hash160 owner, List<String> tokens);
+    }
+
     @SuppressWarnings("unchecked")
     static class ConcreteNonFungibleToken {
         static final StorageContext ctx = Storage.getStorageContext();
-        static final byte[] tokensOfPrefix = Helper.toByteArray((byte) 1);
+        static final byte[] tokensPrefix = Helper.toByteArray((byte) 1);
+        static final byte[] tokensOfPrefix = Helper.toByteArray((byte) 2);
 
         public static String symbol() {
             return "CNFT";
@@ -179,25 +219,34 @@ public class NFTIntegrationTest {
             return 42;
         }
 
-        public static Iterator<ByteString> tokensOf(Hash160 account) {
-            StorageMap map = new StorageMap(ctx, tokensOfPrefix);
-            map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("token1"));
-            map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("token2"));
-            map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("token3"));
-            return (Iterator<ByteString>) Storage.find(ctx, tokensOfPrefix, FindOptions.ValuesOnly);
+        public static void storeTokensOf(Hash160 owner, io.neow3j.devpack.List<String> tokens) {
+            byte[] prefix = Helper.concat(tokensOfPrefix, owner.toByteArray());
+            StorageMap map = new StorageMap(ctx, prefix);
+            int nrTokens = tokens.size();
+            for (int i = 0; i < nrTokens; i++) {
+                map.put(tokens.get(i), 1);
+            }
+        }
+
+        public static Iterator<ByteString> tokensOf(Hash160 owner) {
+            byte[] concat = Helper.concat(tokensOfPrefix, owner.toByteArray());
+            return (Iterator<ByteString>) Storage.find(ctx, concat, FindOptions.RemovePrefix | FindOptions.KeysOnly);
         }
 
         public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
             return true;
         }
 
+        public static void storeTokens(Map<Hash160, byte[]> tokens) {
+            StorageMap map = new StorageMap(ctx, tokensPrefix);
+            Hash160[] keys = tokens.keys();
+            for (Hash160 key : keys) {
+                map.put(key, tokens.get(key));
+            }
+        }
+
         public static Iterator<ByteString> tokens() {
-            StorageMap map = new StorageMap(ctx, tokensOfPrefix);
-            map.put(Helper.toByteArray((byte) 1), Helper.toByteArray("tokenOne"));
-            map.put(Helper.toByteArray((byte) 2), Helper.toByteArray("tokenTwo"));
-            map.put(Helper.toByteArray((byte) 3), Helper.toByteArray("tokenThree"));
-            map.put(Helper.toByteArray((byte) 4), Helper.toByteArray("tokenFour"));
-            return (Iterator<ByteString>) Storage.find(ctx, tokensOfPrefix, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(ctx, tokensPrefix, FindOptions.ValuesOnly);
         }
 
         public static Map<String, String> properties(ByteString tokenId) {
