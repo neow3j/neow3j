@@ -14,6 +14,9 @@ import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.types.Hash160;
 
+import java.io.IOException;
+
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -22,29 +25,36 @@ import static java.util.Collections.emptyList;
  */
 public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
 
-    private Neow3jExpress(Neow3jService neow3jService, Neow3jConfig config) {
+    private Neow3jExpress(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         super(neow3jService, config);
     }
 
     /**
      * Constructs a new Neow3jExpress instance with the default configuration.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value will be set based on the connected Neo node's
+     * protocol.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
-     * @return the new Neow3jExpress instance
+     * @return the new Neow3jExpress instance.
      */
-    public static Neow3jExpress build(Neow3jService neow3jService) {
-        return new Neow3jExpress(neow3jService, new Neow3jConfig()) {
-        };
+    public static Neow3jExpress build(Neow3jService neow3jService) throws IOException {
+        return build(neow3jService, defaultNeow3jConfig());
     }
 
     /**
      * Constructs a new Neow3jExpress instance using the given configuration.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value and have not been set manually in the
+     * provided {@link Neow3jConfig} parameter will be set based on the connected Neo node's protocol.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @param config        the configuration to use.
      * @return the new Neow3jExpress instance.
      */
-    public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) {
+    public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         return new Neow3jExpress(neow3jService, config);
     }
 
@@ -55,7 +65,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      *
      * @return a new Neow3jExpress instance with an {@link OfflineService}.
      */
-    public static Neow3jExpress build() {
+    public static Neow3jExpress build() throws IOException {
         return build(OfflineService.newInstance());
     }
 

@@ -1,7 +1,7 @@
 package io.neow3j.utils;
 
 import static io.neow3j.crypto.Hash.hash256;
-import static io.neow3j.protocol.Neow3jConfig.getAddressVersion;
+import static io.neow3j.protocol.Neow3jConfig.getStaticAddressVersion;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.getFirstNBytes;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
@@ -16,7 +16,7 @@ public class AddressUtils {
      * Checks whether the given string is a valid Neo address.
      * <p>
      * Make sure that the address version used in the address is the same as the one configured in
-     * {@link Neow3jConfig#setAddressVersion(byte)}.
+     * {@link Neow3jConfig#setStaticAddressVersion(byte)}.
      *
      * @param address the address to be checked.
      * @return whether the address is valid or not.
@@ -31,7 +31,7 @@ public class AddressUtils {
         if (data.length != 25) {
             return false;
         }
-        if (data[0] != getAddressVersion()) {
+        if (data[0] != getStaticAddressVersion()) {
             return false;
         }
         byte[] checksum = hash256(data, 0, 21);
@@ -62,14 +62,14 @@ public class AddressUtils {
     /**
      * Derives the Neo address from the given script hash.
      * <p>
-     * Make sure that the address version configured in {@link Neow3jConfig#getAddressVersion()} matches the
+     * Make sure that the address version configured in {@link Neow3jConfig#getStaticAddressVersion()} matches the
      * blockchain network you are intending the address for.
      *
      * @param scriptHash the script hash in big-endian order.
      * @return the address
      */
     public static String scriptHashToAddress(byte[] scriptHash) {
-        byte[] script = concatenate(getAddressVersion(), reverseArray(scriptHash));
+        byte[] script = concatenate(getStaticAddressVersion(), reverseArray(scriptHash));
         byte[] checksum = getFirstNBytes(hash256(script), 4);
         return Base58.encode(concatenate(script, checksum));
     }
