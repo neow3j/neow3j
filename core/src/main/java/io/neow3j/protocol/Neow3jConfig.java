@@ -19,25 +19,29 @@ public class Neow3jConfig {
     // Static configuration
     private static byte staticAddressVersion = DEFAULT_ADDRESS_VERSION;
 
-    // Node-specific configuration values that remain constant during the lifetime of a running node and are used
-    // for building and signing transactions.
-    private Long nodeNetworkMagic = null;
-    private Long nodeMaxValidUntilBlockIncrement = null;
-
-    // Neow3j configuration
-    private Long pollingInterval = null; // There's no default polling interval needed. This is only needed if
-    // there is a connection to a node. Then, this value is set to the node's milliseconds per block.
+    /**
+     * The interval in milliseconds in which {@code Neow3j} polls the Neo node for new block information when
+     * observing the blockchain.
+     * <p>
+     * There is no default polling interval needed because this value is set when connecting to the Neo node and this
+     * value is only needed if there is a connection to a node. Then, this value is set to the node's milliseconds
+     * per block.
+     */
+    private Long pollingInterval = null; //
+    /**
+     * If set to true, allows
+     */
     private boolean allowTransmissionOnFault = false;
-
-    // The NeoNameService resolver script hash. If another network than mainnet is used, this must be set manually if
-    // neow3j functions that use the NeoNameService are used.
+    /**
+     * The NeoNameService resolver script hash. If another network than mainnet is used, this must be set manually if
+     * neow3j functions that use the NeoNameService are used.
+     */
     private Hash160 nnsResolver = null;
-
+    /**
+     * The executor service used for polling new blocks from the Neo node.
+     */
     private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
 
-    /**
-     * Constructs a configuration instance with default values.
-     */
     private Neow3jConfig() {
     }
 
@@ -48,21 +52,18 @@ public class Neow3jConfig {
         return new Neow3jConfig();
     }
 
-    void setNodeConfiguration(NeoGetVersion.NeoVersion.Protocol protocol) {
-        this.nodeNetworkMagic = protocol.getNetwork();
-        this.nodeMaxValidUntilBlockIncrement = protocol.getMaxValidUntilBlockIncrement();
+    void setConfigFromNodeProtocol(NeoGetVersion.NeoVersion.Protocol protocol) {
         // The polling interval is set to the node's milliseconds per block if it has not been set manually.
         if (this.pollingInterval == null) {
             this.pollingInterval = protocol.getMilliSecondsPerBlock();
         }
-
-        if (this.nnsResolver == null && isMainnet()) {
+        if (this.nnsResolver == null && isMainnet(protocol)) {
             this.nnsResolver = MAINNET_NNS_CONTRACT_HASH;
         }
     }
 
-    private boolean isMainnet() {
-        return this.nodeNetworkMagic == MAINNET_NETWORK_MAGIC;
+    private boolean isMainnet(NeoGetVersion.NeoVersion.Protocol protocol) {
+        return protocol.getNetwork().equals(MAINNET_NETWORK_MAGIC);
     }
 
     // region static configuration values
@@ -92,38 +93,6 @@ public class Neow3jConfig {
      */
     public static void setStaticAddressVersion(byte version) {
         staticAddressVersion = version;
-    }
-
-    // endregion
-    // region node-specific configuration values
-
-    /**
-     * Gets the network magic number of the connected node.
-     * <p>
-     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
-     * <p>
-     * The magic number is represented as an unsigned 32-bit integer on the Neo node. Thus, it's maximum possible
-     * value is 0xffffffff or 2<sup>32</sup>-1.
-     *
-     * @return the network's magic number.
-     * @see Neow3j#getNetworkMagic()
-     */
-    public Long getNetworkMagic() {
-        return this.nodeNetworkMagic;
-    }
-
-    /**
-     * Gets the maximum time in milliseconds that can pass from the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed.
-     *
-     * @return the maximum valid until block time increment.
-     * @see Neow3j#getMaxValidUntilBlockIncrement()
-     */
-    public long getMaxValidUntilBlockIncrement() {
-        if (this.nodeMaxValidUntilBlockIncrement == null) {
-            throw new IllegalStateException("The max valid until block increment is not set.");
-        }
-        return this.nodeMaxValidUntilBlockIncrement;
     }
 
     // endregion

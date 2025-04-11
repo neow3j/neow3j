@@ -56,17 +56,14 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Initializes the Neow3j instance by retrieving the Neo node version information.
+     * Sets Neow3j's configuration based on the connected Neo node's protocol. This does not overwrite any configuration
+     * that was set manually.
      *
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
-    protected void initialize() throws IOException {
+    protected void setConfigFromNodeProtocol() throws IOException {
         NeoGetVersion.NeoVersion.Protocol protocol = this.getVersion().send().getVersion().getProtocol();
-        this.setNodeVersionInfo(protocol);
-    }
-
-    protected void setNodeVersionInfo(NeoGetVersion.NeoVersion.Protocol protocol) {
-        config.setNodeConfiguration(protocol);
+        this.config.setConfigFromNodeProtocol(protocol);
     }
 
     /**
@@ -148,18 +145,22 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @return the connected Neo node network's magic number.
      * @throws IOException if something goes wrong when communicating with the Neo node.
      */
-    public long getNetworkMagic() {
-        return config.getNetworkMagic();
+    public long getNetworkMagic() throws IOException {
+        return getProtocol().getNetwork();
     }
 
     /**
      * Gets the maximum time in milliseconds that can pass form the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed. @return the
+     * included in a block. A transaction becomes invalid after this time increment is surpassed.
      *
      * @return the maximum valid until block time increment.
      */
-    public long getMaxValidUntilBlockIncrement() {
-        return config.getMaxValidUntilBlockIncrement();
+    public long getMaxValidUntilBlockIncrement() throws IOException {
+        return getProtocol().getMaxValidUntilBlockIncrement();
+    }
+
+    private NeoGetVersion.NeoVersion.Protocol getProtocol() throws IOException {
+        return getVersion().send().getVersion().getProtocol();
     }
 
 }

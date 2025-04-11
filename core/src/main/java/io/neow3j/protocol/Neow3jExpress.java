@@ -31,6 +31,10 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
 
     /**
      * Constructs a new Neow3jExpress instance with the default configuration.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value will be set based on the connected Neo node's
+     * protocol.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @return the new Neow3jExpress instance
@@ -41,6 +45,10 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
 
     /**
      * Constructs a new Neow3jExpress instance using the given configuration.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value and have not been set manually in the
+     * provided {@link Neow3jConfig} parameter will be set based on the connected Neo node's protocol.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @param config        the configuration to use.

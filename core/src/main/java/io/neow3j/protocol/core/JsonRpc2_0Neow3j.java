@@ -91,6 +91,18 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
 
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance with the default configuration.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value and have not been set manually in the
+     * provided {@link Neow3jConfig} parameter will be set based on the connected Neo node's protocol.
+     *
+     * @param neow3jService a neow3j service.
+     * @param config        the configuration to use.
+     * @throws IOException if the service is not an offline service and there was a problem fetching information from
+     *                     the Neo node.
+     */
     public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         super(config);
         this.neow3jService = neow3jService;
@@ -99,7 +111,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         // If the service is an offline service, this instance will not be able to perform any requests to a Neo node.
         // Thus, we cannot initialize it.
         if (!(this.neow3jService instanceof OfflineService)) {
-            super.initialize();
+            super.setConfigFromNodeProtocol();
         }
     }
 
