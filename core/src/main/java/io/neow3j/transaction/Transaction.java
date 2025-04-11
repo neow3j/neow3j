@@ -289,7 +289,8 @@ public class Transaction extends NeoSerializable {
      * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
      */
-    public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts) {
+    public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
+            throws IOException {
         return addMultiSigWitness(verificationScript, neow3j.getNetworkMagic(), accounts);
     }
 
@@ -533,10 +534,10 @@ public class Transaction extends NeoSerializable {
      * If you need to use this function offline or want to use a custom magic number, you can use
      * {@link Transaction#toContractParametersContext(long)} instead.
      *
-     * @return neo-cli compatible json of this transaction.
+     * @return neo-cli compatible JSON of this transaction.
      * @throws IOException if an error occurs when trying to fetch the network's magic number.
      */
-    public ContractParametersContext toContractParametersContext() {
+    public ContractParametersContext toContractParametersContext() throws IOException {
         return toContractParametersContext(neow3j.getNetworkMagic());
     }
 
@@ -547,7 +548,7 @@ public class Transaction extends NeoSerializable {
      * and this function can be used offline.
      *
      * @param networkMagicNumber the magic number of the network this transaction is intended for.
-     * @return neo-cli compatible json of this transaction.
+     * @return neo-cli compatible JSON of this transaction.
      */
     public ContractParametersContext toContractParametersContext(long networkMagicNumber) {
         String hash = getTxId().toString();

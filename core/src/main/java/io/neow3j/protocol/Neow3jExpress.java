@@ -37,7 +37,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      * protocol.
      *
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
-     * @return the new Neow3jExpress instance
+     * @return the new Neow3jExpress instance.
      */
     public static Neow3jExpress build(Neow3jService neow3jService) throws IOException {
         return build(neow3jService, defaultNeow3jConfig());

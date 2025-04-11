@@ -27,20 +27,20 @@ public class Neow3jConfig {
      * value is only needed if there is a connection to a node. Then, this value is set to the node's milliseconds
      * per block.
      */
-    private Long pollingInterval = null; //
+    private Long pollingInterval = null;
     /**
-     * If set to true, allows
+     * The executor service used for polling new blocks from the Neo node.
      */
-    private boolean allowTransmissionOnFault = false;
+    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
     /**
      * The NeoNameService resolver script hash. If another network than mainnet is used, this must be set manually if
      * neow3j functions that use the NeoNameService are used.
      */
     private Hash160 nnsResolver = null;
     /**
-     * The executor service used for polling new blocks from the Neo node.
+     * If set to true, allows the transmission of scripts that lead to a {@link io.neow3j.types.NeoVMStateType#FAULT}.
      */
-    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
+    private boolean allowTransmissionOnFault = false;
 
     private Neow3jConfig() {
     }
