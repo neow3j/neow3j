@@ -2,14 +2,15 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.rx.Neow3jRx;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
+
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 
 /**
  * JSON-RPC Request object building factory.
@@ -28,8 +29,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @return the new Neow3j instance.
      */
-    public static Neow3j build(Neow3jService neow3jService) {
-        return build(neow3jService, new Neow3jConfig());
+    public static Neow3j build(Neow3jService neow3jService) throws IOException {
+        return build(neow3jService, defaultNeow3jConfig());
     }
 
     /**
@@ -39,7 +40,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @param config        the configuration to use.
      * @return the new Neow3j instance.
      */
-    public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
+    public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         return new JsonRpc2_0Neow3j(neow3jService, config);
     }
 
@@ -50,8 +51,22 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      *
      * @return a new Neow3j instance with an {@link OfflineService}.
      */
-    public static Neow3j build() {
+    public static Neow3j build() throws IOException {
         return build(OfflineService.newInstance());
+    }
+
+    /**
+     * Initializes the Neow3j instance by retrieving the Neo node version information.
+     *
+     * @throws IOException if something goes wrong when communicating with the Neo node.
+     */
+    protected void initialize() throws IOException {
+        NeoGetVersion.NeoVersion.Protocol protocol = this.getVersion().send().getVersion().getProtocol();
+        this.setNodeVersionInfo(protocol);
+    }
+
+    protected void setNodeVersionInfo(NeoGetVersion.NeoVersion.Protocol protocol) {
+        config.setNodeConfiguration(protocol);
     }
 
     /**
@@ -84,53 +99,6 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the configured network magic number.
-     * <p>
-     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
-     * <p>
-     * The default value is null. Only once this method is called for the first time the value is fetched from the
-     * connected Neo node.
-     *
-     * @return the network's magic number.
-     * @throws IOException if something goes wrong when communicating with the Neo node.
-     */
-    public byte[] getNetworkMagicNumberBytes() throws IOException {
-        if (config.getNetworkMagic() == null) {
-            config.setNetworkMagic(getVersion().send().getVersion().getProtocol().getNetwork());
-        }
-        // transform from long to unsigned int:
-        int networkMagicAsInt = (int) (config.getNetworkMagic() & 0xFFFFFFFFL);
-        byte[] array = new byte[4];
-        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicAsInt);
-        return array;
-    }
-
-    /**
-     * Gets the configured network magic number as an integer.
-     * <p>
-     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
-     * <p>
-     * The default value is null. Only once this method is called for the first time the value is fetched from the
-     * connected Neo node.
-     *
-     * @return the network's magic number.
-     * @throws IOException if something goes wrong when communicating with the Neo node.
-     */
-    public long getNetworkMagicNumber() throws IOException {
-        if (config.getNetworkMagic() == null) {
-            config.setNetworkMagic(getVersion().send().getVersion().getProtocol().getNetwork());
-        }
-        return config.getNetworkMagic();
-    }
-
-    /**
-     * @return the NeoNameService resolver script hash that is configured in the {@link Neow3jConfig}.
-     */
-    public Hash160 getNNSResolver() {
-        return config.getNNSResolver();
-    }
-
-    /**
      * Gets the executor service used for polling new blocks from the Neo node.
      * <p>
      * The default executor service is a {@link ScheduledThreadPoolExecutor} with as many threads as CPUs available
@@ -143,17 +111,6 @@ public abstract class Neow3j implements Neo, Neow3jRx {
     }
 
     /**
-     * Gets the interval in milliseconds in which blocks are produced.
-     * <p>
-     * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
-     *
-     * @return the block interval in milliseconds.
-     */
-    public int getBlockInterval() {
-        return config.getBlockInterval();
-    }
-
-    /**
      * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new block information
      * when observing the blockchain.
      * <p>
@@ -161,20 +118,15 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      *
      * @return the polling interval in milliseconds.
      */
-    public int getPollingInterval() {
+    public long getPollingInterval() {
         return config.getPollingInterval();
     }
 
     /**
-     * Gets the maximum time in milliseconds that can pass form the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed. @return the
-     * <p>
-     * Defaults to {@link Neow3jConfig#MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE} divided by the configured block interval.
-     *
-     * @return the maximum valid until block time increment.
+     * @return the NeoNameService resolver script hash that is configured in the {@link Neow3jConfig}.
      */
-    public long getMaxValidUntilBlockIncrement() {
-        return config.getMaxValidUntilBlockIncrement();
+    public Hash160 getNNSResolver() {
+        return config.getNNSResolver();
     }
 
     /**
@@ -184,6 +136,30 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public void setNNSResolver(Hash160 nnsResolver) {
         config.setNNSResolver(nnsResolver);
+    }
+
+    // region helper functions for important frequently used values
+
+    /**
+     * Gets the network magic number from the connected Neo node as an integer.
+     * <p>
+     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
+     *
+     * @return the connected Neo node network's magic number.
+     * @throws IOException if something goes wrong when communicating with the Neo node.
+     */
+    public long getNetworkMagic() {
+        return config.getNetworkMagic();
+    }
+
+    /**
+     * Gets the maximum time in milliseconds that can pass form the construction of a transaction until it gets
+     * included in a block. A transaction becomes invalid after this time increment is surpassed. @return the
+     *
+     * @return the maximum valid until block time increment.
+     */
+    public long getMaxValidUntilBlockIncrement() {
+        return config.getMaxValidUntilBlockIncrement();
     }
 
 }

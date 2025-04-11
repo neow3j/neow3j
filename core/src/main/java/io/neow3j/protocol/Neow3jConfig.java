@@ -1,52 +1,133 @@
 package io.neow3j.protocol;
 
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.types.Hash160;
 import io.neow3j.utils.Async;
 
 import java.util.concurrent.ScheduledExecutorService;
 
 /**
- * Contains variables that configure a {@link Neow3j} instance. In general this configuration needs to match the
- * configuration of the Neo node you connect to.
+ * Contains variables that configure a {@link Neow3j} instance.
  */
 public class Neow3jConfig {
 
-    public static final int DEFAULT_BLOCK_TIME = 15 * 1000;
-    public static final byte DEFAULT_ADDRESS_VERSION = 0x35;
-    public static final int MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE = 86400000;
+    private static final long MAINNET_NETWORK_MAGIC = 860833102;
+    private static final Hash160 MAINNET_NNS_CONTRACT_HASH = new Hash160("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
 
-    private static byte addressVersion = DEFAULT_ADDRESS_VERSION;
-    private Long networkMagic = null;
-    private int blockInterval = DEFAULT_BLOCK_TIME;
-    private long maxValidUntilBlockIncrement = MAX_VALID_UNTIL_BLOCK_INCREMENT_BASE / blockInterval;
-    private int pollingInterval = DEFAULT_BLOCK_TIME;
-    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
+    public static final byte DEFAULT_ADDRESS_VERSION = 0x35;
+
+    // Static configuration
+    private static byte staticAddressVersion = DEFAULT_ADDRESS_VERSION;
+
+    // Node-specific configuration values that remain constant during the lifetime of a running node and are used
+    // for building and signing transactions.
+    private Long nodeNetworkMagic = null;
+    private Long nodeMaxValidUntilBlockIncrement = null;
+
+    // Neow3j configuration
+    private Long pollingInterval = null; // There's no default polling interval needed. This is only needed if
+    // there is a connection to a node. Then, this value is set to the node's milliseconds per block.
     private boolean allowTransmissionOnFault = false;
 
-    private static final Hash160 MAINNET_NNS_CONTRACT_HASH = new Hash160("0x50ac1c37690cc2cfc594472833cf57505d5f46de");
-    private Hash160 nnsResolver = MAINNET_NNS_CONTRACT_HASH;
+    // The NeoNameService resolver script hash. If another network than mainnet is used, this must be set manually if
+    // neow3j functions that use the NeoNameService are used.
+    private Hash160 nnsResolver = null;
+
+    private ScheduledExecutorService scheduledExecutorService = Async.defaultExecutorService();
 
     /**
      * Constructs a configuration instance with default values.
      */
-    public Neow3jConfig() {
+    private Neow3jConfig() {
     }
 
-    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
-            ScheduledExecutorService scheduledExecutorService) {
-        this(networkMagic, blockInterval, pollingInterval, maxValidUntilBlockIncrement, scheduledExecutorService,
-                MAINNET_NNS_CONTRACT_HASH);
+    /**
+     * @return a Neow3jConfig object with default configuration.
+     */
+    public static Neow3jConfig defaultNeow3jConfig() {
+        return new Neow3jConfig();
     }
 
-    public Neow3jConfig(long networkMagic, int blockInterval, int pollingInterval, long maxValidUntilBlockIncrement,
-            ScheduledExecutorService scheduledExecutorService, Hash160 neoNameServiceScriptHash) {
-        this.networkMagic = networkMagic;
-        this.blockInterval = blockInterval;
-        this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
-        this.pollingInterval = pollingInterval;
-        this.scheduledExecutorService = scheduledExecutorService;
-        this.nnsResolver = neoNameServiceScriptHash;
+    void setNodeConfiguration(NeoGetVersion.NeoVersion.Protocol protocol) {
+        this.nodeNetworkMagic = protocol.getNetwork();
+        this.nodeMaxValidUntilBlockIncrement = protocol.getMaxValidUntilBlockIncrement();
+        // The polling interval is set to the node's milliseconds per block if it has not been set manually.
+        if (this.pollingInterval == null) {
+            this.pollingInterval = protocol.getMilliSecondsPerBlock();
+        }
+
+        if (this.nnsResolver == null && isMainnet()) {
+            this.nnsResolver = MAINNET_NNS_CONTRACT_HASH;
+        }
     }
+
+    private boolean isMainnet() {
+        return this.nodeNetworkMagic == MAINNET_NETWORK_MAGIC;
+    }
+
+    // region static configuration values
+
+    /**
+     * Gets the static address version.
+     * <p>
+     * The address version is used in the creation of Neo addresses from script hashes. If not set manually,
+     * this value is equal to {@link Neow3jConfig#DEFAULT_ADDRESS_VERSION} by default.
+     * <p>
+     * This method is static because it is necessary in code that can be used independent of a connected Neo node.
+     *
+     * @return the address version.
+     */
+    public static byte getStaticAddressVersion() {
+        return staticAddressVersion;
+    }
+
+    /**
+     * Sets the static address version.
+     * <p>
+     * The static address version is only used if no neow3j instance is available to provide the address version of
+     * the connected node. For example, this is the case when using the {@link io.neow3j.utils.AddressUtils} class or
+     * some of the static functions of {@link io.neow3j.wallet.Account}.
+     *
+     * @param version the desired static address version.
+     */
+    public static void setStaticAddressVersion(byte version) {
+        staticAddressVersion = version;
+    }
+
+    // endregion
+    // region node-specific configuration values
+
+    /**
+     * Gets the network magic number of the connected node.
+     * <p>
+     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
+     * <p>
+     * The magic number is represented as an unsigned 32-bit integer on the Neo node. Thus, it's maximum possible
+     * value is 0xffffffff or 2<sup>32</sup>-1.
+     *
+     * @return the network's magic number.
+     * @see Neow3j#getNetworkMagic()
+     */
+    public Long getNetworkMagic() {
+        return this.nodeNetworkMagic;
+    }
+
+    /**
+     * Gets the maximum time in milliseconds that can pass from the construction of a transaction until it gets
+     * included in a block. A transaction becomes invalid after this time increment is surpassed.
+     *
+     * @return the maximum valid until block time increment.
+     * @see Neow3j#getMaxValidUntilBlockIncrement()
+     */
+    public long getMaxValidUntilBlockIncrement() {
+        if (this.nodeMaxValidUntilBlockIncrement == null) {
+            throw new IllegalStateException("The max valid until block increment is not set.");
+        }
+        return this.nodeMaxValidUntilBlockIncrement;
+    }
+
+    // endregion
+    // region neow3j configuration values
 
     /**
      * Gets the interval in milliseconds in which {@code Neow3j} polls the neo-node for new block information when
@@ -55,7 +136,7 @@ public class Neow3jConfig {
      * @return the polling interval in milliseconds.
      * @see Neow3j#getPollingInterval()
      */
-    public int getPollingInterval() {
+    public long getPollingInterval() {
         return pollingInterval;
     }
 
@@ -66,7 +147,7 @@ public class Neow3jConfig {
      * @param pollingInterval The polling interval in milliseconds.
      * @return this.
      */
-    public Neow3jConfig setPollingInterval(int pollingInterval) {
+    public Neow3jConfig setPollingInterval(long pollingInterval) {
         this.pollingInterval = pollingInterval;
         return this;
     }
@@ -86,115 +167,7 @@ public class Neow3jConfig {
      * @return this.
      */
     public Neow3jConfig setScheduledExecutorService(ScheduledExecutorService executorService) {
-        scheduledExecutorService = executorService;
-        return this;
-    }
-
-    /**
-     * Gets the configured address version.
-     * <p>
-     * The address version is used in the creation of Neo addresses from script hashes. It defaults to
-     * {@link Neow3jConfig#DEFAULT_ADDRESS_VERSION}.
-     * <p>
-     * This method is static because it is necessary in code that can be used independent of a connected Neo node.
-     *
-     * @return the address version.
-     */
-    public static byte getAddressVersion() {
-        return addressVersion;
-    }
-
-    /**
-     * Sets the address version.
-     * <p>
-     * This should match the configuration of the neo-node you connect to.
-     *
-     * @param version the desired address version.
-     */
-    public static void setAddressVersion(byte version) {
-        addressVersion = version;
-    }
-
-    /**
-     * Gets the configured network magic number.
-     * <p>
-     * The magic number is an ingredient, e.g., when generating the hash of a transaction.
-     * <p>
-     * The default value is null. Only once {@link Neow3j#getNetworkMagicNumberBytes()} or
-     * {@link Neow3j#getNetworkMagicNumber()} is called for the first time the value is set. This is because the
-     * magic number is fetched directly from the neo-node.
-     * <p>
-     * The magic number is represented as an unsigned 32-bit integer on the neo-node. Thus, it's maximum possible
-     * value is 0xffffffff or 2<sup>32</sup>-1.
-     *
-     * @return the network's magic number.
-     * @see Neow3j#getNetworkMagicNumber()
-     */
-    public Long getNetworkMagic() {
-        return networkMagic;
-    }
-
-    /**
-     * Sets the network magic number.
-     * <p>
-     * The magic number is an ingredient, e.g., when generating the hash of a transaction. This should match the
-     * configuration of the neo-node you connect to.
-     *
-     * @param magic the network's magic number.
-     * @return this.
-     */
-    public Neow3jConfig setNetworkMagic(long magic) {
-        if (magic > 0xFFFFFFFFL || magic < 0L) {
-            throw new IllegalArgumentException("The network magic number must fit into a 32-bit unsigned integer, " +
-                    "i.e., it must be positive and not greater than 0xFFFFFFFF.");
-        }
-        networkMagic = magic;
-        return this;
-    }
-
-    /**
-     * @return the block interval in milliseconds.
-     * @see Neow3j#getScheduledExecutorService()
-     */
-    public int getBlockInterval() {
-        return blockInterval;
-    }
-
-    /**
-     * Sets the interval in milliseconds in which blocks are produced.
-     * <p>
-     * This should match the block time of the blockchain network you connect to.
-     *
-     * @param blockInterval the block interval in milliseconds.
-     * @return this.
-     */
-    public Neow3jConfig setBlockInterval(int blockInterval) {
-        this.blockInterval = blockInterval;
-        return this;
-    }
-
-    /**
-     * Gets the maximum time in milliseconds that can pass from the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed.
-     *
-     * @return the maximum valid until block time increment.
-     * @see Neow3j#getMaxValidUntilBlockIncrement()
-     */
-    public long getMaxValidUntilBlockIncrement() {
-        return maxValidUntilBlockIncrement;
-    }
-
-    /**
-     * Sets the maximum time in milliseconds that can pass from the construction of a transaction until it gets
-     * included in a block. A transaction becomes invalid after this time increment is surpassed.
-     * <p>
-     * This should match the configuration of the neo-node you connect to.
-     *
-     * @param maxValidUntilBlockIncrement the maximum valid until block time increment.
-     * @return this.
-     */
-    public Neow3jConfig setMaxValidUntilBlockIncrement(long maxValidUntilBlockIncrement) {
-        this.maxValidUntilBlockIncrement = maxValidUntilBlockIncrement;
+        this.scheduledExecutorService = executorService;
         return this;
     }
 
@@ -202,6 +175,9 @@ public class Neow3jConfig {
      * @return the NeoNameService resolver script hash.
      */
     public Hash160 getNNSResolver() {
+        if (this.nnsResolver == null) {
+            throw new IllegalStateException("The NNS resolver script hash is not set.");
+        }
         return this.nnsResolver;
     }
 
@@ -245,5 +221,7 @@ public class Neow3jConfig {
         this.allowTransmissionOnFault = false;
         return this;
     }
+
+    // endregion
 
 }

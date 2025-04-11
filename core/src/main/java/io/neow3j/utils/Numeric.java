@@ -5,6 +5,8 @@ import io.neow3j.utils.exceptions.MessageEncodingException;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
@@ -305,6 +307,17 @@ public final class Numeric {
         if (!isValidHexString(value)) {
             throw new IllegalArgumentException("Given value is not a valid hexadecimal string.");
         }
+    }
+
+    /**
+     * @return the network's magic number in little-endian.
+     */
+    public static byte[] convertNetworkMagicNumberToLittleEndian(long networkMagicNumber) {
+        // transform from long to unsigned int:
+        int networkMagicAsInt = (int) (networkMagicNumber & 0xFFFFFFFFL);
+        byte[] array = new byte[4];
+        ByteBuffer.wrap(array).order(ByteOrder.LITTLE_ENDIAN).putInt(networkMagicAsInt);
+        return array;
     }
 
 }

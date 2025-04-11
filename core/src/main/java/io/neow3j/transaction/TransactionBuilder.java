@@ -317,6 +317,11 @@ public class TransactionBuilder {
 
     /**
      * Builds the transaction without signing it.
+     * <p>
+     * Requires that this {@link TransactionBuilder} object's {@link TransactionBuilder#neow3j} instance is connected
+     * to a Neo node.
+     * <p>
+     * If you need to build a transaction offline, you need to create a {@link Transaction} object manually.
      *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
@@ -504,6 +509,12 @@ public class TransactionBuilder {
      * <p>
      * For each signer of the transaction, a corresponding account with an EC key pair must exist in the wallet set
      * on this transaction builder.
+     * <p>
+     * Note, that this function uses the network magic number of the Neo node that this {@link TransactionBuilder}
+     * object's {@link TransactionBuilder#neow3j} instance is connected to.
+     * <p>
+     * If you need to use this function offline or want to use a custom magic number, you can use
+     * {@link TransactionBuilder#sign(long)} instead.
      *
      * @return the signed transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
@@ -513,8 +524,27 @@ public class TransactionBuilder {
      *                                           sender cannot cover the transaction fees.
      */
     public Transaction sign() throws Throwable {
+        return sign(neow3j.getNetworkMagic());
+    }
+
+    /**
+     * Builds the transaction, creates signatures for every signer and adds them to the transaction as witnesses.
+     * <p>
+     * For each signer of the transaction, a corresponding account with an EC key pair must exist in the wallet set
+     * on this transaction builder.
+     * <p>
+     *
+     *
+     * @return the signed transaction.
+     * @throws TransactionConfigurationException if the builder is mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the Neo node.
+     * @throws RpcResponseErrorException         if the Neo node returns an error.
+     * @throws Throwable                         a custom exception if one was set to be thrown in the case the
+     *                                           sender cannot cover the transaction fees.
+     */
+    public Transaction sign(long networkMagic) throws Throwable {
         transaction = getUnsignedTransaction();
-        byte[] txBytes = transaction.getHashData();
+        byte[] txBytes = transaction.getHashData(networkMagic);
         transaction.getSigners().forEach(signer -> {
             if (signer instanceof ContractSigner) {
                 ContractSigner contractSigner = (ContractSigner) signer;

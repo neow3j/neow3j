@@ -4,6 +4,7 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
+import io.neow3j.protocol.OfflineService;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
@@ -90,10 +91,16 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
 
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) {
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         super(config);
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        // If the service is an offline service, this instance will not be able to perform any requests to a Neo node.
+        // Thus, we cannot initialize it.
+        if (!(this.neow3jService instanceof OfflineService)) {
+            super.initialize();
+        }
     }
 
     // region Blockchain Methods
