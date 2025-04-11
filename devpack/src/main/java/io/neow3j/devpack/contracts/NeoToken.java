@@ -7,6 +7,7 @@ import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
+import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.States;
 import static io.neow3j.devpack.constants.CallFlags.ReadStates;
 
@@ -38,7 +39,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if registering was successful. False, otherwise.
      */
-    @CallFlags(States)
+    @CallFlags(States | AllowNotify)
     public native boolean registerCandidate(ECPoint publicKey);
 
     /**
@@ -47,7 +48,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if deregistering was successful. False, otherwise.
      */
-    @CallFlags(States)
+    @CallFlags(States | AllowNotify)
     public native boolean unregisterCandidate(ECPoint publicKey);
 
     /**
@@ -60,7 +61,7 @@ public class NeoToken extends FungibleToken {
      * @param candidatePubKey the public key of the candidate to vote for.
      * @return true if voting was successful. False, otherwise.
      */
-    @CallFlags(States)
+    @CallFlags(States | AllowNotify)
     public native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
