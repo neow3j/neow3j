@@ -4,7 +4,7 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.None;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the native StdLib contract that provides useful functions.
@@ -56,7 +56,7 @@ public class StdLib extends ContractInterface {
      * @param source the object to serialize.
      * @return the serialized bytes.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString serialize(Object source);
 
     /**
@@ -67,7 +67,7 @@ public class StdLib extends ContractInterface {
      * @param source the bytes to deserialize.
      * @return the deserialized object.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native Object deserialize(ByteString source);
 
     /**
@@ -95,7 +95,7 @@ public class StdLib extends ContractInterface {
      * @param obj the object to JSON-serialize.
      * @return the object as a JSON string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String jsonSerialize(Object obj);
 
     /**
@@ -119,7 +119,7 @@ public class StdLib extends ContractInterface {
      * @param json the string to deserialize.
      * @return the deserialized object.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native Object jsonDeserialize(String json);
 
     /**
@@ -128,7 +128,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String base64Encode(ByteString input);
 
     /**
@@ -137,7 +137,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base64-encoded string.
      * @return the decoded byte string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString base64Decode(String input);
 
     /**
@@ -146,7 +146,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String base58Encode(ByteString input);
 
     /**
@@ -155,7 +155,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base58-encoded string.
      * @return the decoded bytes.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString base58Decode(String input);
 
     /**
@@ -166,7 +166,7 @@ public class StdLib extends ContractInterface {
      * @param input the bytes to encode.
      * @return the encoded string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String base58CheckEncode(ByteString input);
 
     /**
@@ -175,7 +175,7 @@ public class StdLib extends ContractInterface {
      * @param input the Base58-encoded string.
      * @return the decoded bytes.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString base58CheckDecode(String input);
 
     /**
@@ -190,7 +190,7 @@ public class StdLib extends ContractInterface {
      * @param base the base to use for the string representation. Can be decimal (10) or hexadecimal (16).
      * @return the number as a string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String itoa(int i, int base);
 
     /**
@@ -200,7 +200,7 @@ public class StdLib extends ContractInterface {
      * @param base the base to use for interpreting the string. Can be decimal (10) or hexadecimal (16).
      * @return the number.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int atoi(String s, int base);
 
     /**
@@ -214,7 +214,7 @@ public class StdLib extends ContractInterface {
      * <li> 1, if {@code mem1} follows {@code mem2}.
      * </ul>
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int memoryCompare(ByteString mem1, ByteString mem2);
 
     /**
@@ -224,7 +224,7 @@ public class StdLib extends ContractInterface {
      * @param value the value to search.
      * @return the index of the first occurrence of {@code value}, or -1 if not found.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int memorySearch(ByteString mem, ByteString value);
 
     /**
@@ -235,7 +235,7 @@ public class StdLib extends ContractInterface {
      * @param start the index at which to start searching.
      * @return the index of the first occurrence of {@code value}, or -1 if not found.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int memorySearch(ByteString mem, ByteString value, int start);
 
     /**
@@ -254,7 +254,7 @@ public class StdLib extends ContractInterface {
      * @return the index of the first occurrence of {@code value} depending on the choice of {@code backward}, or -1
      * if not found.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int memorySearch(ByteString mem, ByteString value, int start, boolean backward);
 
     /**
@@ -267,7 +267,7 @@ public class StdLib extends ContractInterface {
      * @param separator the character sequence to use as the separator.
      * @return the list of separated strings.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String[] stringSplit(String str, String separator);
 
     /**
@@ -278,7 +278,7 @@ public class StdLib extends ContractInterface {
      * @param removeEmptyEntries if empty strings should be included in the returned array or not.
      * @return the list of separated strings.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native String[] stringSplit(String str, String separator, boolean removeEmptyEntries);
 
     /**
@@ -292,7 +292,7 @@ public class StdLib extends ContractInterface {
      * @param str the string.
      * @return the length of the string.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native int strLen(String str);
 
 }

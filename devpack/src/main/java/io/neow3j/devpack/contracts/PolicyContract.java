@@ -4,8 +4,8 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.ReadStates;
-import static io.neow3j.devpack.constants.CallFlags.States;
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
@@ -37,7 +37,7 @@ public class PolicyContract extends ContractInterface {
     /**
      * @return the GAS cost per transaction byte, i.e., the fee per byte.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getFeePerByte();
 
     /**
@@ -45,6 +45,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param size the desired block size.
      */
+    @CallFlags(All)
     public native void setMaxBlockSize(int size);
 
     /**
@@ -52,6 +53,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param size the desired number of transactions.
      */
+    @CallFlags(All)
     public native void setMaxTransactionsPerBlock(int size);
 
     /**
@@ -59,6 +61,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param fee the desired maximum fee.
      */
+    @CallFlags(All)
     public native void setMaxBlockSystemFee(int fee);
 
     /**
@@ -66,7 +69,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param fee the desired fee per byte.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setFeePerByte(int fee);
 
     /**
@@ -75,7 +78,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the account to block.
      * @return true if successful. False, otherwise.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native boolean blockAccount(Hash160 scriptHash);
 
     /**
@@ -84,7 +87,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the account to unblock.
      * @return true if successful. False, otherwise.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native boolean unblockAccount(Hash160 scriptHash);
 
     /**
@@ -93,7 +96,7 @@ public class PolicyContract extends ContractInterface {
      * @param scriptHash the script hash of the account.
      * @return true if the account is blocked. False, otherwise.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native boolean isBlocked(Hash160 scriptHash);
 
     /**
@@ -104,7 +107,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @return the execution fee factor.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getExecFeeFactor();
 
     /**
@@ -115,13 +118,13 @@ public class PolicyContract extends ContractInterface {
      *
      * @param factor the desired factor.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setExecFeeFactor(int factor);
 
     /**
      * @return the GAS price for one byte of contract storage.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getStoragePrice();
 
     /**
@@ -129,7 +132,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param price the desired price for one byte of storage.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setStoragePrice(int price);
 
     /**
@@ -138,7 +141,7 @@ public class PolicyContract extends ContractInterface {
      * @param attributeType the attribute type.
      * @return the GAS fee for the given attribute type.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getAttributeFee(byte attributeType);
 
     /**
@@ -147,7 +150,7 @@ public class PolicyContract extends ContractInterface {
      * @param attributeType the attribute type.
      * @param fee           the GAS fee.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setAttributeFee(byte attributeType, int fee);
 
 }
