@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.exceptions.Neow3jBuildException;
 import io.neow3j.protocol.rx.Neow3jRx;
 import io.neow3j.types.Hash160;
 
@@ -29,7 +30,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @return the new Neow3j instance.
      */
-    public static Neow3j build(Neow3jService neow3jService) throws IOException {
+    public static Neow3j build(Neow3jService neow3jService) {
         return build(neow3jService, defaultNeow3jConfig());
     }
 
@@ -40,8 +41,12 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * @param config        the configuration to use.
      * @return the new Neow3j instance.
      */
-    public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
-        return new JsonRpc2_0Neow3j(neow3jService, config);
+    public static Neow3j build(Neow3jService neow3jService, Neow3jConfig config) {
+        try {
+            return new JsonRpc2_0Neow3j(neow3jService, config);
+        } catch (IOException e) {
+            throw new Neow3jBuildException(e.getMessage());
+        }
     }
 
     /**
@@ -51,7 +56,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      *
      * @return a new Neow3j instance with an {@link OfflineService}.
      */
-    public static Neow3j build() throws IOException {
+    public static Neow3j build() {
         return build(OfflineService.newInstance());
     }
 

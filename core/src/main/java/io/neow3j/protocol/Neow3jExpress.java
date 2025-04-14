@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.response.NeoExpressListContracts;
 import io.neow3j.protocol.core.response.NeoExpressListOracleRequests;
 import io.neow3j.protocol.core.response.NeoExpressShutdown;
 import io.neow3j.protocol.core.response.OracleResponse;
+import io.neow3j.protocol.exceptions.Neow3jBuildException;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
@@ -39,7 +40,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      * @param neow3jService a neow3j service instance, i.e., HTTP or IPC.
      * @return the new Neow3jExpress instance.
      */
-    public static Neow3jExpress build(Neow3jService neow3jService) throws IOException {
+    public static Neow3jExpress build(Neow3jService neow3jService) {
         return build(neow3jService, defaultNeow3jConfig());
     }
 
@@ -54,8 +55,12 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      * @param config        the configuration to use.
      * @return the new Neow3jExpress instance.
      */
-    public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
-        return new Neow3jExpress(neow3jService, config);
+    public static Neow3jExpress build(Neow3jService neow3jService, Neow3jConfig config) {
+        try {
+            return new Neow3jExpress(neow3jService, config);
+        } catch (IOException e) {
+            throw new Neow3jBuildException(e.getMessage());
+        }
     }
 
     /**
@@ -65,7 +70,7 @@ public class Neow3jExpress extends JsonRpc2_0Neow3j implements NeoExpress {
      *
      * @return a new Neow3jExpress instance with an {@link OfflineService}.
      */
-    public static Neow3jExpress build() throws IOException {
+    public static Neow3jExpress build() {
         return build(OfflineService.newInstance());
     }
 
