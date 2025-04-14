@@ -2,6 +2,9 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Base class for non-divisible, non-fungible token contracts that are compliant with the NEP-11 standard. Initialize
@@ -39,6 +42,7 @@ public class NonDivisibleNonFungibleToken extends NonFungibleToken {
      * @param tokenId the token id.
      * @return the token owner.
      */
+    @CallFlags(ReadOnly)
     public native Hash160 ownerOf(ByteString tokenId);
 
 }
