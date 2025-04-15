@@ -1,5 +1,7 @@
 package io.neow3j.protocol.exceptions;
 
+import io.neow3j.protocol.Neow3j;
+
 import static java.lang.String.format;
 
 /**

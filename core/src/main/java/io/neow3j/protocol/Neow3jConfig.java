@@ -52,10 +52,14 @@ public class Neow3jConfig {
         return new Neow3jConfig();
     }
 
-    void setConfigFromNodeProtocol(NeoGetVersion.NeoVersion.Protocol protocol) {
+    void setConfigFromProtocol(NeoGetVersion.NeoVersion.Protocol protocol) {
         // The polling interval is set to the node's milliseconds per block if it has not been set manually.
         if (this.pollingInterval == null) {
-            this.pollingInterval = protocol.getMilliSecondsPerBlock();
+            Long milliSecondsPerBlock = protocol.getMilliSecondsPerBlock();
+            if (milliSecondsPerBlock.equals(null)) {
+                throw new IllegalArgumentException("The protocol's milliseconds per block is not set.");
+            }
+            this.pollingInterval = milliSecondsPerBlock;
         }
         if (this.nnsResolver == null && isMainnet(protocol)) {
             this.nnsResolver = MAINNET_NNS_CONTRACT_HASH;
@@ -63,7 +67,11 @@ public class Neow3jConfig {
     }
 
     private boolean isMainnet(NeoGetVersion.NeoVersion.Protocol protocol) {
-        return protocol.getNetwork().equals(MAINNET_NETWORK_MAGIC);
+        Long network = protocol.getNetwork();
+        if (network == null) {
+            throw new IllegalArgumentException("The protocol's network magic is not set.");
+        }
+        return network.equals(MAINNET_NETWORK_MAGIC);
     }
 
     // region static configuration values

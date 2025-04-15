@@ -92,7 +92,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     private final JsonRpc2_0Rx neow3jRx;
 
     /**
-     * Constructs a new JsonRpc2_0Neow3j instance with the default configuration.
+     * Constructs a new JsonRpc2_0Neow3j instance.
      * <p>
      * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
      * it is not, configuration values that do not have a default value and have not been set manually in the
@@ -113,6 +113,24 @@ public class JsonRpc2_0Neow3j extends Neow3j {
         if (!(this.neow3jService instanceof OfflineService)) {
             super.setConfigFromNodeProtocol();
         }
+    }
+
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance.
+     * <p>
+     * Does not require a connection to a Neo node.
+     *
+     * @param neow3jService the neow3j service.
+     * @param config        the configuration to use.
+     * @param protocol      the protocol to use.
+     */
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config,
+            NeoGetVersion.NeoVersion.Protocol protocol) {
+        super(config);
+        this.neow3jService = neow3jService;
+        this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        super.setConfigFromProtocol(protocol);
     }
 
     // region Blockchain Methods

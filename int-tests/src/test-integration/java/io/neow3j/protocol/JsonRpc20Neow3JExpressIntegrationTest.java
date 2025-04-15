@@ -44,7 +44,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 @Testcontainers
-public class Neow3jExpressIntegrationTest {
+public class JsonRpc20Neow3JExpressIntegrationTest {
 
     private static final String RESOURCE_DIR = "core/";
     private static final String NEF_FILE_SOURCE = RESOURCE_DIR + "OracleTestContract.nef";

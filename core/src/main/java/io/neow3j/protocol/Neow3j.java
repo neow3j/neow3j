@@ -3,6 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
 import io.neow3j.protocol.core.response.NeoGetVersion;
+import io.neow3j.protocol.core.response.NeoGetVersion.NeoVersion.Protocol;
 import io.neow3j.protocol.exceptions.Neow3jBuildException;
 import io.neow3j.protocol.rx.Neow3jRx;
 import io.neow3j.types.Hash160;
@@ -60,6 +61,11 @@ public abstract class Neow3j implements Neo, Neow3jRx {
         return build(OfflineService.newInstance());
     }
 
+    protected static Neow3j build(Neow3jService service, Neow3jConfig config,
+            NeoGetVersion.NeoVersion.Protocol protocol) {
+        return new JsonRpc2_0Neow3j(service, config, protocol);
+    }
+
     /**
      * Sets Neow3j's configuration based on the connected Neo node's protocol. This does not overwrite any configuration
      * that was set manually.
@@ -68,7 +74,17 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     protected void setConfigFromNodeProtocol() throws IOException {
         NeoGetVersion.NeoVersion.Protocol protocol = this.getVersion().send().getVersion().getProtocol();
-        this.config.setConfigFromNodeProtocol(protocol);
+        setConfigFromProtocol(protocol);
+    }
+
+    /**
+     * Sets Neow3j's configuration based on the provided protocol. This does not overwrite any configuration that was
+     * set manually.
+     *
+     * @param protocol the protocol to set the configuration from.
+     */
+    protected void setConfigFromProtocol(NeoGetVersion.NeoVersion.Protocol protocol) {
+        this.config.setConfigFromProtocol(protocol);
     }
 
     /**
@@ -116,7 +132,8 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * Gets the interval in milliseconds in which {@code Neow3j} should poll the Neo node for new block information
      * when observing the blockchain.
      * <p>
-     * Defaults to {@link Neow3jConfig#DEFAULT_BLOCK_TIME}.
+     * Defaults to the connected node's {@code millisecondsPerBlock} value. See
+     * {@link Protocol#getMilliSecondsPerBlock()}.
      *
      * @return the polling interval in milliseconds.
      */
@@ -159,6 +176,7 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      * included in a block. A transaction becomes invalid after this time increment is surpassed.
      *
      * @return the maximum valid until block time increment.
+     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public long getMaxValidUntilBlockIncrement() throws IOException {
         return getProtocol().getMaxValidUntilBlockIncrement();
