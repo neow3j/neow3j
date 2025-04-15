@@ -23,10 +23,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.contract.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.GAS_HASH;
+import static io.neow3j.helper.FundingHelper.NEO_HASH;
 import static io.neow3j.contract.SmartContract.calcContractHash;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
