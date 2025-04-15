@@ -1,24 +1,16 @@
 package io.neow3j.protocol.rx;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
 import io.neow3j.protocol.core.Request;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
+
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +23,20 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.mockito.Mockito;
 import org.mockito.stubbing.OngoingStubbing;
+
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JsonRpc2_0RxTest {
@@ -41,9 +46,11 @@ public class JsonRpc2_0RxTest {
     private Neow3jService neow3jService;
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         neow3jService = mock(Neow3jService.class);
-        neow3j = Neow3j.build(neow3jService, new Neow3jConfig()
+        Mockito.when(neow3jService.send(Mockito.any(), Mockito.eq(NeoGetVersion.class)))
+                .thenReturn(getDummyNeoGetVersionResponse());
+        neow3j = Neow3j.build(neow3jService, defaultNeow3jConfig()
                 .setPollingInterval(1000)
                 .setScheduledExecutorService(Executors.newSingleThreadScheduledExecutor()));
     }
@@ -110,8 +117,7 @@ public class JsonRpc2_0RxTest {
                 results.add(result);
                 transactionLatch.countDown();
             },
-            throwable -> fail(throwable.getMessage()),
-            () -> completedLatch.countDown());
+            throwable -> fail(throwable.getMessage()), completedLatch::countDown);
 
         // just to be in the safe side, we add a timeout
         completedLatch.await(5, TimeUnit.SECONDS);
@@ -344,6 +350,19 @@ public class JsonRpc2_0RxTest {
                 null, null, 1, null);
         neoGetBlock.setResult(block);
         return neoGetBlock;
+    }
+
+    private NeoGetVersion getDummyNeoGetVersionResponse() {
+        NeoGetVersion.NeoVersion.Protocol protocol = new NeoGetVersion.NeoVersion.Protocol();
+        protocol.setNetwork(768L);
+        protocol.setMilliSecondsPerBlock(1000L);
+
+        NeoGetVersion.NeoVersion version = new NeoGetVersion.NeoVersion();
+        version.setProtocol(protocol);
+
+        NeoGetVersion neoGetVersion = new NeoGetVersion();
+        neoGetVersion.setResult(version);
+        return neoGetVersion;
     }
 
 }

@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.ContractState;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
@@ -68,11 +67,12 @@ public class ContractManagementTest {
             .build();
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
+        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
     }
 
@@ -87,6 +87,7 @@ public class ContractManagementTest {
 
     @Test
     public void testSetMinimumDeploymentFee() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "management_setMinimumDeploymentFee.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -166,6 +167,7 @@ public class ContractManagementTest {
 
     @Test
     public void deployWithoutData() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "management_deploy.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -194,6 +196,7 @@ public class ContractManagementTest {
 
     @Test
     public void deployWithData() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "management_deploy.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");

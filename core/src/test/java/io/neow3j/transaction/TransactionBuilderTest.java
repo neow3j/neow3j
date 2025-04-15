@@ -7,7 +7,6 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
@@ -100,11 +99,12 @@ public class TransactionBuilderTest {
     private Neow3j neow;
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         account1 = new Account(ECKeyPair.create(hexStringToByteArray(
                 "e6e919577dd7b8e97805151c05ae07ff4f752654d6d8797597aca989c02c4cb3")));
         account2 = new Account(ECKeyPair.create(hexStringToByteArray(
@@ -178,6 +178,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void automaticallySetNonce() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_necessary_mock.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -223,6 +224,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_highPriority() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForCall("getcommittee", "getcommittee.json");
@@ -243,6 +245,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_highPriority_multiSigContainingCommitteeMember() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForCall("getcommittee", "getcommittee.json");
@@ -267,6 +270,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_highPriority_noCommitteeMember() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getcommittee", "getcommittee.json");
         setUpWireMockForGetBlockCount(1000);
 
@@ -300,6 +304,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_notValidBefore() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -346,6 +351,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_conflicts() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -366,6 +372,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void attributes_conflicts_multiple() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -473,6 +480,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testAutomaticSettingOfValidUntilBlockVariable() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -502,6 +510,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failTryingToSignTransactionWithAccountMissingAPrivateKey() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
@@ -518,6 +527,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failAutomaticallySigningWithMultiSigAccountSigner() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -532,6 +542,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failWithNoSigningAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
 
@@ -545,6 +556,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failSigningWithAccountWithoutECKeyPair() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -562,6 +574,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void signTransactionWithAdditionalSigners() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
@@ -602,6 +615,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testContractWitness() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -620,8 +634,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void sendInvokeFunction() throws Throwable {
-        setUpWireMockForCall("invokescript",
-                "invokescript_transfer_with_fixed_sysfee.json");
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -648,6 +662,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void transferNeoFromNormalAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         byte[] expectedScript = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH,
@@ -829,9 +844,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void buildWithInvalidScript() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript", "invokescript_invalidscript.json",
-                "DAASDBSTrRVy");
+        setUpWireMockForCall("invokescript", "invokescript_invalidscript.json", "DAASDBSTrRVy");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray("0c00120c1493ad1572"))
                 .signers(calledByEntry(account1));
@@ -843,10 +858,9 @@ public class TransactionBuilderTest {
 
     @Test
     public void buildWithScript_vmFaults() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript",
-                "invokescript_exception.json",
-                "DA5PcmFjbGVDb250cmFjdEEa93tn");
+        setUpWireMockForCall("invokescript", "invokescript_exception.json", "DA5PcmFjbGVDb250cmFjdEEa93tn");
         TransactionBuilder b = new TransactionBuilder(neow)
                 .script(hexStringToByteArray("0c0e4f7261636c65436f6e7472616374411af77b67"))
                 .signers(calledByEntry(account1));
@@ -860,6 +874,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testGetUnsignedTransaction() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -876,6 +891,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testVersion() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -891,6 +907,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testAdditionalNetworkFee() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -915,6 +932,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testAdditionalSystemFee() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -997,6 +1015,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void trackingTransactionShouldReturnCorrectBlock() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
@@ -1036,6 +1055,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void trackingTransaction_txNotSent() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -1079,8 +1099,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog() throws Throwable {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
-                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
@@ -1106,8 +1126,8 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog_txNotSent() throws Throwable {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
-                "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -1129,6 +1149,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void getApplicationLog_notExisting() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
@@ -1153,6 +1174,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testTransmissionOnFault() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
@@ -1183,6 +1205,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void testPreventTransmissionOnFault() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
 

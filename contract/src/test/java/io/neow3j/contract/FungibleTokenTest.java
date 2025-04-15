@@ -18,10 +18,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
@@ -49,17 +51,19 @@ public class FungibleTokenTest {
     private FungibleToken gasToken;
     private Account account1;
     private Account account2;
-    private static final Hash160 RECIPIENT_SCRIPT_HASH =
-            new Hash160("969a77db482f74ce27105f760efa139223431394");
+    private static final Hash160 RECIPIENT_SCRIPT_HASH = new Hash160("969a77db482f74ce27105f760efa139223431394");
 
     private static final String NEP17_TRANSFER = "transfer";
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+        setUpWireMockForCall("getversion", "getversion.json");
+
+        Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
+                defaultNeow3jConfig().setNNSResolver(new Hash160("0x153d2d8818b59de45e2e4d6b48003dab93bd4429")));
 
         neoToken = new FungibleToken(new Hash160(neoTokenHash()), neow);
         gasToken = new FungibleToken(new Hash160(gasTokenHash()), neow);
@@ -74,6 +78,7 @@ public class FungibleTokenTest {
 
     @Test
     public void transferFromAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -150,6 +155,7 @@ public class FungibleTokenTest {
 
     @Test
     public void transferToNNSName() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForGetBlockCount(1000);
@@ -170,8 +176,7 @@ public class FungibleTokenTest {
                 .toArray();
 
         // 1. Option: Sender is an account
-        Transaction tx = gasToken.transfer(account1, nnsName, BigInteger.valueOf(amount))
-                .getUnsignedTransaction();
+        Transaction tx = gasToken.transfer(account1, nnsName, BigInteger.valueOf(amount)).getUnsignedTransaction();
 
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(((AccountSigner) tx.getSigners().get(0)).getAccount(), is(account1));

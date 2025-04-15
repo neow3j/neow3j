@@ -1,0 +1,42 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "tcpport": 20333,
+    "nonce": 1608395223,
+    "useragent": "",
+    "rpc": {
+      "maxiteratorresultitems": 100,
+      "sessionenabled": true
+    },
+    "protocol": {
+      "addressversion": 53,
+      "network": 799,
+      "validatorscount": 7,
+      "msperblock": 156,
+      "maxtraceableblocks": 2102400,
+      "maxvaliduntilblockincrement": 5760,
+      "maxtransactionsperblock": 5000,
+      "memorypoolmaxtransactions": 50000,
+      "initialgasdistribution": 5200000000000000,
+      "hardforks": [
+        {
+          "name": "Aspidochelone",
+          "blockheight": 210000
+        },
+        {
+          "name": "Basilisk",
+          "blockheight": 2680000
+        },
+        {
+          "name": "Cockatrice",
+          "blockheight": 3967000
+        },
+        {
+          "name": "Domovoi",
+          "blockheight": 4144000
+        }
+      ]
+    }
+  }
+}

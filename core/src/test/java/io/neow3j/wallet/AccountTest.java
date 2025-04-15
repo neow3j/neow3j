@@ -43,6 +43,7 @@ import static io.neow3j.test.TestProperties.defaultAccountVerificationScript;
 import static io.neow3j.test.TestProperties.defaultAccountWIF;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -315,11 +316,11 @@ public class AccountTest {
     public void getNep17Balances() throws IOException {
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
+        setUpWireMockForCall("getversion", "getversion.json");
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+
         Account a = Account.fromAddress(defaultAccountAddress());
-        WalletTestHelper.setUpWireMockForCall("getnep17balances",
-                "getnep17balances_ofDefaultAccount.json",
-                defaultAccountAddress());
+        setUpWireMockForCall("getnep17balances", "getnep17balances_ofDefaultAccount.json", defaultAccountAddress());
         Map<Hash160, BigInteger> balances = a.getNep17Balances(neow);
 
         assertThat(balances.keySet(), containsInAnyOrder(

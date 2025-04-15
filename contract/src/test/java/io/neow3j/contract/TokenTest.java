@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.is;
@@ -33,11 +34,11 @@ public class TokenTest {
     private static final Hash160 SOME_TOKEN_SCRIPT_HASH = new Hash160("f7014e6d52fe8f94f7c57acd8cfb875b4ac2a1c6");
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-
+        setUpWireMockForCall("getversion", "getversion.json");
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         someToken = new Token(SOME_TOKEN_SCRIPT_HASH, neow);
     }
