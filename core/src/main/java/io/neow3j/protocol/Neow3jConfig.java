@@ -56,7 +56,7 @@ public class Neow3jConfig {
         // The polling interval is set to the node's milliseconds per block if it has not been set manually.
         if (this.pollingInterval == null) {
             Long milliSecondsPerBlock = protocol.getMilliSecondsPerBlock();
-            if (milliSecondsPerBlock.equals(null)) {
+            if (milliSecondsPerBlock == null) {
                 throw new IllegalArgumentException("The protocol's milliseconds per block is not set.");
             }
             this.pollingInterval = milliSecondsPerBlock;

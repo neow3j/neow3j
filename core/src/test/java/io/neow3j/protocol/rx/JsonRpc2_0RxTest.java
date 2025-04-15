@@ -37,7 +37,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JsonRpc2_0RxTest {
 
@@ -48,7 +47,7 @@ public class JsonRpc2_0RxTest {
     @BeforeAll
     public void setUp() throws IOException {
         neow3jService = mock(Neow3jService.class);
-        Mockito.when(neow3jService.send(Mockito.any(), Mockito.eq(NeoGetVersion.class)))
+        when(neow3jService.send(Mockito.any(), Mockito.eq(NeoGetVersion.class)))
                 .thenReturn(getDummyNeoGetVersionResponse());
         neow3j = Neow3j.build(neow3jService, defaultNeow3jConfig()
                 .setPollingInterval(1000)
@@ -80,8 +79,7 @@ public class JsonRpc2_0RxTest {
                 results.add(result);
                 transactionLatch.countDown();
             },
-            throwable -> fail(throwable.getMessage()),
-            () -> completedLatch.countDown());
+            throwable -> fail(throwable.getMessage()), completedLatch::countDown);
 
         // just to be in the safe side, we add a timeout
         completedLatch.await(5, TimeUnit.SECONDS);
