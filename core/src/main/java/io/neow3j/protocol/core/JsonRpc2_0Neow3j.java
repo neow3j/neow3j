@@ -4,6 +4,8 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
+import io.neow3j.protocol.OfflineService;
+import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
 import io.neow3j.protocol.core.response.NeoBlockHeaderCount;
@@ -58,6 +60,7 @@ import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
+import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
@@ -88,10 +91,46 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
 
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) {
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value and have not been set manually in the
+     * provided {@link Neow3jConfig} parameter will be set based on the connected Neo node's protocol.
+     *
+     * @param neow3jService a neow3j service.
+     * @param config        the configuration to use.
+     * @throws IOException if the service is not an offline service and there was a problem fetching information from
+     *                     the Neo node.
+     */
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         super(config);
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        // If the service is an offline service, this instance will not be able to perform any requests to a Neo node.
+        // Thus, we cannot initialize it.
+        if (!(this.neow3jService instanceof OfflineService)) {
+            super.setConfigFromNodeProtocol();
+        }
+    }
+
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance.
+     * <p>
+     * Does not require a connection to a Neo node.
+     *
+     * @param neow3jService the neow3j service.
+     * @param config        the configuration to use.
+     * @param protocol      the protocol to use.
+     */
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config,
+            NeoGetVersion.NeoVersion.Protocol protocol) {
+        super(config);
+        this.neow3jService = neow3jService;
+        this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        super.setConfigFromProtocol(protocol);
     }
 
     // region Blockchain Methods
@@ -1463,52 +1502,113 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     // endregion TokenTracker NEP-11
     // region Neow3j Rx Convenience Methods
 
+    /**
+     * Creates an {@link Observable} that emits newly created blocks on the blockchain.
+     *
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> blockObservable(boolean fullTransactionObjects) {
         return neow3jRx.blockObservable(fullTransactionObjects, getPollingInterval());
     }
 
+    /**
+     * Creates an {@link Observable} that emits all blocks with a block number in the specified range.
+     *
+     * @param startBlock             the block number to commence with.
+     * @param endBlock               the block number to finish with.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects) {
-
         return neow3jRx.replayBlocksObservable(startBlock, endBlock, fullTransactionObjects, true);
     }
 
+    /**
+     * Creates an {@link Observable} that emits all blocks with a block number in the specified range.
+     *
+     * @param startBlock             the block number to commence with.
+     * @param endBlock               the block number to finish with.
+     * @param fullTransactionObjects if true, provides transactions embedded in blocks, otherwise transaction hashes.
+     * @param ascending              if true, emits blocks in ascending order between range, otherwise, in descending
+     *                               order.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> replayBlocksObservable(BigInteger startBlock, BigInteger endBlock,
             boolean fullTransactionObjects, boolean ascending) {
-
         return neow3jRx.replayBlocksObservable(startBlock, endBlock, fullTransactionObjects, ascending);
     }
 
+    /**
+     * Creates an {@link Observable} that emits all blocks from the requested block number to the most current. Once
+     * it has emitted the most current block, it starts emitting new blocks as they are produced by the Neo blockchain.
+     *
+     * @param startBlock             the block number we wish to request from.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @param onCompleteObservable   a subsequent Observable that should be run once the latest block was caught up
+     *                               with.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock, boolean fullTransactionObjects,
             Observable<NeoGetBlock> onCompleteObservable) {
-
         return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, onCompleteObservable);
     }
 
+    /**
+     * Creates an {@link Observable} that emits blocks starting at {@code startBlockNumber} up to the most recent
+     * block and then stops.
+     *
+     * @param startBlock             the block number of the first block that should be emitted.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> catchUpToLatestBlockObservable(BigInteger startBlock,
             boolean fullTransactionObjects) {
-
         return neow3jRx.catchUpToLatestBlockObservable(startBlock, fullTransactionObjects, Observable.empty());
     }
 
+    /**
+     * Creates an {@link Observable} that emits all blocks from the requested block number to the most current. Once
+     * it has emitted the most current block, it starts emitting new blocks as they are produced by the Neo blockchain.
+     *
+     * @param startBlock             the block number of the first block that should be emitted.
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> catchUpToLatestAndSubscribeToNewBlocksObservable(BigInteger startBlock,
             boolean fullTransactionObjects) {
-
         return neow3jRx.catchUpToLatestAndSubscribeToNewBlocksObservable(startBlock, fullTransactionObjects,
                 getPollingInterval());
     }
 
+    /**
+     * Creates an {@link Observable} that emits new blocks as they are produced by the Neo blockchain (starting from
+     * the latest block).
+     *
+     * @param fullTransactionObjects if full {@link Transaction} objects should be provided in the {@link NeoBlock}
+     *                               responses.
+     * @return the {@link Observable}.
+     */
     @Override
     public Observable<NeoGetBlock> subscribeToNewBlocksObservable(boolean fullTransactionObjects) {
         return neow3jRx.blockObservable(fullTransactionObjects, getPollingInterval());
     }
 
+    /**
+     * Shuts down the scheduled executor service and the neow3j service.
+     */
     @Override
     public void shutdown() {
         getScheduledExecutorService().shutdown();

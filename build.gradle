@@ -28,7 +28,7 @@ ext {
 }
 
 group 'io.neow3j'
-version '3.23.0'
+version '3.24.0'
 if (project.hasProperty('snapshot')) {
     version = version + '-SNAPSHOT'
 }

@@ -61,12 +61,15 @@ public class NonFungibleTokenTest {
     private static NonFungibleToken nfTestToken;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
 
+        setUpWireMockForCall("getversion", "getversion.json");
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+        Hash160 dummyNeoNameServiceScriptHash = new Hash160("0x38bc0a78fa298a368410e88cf416d54606f1e031");
+        neow.setNNSResolver(dummyNeoNameServiceScriptHash);
         nfTestToken = new NonFungibleToken(NF_TOKEN_SCRIPT_HASH, neow);
 
         account1 = Account.fromWIF(TestProperties.defaultAccountWIF());

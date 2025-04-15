@@ -249,7 +249,7 @@ public class RuntimeIntegrationTest {
     public void getNetwork() throws Throwable {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         BigInteger magic1 = res.getStack().get(0).getInteger();
-        long magic2 = ct.getNeow3j().getNetworkMagicNumber();
+        long magic2 = ct.getNeow3j().getNetworkMagic();
         assertEquals(magic1.longValue(), magic2);
     }
 

@@ -10,7 +10,6 @@ import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.WitnessRuleCondition;
 import io.neow3j.devpack.constants.WitnessRuleAction;
 import io.neow3j.devpack.contracts.LedgerContract;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -108,7 +107,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(ct.getNeow3j().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -123,7 +122,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(ct.getNeow3j().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 
@@ -275,7 +274,7 @@ public class LedgerContractIntegrationTest {
         assertThat(tx.get(4).getInteger().intValue(), greaterThanOrEqualTo(1)); // system fee
         assertThat(tx.get(5).getInteger().intValue(), greaterThanOrEqualTo(1)); // network fee
         assertThat(tx.get(6).getInteger().longValue(),
-                greaterThanOrEqualTo(new Neow3jConfig().getMaxValidUntilBlockIncrement()));
+                greaterThanOrEqualTo(ct.getNeow3j().getMaxValidUntilBlockIncrement()));
         assertThat(tx.get(7).getHexString().length(), greaterThanOrEqualTo(1)); // script
     }
 

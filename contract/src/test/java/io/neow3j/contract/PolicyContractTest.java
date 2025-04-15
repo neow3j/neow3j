@@ -3,7 +3,6 @@ package io.neow3j.contract;
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Transaction;
@@ -47,12 +46,12 @@ public class PolicyContractTest {
             .build();
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port),
-                new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
+        Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         policyContract = new PolicyContract(neow3j);
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
@@ -84,6 +83,7 @@ public class PolicyContractTest {
 
     @Test
     public void testSetFeePerByte_ProducesCorrectTransaction() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_setFeePerByte.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -109,6 +109,7 @@ public class PolicyContractTest {
 
     @Test
     public void testSetExecFeeFactor() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_setExecFeeFactor.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -134,6 +135,7 @@ public class PolicyContractTest {
 
     @Test
     public void testSetStoragePrice() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_setStoragePrice.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -159,6 +161,7 @@ public class PolicyContractTest {
 
     @Test
     public void testBlockAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -184,6 +187,7 @@ public class PolicyContractTest {
 
     @Test
     public void testBlockAccount_address() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -210,6 +214,7 @@ public class PolicyContractTest {
 
     @Test
     public void testUnblockAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
@@ -235,6 +240,7 @@ public class PolicyContractTest {
 
     @Test
     public void testUnblockAccount_address() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_unblockAccount.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");

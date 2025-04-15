@@ -34,6 +34,7 @@ import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.neoTokenHash;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -59,8 +60,8 @@ public class WalletTest {
     @Test
     public void testCreateDefaultWallet() {
         Wallet w = Wallet.create();
-        assertEquals(w.getName(), "neow3jWallet");
-        assertEquals(w.getVersion(), Wallet.CURRENT_VERSION);
+        assertEquals("neow3jWallet", w.getName());
+        assertEquals(Wallet.CURRENT_VERSION, w.getVersion());
         assertFalse(w.getAccounts().isEmpty());
     }
 
@@ -482,6 +483,7 @@ public class WalletTest {
     public void getNep17Balances() throws IOException {
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
+        setUpWireMockForCall("getversion", "getversion.json");
         Neow3j neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
 
         Account a1 = Account.fromAddress(committeeAccountAddress());

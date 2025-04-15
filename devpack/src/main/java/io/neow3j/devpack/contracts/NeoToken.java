@@ -7,9 +7,8 @@ import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
-import static io.neow3j.devpack.constants.CallFlags.States;
-import static io.neow3j.devpack.constants.CallFlags.ReadStates;
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the native NeoToken contract.
@@ -30,7 +29,7 @@ public class NeoToken extends FungibleToken {
      * @param blockHeight the block height up to which the GAS amount will be fetched.
      * @return the amount of unclaimed GAS.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int unclaimedGas(Hash160 scriptHash, int blockHeight);
 
     /**
@@ -39,7 +38,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if registering was successful. False, otherwise.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native boolean registerCandidate(ECPoint publicKey);
 
     /**
@@ -48,7 +47,7 @@ public class NeoToken extends FungibleToken {
      * @param publicKey the public key of the candidate.
      * @return true if deregistering was successful. False, otherwise.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native boolean unregisterCandidate(ECPoint publicKey);
 
     /**
@@ -61,19 +60,19 @@ public class NeoToken extends FungibleToken {
      * @param candidatePubKey the public key of the candidate to vote for.
      * @return true if voting was successful. False, otherwise.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native boolean vote(Hash160 scriptHash, ECPoint candidatePubKey);
 
     /**
      * @return the first 256 registered candidates.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Candidate[] getCandidates();
 
     /**
      * @return an iterator of all registered candidates.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Iterator<Iterator.Struct<ECPoint, Integer>> getAllCandidates();
 
     /**
@@ -82,25 +81,25 @@ public class NeoToken extends FungibleToken {
      * @param pubKey the candidate's public key.
      * @return the candidate's votes, or -1 if it was not found.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getCandidateVote(ECPoint pubKey);
 
     /**
      * @return the committee members' public keys.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native ECPoint[] getCommittee();
 
     /**
      * @return the next block validators' public keys.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native ECPoint[] getNextBlockValidators();
 
     /**
      * @return the amount of GAS that is minted per newly generated block.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getGasPerBlock();
 
     /**
@@ -110,13 +109,13 @@ public class NeoToken extends FungibleToken {
      *
      * @param gasPerBlock the desired amount of GAS per block.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setGasPerBlock(int gasPerBlock);
 
     /**
      * @return the GAS price for registering a new candidate.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native int getRegisterPrice();
 
     /**
@@ -126,7 +125,7 @@ public class NeoToken extends FungibleToken {
      *
      * @param registerPrice the new price for registering a candidate.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setRegisterPrice(int registerPrice);
 
     /**
@@ -135,13 +134,13 @@ public class NeoToken extends FungibleToken {
      * @param scriptHash the script hash of the account.
      * @return the state of the account or null if the account does not hold any NEO.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native AccountState getAccountState(Hash160 scriptHash);
 
     /**
      * @return the address of the committee.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native Hash160 getCommitteeAddress();
 
     /**

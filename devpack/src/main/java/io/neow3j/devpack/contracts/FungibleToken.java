@@ -1,6 +1,9 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.annotations.CallFlags;
+
+import static io.neow3j.devpack.constants.CallFlags.All;
 
 /**
  * Base class for fungible token contracts that are compliant with the NEP-17 standard. Initialize this class with a
@@ -42,6 +45,7 @@ public class FungibleToken extends Token {
      * @param data   the data to pass along with the transfer.
      * @return true if the transfer was successful. False, otherwise.
      */
+    @CallFlags(All)
     public native boolean transfer(Hash160 from, Hash160 to, int amount, Object data);
 
 }

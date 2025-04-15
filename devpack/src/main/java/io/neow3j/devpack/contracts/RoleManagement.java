@@ -5,9 +5,8 @@ import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.constants.Role;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.ReadStates;
-import static io.neow3j.devpack.constants.CallFlags.States;
-import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
+import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the native RoleManagement contract that deals with the assignment of nodes to certain
@@ -30,7 +29,7 @@ public class RoleManagement extends ContractInterface {
      * @param index the block index at which to get the designated nodes for.
      * @return the public keys of the nodes with the given role.
      */
-    @CallFlags(ReadStates)
+    @CallFlags(ReadOnly)
     public native ECPoint[] getDesignatedByRole(byte role, int index);
 
     /**
@@ -39,7 +38,7 @@ public class RoleManagement extends ContractInterface {
      * @param role       the role of the designated nodes.
      * @param publicKeys the node's public keys.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native void designateAsRole(byte role, ECPoint[] publicKeys);
 
 }

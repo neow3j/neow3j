@@ -7,7 +7,7 @@ import io.neow3j.devpack.constants.NamedCurveHash;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
-import static io.neow3j.devpack.constants.CallFlags.None;
+import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
 
 /**
  * Represents an interface to the native CryptoLib contract that provides cryptographic algorithms.
@@ -29,7 +29,7 @@ public class CryptoLib extends ContractInterface {
      *                    be 27 or 28.
      * @return the recovered public key in compressed format, or null if recovery fails.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ECPoint recoverSecp256K1(ByteString messageHash, ByteString signature);
 
     /**
@@ -41,7 +41,7 @@ public class CryptoLib extends ContractInterface {
      * @param value the bytes to hash.
      * @return the 256-bit hash.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString sha256(ByteString value);
 
     /**
@@ -53,7 +53,7 @@ public class CryptoLib extends ContractInterface {
      * @param value the bytes to hash.
      * @return the 160-bit hash.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString ripemd160(ByteString value);
 
     /**
@@ -63,7 +63,7 @@ public class CryptoLib extends ContractInterface {
      * @param seed the seed of the murmur32 hash function.
      * @return the computed hash code.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString murmur32(ByteString data, int seed);
 
     /**
@@ -72,7 +72,7 @@ public class CryptoLib extends ContractInterface {
      * @param data the input to compute the hash code for.
      * @return the computed hash.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString keccak256(ByteString data);
 
     /**
@@ -85,7 +85,7 @@ public class CryptoLib extends ContractInterface {
      * @param curveHash the curve/hash-algorithm combination to use in the verification.
      * @return true if the signature is valid. False, otherwise.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curveHash);
 
     /**
@@ -96,7 +96,7 @@ public class CryptoLib extends ContractInterface {
      * @param signature the signature to be verified.
      * @return true if the signature is valid. False, otherwise.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native boolean verifyWithEd25519(ByteString message, ECPoint publicKey, ByteString signature);
 
     /**
@@ -105,7 +105,7 @@ public class CryptoLib extends ContractInterface {
      * @param g the point to be serialized.
      * @return the serialized point.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native ByteString bls12381Serialize(InteropInterface g);
 
     /**
@@ -114,7 +114,7 @@ public class CryptoLib extends ContractInterface {
      * @param data the point as byte array.
      * @return the deserialized point.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native InteropInterface bls12381Deserialize(ByteString data);
 
     /**
@@ -124,7 +124,7 @@ public class CryptoLib extends ContractInterface {
      * @param y the second point.
      * @return true if the specified points are equal. False, otherwise.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native boolean bls12381Equal(InteropInterface x, InteropInterface y);
 
     /**
@@ -134,7 +134,7 @@ public class CryptoLib extends ContractInterface {
      * @param y the second point.
      * @return the resulting point of the addition of x and y.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native InteropInterface bls12381Add(InteropInterface x, InteropInterface y);
 
     /**
@@ -145,7 +145,7 @@ public class CryptoLib extends ContractInterface {
      * @param neg whether mul should be used as negative number.
      * @return the resulting point of the multiplication of x with the multiplier.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native InteropInterface bls12381Mul(InteropInterface x, ByteString mul, boolean neg);
 
     /**
@@ -155,7 +155,7 @@ public class CryptoLib extends ContractInterface {
      * @param g2 the g2 point.
      * @return the result of the pairing operation of g1 and g2.
      */
-    @CallFlags(None)
+    @CallFlags(ReadOnly)
     public native InteropInterface bls12381Pairing(InteropInterface g1, InteropInterface g2);
 
 }

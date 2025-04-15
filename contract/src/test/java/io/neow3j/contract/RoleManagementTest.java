@@ -49,10 +49,11 @@ public class RoleManagementTest {
             .build();
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
+        setUpWireMockForCall("getversion", "getversion.json");
         Neow3j neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         roleManagement = new RoleManagement(neow3j);
 
