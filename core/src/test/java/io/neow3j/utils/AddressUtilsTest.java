@@ -32,7 +32,7 @@ public class AddressUtilsTest {
 
     @Test
     public void testScriptHashToAddressWithAddressVersion() {
-        Neow3jConfig.setAddressVersion((byte) 0x37);
+        Neow3jConfig.setStaticAddressVersion((byte) 0x37);
         String script =
                 "21030529d1296dc2af1f77d8344138a77748599b69599af7ae6be57812a4ec3fa33968747476aa";
         // sha256AndThenRipemd160 returns little-endian
@@ -40,7 +40,7 @@ public class AddressUtilsTest {
         String address = scriptHashToAddress(scriptHash);
         String expectedAddress = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
         assertThat(address, is(expectedAddress));
-        Neow3jConfig.setAddressVersion((byte) 0x35);
+        Neow3jConfig.setStaticAddressVersion((byte) 0x35);
     }
 
     @Test
@@ -76,12 +76,12 @@ public class AddressUtilsTest {
 
     @Test
     public void testScriptHashToAddressWithVersion() {
-        Neow3jConfig.setAddressVersion((byte) 0x37);
+        Neow3jConfig.setStaticAddressVersion((byte) 0x37);
         byte[] scriptHash = hexStringToByteArray("c67d4f062a94e9ed6a110264e50881500d4cf1bb");
         String address = "PRivaTenetyWuqK7Gj7Vd747d77ssYeDhL";
 
         assertThat(scriptHashToAddress(scriptHash), is(address));
-        Neow3jConfig.setAddressVersion((byte) 0x35);
+        Neow3jConfig.setStaticAddressVersion((byte) 0x35);
     }
 
     @Test

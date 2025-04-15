@@ -45,6 +45,7 @@ import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
+import static io.neow3j.utils.Numeric.convertNetworkMagicNumberToLittleEndian;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
@@ -276,16 +277,45 @@ public class Transaction extends NeoSerializable {
      * transaction with the given accounts.
      * <p>
      * Note, that witnesses have to be added in the same order as signers were added.
+     * <p>
+     * Note, that this function uses the network magic number of the Neo node that this {@link Transaction} object's
+     * {@link Transaction#neow3j} instance is connected to.
+     * <p>
+     * If you need to use this function offline or want to use a
+     * custom magic number, you can use {@link Transaction#addMultiSigWitness(VerificationScript, long, Account...)}
+     * instead.
      *
      * @param verificationScript the verification script of the multi-sig account.
      * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException if there was a problem fetching the network magic number from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
             throws IOException {
+        return addMultiSigWitness(verificationScript, neow3j.getNetworkMagic(), accounts);
+    }
 
-        byte[] hashData = getHashData();
+    /**
+     * Adds a multi-sig witness to this transaction. Use this to add a witness of a multi-sig signer that is part of
+     * this transaction.
+     * <p>
+     * The witness is constructed from the multi-sig account's {@code verificationScript} and by signing this
+     * transaction with the given accounts.
+     * <p>
+     * Note, that witnesses have to be added in the same order as signers were added.
+     * <p>
+     * This function allows to specify a custom network magic number, so that no connection to a Neo node is required
+     * and this function can be used offline.
+     *
+     * @param verificationScript the verification script of the multi-sig account.
+     * @param networkMagic       the magic number of the network this transaction is intended for.
+     * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
+     * @return this.
+     */
+    public Transaction addMultiSigWitness(VerificationScript verificationScript, long networkMagic,
+            Account... accounts) {
+
+        byte[] hashData = getHashData(networkMagic);
         List<Sign.SignatureData> signatures = Arrays.stream(accounts)
                 .map(Account::getECKeyPair)
                 .sorted(Comparator.comparing(ECKeyPair::getPublicKey))
@@ -444,17 +474,39 @@ public class Transaction extends NeoSerializable {
     }
 
     /**
-     * Gets this transaction's data in the format used to produce the transaction's hash. E.g., for producing the
+     * Gets this transaction's data in the format used to produce the transaction's hash, e.g., for producing the
      * transaction ID or a transaction signature.
      * <p>
      * The returned value depends on the magic number of the used Neo network, which is retrieved from the Neo node
      * via the {@code getversion} RPC method if not already available locally.
+     * <p>
+     * Note, that this function uses the network magic number of the Neo node that this {@link Transaction} object's
+     * {@link Transaction#neow3j} instance is connected to.
+     * <p>
+     * If you need to use this function offline or want to use a custom magic number, you can use
+     * {@link Transaction#getHashData(long)} instead.
      *
      * @return the transaction data ready for hashing.
      * @throws IOException if an error occurs when fetching the network's magic number.
      */
     public byte[] getHashData() throws IOException {
-        return concatenate(neow3j.getNetworkMagicNumberBytes(), sha256(toArrayWithoutWitnesses()));
+        return concatenate(convertNetworkMagicNumberToLittleEndian(neow3j.getNetworkMagic()),
+                sha256(toArrayWithoutWitnesses()));
+    }
+
+    /**
+     * Gets this transaction's data in the format used to produce the transaction's hash, e.g., for producing the
+     * transaction ID or a transaction signature.
+     * <p>
+     * This function allows to specify a custom network magic number, so that no connection to a Neo node is required
+     * and this function can be used offline.
+     *
+     * @param networkMagic the network's magic number to build the hash data.
+     * @return the transaction data ready for hashing.
+     */
+    public byte[] getHashData(long networkMagic) {
+        byte[] networkMagicBytes = convertNetworkMagicNumberToLittleEndian(networkMagic);
+        return concatenate(networkMagicBytes, sha256(toArrayWithoutWitnesses()));
     }
 
     /**
@@ -474,14 +526,34 @@ public class Transaction extends NeoSerializable {
 
     /**
      * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
+     * <p>
+     * The network magic number used to create the transaction hash is fetched from the connected Neo node.
+     * <p>
+     * Note, that this function uses the network magic number of the Neo node that this {@link Transaction} object's
+     * {@link Transaction#neow3j} instance is connected to.
+     * <p>
+     * If you need to use this function offline or want to use a custom magic number, you can use
+     * {@link Transaction#toContractParametersContext(long)} instead.
      *
-     * @return neo-cli compatible json of this transaction.
+     * @return neo-cli compatible JSON of this transaction.
      * @throws IOException if an error occurs when trying to fetch the network's magic number.
      */
     public ContractParametersContext toContractParametersContext() throws IOException {
+        return toContractParametersContext(neow3j.getNetworkMagic());
+    }
+
+    /**
+     * Produces a JSON object that can be used in neo-cli for further signing and relaying of this transaction.
+     * <p>
+     * This function allows to specify a custom network magic number, so that no connection to a Neo node is required
+     * and this function can be used offline.
+     *
+     * @param networkMagicNumber the magic number of the network this transaction is intended for.
+     * @return neo-cli compatible JSON of this transaction.
+     */
+    public ContractParametersContext toContractParametersContext(long networkMagicNumber) {
         String hash = getTxId().toString();
         String data = Base64.encode(toArrayWithoutWitnesses());
-        long network = neow3j.getNetworkMagicNumber();
 
         Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
             if (signer instanceof ContractSigner) {
@@ -512,7 +584,7 @@ public class Transaction extends NeoSerializable {
             return new ContractParametersContext.ContextItem(script, params, pubKeyToSignature);
         }).collect(Collectors.toMap(i -> "0x" + Hash160.fromScript(Base64.decode(i.getScript())), Function.identity()));
 
-        return new ContractParametersContext(hash, data, items, network);
+        return new ContractParametersContext(hash, data, items, networkMagicNumber);
     }
 
 }

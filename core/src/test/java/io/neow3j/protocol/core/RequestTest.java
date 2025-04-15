@@ -2,9 +2,10 @@ package io.neow3j.protocol.core;
 
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
-import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jExpress;
+import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.RequestTester;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.OracleResponse;
 import io.neow3j.protocol.core.response.OracleResponseCode;
 import io.neow3j.protocol.core.response.TransactionSendToken;
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.Test;
 import java.math.BigInteger;
 import java.util.Date;
 
+import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.test.TestProperties.neoTokenHash;
@@ -44,8 +46,12 @@ public class RequestTest extends RequestTester {
 
     @Override
     protected void initWeb3Client(HttpService httpService) {
-        neow3j = Neow3j.build(httpService);
-        neow3jExpress = Neow3jExpress.build(httpService);
+        NeoGetVersion.NeoVersion.Protocol protocol = new NeoGetVersion.NeoVersion.Protocol();
+        protocol.setNetwork(768L);
+        protocol.setMilliSecondsPerBlock(1000L);
+
+        neow3j = new JsonRpc2_0Neow3j(httpService, defaultNeow3jConfig(), protocol);
+        neow3jExpress = new JsonRpc2_0Neow3jExpress(httpService, defaultNeow3jConfig(), protocol);
     }
 
     // Blockchain Methods

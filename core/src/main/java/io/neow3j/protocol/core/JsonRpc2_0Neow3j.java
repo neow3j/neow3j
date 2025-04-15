@@ -4,6 +4,7 @@ import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.Neow3jService;
+import io.neow3j.protocol.OfflineService;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoBlockCount;
 import io.neow3j.protocol.core.response.NeoBlockHash;
@@ -90,10 +91,46 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     protected final Neow3jService neow3jService;
     private final JsonRpc2_0Rx neow3jRx;
 
-    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) {
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance.
+     * <p>
+     * If the service is an offline service, this instance will not be able to perform any requests to a Neo node. If
+     * it is not, configuration values that do not have a default value and have not been set manually in the
+     * provided {@link Neow3jConfig} parameter will be set based on the connected Neo node's protocol.
+     *
+     * @param neow3jService a neow3j service.
+     * @param config        the configuration to use.
+     * @throws IOException if the service is not an offline service and there was a problem fetching information from
+     *                     the Neo node.
+     */
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config) throws IOException {
         super(config);
         this.neow3jService = neow3jService;
         this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        // If the service is an offline service, this instance will not be able to perform any requests to a Neo node.
+        // Thus, we cannot initialize it.
+        if (!(this.neow3jService instanceof OfflineService)) {
+            super.setConfigFromNodeProtocol();
+        }
+    }
+
+    /**
+     * Constructs a new JsonRpc2_0Neow3j instance.
+     * <p>
+     * Does not require a connection to a Neo node.
+     *
+     * @param neow3jService the neow3j service.
+     * @param config        the configuration to use.
+     * @param protocol      the protocol to use.
+     */
+    public JsonRpc2_0Neow3j(Neow3jService neow3jService, Neow3jConfig config,
+            NeoGetVersion.NeoVersion.Protocol protocol) {
+        super(config);
+        this.neow3jService = neow3jService;
+        this.neow3jRx = new JsonRpc2_0Rx(this, getScheduledExecutorService());
+
+        super.setConfigFromProtocol(protocol);
     }
 
     // region Blockchain Methods

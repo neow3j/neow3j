@@ -76,6 +76,10 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             return protocol;
         }
 
+        public void setProtocol(Protocol protocol) {
+            this.protocol = protocol;
+        }
+
         @Override
         public boolean equals(Object o) {
             if (this == o) {
@@ -199,12 +203,20 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return network;
             }
 
+            public void setNetwork(Long network) {
+                this.network = network;
+            }
+
             public Integer getValidatorsCount() {
                 return validatorsCount;
             }
 
             public Long getMilliSecondsPerBlock() {
                 return msPerBlock;
+            }
+
+            public void setMilliSecondsPerBlock(Long msPerBlock) {
+                this.msPerBlock = msPerBlock;
             }
 
             public Long getMaxTraceableBlocks() {

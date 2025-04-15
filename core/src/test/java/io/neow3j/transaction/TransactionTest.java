@@ -1,13 +1,15 @@
 package io.neow3j.transaction;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.github.tomakehurst.wiremock.client.WireMock;
+import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.Base64;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoBlockCount;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
@@ -21,6 +23,7 @@ import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -32,8 +35,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.crypto.Hash.sha256;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Numeric.convertNetworkMagicNumberToLittleEndian;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -50,6 +56,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TransactionTest {
 
+    @RegisterExtension
+    static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
+            .options(wireMockConfig().dynamicPort())
+            .build();
+
     private Hash160 account1;
     private Hash160 account2;
     private Hash160 account3;
@@ -61,10 +72,17 @@ public class TransactionTest {
     // pubKey: 0x03bf1d1b799412171f598be70916cbac39dba47a10d5e568aad46a9ec928c3b59d
     private final Account a6 = Account.fromWIF("KxjePibw7BEdaS8diPeqgozFWevVx6tLE226jYU6tFF1HSYQ5z5u");
 
-    private final Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"));
+    private Neow3j neow3j;
 
     @BeforeAll
-    public void setUp() {
+    public void setUp() throws IOException {
+        // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
+        int port = wireMockExtension.getPort();
+        WireMock.configureFor(port);
+        setUpWireMockForCall("getversion", "getversion.json");
+
+        neow3j = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
+
         account1 = Hash160.fromAddress("NZNos2WqTbu5oCgyfss9kUJgBXJqhuYAaj");
         account2 = Hash160.fromAddress("NLnyLtep7jwyq1qhNPkwXbJpurC4jUT8ke");
         account3 = Hash160.fromAddress("NWcx4EfYdfqn5jNjDz8AHE6hWtWdUGDdmy");
@@ -78,7 +96,7 @@ public class TransactionTest {
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -114,7 +132,7 @@ public class TransactionTest {
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -145,7 +163,7 @@ public class TransactionTest {
     }
 
     @Test
-    public void deserialize() throws DeserializationException {
+    public void deserialize() throws DeserializationException, IOException {
         byte[] data = hexStringToByteArray(""
                 + "00" // version
                 + "62bdaa0e"  // nonce
@@ -177,7 +195,7 @@ public class TransactionTest {
                 asList(new Witness(new byte[]{0x00}, new byte[]{0x00}))));
 
         assertNull(tx.neow3j);
-        Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
+//        Neow3j neow3j = Neow3j.build(new HttpService("http://localhost:40332"));
         tx.setNeow3j(neow3j);
         assertThat(tx.neow3j, is(neow3j));
     }
@@ -252,7 +270,7 @@ public class TransactionTest {
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -329,13 +347,10 @@ public class TransactionTest {
 
     @Test
     public void getTxId() {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(5195086));
-
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.calledByEntry(account3));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 226292130L,
                 2103398,
@@ -353,12 +368,11 @@ public class TransactionTest {
 
     @Test
     public void toArrayWithoutWitness() {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(5195086));
+//                        .setNetworkMagic(5195086));
 
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.calledByEntry(account3));
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 226292130L,
                 2103398,
@@ -376,13 +390,10 @@ public class TransactionTest {
     }
 
     @Test
-    public void getHashData() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"),
-                new Neow3jConfig().setNetworkMagic(769));
-
+    public void getHashData() {
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.none(Account.fromScriptHash(account1)));
-        Transaction tx = new Transaction(neow, (byte) 0,
+        Transaction tx = new Transaction(neow3j, (byte) 0,
                 0L,
                 0L,
                 signers,
@@ -392,11 +403,12 @@ public class TransactionTest {
                 new byte[]{1, 2, 3},
                 new ArrayList<>());
 
+        long magicNumber = 768;
         byte[] txHexWithoutWitness = hexStringToByteArray(
                 "000000000000000000000000000000000000000000000000000193ad1572a4b35c4b925483ce1701b78742dc460f000003010203");
-        byte[] expectedData = concatenate(neow.getNetworkMagicNumberBytes(),
+        byte[] expectedData = concatenate(convertNetworkMagicNumberToLittleEndian(magicNumber),
                 sha256(txHexWithoutWitness));
-        assertThat(tx.getHashData(), is(expectedData));
+        assertThat(tx.getHashData(magicNumber), is(expectedData));
     }
 
     @Test
@@ -405,7 +417,7 @@ public class TransactionTest {
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4 + 1];
         // This transaction exceeds the maximal allowed byte length by one.
-        Transaction tx = new Transaction(neow, (byte) 0,
+        Transaction tx = new Transaction(neow3j, (byte) 0,
                 0L,
                 0L,
                 new ArrayList<>(),
@@ -423,19 +435,30 @@ public class TransactionTest {
 
     @Test
     public void testMaxTransactionSize() throws IOException {
-        HttpService mock = Mockito.mock(HttpService.class);
-        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoSendRawTransaction.class)))
-                .thenReturn(new NeoSendRawTransaction());
+        HttpService mockedService = Mockito.mock(HttpService.class);
+
+        Mockito.when(mockedService.send(Mockito.any(), Mockito.eq(NeoGetVersion.class))).thenReturn(
+                getDummyNeoGetVersionResponse());
+
+        Hash256 expectedTxHash = new Hash256("0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a");
+        NeoSendRawTransaction neoSendRawTransaction = new NeoSendRawTransaction();
+        neoSendRawTransaction.setResult(new NeoSendRawTransaction.RawTransaction(expectedTxHash));
+
+        Mockito.when(mockedService.send(Mockito.any(), Mockito.eq(NeoSendRawTransaction.class)))
+                .thenReturn(neoSendRawTransaction);
+
         NeoBlockCount blockCount = new NeoBlockCount();
         blockCount.setResult(BigInteger.ONE);
-        Mockito.when(mock.send(Mockito.any(), Mockito.eq(NeoBlockCount.class))).thenReturn(blockCount);
-        Neow3j neow3j = Neow3j.build(mock);
+
+        Mockito.when(mockedService.send(Mockito.any(), Mockito.eq(NeoBlockCount.class))).thenReturn(blockCount);
+
+        Neow3j customNeow3j = Neow3j.build(mockedService);
 
         // The following transaction is 29 bytes without the script.
         // The script needs additional 4 bytes to specify its length.
         byte[] scriptForTooBigTx = new byte[NeoConstants.MAX_TRANSACTION_SIZE - 29 - 4];
         // This transaction has exactly the maximal allowed byte length.
-        Transaction tx = new Transaction(neow3j, (byte) 0,
+        Transaction tx = new Transaction(customNeow3j, (byte) 0,
                 0L,
                 0L,
                 new ArrayList<>(),
@@ -446,12 +469,14 @@ public class TransactionTest {
                 new ArrayList<>());
 
         assertThat(tx.getSize(), is(NeoConstants.MAX_TRANSACTION_SIZE));
-        tx.send();
+
+        Hash256 actualTxHash = tx.send().getSendRawTransaction().getHash();
+        assertThat(actualTxHash, is(new Hash256("0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a")));
     }
 
     @Test
     public void testAddMultiSigWitnessWithPubKeySigMap() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
+        setUpWireMockForCall("getversion", "getversion.json");
 
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
@@ -459,7 +484,7 @@ public class TransactionTest {
                         a6.getECKeyPair().getPublicKey()),
                 3);
 
-        Transaction dummyTx = new Transaction(neow,
+        Transaction dummyTx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -489,15 +514,13 @@ public class TransactionTest {
 
     @Test
     public void testAddMultiSigWitnessWithAccounts() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(768));
-
         Account multiSigAccount = Account.createMultiSigAccount(asList(
                         a4.getECKeyPair().getPublicKey(),
                         a5.getECKeyPair().getPublicKey(),
                         a6.getECKeyPair().getPublicKey()),
                 3);
 
-        Transaction dummyTx = new Transaction(neow,
+        Transaction dummyTx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -508,13 +531,14 @@ public class TransactionTest {
                 new byte[]{(byte) OpCode.PUSH1.getCode()},
                 new ArrayList<>());
 
-        byte[] dummyBytes = dummyTx.getHashData();
+        long magicNumber = 768;
+        byte[] dummyBytes = dummyTx.getHashData(magicNumber);
         Sign.SignatureData sig4 = Sign.signMessage(dummyBytes, a4.getECKeyPair());
         Sign.SignatureData sig5 = Sign.signMessage(dummyBytes, a5.getECKeyPair());
         Sign.SignatureData sig6 = Sign.signMessage(dummyBytes, a6.getECKeyPair());
 
-        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), a5, a6, a4);
-        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), a6, a4, a5);
+        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), magicNumber, a5, a6, a4);
+        dummyTx.addMultiSigWitness(multiSigAccount.getVerificationScript(), magicNumber, a6, a4, a5);
 
         Witness expectedMultiSigWitness = Witness.createMultiSigWitness(asList(sig4, sig5, sig6),
                 multiSigAccount.getVerificationScript());
@@ -527,7 +551,7 @@ public class TransactionTest {
     public void toContractParameterContextJson() throws IOException, InvalidAlgorithmParameterException,
             NoSuchAlgorithmException, NoSuchProviderException {
 
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
 
         ECKeyPair.ECPublicKey pubKey = ECKeyPair.createEcKeyPair().getPublicKey();
         Account multiSigAccount = Account.createMultiSigAccount(asList(pubKey, pubKey, pubKey), 2);
@@ -538,7 +562,7 @@ public class TransactionTest {
         signers.add(AccountSigner.calledByEntry(singleSigAccount2));
         signers.add(AccountSigner.calledByEntry(multiSigAccount));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -548,11 +572,12 @@ public class TransactionTest {
                 new ArrayList<>(),
                 new byte[]{(byte) OpCode.PUSH1.getCode()},
                 new ArrayList<>());
+
         Witness acc1witness = Witness.create(tx.getHashData(), singleSigAccount1.getECKeyPair());
         tx.addWitness(acc1witness);
         ContractParametersContext ctx = tx.toContractParametersContext();
         assertThat(ctx.getType(), is("Neo.Network.P2P.Payloads.Transaction"));
-        assertThat(ctx.getNetwork(), is(769L));
+        assertThat(ctx.getNetwork(), is(7L));
         assertThat(ctx.getData(), is(Base64.encode(tx.toArrayWithoutWitnesses())));
         assertThat(ctx.getHash(), is(tx.getTxId().toString()));
         assertThat(ctx.getItems().size(), is(3));
@@ -590,7 +615,7 @@ public class TransactionTest {
 
     @Test
     public void toContractParameterContextJson_unsupportedContractSigners() throws IOException {
-        Neow3j neow = Neow3j.build(new HttpService("http://localhost:40332"), new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
 
         Account singleSigAccount1 = Account.create();
         Hash160 dummyHash = new Hash160("f32bf2a3e36a9fd3411337ffcd48eed7bec727ce");
@@ -598,7 +623,7 @@ public class TransactionTest {
         signers.add(AccountSigner.none(singleSigAccount1));
         signers.add(ContractSigner.calledByEntry(dummyHash));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -611,8 +636,8 @@ public class TransactionTest {
         Witness acc1witness = Witness.create(tx.getHashData(), singleSigAccount1.getECKeyPair());
         tx.addWitness(acc1witness);
 
-        UnsupportedOperationException thrown =
-                assertThrows(UnsupportedOperationException.class, tx::toContractParametersContext);
+        UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class,
+                tx::toContractParametersContext);
         assertThat(thrown.getMessage(), is("Cannot handle contract signers"));
     }
 
@@ -625,7 +650,7 @@ public class TransactionTest {
         List<Witness> witnesses = new ArrayList<>();
         witnesses.add(new Witness(new byte[]{0x00}, new byte[]{0x00}));
 
-        Transaction tx = new Transaction(neow,
+        Transaction tx = new Transaction(neow3j,
                 (byte) 0,
                 0x01020304L,
                 0x01020304L,
@@ -661,6 +686,19 @@ public class TransactionTest {
                         "\"blocktime\":0" +
                         "}"
         ));
+    }
+
+    private NeoGetVersion getDummyNeoGetVersionResponse() {
+        NeoGetVersion.NeoVersion.Protocol protocol = new NeoGetVersion.NeoVersion.Protocol();
+        protocol.setNetwork(768L);
+        protocol.setMilliSecondsPerBlock(1000L);
+
+        NeoGetVersion.NeoVersion version = new NeoGetVersion.NeoVersion();
+        version.setProtocol(protocol);
+
+        NeoGetVersion neoGetVersion = new NeoGetVersion();
+        neoGetVersion.setResult(version);
+        return neoGetVersion;
     }
 
 }

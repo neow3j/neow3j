@@ -4,7 +4,6 @@ import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
 import io.neow3j.contract.exceptions.UnexpectedReturnTypeException;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -67,11 +66,12 @@ public class SmartContractTest {
     private Neow3j neow;
 
     @BeforeAll
-    public void setUp() throws URISyntaxException {
+    public void setUp() throws URISyntaxException, IOException {
         // Configuring WireMock to use default host and the dynamic port set in WireMockRule.
         int port = wireMockExtension.getPort();
         WireMock.configureFor(port);
-        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port), new Neow3jConfig().setNetworkMagic(769));
+        setUpWireMockForCall("getversion", "getversion.json");
+        neow = Neow3j.build(new HttpService("http://127.0.0.1:" + port));
         account1 = Account.fromWIF("L1WMhxazScMhUrdv34JqQb1HFSQmWeN2Kpc1R9JGKwL7CDNP21uR");
         recipient = new Hash160("969a77db482f74ce27105f760efa139223431394");
         someContract = new SmartContract(SOME_SCRIPT_HASH, neow);
