@@ -288,6 +288,7 @@ public class Transaction extends NeoSerializable {
      * @param verificationScript the verification script of the multi-sig account.
      * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
+     * @throws IOException if there was a problem fetching the network magic number from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript, Account... accounts)
             throws IOException {
@@ -310,7 +311,6 @@ public class Transaction extends NeoSerializable {
      * @param networkMagic       the magic number of the network this transaction is intended for.
      * @param accounts           the accounts to use for signing. They need to hold decrypted private keys.
      * @return this.
-     * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Transaction addMultiSigWitness(VerificationScript verificationScript, long networkMagic,
             Account... accounts) {
@@ -501,6 +501,7 @@ public class Transaction extends NeoSerializable {
      * This function allows to specify a custom network magic number, so that no connection to a Neo node is required
      * and this function can be used offline.
      *
+     * @param networkMagic the network's magic number to build the hash data.
      * @return the transaction data ready for hashing.
      */
     public byte[] getHashData(long networkMagic) {

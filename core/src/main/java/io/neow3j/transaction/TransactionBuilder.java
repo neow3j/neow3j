@@ -5,6 +5,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.Neow3jConfig;
+import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
@@ -109,8 +110,8 @@ public class TransactionBuilder {
      * Sets the number of the block up to which this transaction can be included. If that block number is reached in
      * the network and this transaction is not yet included in a block, it becomes invalid.
      * <p>
-     * By default, it is set to the maximum, which is the current chain height plus
-     * {@link Neow3jConfig#getMaxValidUntilBlockIncrement()}.
+     * By default, it is set to the maximum, which is the current chain height plus the connected node's {@code
+     * maxValidUntilBlock} (see {@link NeoGetVersion.NeoVersion.Protocol#getMaxValidUntilBlockIncrement()}).
      *
      * @param blockNr the block number.
      * @return this transaction builder.
@@ -534,7 +535,7 @@ public class TransactionBuilder {
      * on this transaction builder.
      * <p>
      *
-     *
+     * @param networkMagic the network's magic number to use.
      * @return the signed transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
      * @throws IOException                       if an error occurs when interacting with the Neo node.

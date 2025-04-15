@@ -310,6 +310,7 @@ public final class Numeric {
     }
 
     /**
+     * @param networkMagicNumber the network magic number to convert to a little-endian byte array.
      * @return the network's magic number in little-endian.
      */
     public static byte[] convertNetworkMagicNumberToLittleEndian(long networkMagicNumber) {
