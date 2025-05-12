@@ -342,7 +342,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNativeContracts();
 
-        assertThat(nativeContracts, hasSize(9));
+        assertThat(nativeContracts, hasSize(10));
         ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getUpdateCounter(), is(0));
@@ -354,8 +354,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef1.getChecksum(), is(1094259016L));
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef1.getChecksum(), is(3581846399L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -363,9 +363,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getSupportedStandards(), hasSize(0));
 
         ContractABI abi1 = manifest1.getAbi();
-        assertThat(abi1.getMethods(), hasSize(11));
+        assertThat(abi1.getMethods(), hasSize(12));
         assertThat(abi1.getMethods().get(10).getName(), is("update"));
-        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(3));
+        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(2));
         assertThat(abi1.getMethods().get(10).getReturnType(), is(ContractParameterType.VOID));
         assertThat(abi1.getMethods().get(10).getOffset(), is(70));
         assertFalse(abi1.getMethods().get(10).isSafe());
@@ -757,7 +757,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
         assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));
-        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(86_400L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(5760L));
         assertThat(protocol.getMaxTraceableBlocks(), is(2_102_400L));
         assertThat(protocol.getAddressVersion(), is(53));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(512L));
