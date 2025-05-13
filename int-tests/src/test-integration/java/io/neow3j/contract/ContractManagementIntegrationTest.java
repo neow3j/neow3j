@@ -47,13 +47,10 @@ public class ContractManagementIntegrationTest {
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get(RESOURCE_DIR, "contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE = Paths.get(RESOURCE_DIR, "contracts",
             "TestContract.manifest.json");
-    public static final String ZERO_HASH = "0x0000000000000000000000000000000000000000";
-
-    private static Neow3j neow3j;
-    private static ContractManagement contractManagement;
-
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
+    private static Neow3j neow3j;
+    private static ContractManagement contractManagement;
 
     @BeforeAll
     public static void setUp() throws Throwable {
@@ -105,8 +102,7 @@ public class ContractManagementIntegrationTest {
         Hash160 nnsHash = neow3j.getNNSResolver();
         assertTrue(contractManagement.isContract(nnsHash));
 
-        Hash160 nonExistentHash = new Hash160(ZERO_HASH);
-        assertFalse(contractManagement.isContract(nonExistentHash));
+        assertFalse(contractManagement.isContract(Hash160.ZERO));
     }
 
     @Test

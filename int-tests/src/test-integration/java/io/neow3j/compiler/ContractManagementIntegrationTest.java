@@ -58,7 +58,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractManagementIntegrationTest {
 
-    public static final String ZERO_HASH = "0x0000000000000000000000000000000000000000";
     @RegisterExtension
     public static ContractTestExtension ct = new ContractTestExtension(
             ContractManagementIntegrationTestContract.class.getName());
@@ -85,7 +84,7 @@ public class ContractManagementIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(new Hash160(neoTokenHash())));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
-        response = ct.callInvokeFunction(testName, hash160(new Hash160(ZERO_HASH)));
+        response = ct.callInvokeFunction(testName, hash160(Hash160.ZERO));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 

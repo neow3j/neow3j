@@ -14,7 +14,6 @@ import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -44,10 +43,10 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContractManagementTest {
@@ -58,7 +57,7 @@ public class ContractManagementTest {
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE =
             Paths.get("contracts", "TestContract.manifest.json");
-    public static final String ZERO_HASH = "0x0000000000000000000000000000000000000000";
+
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .options(wireMockConfig().dynamicPort())
@@ -128,7 +127,7 @@ public class ContractManagementTest {
         assertTrue(contractManagement.isContract(NeoToken.SCRIPT_HASH));
 
         setUpWireMockForInvokeFunction("isContract", "invocationresult_boolean_false.json");
-        Assertions.assertFalse(contractManagement.isContract(new Hash160(ZERO_HASH)));
+        assertFalse(contractManagement.isContract(Hash160.ZERO));
     }
 
     @Test

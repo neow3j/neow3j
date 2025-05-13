@@ -35,7 +35,7 @@ public class ContractManagement extends ContractInterface {
     /**
      * Checks if the given script hash is a contract.
      *
-     * @param hash the contract's script hash.
+     * @param hash the script hash to be verified.
      * @return true if the given script hash is a contract. False otherwise.
      */
     @CallFlags(ReadOnly)
