@@ -33,6 +33,7 @@ public class ContractManagement extends SmartContract {
 
     private static final String GET_MINIMUM_DEPLOYMENT_FEE = "getMinimumDeploymentFee";
     private static final String SET_MINIMUM_DEPLOYMENT_FEE = "setMinimumDeploymentFee";
+    private static final String IS_CONTRACT = "isContract";
     private static final String GET_CONTRACT_HASHES = "getContractHashes";
     private static final String HAS_METHOD = "hasMethod";
     private static final String DEPLOY = "deploy";
@@ -84,6 +85,17 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
+     * Checks if the given {@code contractHash} is a contract.
+     *
+     * @param contractHash the contract hash.
+     * @return true if the given {@code contractHash} is a contract. False otherwise.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public boolean isContract(Hash160 contractHash) throws IOException {
+        return callFunctionReturningBool(IS_CONTRACT, hash160(contractHash));
+    }
+
+    /**
      * Gets the contract state of the contract with {@code id}.
      * <p>
      * Makes use of the RPC {@link io.neow3j.protocol.core.JsonRpc2_0Neow3j#getContractState(BigInteger)}.
@@ -97,9 +109,9 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
-     * Get all non native contract hashes and ids.
+     * Get all non-native contract hashes and ids.
      *
-     * @return all non native contract hashes and ids.
+     * @return all non-native contract hashes and ids.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public Iterator<ContractState.ContractIdentifiers> getContractHashes() throws IOException {
@@ -107,14 +119,14 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
-     * Get all non native contract hashes and ids.
+     * Get all non-native contract hashes and ids.
      * <p>
      * Use this method if sessions are disabled on the Neo node.
      * <p>
      * This method returns at most {@link NeoConstants#MAX_ITERATOR_ITEMS_DEFAULT} values. If there are more values,
      * connect to a Neo node that supports sessions and use {@link ContractManagement#getContractHashes()}.
      *
-     * @return all non native contract hashes and ids.
+     * @return all non-native contract hashes and ids.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<ContractState.ContractIdentifiers> getContractHashesUnwrapped() throws IOException {

@@ -47,6 +47,7 @@ public class ContractManagementIntegrationTest {
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get(RESOURCE_DIR, "contracts", "TestContract.nef");
     private final static Path TESTCONTRACT_MANIFEST_FILE = Paths.get(RESOURCE_DIR, "contracts",
             "TestContract.manifest.json");
+    public static final String ZERO_HASH = "0x0000000000000000000000000000000000000000";
 
     private static Neow3j neow3j;
     private static ContractManagement contractManagement;
@@ -95,6 +96,17 @@ public class ContractManagementIntegrationTest {
     public void testGetContract() throws IOException {
         ContractState contract = contractManagement.getContract(NeoToken.SCRIPT_HASH);
         assertThat(contract.getManifest().getName(), is(NeoToken.NAME));
+    }
+
+    @Test
+    public void testIsContract() throws IOException {
+        assertTrue(contractManagement.isContract(NeoToken.SCRIPT_HASH));
+        assertTrue(contractManagement.isContract(GasToken.SCRIPT_HASH));
+        Hash160 nnsHash = neow3j.getNNSResolver();
+        assertTrue(contractManagement.isContract(nnsHash));
+
+        Hash160 nonExistentHash = new Hash160(ZERO_HASH);
+        assertFalse(contractManagement.isContract(nonExistentHash));
     }
 
     @Test
