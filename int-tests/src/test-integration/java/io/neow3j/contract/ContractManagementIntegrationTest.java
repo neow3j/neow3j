@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.List;
 
 import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
@@ -81,7 +80,7 @@ public class ContractManagementIntegrationTest {
                 .getUnsignedTransaction();
 
         Witness multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
                 COMMITTEE_ACCOUNT.getVerificationScript());
 
         Hash256 txHash = tx.addWitness(multiSigWitness)
@@ -155,7 +154,7 @@ public class ContractManagementIntegrationTest {
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
                 COMMITTEE_ACCOUNT.getVerificationScript());
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);

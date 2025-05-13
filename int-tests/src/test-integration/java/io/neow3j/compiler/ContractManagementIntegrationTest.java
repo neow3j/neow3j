@@ -35,7 +35,6 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -47,6 +46,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.reverseHexString;
+import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.isEmptyString;
@@ -201,7 +201,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
@@ -225,7 +225,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
@@ -246,7 +246,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
@@ -270,7 +270,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
@@ -289,7 +289,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());
@@ -304,7 +304,7 @@ public class ContractManagementIntegrationTest {
                 .signers(AccountSigner.calledByEntry(ct.getCommittee()))
                 .getUnsignedTransaction();
         multiSigWitness = createMultiSigWitness(
-                Collections.singletonList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
+                asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
         txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());

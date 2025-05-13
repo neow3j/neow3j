@@ -37,7 +37,6 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -95,8 +94,7 @@ public class ContractManagementTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(ContractManagement.SCRIPT_HASH,
-                "setMinimumDeploymentFee",
-                singletonList(integer(new BigInteger("70000000")))).toArray();
+                "setMinimumDeploymentFee", asList(integer(new BigInteger("70000000")))).toArray();
 
         Transaction tx = new ContractManagement(neow3j)
                 .setMinimumDeploymentFee(new BigInteger("70000000"))
