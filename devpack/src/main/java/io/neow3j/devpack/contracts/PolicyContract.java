@@ -148,23 +148,23 @@ public class PolicyContract extends ContractInterface {
      *
      * @param milliseconds The block generation time in milliseconds.
      */
-    @CallFlags(States | AllowNotify)
+    @CallFlags(All)
     public native void setMillisecondsPerBlock(int milliseconds);
 
     /**
-     * @return the upper increment size of blockchain height (in blocks)
-     * exceeding that a transaction should fail validation.
+     * @return the upper increment size of blockchain height (in blocks) exceeding that a transaction should fail
+     * validation.
      */
     @CallFlags(ReadOnly)
     public native int getMaxValidUntilBlockIncrement();
 
     /**
-     * Sets the upper increment size of blockchain height (in blocks)
-     * exceeding that a transaction should fail validation.
+     * Sets the upper increment size of blockchain height (in blocks) exceeding that a transaction should fail
+     * validation.
      *
      * @param increment The upper increment size of blockchain height (in blocks).
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setMaxValidUntilBlockIncrement(int increment);
 
     /**
@@ -178,7 +178,7 @@ public class PolicyContract extends ContractInterface {
      *
      * @param blocks The length of the chain accessible to smart contracts.
      */
-    @CallFlags(States)
+    @CallFlags(All)
     public native void setMaxTraceableBlocks(int blocks);
 
     /**

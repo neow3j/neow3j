@@ -87,8 +87,8 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the upper increment size of blockchain height (in blocks)
-     * exceeding that a transaction should fail validation.
+     * Gets the upper increment size of blockchain height (in blocks) exceeding that a transaction should fail
+     * validation.
      *
      * @return the upper increment size of blockchain height (in blocks).
      * @throws IOException if there was a problem fetching information from the Neo node.
