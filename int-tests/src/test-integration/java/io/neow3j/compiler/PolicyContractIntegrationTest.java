@@ -106,6 +106,36 @@ public class PolicyContractIntegrationTest {
     }
 
     @Test
+    public void setAndGetMillisecondsPerBlock() throws IOException {
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(20000));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(1000))); // Default value
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(20000))); // New value
+    }
+
+    @Test
+    public void setAndGetMaxValidUntilBlockIncrement() throws IOException {
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(7000));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(5760))); // Default value
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(7000))); // New value
+    }
+
+    @Test
+    public void setAndGetMaxTraceableBlocks() throws IOException {
+        ct.signWithCommitteeAccount();
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(2000000));
+
+        List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
+        assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(2102400))); // Default value
+        assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(2000000))); // New value
+    }
+
+    @Test
     public void setAndGetAttributeFee() throws IOException {
         ct.signWithCommitteeAccount();
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(1345_0000));
@@ -166,6 +196,30 @@ public class PolicyContractIntegrationTest {
             policyContract.setStoragePrice(newPrice);
             prices[1] = policyContract.getStoragePrice();
             return prices;
+        }
+
+        public static int[] setAndGetMillisecondsPerBlock(int newMilliseconds) {
+            int[] values = new int[2];
+            values[0] = policyContract.getMillisecondsPerBlock();
+            policyContract.setMillisecondsPerBlock(newMilliseconds);
+            values[1] = policyContract.getMillisecondsPerBlock();
+            return values;
+        }
+
+        public static int[] setAndGetMaxValidUntilBlockIncrement(int newIncrement) {
+            int[] values = new int[2];
+            values[0] = policyContract.getMaxValidUntilBlockIncrement();
+            policyContract.setMaxValidUntilBlockIncrement(newIncrement);
+            values[1] = policyContract.getMaxValidUntilBlockIncrement();
+            return values;
+        }
+
+        public static int[] setAndGetMaxTraceableBlocks(int newBlocks) {
+            int[] values = new int[2];
+            values[0] = policyContract.getMaxTraceableBlocks();
+            policyContract.setMaxTraceableBlocks(newBlocks);
+            values[1] = policyContract.getMaxTraceableBlocks();
+            return values;
         }
 
         public static int[] setAndGetAttributeFee(int newFeeConflicts) {
