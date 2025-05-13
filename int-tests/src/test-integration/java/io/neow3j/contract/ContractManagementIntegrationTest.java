@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 
 import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
@@ -44,12 +45,17 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ContractManagementIntegrationTest {
 
     private static final String RESOURCE_DIR = "contract";
+
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get(RESOURCE_DIR, "contracts", "TestContract.nef");
+
     private final static Path TESTCONTRACT_MANIFEST_FILE = Paths.get(RESOURCE_DIR, "contracts",
             "TestContract.manifest.json");
+
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
+
     private static Neow3j neow3j;
+
     private static ContractManagement contractManagement;
 
     @BeforeAll
@@ -75,7 +81,7 @@ public class ContractManagementIntegrationTest {
                 .getUnsignedTransaction();
 
         Witness multiSigWitness = createMultiSigWitness(
-                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
                 COMMITTEE_ACCOUNT.getVerificationScript());
 
         Hash256 txHash = tx.addWitness(multiSigWitness)
@@ -149,7 +155,7 @@ public class ContractManagementIntegrationTest {
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
-                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
                 COMMITTEE_ACCOUNT.getVerificationScript());
         Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, neow3j);

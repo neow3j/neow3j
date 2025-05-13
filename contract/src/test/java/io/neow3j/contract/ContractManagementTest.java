@@ -55,6 +55,7 @@ public class ContractManagementTest {
             new Hash160("fffdc93764dbaddd97c48f252a53ea4643faa3fd");
 
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
+
     private final static Path TESTCONTRACT_MANIFEST_FILE =
             Paths.get("contracts", "TestContract.manifest.json");
 
@@ -62,7 +63,9 @@ public class ContractManagementTest {
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .options(wireMockConfig().dynamicPort())
             .build();
+
     private Neow3j neow3j;
+
     private Account account1;
 
     @BeforeAll
