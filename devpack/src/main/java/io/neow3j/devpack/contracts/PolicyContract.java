@@ -5,7 +5,9 @@ import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
 import static io.neow3j.devpack.constants.CallFlags.All;
+import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
+import static io.neow3j.devpack.constants.CallFlags.States;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
@@ -41,6 +43,14 @@ public class PolicyContract extends ContractInterface {
     public native int getFeePerByte();
 
     /**
+     * Sets the fee to be paid per transaction byte.
+     *
+     * @param fee the desired fee per byte.
+     */
+    @CallFlags(All)
+    public native void setFeePerByte(int fee);
+
+    /**
      * Sets the maximum block size to the given value.
      *
      * @param size the desired block size.
@@ -63,14 +73,6 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(All)
     public native void setMaxBlockSystemFee(int fee);
-
-    /**
-     * Sets the fee to be paid per transaction byte.
-     *
-     * @param fee the desired fee per byte.
-     */
-    @CallFlags(All)
-    public native void setFeePerByte(int fee);
 
     /**
      * Blocks the account with the given script hash.
@@ -134,6 +136,50 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(All)
     public native void setStoragePrice(int price);
+
+    /**
+     * @return the block generation time in milliseconds
+     */
+    @CallFlags(ReadOnly)
+    public native int getMillisecondsPerBlock();
+
+    /**
+     * Sets the block generation time in milliseconds.
+     *
+     * @param milliseconds The block generation time in milliseconds.
+     */
+    @CallFlags(States | AllowNotify)
+    public native void setMillisecondsPerBlock(int milliseconds);
+
+    /**
+     * @return the upper increment size of blockchain height (in blocks)
+     * exceeding that a transaction should fail validation.
+     */
+    @CallFlags(ReadOnly)
+    public native int getMaxValidUntilBlockIncrement();
+
+    /**
+     * Sets the upper increment size of blockchain height (in blocks)
+     * exceeding that a transaction should fail validation.
+     *
+     * @param increment The upper increment size of blockchain height (in blocks).
+     */
+    @CallFlags(States)
+    public native void setMaxValidUntilBlockIncrement(int increment);
+
+    /**
+     * @return the length of the chain accessible to smart contracts.
+     */
+    @CallFlags(ReadOnly)
+    public native int getMaxTraceableBlocks();
+
+    /**
+     * Sets the length of the chain accessible to smart contracts.
+     *
+     * @param blocks The length of the chain accessible to smart contracts.
+     */
+    @CallFlags(States)
+    public native void setMaxTraceableBlocks(int blocks);
 
     /**
      * Gets the GAS fee for the given attribute type.
