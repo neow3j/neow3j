@@ -37,7 +37,6 @@ import static io.neow3j.types.ContractParameter.byteArray;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
-import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
@@ -46,6 +45,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ContractManagementTest {
@@ -54,17 +54,18 @@ public class ContractManagementTest {
             new Hash160("fffdc93764dbaddd97c48f252a53ea4643faa3fd");
 
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get("contracts", "TestContract.nef");
+
     private final static Path TESTCONTRACT_MANIFEST_FILE =
             Paths.get("contracts", "TestContract.manifest.json");
-
-    private Neow3j neow3j;
-
-    private Account account1;
 
     @RegisterExtension
     static WireMockExtension wireMockExtension = WireMockExtension.newInstance()
             .options(wireMockConfig().dynamicPort())
             .build();
+
+    private Neow3j neow3j;
+
+    private Account account1;
 
     @BeforeAll
     public void setUp() throws IOException {
@@ -93,8 +94,7 @@ public class ContractManagementTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] expectedScript = new ScriptBuilder().contractCall(ContractManagement.SCRIPT_HASH,
-                "setMinimumDeploymentFee",
-                singletonList(integer(new BigInteger("70000000")))).toArray();
+                "setMinimumDeploymentFee", asList(integer(new BigInteger("70000000")))).toArray();
 
         Transaction tx = new ContractManagement(neow3j)
                 .setMinimumDeploymentFee(new BigInteger("70000000"))
@@ -118,6 +118,17 @@ public class ContractManagementTest {
 
         assertThat(state.getHash(), is(contractHash));
         assertThat(state.getManifest().getName(), is("neow3j"));
+    }
+
+    @Test
+    public void testIsContract() throws IOException {
+        setUpWireMockForInvokeFunction("isContract", "invocationresult_boolean_true.json");
+
+        ContractManagement contractManagement = new ContractManagement(neow3j);
+        assertTrue(contractManagement.isContract(NeoToken.SCRIPT_HASH));
+
+        setUpWireMockForInvokeFunction("isContract", "invocationresult_boolean_false.json");
+        assertFalse(contractManagement.isContract(Hash160.ZERO));
     }
 
     @Test

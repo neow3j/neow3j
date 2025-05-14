@@ -44,15 +44,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class ContractManagementIntegrationTest {
 
     private static final String RESOURCE_DIR = "contract";
+
     private final static Path TESTCONTRACT_NEF_FILE = Paths.get(RESOURCE_DIR, "contracts", "TestContract.nef");
+
     private final static Path TESTCONTRACT_MANIFEST_FILE = Paths.get(RESOURCE_DIR, "contracts",
             "TestContract.manifest.json");
 
-    private static Neow3j neow3j;
-    private static ContractManagement contractManagement;
-
     @Container
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
+
+    private static Neow3j neow3j;
+
+    private static ContractManagement contractManagement;
 
     @BeforeAll
     public static void setUp() throws Throwable {
@@ -95,6 +98,16 @@ public class ContractManagementIntegrationTest {
     public void testGetContract() throws IOException {
         ContractState contract = contractManagement.getContract(NeoToken.SCRIPT_HASH);
         assertThat(contract.getManifest().getName(), is(NeoToken.NAME));
+    }
+
+    @Test
+    public void testIsContract() throws IOException {
+        assertTrue(contractManagement.isContract(NeoToken.SCRIPT_HASH));
+        assertTrue(contractManagement.isContract(GasToken.SCRIPT_HASH));
+        Hash160 nnsHash = neow3j.getNNSResolver();
+        assertTrue(contractManagement.isContract(nnsHash));
+
+        assertFalse(contractManagement.isContract(Hash160.ZERO));
     }
 
     @Test
