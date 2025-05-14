@@ -14,12 +14,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigInteger;
+import java.util.Collections;
 
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.CLIENT_1;
+import static io.neow3j.helper.FundingHelper.CLIENT_2;
+import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
@@ -109,6 +110,69 @@ public class PolicyContractIntegrationTest {
 
         BigInteger newFeePerByte = policyContract.getStoragePrice();
         assertThat(newFeePerByte, is(expectedNewStoragePrice));
+    }
+
+    @Test
+    public void testSetAndGetMillisecondsPerBlock() throws Throwable {
+        BigInteger expectedInitialMilliseconds = new BigInteger("1000");
+        BigInteger expectedNewMilliseconds = new BigInteger("20000");
+
+        BigInteger milliseconds = policyContract.getMillisecondsPerBlock();
+        assertThat(milliseconds, is(expectedInitialMilliseconds));
+
+        Transaction tx = policyContract.setMillisecondsPerBlock(expectedNewMilliseconds)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        BigInteger newMilliseconds = policyContract.getMillisecondsPerBlock();
+        assertThat(newMilliseconds, is(expectedNewMilliseconds));
+    }
+
+    @Test
+    public void testSetAndGetMaxValidUntilBlockIncrement() throws Throwable {
+        BigInteger expectedInitialIncrement = new BigInteger("5760");
+        BigInteger expectedNewIncrement = new BigInteger("7000");
+
+        BigInteger increment = policyContract.getMaxValidUntilBlockIncrement();
+        assertThat(increment, is(expectedInitialIncrement));
+
+        Transaction tx = policyContract.setMaxValidUntilBlockIncrement(expectedNewIncrement)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        BigInteger newIncrement = policyContract.getMaxValidUntilBlockIncrement();
+        assertThat(newIncrement, is(expectedNewIncrement));
+    }
+
+    @Test
+    public void testSetAndGetMaxTraceableBlocks() throws Throwable {
+        BigInteger expectedInitialBlocks = new BigInteger("2102400");
+        BigInteger expectedNewBlocks = new BigInteger("2000000");
+
+        BigInteger blocks = policyContract.getMaxTraceableBlocks();
+        assertThat(blocks, is(expectedInitialBlocks));
+
+        Transaction tx = policyContract.setMaxTraceableBlocks(expectedNewBlocks)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                Collections.singletonList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        BigInteger newBlocks = policyContract.getMaxTraceableBlocks();
+        assertThat(newBlocks, is(expectedNewBlocks));
     }
 
     @Test

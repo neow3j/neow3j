@@ -132,6 +132,24 @@ public class StdLibIntegrationTest {
     }
 
     @Test
+    public void base64UrlEncode() throws IOException {
+        String data = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(data));
+        String encoded = response.getInvocationResult().getStack().get(0).getString();
+        String expected = "NTQ2ODY1MjA3MTc1Njk2MzZiMjA2MjcyNmY3NzZlMjA2NjZmNzgyMDZhNzU2ZDcwNzMyMDZmNzY2NTcyMjAzMTMzMjA2YzYxN2E3OTIwNjQ2ZjY3NzMyZQ";
+        assertThat(encoded, is(expected));
+    }
+
+    @Test
+    public void base64UrlDecode() throws IOException {
+        String encoded = "NTQ2ODY1MjA3MTc1Njk2MzZiMjA2MjcyNmY3NzZlMjA2NjZmNzgyMDZhNzU2ZDcwNzMyMDZmNzY2NTcyMjAzMTMzMjA2YzYxN2E3OTIwNjQ2ZjY3NzMyZQ";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(encoded));
+        String decoded = response.getInvocationResult().getStack().get(0).getString();
+        String expected = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
+        assertThat(decoded, is(expected));
+    }
+
+    @Test
     public void itoa() throws IOException {
         // With base 10
         NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(100), integer(10));
@@ -307,6 +325,14 @@ public class StdLibIntegrationTest {
 
         public static ByteString base64Decode(String encoded) {
             return stdLib.base64Decode(encoded);
+        }
+
+        public static String base64UrlEncode(String input) {
+            return stdLib.base64UrlEncode(input);
+        }
+
+        public static String base64UrlDecode(String encoded) {
+            return stdLib.base64UrlDecode(encoded);
         }
 
         public static String base58Encode(ByteString bytes) {

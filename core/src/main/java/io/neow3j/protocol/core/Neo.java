@@ -113,7 +113,11 @@ public interface Neo {
 
     Request<?, NeoGetStorage> getStorage(Hash160 contractHash, String keyHexString);
 
+    Request<?, NeoFindStorage> findStorage(BigInteger contractId, String prefixHex);
+
     Request<?, NeoFindStorage> findStorage(BigInteger contractId, String prefixHex, BigInteger startIndex);
+
+    Request<?, NeoFindStorage> findStorage(Hash160 contractHash, String prefixHex);
 
     Request<?, NeoFindStorage> findStorage(Hash160 contractHash, String prefixHex, BigInteger startIndex);
 

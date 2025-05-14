@@ -271,6 +271,19 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testFindStorage() throws Exception {
+        neow3j.findStorage(new Hash160("1b468f207a5c5c3ee94e41b4cc606e921b33d160"), "c3").send();
+
+        String prefixBase64 = Base64.encode("c3");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[\"1b468f207a5c5c3ee94e41b4cc606e921b33d160\", \"" + prefixBase64 + "\"],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testFindStorage_withStartIndex() throws Exception {
         neow3j.findStorage(new Hash160("1b468f207a5c5c3ee94e41b4cc606e921b33d160"), "c3", BigInteger.valueOf(2)).send();
 
         String prefixBase64 = Base64.encode("c3");
@@ -284,6 +297,19 @@ public class RequestTest extends RequestTester {
 
     @Test
     public void testFindStorage_withId() throws Exception {
+        neow3j.findStorage(BigInteger.valueOf(-1), "0b").send();
+
+        String prefixBase64 = Base64.encode("0b");
+        verifyResult("{\n" +
+                " \"jsonrpc\": \"2.0\",\n" +
+                " \"method\": \"findstorage\",\n" +
+                " \"params\":[-1, \"" + prefixBase64 + "\"],\n" +
+                " \"id\": 1\n" +
+                "}");
+    }
+
+    @Test
+    public void testFindStorage_withId_withStartIndex() throws Exception {
         neow3j.findStorage(BigInteger.valueOf(-1), "0b", BigInteger.valueOf(10)).send();
 
         String prefixBase64 = Base64.encode("0b");
