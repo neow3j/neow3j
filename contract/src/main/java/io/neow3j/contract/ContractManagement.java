@@ -87,7 +87,7 @@ public class ContractManagement extends SmartContract {
     /**
      * Checks if the given {@code scriptHash} is a contract.
      *
-     * @param scriptHash the contract hash.
+     * @param scriptHash the script hash to be verified.
      * @return true if the given {@code scriptHash} is a contract. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
