@@ -85,14 +85,14 @@ public class ContractManagement extends SmartContract {
     }
 
     /**
-     * Checks if the given {@code contractHash} is a contract.
+     * Checks if the given {@code scriptHash} is a contract.
      *
-     * @param contractHash the contract hash.
-     * @return true if the given {@code contractHash} is a contract. False otherwise.
+     * @param scriptHash the contract hash.
+     * @return true if the given {@code scriptHash} is a contract. False otherwise.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
-    public boolean isContract(Hash160 contractHash) throws IOException {
-        return callFunctionReturningBool(IS_CONTRACT, hash160(contractHash));
+    public boolean isContract(Hash160 scriptHash) throws IOException {
+        return callFunctionReturningBool(IS_CONTRACT, hash160(scriptHash));
     }
 
     /**
