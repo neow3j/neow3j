@@ -25,6 +25,8 @@ public @interface ContractTest {
      * deployment configuration methods (annotated with {@link DeployConfig}) in your test class that require
      * information of another deployed contract, beware that a contract is only available if it is in a previous
      * position in the deployment order.
+     * <p>
+     * Use {@code contracts = {}} if you don't need any contract deployments.
      *
      * @return the contracts to compile and deploy.
      */
