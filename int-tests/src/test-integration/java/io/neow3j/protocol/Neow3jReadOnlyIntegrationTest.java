@@ -342,7 +342,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNativeContracts();
 
-        assertThat(nativeContracts, hasSize(9));
+        assertThat(nativeContracts, hasSize(10));
         ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getUpdateCounter(), is(0));
@@ -354,8 +354,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef1.getChecksum(), is(1094259016L));
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef1.getChecksum(), is(3581846399L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -363,9 +363,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getSupportedStandards(), hasSize(0));
 
         ContractABI abi1 = manifest1.getAbi();
-        assertThat(abi1.getMethods(), hasSize(11));
+        assertThat(abi1.getMethods(), hasSize(12));
         assertThat(abi1.getMethods().get(10).getName(), is("update"));
-        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(3));
+        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(2));
         assertThat(abi1.getMethods().get(10).getReturnType(), is(ContractParameterType.VOID));
         assertThat(abi1.getMethods().get(10).getOffset(), is(70));
         assertFalse(abi1.getMethods().get(10).isSafe());
@@ -440,8 +440,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
         assertThat(nef.getScript(),
-                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef.getChecksum(), is(1325686241L));
+                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef.getChecksum(), is(1991619121L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -452,13 +452,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(20));
-        ContractMethod method = abi.getMethods().get(11);
+        assertThat(abi.getMethods(), hasSize(21));
+        ContractMethod method = abi.getMethods().get(12);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getType(),
                 is(ContractParameterType.PUBLIC_KEY));
-        assertThat(method.getOffset(), is(77));
+        assertThat(method.getOffset(), is(84));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
@@ -628,6 +628,22 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testFindStorage() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(GAS_HASH, "")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(4)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(4));
+        assertThat(storageEntries.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(3).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_withStartIndex() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(GAS_HASH, "", BigInteger.ZERO)
                 .send()
                 .getFoundStorage();
@@ -643,6 +659,22 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testFindStorage_contractId() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(BigInteger.valueOf(-6), "14")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(3)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(3));
+        assertThat(storageEntries.get(2).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(2).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_contractId_withStartIndex() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(BigInteger.valueOf(-6), "14", BigInteger.ONE)
                 .send()
@@ -725,7 +757,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
         assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));
-        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(86_400L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(5760L));
         assertThat(protocol.getMaxTraceableBlocks(), is(2_102_400L));
         assertThat(protocol.getAddressVersion(), is(53));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(512L));
@@ -733,7 +765,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(4));
+        assertThat(protocol.getHardforks(), hasSize(5));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -746,6 +778,16 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks domovoi = protocol.getHardforks().get(3);
         assertThat(domovoi.getName(), is("Domovoi"));
         assertThat(domovoi.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks echidna = protocol.getHardforks().get(4);
+        assertThat(echidna.getName(), is("Echidna"));
+        assertThat(echidna.getBlockHeight(), is(BigInteger.ZERO));
+
+        assertThat(protocol.getStandbyCommittee(), hasSize(1));
+        assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(),
+                is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        assertThat(protocol.getSeedList(), hasSize(1));
+        assertThat(protocol.getSeedList().get(0), is("localhost:40333"));
     }
 
     // SmartContract Methods

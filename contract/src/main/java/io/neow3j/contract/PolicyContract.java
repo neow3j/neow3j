@@ -22,11 +22,17 @@ public class PolicyContract extends SmartContract {
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";
     private static final String GET_STORAGE_PRICE = "getStoragePrice";
+    private static final String GET_MILLISECONDS_PER_BLOCK = "getMillisecondsPerBlock";
+    private static final String GET_MAX_VALID_UNTIL_BLOCK_INCREMENT = "getMaxValidUntilBlockIncrement";
+    private static final String GET_MAX_TRACEABLE_BLOCKS = "getMaxTraceableBlocks";
     private static final String GET_ATTRIBUTE_FEE = "getAttributeFee";
     private static final String IS_BLOCKED = "isBlocked";
     private static final String SET_FEE_PER_BYTE = "setFeePerByte";
     private static final String SET_EXEC_FEE_FACTOR = "setExecFeeFactor";
     private static final String SET_STORAGE_PRICE = "setStoragePrice";
+    private static final String SET_MILLISECONDS_PER_BLOCK = "setMillisecondsPerBlock";
+    private static final String SET_MAX_VALID_UNTIL_BLOCK_INCREMENT = "setMaxValidUntilBlockIncrement";
+    private static final String SET_MAX_TRACEABLE_BLOCKS = "setMaxTraceableBlocks";
     private static final String SET_ATTRIBUTE_FEE = "setAttributeFee";
     private static final String BLOCK_ACCOUNT = "blockAccount";
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
@@ -68,6 +74,37 @@ public class PolicyContract extends SmartContract {
      */
     public BigInteger getStoragePrice() throws IOException {
         return callFunctionReturningInt(GET_STORAGE_PRICE);
+    }
+
+    /**
+     * Gets the block generation time in milliseconds.
+     *
+     * @return the block generation time in milliseconds.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getMillisecondsPerBlock() throws IOException {
+        return callFunctionReturningInt(GET_MILLISECONDS_PER_BLOCK);
+    }
+
+    /**
+     * Gets the upper increment size of blockchain height (in blocks) exceeding that a transaction should fail
+     * validation.
+     *
+     * @return the upper increment size of blockchain height (in blocks).
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getMaxValidUntilBlockIncrement() throws IOException {
+        return callFunctionReturningInt(GET_MAX_VALID_UNTIL_BLOCK_INCREMENT);
+    }
+
+    /**
+     * Gets the length of the chain accessible to smart contracts.
+     *
+     * @return the length of the chain accessible to smart contracts.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getMaxTraceableBlocks() throws IOException {
+        return callFunctionReturningInt(GET_MAX_TRACEABLE_BLOCKS);
     }
 
     /**
@@ -129,6 +166,49 @@ public class PolicyContract extends SmartContract {
      */
     public TransactionBuilder setStoragePrice(BigInteger price) {
         return invokeFunction(SET_STORAGE_PRICE, integer(price));
+    }
+
+    /**
+     * Creates a transaction script to set the block generation time in milliseconds and initializes
+     * a {@link TransactionBuilder} based on this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
+     *
+     * @param milliseconds the block generation time in milliseconds.
+     * @return a {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setMillisecondsPerBlock(BigInteger milliseconds) {
+        return invokeFunction(SET_MILLISECONDS_PER_BLOCK, integer(milliseconds));
+    }
+
+    /**
+     * Creates a transaction script to set the upper increment size of blockchain height (in blocks)
+     * exceeding that a transaction should fail validation and initializes a {@link TransactionBuilder} based on
+     * this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
+     *
+     * @param increment the upper increment size of blockchain height (in blocks).
+     * @return a {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setMaxValidUntilBlockIncrement(BigInteger increment) {
+        return invokeFunction(SET_MAX_VALID_UNTIL_BLOCK_INCREMENT, integer(increment));
+    }
+
+    /**
+     * Creates a transaction script to set the length of the chain accessible to smart contracts and initializes a
+     * {@link TransactionBuilder} based on this script.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
+     *
+     * @param maxTraceableBlocks the length of the chain accessible to smart contracts.
+     * @return a {@link TransactionBuilder}.
+     */
+    public TransactionBuilder setMaxTraceableBlocks(BigInteger maxTraceableBlocks) {
+        return invokeFunction(SET_MAX_TRACEABLE_BLOCKS, integer(maxTraceableBlocks));
     }
 
     /**

@@ -58,11 +58,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ContractManagementIntegrationTest {
 
-    private String testName;
-
     @RegisterExtension
     public static ContractTestExtension ct = new ContractTestExtension(
             ContractManagementIntegrationTestContract.class.getName());
+
+    private String testName;
 
     @BeforeEach
     void init(TestInfo testInfo) {
@@ -78,6 +78,15 @@ public class ContractManagementIntegrationTest {
         assertThat(reverseHexString(array.get(2).getHexString()), is(NeoToken.SCRIPT_HASH.toString())); // contract hash
         assertThat(array.get(3).getHexString(), not(isEmptyString())); // nef
         assertThat(array.get(4).getList(), notNullValue()); // manifest
+    }
+
+    @Test
+    public void isContract() throws IOException {
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, hash160(new Hash160(neoTokenHash())));
+        assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+
+        response = ct.callInvokeFunction(testName, hash160(Hash160.ZERO));
+        assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
     @Test
@@ -318,6 +327,10 @@ public class ContractManagementIntegrationTest {
 
         public static Contract getContract(io.neow3j.devpack.Hash160 contractHash) {
             return contractManagement.getContract(contractHash);
+        }
+
+        public static boolean isContract(io.neow3j.devpack.Hash160 hash) {
+            return contractManagement.isContract(hash);
         }
 
         public static Contract getContractById(int id) {

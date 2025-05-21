@@ -463,11 +463,31 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Finds storage entries of a contract based on the prefix and start index.
+     * Finds storage entries of a contract based on the prefix and with a start index of 0.
      * <p>
-     * Use start index 0. Then, if the result is truncated (i.e., {@link NeoFindStorage.FoundStorage#isTruncated()}),
-     * the value {@link NeoFindStorage.FoundStorage#getNext()} provides the next start index to find further values
-     * with another request.
+     * The result might be truncated. You can check this with {@link NeoFindStorage.FoundStorage#isTruncated()}. If
+     * it is you can use the value {@link NeoFindStorage.FoundStorage#getNext()} as starting index and perform
+     * another request with {@link Neow3j#findStorage(Hash160, String, BigInteger)} to find further values.
+     *
+     * @param contractHash    the contract hash.
+     * @param prefixHexString the prefix to filter the storage entries.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStorage> findStorage(Hash160 contractHash, String prefixHexString) {
+        return new Request<>(
+                "findstorage",
+                asList(contractHash, Base64.encode(prefixHexString)),
+                neow3jService,
+                NeoFindStorage.class);
+    }
+
+    /**
+     * Finds storage entries of a contract based on the prefix and a start index.
+     * <p>
+     * The result might be truncated. You can check this with {@link NeoFindStorage.FoundStorage#isTruncated()}. If
+     * it is you can use the value {@link NeoFindStorage.FoundStorage#getNext()} as starting index to perform another
+     * request to find further values.
      *
      * @param contractHash    the contract hash.
      * @param prefixHexString the prefix to filter the storage entries.
@@ -484,11 +504,31 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
-     * Finds storage entries of a contract based on the prefix and start index.
+     * Finds storage entries of a contract based on the prefix and with a start index of 0.
      * <p>
-     * Use start index 0. Then, if the result is truncated (i.e., {@link NeoFindStorage.FoundStorage#isTruncated()}),
-     * the value {@link NeoFindStorage.FoundStorage#getNext()} provides the next start index to find further values
-     * with another request.
+     * The result might be truncated. You can check this with {@link NeoFindStorage.FoundStorage#isTruncated()}. If
+     * it is you can use the value {@link NeoFindStorage.FoundStorage#getNext()} as starting index and perform
+     * another request with {@link String#findStorage(BigInteger, String, BigInteger)} to find further values.
+     *
+     * @param contractId      the contract id.
+     * @param prefixHexString the prefix to filter the storage entries.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoFindStorage> findStorage(BigInteger contractId, String prefixHexString) {
+        return new Request<>(
+                "findstorage",
+                asList(contractId, Base64.encode(prefixHexString)),
+                neow3jService,
+                NeoFindStorage.class);
+    }
+
+    /**
+     * Finds storage entries of a contract based on the prefix and a start index.
+     * <p>
+     * The result might be truncated. You can check this with {@link NeoFindStorage.FoundStorage#isTruncated()}. If
+     * it is you can use the value {@link NeoFindStorage.FoundStorage#getNext()} as start index to perform another
+     * request to find further values.
      *
      * @param contractId      the contract id.
      * @param prefixHexString the prefix to filter the storage entries.
