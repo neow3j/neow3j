@@ -120,12 +120,10 @@ public class Neow3jExpressIntegrationTest {
                 .send()
                 .getContracts();
 
-        assertThat(contracts, hasSize(10));
-        assertThat(contracts.get(0).getManifest().getAbi().getMethods().get(2).getName(),
-                is("request"));
-        assertThat(contracts.get(3).getManifest().getName(), is("GasToken"));
-        assertThat(contracts.get(8).getHash(),
-                is(new Hash160("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")));
+        assertThat(contracts, hasSize(11));
+        assertThat(contracts.get(1).getManifest().getAbi().getMethods().get(2).getName(), is("request"));
+        assertThat(contracts.get(4).getManifest().getName(), is("GasToken"));
+        assertThat(contracts.get(9).getHash(), is(new Hash160("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")));
     }
 
     @Test
