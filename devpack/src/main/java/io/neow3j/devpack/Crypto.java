@@ -13,7 +13,7 @@ public class Crypto {
      * corresponds to the signature is the container that started the current execution of the smart contract, i.e.,
      * usually the transaction.
      * <p>
-     * The ECC curve secp256r1 is assumed.
+     * The ECC curve secp256r1 and hash algorithm SHA256 is assumed.
      *
      * @param publicKey the public key.
      * @param signature the signature.

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 
@@ -192,6 +193,14 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
             @JsonFormat(with = JsonFormat.Feature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
             private List<Hardforks> hardforks = new ArrayList<>();
 
+            @JsonProperty("standbycommittee")
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            private List<ECPublicKey> standbyCommittee;
+
+            @JsonProperty("seedlist")
+            @JsonSetter(nulls = Nulls.AS_EMPTY)
+            private List<String> seedList;
+
             public Protocol() {
             }
 
@@ -243,6 +252,14 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                 return hardforks;
             }
 
+            public List<ECPublicKey> getStandbyCommittee() {
+                return standbyCommittee;
+            }
+
+            public List<String> getSeedList() {
+                return seedList;
+            }
+
             @Override
             public boolean equals(Object o) {
                 if (this == o) {
@@ -261,14 +278,17 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         Objects.equals(getMaxTransactionsPerBlock(), that.getMaxTransactionsPerBlock()) &&
                         Objects.equals(getMemoryPoolMaxTransactions(), that.getMemoryPoolMaxTransactions()) &&
                         Objects.equals(getInitialGasDistribution(), that.getInitialGasDistribution()) &&
-                        Objects.equals(getHardforks(), that.getHardforks());
+                        Objects.equals(getHardforks(), that.getHardforks()) &&
+                        Objects.equals(getStandbyCommittee(), that.getStandbyCommittee()) &&
+                        Objects.equals(getSeedList(), that.getSeedList());
             }
 
             @Override
             public int hashCode() {
                 return Objects.hash(getAddressVersion(), getNetwork(), getValidatorsCount(), getMilliSecondsPerBlock(),
                         getMaxTraceableBlocks(), getMaxValidUntilBlockIncrement(), getMaxTransactionsPerBlock(),
-                        getMemoryPoolMaxTransactions(), getInitialGasDistribution(), getHardforks());
+                        getMemoryPoolMaxTransactions(), getInitialGasDistribution(), getHardforks(),
+                        getStandbyCommittee(), getSeedList());
             }
 
             @Override
@@ -284,6 +304,8 @@ public class NeoGetVersion extends Response<NeoGetVersion.NeoVersion> {
                         ", memoryPoolMaxTransactions=" + memoryPoolMaxTransactions +
                         ", initialGasDistribution=" + initialGasDistribution +
                         ", hardforks=" + hardforks +
+                        ", standbyCommittee=" + standbyCommittee +
+                        ", seedList=" + seedList +
                         '}';
             }
 

@@ -76,6 +76,24 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testGetMillisecondsPerBlock() throws IOException {
+        setUpWireMockForInvokeFunction("getMillisecondsPerBlock", "policy_getMillisecondsPerBlock.json");
+        assertThat(policyContract.getMillisecondsPerBlock(), is(new BigInteger("15000")));
+    }
+
+    @Test
+    public void testGetMaxValidUntilBlockIncrement() throws IOException {
+        setUpWireMockForInvokeFunction("getMaxValidUntilBlockIncrement", "policy_getMaxValidUntilBlockIncrement.json");
+        assertThat(policyContract.getMaxValidUntilBlockIncrement(), is(new BigInteger("5760")));
+    }
+
+    @Test
+    public void testGetMaxTraceableBlocks() throws IOException {
+        setUpWireMockForInvokeFunction("getMaxTraceableBlocks", "policy_getMaxTraceableBlocks.json");
+        assertThat(policyContract.getMaxTraceableBlocks(), is(new BigInteger("2102400")));
+    }
+
+    @Test
     public void testIsBlocked() throws IOException {
         setUpWireMockForInvokeFunction("isBlocked", "policy_isBlocked.json");
         assertFalse(policyContract.isBlocked(account1.getScriptHash()));
@@ -148,6 +166,84 @@ public class PolicyContractTest {
                 .toArray();
 
         Transaction tx = policyContract.setStoragePrice(new BigInteger("8"))
+                .signers(calledByEntry(account1))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testSetMillisecondsPerBlock() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "policy_setMillisecondsPerBlock.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "setMillisecondsPerBlock",
+                        singletonList(integer(15000)))
+                .toArray();
+
+        Transaction tx = policyContract.setMillisecondsPerBlock(new BigInteger("15000"))
+                .signers(calledByEntry(account1))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testSetMaxValidUntilBlockIncrement() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "policy_setMaxValidUntilBlockIncrement.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "setMaxValidUntilBlockIncrement",
+                        singletonList(integer(5760)))
+                .toArray();
+
+        Transaction tx = policyContract.setMaxValidUntilBlockIncrement(new BigInteger("5760"))
+                .signers(calledByEntry(account1))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testSetMaxTraceableBlocks() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "policy_setMaxTraceableBlocks.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "setMaxTraceableBlocks",
+                        singletonList(integer(2102400)))
+                .toArray();
+
+        Transaction tx = policyContract.setMaxTraceableBlocks(new BigInteger("2102400"))
                 .signers(calledByEntry(account1))
                 .sign();
 

@@ -3,7 +3,7 @@ package io.neow3j.devpack.contracts;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.InteropInterface;
-import io.neow3j.devpack.constants.NamedCurve;
+import io.neow3j.devpack.constants.NamedCurveHash;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
@@ -20,6 +20,17 @@ public class CryptoLib extends ContractInterface {
     public CryptoLib() {
         super(NativeContract.CryptoLibScriptHash);
     }
+
+    /**
+     * Recovers the public key from a secp256k1 signature in a single byte array format.
+     *
+     * @param messageHash the hash of the message that was signed.
+     * @param signature   the 65-byte signature in format: r[32] + s[32] + v[1]. 64-bytes for eip-2098, where v must
+     *                    be 27 or 28.
+     * @return the recovered public key in compressed format, or null if recovery fails.
+     */
+    @CallFlags(ReadOnly)
+    public native ECPoint recoverSecp256K1(ByteString messageHash, ByteString signature);
 
     /**
      * Calculates the SHA-256 hash of the given value.
@@ -65,17 +76,28 @@ public class CryptoLib extends ContractInterface {
     public native ByteString keccak256(ByteString data);
 
     /**
-     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code curve}
-     * can be one of the curves defined in {@link NamedCurve}.
+     * Verifies the {@code signature} of a {@code message} with the corresponding {@code publicKey}. The {@code
+     * curveHash} can be one of the curve/hash-algorithm combinations defined in {@link NamedCurveHash}.
      *
      * @param message   the signed message.
      * @param publicKey the public key of the key pair used for signing.
      * @param signature the message signature.
-     * @param curve     the curve to use in the verification.
+     * @param curveHash the curve/hash-algorithm combination to use in the verification.
      * @return true if the signature is valid. False, otherwise.
      */
     @CallFlags(ReadOnly)
-    public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curve);
+    public native boolean verifyWithECDsa(ByteString message, ECPoint publicKey, ByteString signature, byte curveHash);
+
+    /**
+     * Verifies that a digital signature is appropriate for the provided key and message using the Ed25519 algorithm.
+     *
+     * @param message   the signed message.
+     * @param publicKey the public key of the key pair used for signing.
+     * @param signature the signature to be verified.
+     * @return true if the signature is valid. False, otherwise.
+     */
+    @CallFlags(ReadOnly)
+    public native boolean verifyWithEd25519(ByteString message, ECPoint publicKey, ByteString signature);
 
     /**
      * Serializes a bls12381 point.
