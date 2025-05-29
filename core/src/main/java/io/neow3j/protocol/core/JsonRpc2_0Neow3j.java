@@ -508,7 +508,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * The result might be truncated. You can check this with {@link NeoFindStorage.FoundStorage#isTruncated()}. If
      * it is you can use the value {@link NeoFindStorage.FoundStorage#getNext()} as starting index and perform
-     * another request with {@link String#findStorage(BigInteger, String, BigInteger)} to find further values.
+     * another request with {@link JsonRpc2_0Neow3j#findStorage(BigInteger, String, BigInteger)} to find further values.
      *
      * @param contractId      the contract id.
      * @param prefixHexString the prefix to filter the storage entries.

@@ -143,7 +143,7 @@ public class StdLib extends ContractInterface {
     /**
      * Encodes the given string into a Base64URL string.
      *
-     * @param input the string to encode.
+     * @param data the string to encode.
      * @return the encoded string.
      */
     @CallFlags(ReadOnly)
