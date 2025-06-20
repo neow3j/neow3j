@@ -1,9 +1,10 @@
-[![neow3j Actions Status](https://github.com/neow3j/neow3j/workflows/neow3j-ci-cd/badge.svg)](https://github.com/neow3j/neow3j/actions)
+[![Unit Tests & Code Coverage](https://github.com/neow3j/neow3j/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/neow3j/neow3j/actions/workflows/ci-cd.yml)
+[![Integration Tests](https://github.com/neow3j/neow3j/actions/workflows/integration.yml/badge.svg)](https://github.com/neow3j/neow3j/actions/workflows/integration.yml)
+[![codecov](https://codecov.io/gh/neow3j/neow3j/branch/main/graph/badge.svg?token=Xd0m5I7cz0)](https://codecov.io/gh/neow3j/neow3j)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ccbf3cfcfcf749a097774414362ae008)](https://www.codacy.com/gh/neow3j/neow3j/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neow3j/neow3j&amp;utm_campaign=Badge_Grade)
 ![Maven Central](https://img.shields.io/maven-central/v/io.neow3j/core?label=maven%2Fgradle)
 ![Sonatype Nexus (Snapshots)](https://img.shields.io/nexus/s/http/oss.sonatype.org/io.neow3j/core.svg)
 [![javadoc](https://javadoc.io/badge2/io.neow3j/core/javadoc.svg)](https://javadoc.io/doc/io.neow3j)
-[![codecov](https://codecov.io/gh/neow3j/neow3j/branch/main/graph/badge.svg?token=Xd0m5I7cz0)](https://codecov.io/gh/neow3j/neow3j)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/ccbf3cfcfcf749a097774414362ae008)](https://www.codacy.com/gh/neow3j/neow3j/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neow3j/neow3j&amp;utm_campaign=Badge_Grade)
 
 # neow3j: A Java/Kotlin/Android Development Toolkit for the Neo Blockchain
 
