@@ -1,7 +1,8 @@
 plugins {
     // The Nexus publishing Plugin dictates that it has to applied to the root project.
-    id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
+    //id 'io.github.gradle-nexus.publish-plugin' version '1.3.0'
     id 'jacoco'
+    id 'org.danilopianini.publish-on-central' version '9.0.2' apply false
 }
 
 ext {
@@ -28,21 +29,9 @@ ext {
 }
 
 group 'io.neow3j'
-version '3.24.0'
+version '3.25.0'
 if (project.hasProperty('snapshot')) {
     version = version + '-SNAPSHOT'
-}
-
-// The Nexus publishing Plugin dictates that this has to be set on the root project.
-nexusPublishing {
-    repositories {
-        sonatype {
-            // `sonatypeUsername` and `sonatypePassword` have to be either in ~/.gradle/gradle.properties or in
-            // environment variables ORG_GRADLE_PROJECT_sonatypeUsername and ORG_GRADLE_PROJECT_sonatypePassword.
-            username = project.findProperty("sonatypeUsername")
-            password = project.findProperty("sonatypePassword")
-        }
-    }
 }
 
 // Root project requires this for the jacoco plugin.
@@ -148,12 +137,24 @@ subprojects { subproject ->
     if (subproject.name != 'int-tests' && subproject.name != 'gradle-plugin') {
         apply plugin: 'maven-publish'
         apply plugin: 'signing'
+        apply plugin: 'org.danilopianini.publish-on-central'
+
+        publishOnCentral {
+            repoOwner.set("neow3j")
+            projectDescription.set(project.description)
+        }
+
+        // Ensure proper task dependencies for Maven Central Portal publishing
+        tasks.named("zipMavenCentralPortalPublication") {
+            dependsOn("publishAllPublicationsToProjectLocalRepository")
+        }
+        tasks.named("validateMavenCentralPortalPublication") {
+            dependsOn("zipMavenCentralPortalPublication")
+        }
 
         publishing {
             publications {
-                mavenJava(MavenPublication) {
-                    artifactId "${subproject.name}"
-                    from components.java
+                withType(MavenPublication) {
                     pom {
                         name = 'neow3j'
                         description.set(subproject.provider({ subproject.description }))
@@ -176,15 +177,22 @@ subprojects { subproject ->
                                 email = 'guil@axlabs.com'
                             }
                             developer {
-                                id = 'csmuller'
-                                name = 'Claude Müller'
-                                email = 'claude@axlabs.com'
-                            }
-                            developer {
                                 id = 'mialbu'
                                 name = 'Michael Bucher'
                                 email = 'michael@axlabs.com'
                             }
+                        }
+                    }
+                }
+            }
+            if (project.version.endsWith("-SNAPSHOT")) {
+                repositories {
+                    maven {
+                        def snapshotsRepoUrl = 'https://central.sonatype.com/repository/maven-snapshots/'
+                        url = snapshotsRepoUrl
+                        credentials {
+                            username = project.findProperty("mavenCentralPortalUsername")
+                            password = project.findProperty("mavenCentralPortalPassword")
                         }
                     }
                 }
@@ -196,7 +204,7 @@ subprojects { subproject ->
             // environment variables ORG_GRADLE_PROJECT_signingKey and ORG_GRADLE_PROJECT_signingPassword.
             // The signing key has to be the ASCII-armored, encrypted PGP private key for neow3j.
             useInMemoryPgpKeys(project.findProperty("signingKey"), project.findProperty("signingPassword"))
-            sign publishing.publications.mavenJava
+            sign publishing.publications
         }
 
         task bundleJar(type: Jar) {
@@ -211,7 +219,7 @@ subprojects { subproject ->
                 include '*.jar.asc'
             }
 
-            from("${buildDir}/publications/mavenJava") {
+            from("${buildDir}/publications/OSSRH") {
                 include 'pom-default.xml.asc'
                 include 'pom-default.xml'
                 rename 'pom-default.xml.asc', "${subproject.name}-${subproject.version}.pom.asc"

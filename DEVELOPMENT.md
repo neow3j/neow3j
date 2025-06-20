@@ -3,11 +3,10 @@
 ## Publishing and Using a Snapshot to/from Sonatype
 
 - Either run the "_Release SDK, devpack, Gradle plugin_" workflow on Github with the "Snapshot" flag set to true.
-- Or run `./gradlew --info publishToSonatype -Psnapshot` locally. Requires the same properties as for a normal
+- Or run `./gradlew --info publish -Psnapshot` locally. Requires the same properties as for a normal
   release (check the `RELEASE.md` file).
 
-Note that both approaches will generate snapshot artifacts for all modules including the `gradle-plugin` but excluding 
-the `int-tests` module. 
+Note that both approaches will generate snapshot artifacts for all modules including the `gradle-plugin` but excluding the `int-tests` module. 
 
 ### Using the SDK and Devpack Snapshot 
 
@@ -16,8 +15,8 @@ project's build file. It tells Gradle to use the Sonatype Snapshot repository as
 
 ```groovy
 repositories {
-    mavenCentral() 
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+    maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
+    mavenCentral()
 }
 ```
 
@@ -30,6 +29,8 @@ dependencies {
 }
 ```
 
+> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
+
 ### Using the Gradle Plugin Snapshot
 
 To use the snapshot version of the `gradle-plugin` in your project, add the following to the `settings.gradle` file. It
@@ -38,7 +39,7 @@ tells Gradle to use the Sonatype Snapshot repository as a plugin repository.
 ```groovy
 pluginManagement {
     repositories {
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
+        maven { url "https://central.sonatype.com/repository/maven-snapshots/" }
         gradlePluginPortal()
     }
     resolutionStrategy {
@@ -61,6 +62,7 @@ plugins {
 }
 ```
 
+> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
 
 ## Publishing and Using a Local Release
 
@@ -90,6 +92,8 @@ dependencies {
     implementation 'io.neow3j:devpack:x.y.z'
 }
 ```
+
+> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
 
 ### Using Local Gradle Plugin Release 
 
@@ -154,5 +158,4 @@ gpg --list-secret-keys info@neow3j.io
 gpg --export-secret-keys 7008418AEC2D69578BA07551DCED5430E76D91F5 | base64 > neow3j.key
 ```
 
-Go to GitHub, create a new secret named `GPG_KEY_ARMOR` and paste
-the base64 content of the `neow3j.key` file.
+Go to GitHub, create a new secret named `GPG_KEY_ARMOR` and paste the base64 content of the `neow3j.key` file.
