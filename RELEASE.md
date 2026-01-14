@@ -51,7 +51,7 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked-out code base, run:
 ```bash
-./gradlew --info -x :gradle-plugin:publishToSonatype -x :neofs:publishToSonatype  publishToSonatype closeAndReleaseSonatypeStagingRepository
+./gradlew --info -x :gradle-plugin:publishToSonatype  publishToSonatype closeAndReleaseSonatypeStagingRepository
 ```
 The task `publishToSonatype` compiles, packages, signs and uploads the artifacts to Sonatype into a "Staging
 Repository". The task `closeAndReleaseSonatypeStagingRepository` closes and releases that Staging Repository to 
