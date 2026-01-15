@@ -114,37 +114,41 @@ public class ModuleTest {
         ext.fastForward(60, 10);
         BigInteger endCount = neow3j.getBlockCount().send().getBlockCount();
         long endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
-        assertThat(endTime, is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
+        assertThat("Block count did not increase by exactly 10 (60s)", endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat("Blocktime of fastforwarded block is not 60 seconds later", endTime,
+                is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
 
         startCount = endCount;
         startTime = endTime;
         ext.fastForwardOneBlock(60);
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat(endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat(endTime, greaterThanOrEqualTo(startTime + 60 * 1000)); // milliseconds
+        assertThat("Block count did not increase by exactly 1 (60s)", endCount, is(startCount.add(BigInteger.ONE)));
+        assertThat("Blocktime of fastforwarded block is not 60s later", endTime,
+                greaterThanOrEqualTo(startTime + 60 * 1000)); // milliseconds
 
         startCount = endCount;
         startTime = endTime;
         ext.fastForward(30, 1, 1, 1, 10);
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
-        assertThat(endTime, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
+        assertThat("Block count did not increase by exactly 10 (1d+)", endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat("Blocktime of fastforwarded 10 blocks is not expected time later", endTime,
+                greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
 
         startCount = endCount;
         startTime = endTime;
         ext.fastForwardOneBlock(30, 1, 1, 1);
         endCount = neow3j.getBlockCount().send().getBlockCount();
         endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat(endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat(endTime, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
+        assertThat("Block count did not increase by exactly 10 (1d+)", endCount, is(startCount.add(BigInteger.ONE)));
+        assertThat("Blocktime of fastforwarded single block is not expected time later", endTime,
+                greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
 
         startCount = neow3j.getBlockCount().send().getBlockCount();
         ext.fastForward(10);
         endCount = neow3j.getBlockCount().send().getBlockCount();
-        assertThat(endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat("Block count did not increase by exactly 10", endCount, is(startCount.add(BigInteger.TEN)));
     }
 
 }
