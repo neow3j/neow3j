@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import java.io.IOException;
 import java.math.BigInteger;
 
 import static io.neow3j.types.ContractParameter.array;
@@ -21,6 +22,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
+import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
@@ -36,14 +38,18 @@ public class ModuleTest {
     private static final String OWNER_ADDRESS = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
 
     private static final String PERMISSION = "*";
+
     private static final String ALICE_SKEY = "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5";
 
     @RegisterExtension
     private static final ContractTestExtension ext = new ContractTestExtension(new NeoExpressTestContainer());
 
     private static Neow3j neow3j;
+
     private static SmartContract sc1;
+
     private static SmartContract sc2;
+
     private static final Account deployer = new Account(ECKeyPair.create(hexStringToByteArray(ALICE_SKEY)));
 
     @DeployConfig(TestContract1.class)
@@ -109,46 +115,90 @@ public class ModuleTest {
 
     @Test
     public void fastForward() throws Throwable {
-        BigInteger startCount = neow3j.getBlockCount().send().getBlockCount();
-        long startTime = neow3j.getBlock(startCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        ext.fastForward(60, 10);
-        BigInteger endCount = neow3j.getBlockCount().send().getBlockCount();
-        long endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat("Block count did not increase by exactly 10 (60s)", endCount, is(startCount.add(BigInteger.TEN)));
-        assertThat("Blocktime of fastforwarded block is not 60 seconds later", endTime,
-                is(greaterThanOrEqualTo(startTime + 60 * 1000))); // milliseconds
+        // Note: This test uses the fast-forward feature of NeoExpress. NeoExpress uses seconds in this feature while
+        // the Neo nodes use milliseconds. The comparison of timestamps is done in seconds and it allows a tolerance of
+        // 1 second.
+        int tolerance = 1;
 
-        startCount = endCount;
+        // Forward blocks and time
+        BigInteger startIndex = currentBlockIndex(neow3j);
+        // count = current index
+        long startTime = getBlockTimeInSeconds(neow3j, startIndex);
+        int nrBlocksToForward = 100;
+        int secondsToForward = 600;
+        ext.fastForward(secondsToForward, nrBlocksToForward);
+        BigInteger endIndex = currentBlockIndex(neow3j);
+        long endTime = getBlockTimeInSeconds(neow3j, endIndex);
+
+        assertThat(format("Block count did not increase by %s (%ss)", nrBlocksToForward, secondsToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
+        );
+        assertThat(format("Blocktime of fastforwarded block is not %s seconds later", secondsToForward),
+                endTime + tolerance, greaterThanOrEqualTo(startTime + 10 * 60)
+        );
+
+        // Forward a single block
+        startIndex = endIndex;
         startTime = endTime;
-        ext.fastForwardOneBlock(60);
-        endCount = neow3j.getBlockCount().send().getBlockCount();
-        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat("Block count did not increase by exactly 1 (60s)", endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat("Blocktime of fastforwarded block is not 60s later", endTime,
-                greaterThanOrEqualTo(startTime + 60 * 1000)); // milliseconds
+        secondsToForward = 3600;
+        ext.fastForwardOneBlock(secondsToForward);
+        endIndex = currentBlockIndex(neow3j);
+        endTime = getBlockTimeInSeconds(neow3j, endIndex);
 
-        startCount = endCount;
+        assertThat(format("Block count did not increase by exactly 1 (%ss)", secondsToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
+        );
+        assertThat(format("Blocktime of fastforwarded block is not %s seconds later", secondsToForward),
+                endTime + tolerance, greaterThanOrEqualTo(startTime + 60 * 60)
+        );
+
+        // Forward blocks and time with distinct time units
+        startIndex = endIndex;
         startTime = endTime;
-        ext.fastForward(30, 1, 1, 1, 10);
-        endCount = neow3j.getBlockCount().send().getBlockCount();
-        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat("Block count did not increase by exactly 10 (1d+)", endCount, is(startCount.add(BigInteger.TEN)));
-        assertThat("Blocktime of fastforwarded 10 blocks is not expected time later", endTime,
-                greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
+        nrBlocksToForward = 2500;
+        ext.fastForward(30, 1, 1, 1, nrBlocksToForward);
+        endIndex = currentBlockIndex(neow3j);
+        endTime = getBlockTimeInSeconds(neow3j, endIndex);
 
-        startCount = endCount;
+        assertThat(format("Block count did not increase by %s (1d+)", nrBlocksToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
+        );
+
+        assertThat(format("Blocktime of fastforwarded %s blocks is not the expected time later", nrBlocksToForward),
+                endTime + tolerance, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400))
+        );
+
+        // Forward a single block and time with distinct time units
+        startIndex = endIndex;
         startTime = endTime;
-        ext.fastForwardOneBlock(30, 1, 1, 1);
-        endCount = neow3j.getBlockCount().send().getBlockCount();
-        endTime = neow3j.getBlock(endCount.subtract(BigInteger.ONE), false).send().getBlock().getTime();
-        assertThat("Block count did not increase by exactly 10 (1d+)", endCount, is(startCount.add(BigInteger.ONE)));
-        assertThat("Blocktime of fastforwarded single block is not expected time later", endTime,
-                greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400) * 1000)); // milliseconds
+        ext.fastForwardOneBlock(30, 1, 1, 5);
+        endIndex = currentBlockIndex(neow3j);
+        endTime = getBlockTimeInSeconds(neow3j, endIndex);
 
-        startCount = neow3j.getBlockCount().send().getBlockCount();
-        ext.fastForward(10);
-        endCount = neow3j.getBlockCount().send().getBlockCount();
-        assertThat("Block count did not increase by exactly 10", endCount, is(startCount.add(BigInteger.TEN)));
+        assertThat("Block count did not increase by 1 (5d+)",
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
+        );
+        assertThat("Blocktime of fastforwarded single block is not expected time later",
+                endTime + tolerance, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 5 * 86400))
+        );
+
+        // Fast forward blocks (no time change)
+        startIndex = currentBlockIndex(neow3j);
+        nrBlocksToForward = 4200;
+        ext.fastForward(4200);
+        endIndex = currentBlockIndex(neow3j);
+
+        assertThat(format("Block count did not increase by %s", nrBlocksToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
+        );
+    }
+
+    private long getBlockTimeInSeconds(Neow3j neow3j, BigInteger blockIndex) throws IOException {
+        return neow3j.getBlock(blockIndex, false).send().getBlock().getTime() / 1000;
+    }
+
+    private BigInteger currentBlockIndex(Neow3j neow3j) throws IOException {
+        return neow3j.getBlockCount().send().getBlockCount().subtract(BigInteger.ONE);
     }
 
 }
