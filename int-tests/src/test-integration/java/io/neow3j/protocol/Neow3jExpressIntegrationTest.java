@@ -206,7 +206,8 @@ public class Neow3jExpressIntegrationTest {
 
         String resumeMessage = container.resume();
         System.out.println(resumeMessage);
-//        assertThat(resumeMessage, containsString("Neo-express started.\nNeo express is running"));
+        assertThat(resumeMessage, containsString("Neo-express started."));
+        assertThat(resumeMessage, containsString("Neo express is running"));
 
         BigInteger blockCountAfterResuming = getNeow3jExpress().getBlockCount().send().getBlockCount();
         assertThat(blockCountAfterResuming.intValue(), is(greaterThanOrEqualTo(blockCountBeforeStopping.intValue())));

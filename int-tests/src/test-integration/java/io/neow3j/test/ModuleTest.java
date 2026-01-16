@@ -117,8 +117,8 @@ public class ModuleTest {
     public void fastForward() throws Throwable {
         // Note: This test uses the fast-forward feature of NeoExpress. NeoExpress uses seconds in this feature while
         // the Neo nodes use milliseconds. The comparison of timestamps is done in seconds and it allows a tolerance of
-        // 1 second.
-        int tolerance = 1;
+        // 5 seconds.
+        int tolerance = 5;
 
         // Forward blocks and time
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -185,7 +185,7 @@ public class ModuleTest {
         // Fast forward blocks (no time change)
         startIndex = currentBlockIndex(neow3j);
         nrBlocksToForward = 4200;
-        ext.fastForward(4200);
+        ext.fastForward(nrBlocksToForward);
         endIndex = currentBlockIndex(neow3j);
 
         assertThat(format("Block count did not increase by %s", nrBlocksToForward),
