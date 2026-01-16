@@ -502,7 +502,6 @@ public class NeoMethod {
         String[] split = ioNeow3jSplit[1].split("/");
         switch (split[0]) {
             case "crypto":
-            case "neofs":
             case "protocol":
             case "script":
             case "test":
