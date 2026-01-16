@@ -12,10 +12,7 @@ ext {
     jacksonVersion = '2.13.4.2'
     javaWebSocketVersion = '1.5.3'
     jnaVersion = '5.12.1'
-    neofsApiJavaVersion = '2.14.0-SNAPSHOT' // Replace with non-snapshot version once officially released.
-    neofsSharedLibVersion = '0.0.11'
     okhttpVersion = '4.12.0'
-    protobufJavaUtilVersion = '3.21.9'
     rxjavaVersion = '2.2.21'
     slf4jVersion = '2.0.9'
     awaitility = '4.2.0'

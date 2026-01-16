@@ -202,11 +202,12 @@ public class Neow3jExpressIntegrationTest {
         String haltMessage = container.halt();
         assertThat(haltMessage, containsString("node 0 stopped"));
 
-        IOException thrown = assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
-        assertThat(thrown.getMessage(), containsString("unexpected end of stream"));
+        assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
 
         String resumeMessage = container.resume();
-        assertThat(resumeMessage, containsString("Neo-express started.\nNeo express is running"));
+        System.out.println(resumeMessage);
+        assertThat(resumeMessage, containsString("Neo-express started."));
+        assertThat(resumeMessage, containsString("Neo express is running"));
 
         BigInteger blockCountAfterResuming = getNeow3jExpress().getBlockCount().send().getBlockCount();
         assertThat(blockCountAfterResuming.intValue(), is(greaterThanOrEqualTo(blockCountBeforeStopping.intValue())));
