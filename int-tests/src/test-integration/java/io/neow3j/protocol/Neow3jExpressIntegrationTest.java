@@ -203,7 +203,7 @@ public class Neow3jExpressIntegrationTest {
         assertThat(haltMessage, containsString("node 0 stopped"));
 
         IOException thrown = assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
-        assertThat(thrown.getMessage(), containsString("unexpected end of stream"));
+        assertThat(thrown.getMessage(), containsString("Connection reset"));
 
         String resumeMessage = container.resume();
         assertThat(resumeMessage, containsString("Neo-express started.\nNeo express is running"));
