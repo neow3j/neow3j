@@ -29,7 +29,7 @@ dependencies {
 }
 ```
 
-> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
+> Make sure to change `x.y.z` to an actual neow3j version for which a snapshot release exists.
 
 ### Using the Gradle Plugin Snapshot
 
@@ -62,7 +62,7 @@ plugins {
 }
 ```
 
-> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
+> Make sure to change `x.y.z` to an actual neow3j version for which a snapshot release exists.
 
 ## Publishing and Using a Local Release
 
@@ -93,7 +93,7 @@ dependencies {
 }
 ```
 
-> 🚨 **Pay attention**: change the `x.y.z-SNAPSHOT` above to a real neow3j version.
+> Make sure to change `x.y.z` to an actual neow3j version for which a snapshot release exists.
 
 ### Using Local Gradle Plugin Release 
 
