@@ -29,8 +29,8 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 The following properties are required to create a release:
 - `signingKey`, the PGP key used to sign neow3j artifacts, ASCII armored and encrypted
 - `signingPassword`, the password for the PGP key
-- `sonatypeUsername`, the username for the Sonatype account, should be a token and not the actual username
-- `sonatypePassword`, the password for the Sonatype account, should be a token and not the actual password 
+- `mavenCentralPortalUsername`, the username for the Maven Central Sonatype account, should be a token and not the actual username
+- `mavenCentralPortalUsername`, the password for the Maven Central Sonatype account, should be a token and not the actual password
 - `gradle.publish.key`, the API key for the Gradle Plugin Repository
 - `gradle.publish.secret`, the API secret for the Gradle Plugin Repository
 
