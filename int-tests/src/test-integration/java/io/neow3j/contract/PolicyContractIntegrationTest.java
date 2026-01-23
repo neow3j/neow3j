@@ -78,7 +78,11 @@ public class PolicyContractIntegrationTest {
         BigInteger execFeeFactor = policyContract.getExecFeeFactor();
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
 
-        Transaction tx = policyContract.setExecFeeFactor(new BigInteger("50"))
+        // Starting from the Faun hardfork, the exec fee factor is stored with additional 4 decimals compared to
+        // before. The method getExecFeeFactor although returns the same decimal representation as before the
+        // hardfork. Hence, the value returned by getExecFeeFactor is expected to be the new value divided by 10,000
+        // (floor). In this test, the expected return value of getExecFeeFactor after setting it to 506388 is 50.
+        Transaction tx = policyContract.setExecFeeFactor(new BigInteger("506388"))
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
