@@ -11,6 +11,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -119,6 +120,7 @@ public class ModuleTest {
     }
 
     @Test
+    @Order(1)
     public void testFastForwardOneBlockWithSeconds() throws Exception {
         // Forward a single block
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -137,6 +139,7 @@ public class ModuleTest {
     }
 
     @Test
+    @Order(2)
     public void testFastForwardOneBlockWithTimeUnits() throws Exception {
         // Forward a single block and time with distinct time units
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -154,6 +157,7 @@ public class ModuleTest {
     }
 
     @Test
+    @Order(3)
     public void testFastForwardMultipleBlocksWithoutTimeChange() throws Exception {
         // Fast forward blocks (no time change)
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -167,6 +171,7 @@ public class ModuleTest {
     }
 
     @Test
+    @Order(4)
     public void fastForwardMultipleBlocksWithSeconds() throws Throwable {
         // Forward blocks and time
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -187,6 +192,7 @@ public class ModuleTest {
     }
 
     @Test
+    @Order(5)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
         // Forward blocks and time with distinct time units
         BigInteger startIndex = currentBlockIndex(neow3j);
