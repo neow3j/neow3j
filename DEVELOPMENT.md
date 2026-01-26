@@ -49,7 +49,7 @@ pluginManagement {
 }
 ```
 
-Then use the plugin as usual in the `plugins` section of your project's build file but with the snapshot version sepcified.
+Then use the plugin as usual in the `plugins` section of your project's build file but with the snapshot version specified.
 
 ```groovy
 plugins {
