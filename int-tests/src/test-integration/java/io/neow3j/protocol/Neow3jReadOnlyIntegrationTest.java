@@ -71,6 +71,7 @@ import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
+import static io.neow3j.test.TestProperties.treasuryContractHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -80,6 +81,7 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
@@ -342,7 +344,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNativeContracts();
 
-        assertThat(nativeContracts, hasSize(10));
+        assertThat(nativeContracts, hasSize(11));
         ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getUpdateCounter(), is(0));
@@ -398,7 +400,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getName(), is("OracleContract"));
         assertThat(manifest8.getGroups(), hasSize(0));
         assertTrue(manifest8.getFeatures().isEmpty());
-        assertThat(manifest8.getSupportedStandards(), hasSize(0));
+        assertThat(manifest8.getSupportedStandards(), hasSize(1));
+        assertThat(manifest8.getSupportedStandards(), containsInAnyOrder("NEP-30"));
 
         ContractABI abi8 = manifest8.getAbi();
         assertThat(abi8.getMethods(), hasSize(5));
@@ -421,6 +424,33 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getPermissions().get(0).getMethods().get(0), is("*"));
         assertThat(manifest8.getTrusts(), hasSize(0));
         assertNull(manifest8.getExtra());
+
+        ContractState contractState10 = nativeContracts.get(10);
+        assertThat(contractState10.getId().intValue(), is(-11));
+        assertThat(contractState10.getHash(), is(new Hash160(treasuryContractHash())));
+
+        ContractManifest manifest10 = contractState10.getManifest();
+        assertThat(manifest10.getName(), is("Treasury"));
+        assertTrue(manifest10.getFeatures().isEmpty());
+        assertThat(manifest10.getSupportedStandards(), hasSize(3));
+        assertThat(manifest10.getSupportedStandards(), containsInAnyOrder("NEP-26", "NEP-27", "NEP-30"));
+
+        ContractABI abi10 = manifest10.getAbi();
+        assertThat(abi10.getMethods(), hasSize(3));
+        ContractMethod method10 = abi10.getMethods().get(2);
+        assertThat(method10.getName(), is("verify"));
+        assertThat(method10.getParameters(), hasSize(0));
+        assertThat(method10.getReturnType(), is(ContractParameterType.BOOLEAN));
+        assertThat(method10.getOffset(), is(14));
+        assertTrue(method10.isSafe());
+        assertThat(abi10.getEvents(), hasSize(0));
+
+        assertThat(manifest10.getPermissions(), hasSize(1));
+        assertThat(manifest10.getPermissions().get(0).getContract(), is("*"));
+        assertThat(manifest10.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest10.getPermissions().get(0).getMethods().get(0), is("*"));
+        assertThat(manifest10.getTrusts(), hasSize(0));
+        assertNull(manifest10.getExtra());
     }
 
     @Test
@@ -765,7 +795,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(5));
+        assertThat(protocol.getHardforks(), hasSize(7));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -781,6 +811,12 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks echidna = protocol.getHardforks().get(4);
         assertThat(echidna.getName(), is("Echidna"));
         assertThat(echidna.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks faun = protocol.getHardforks().get(5);
+        assertThat(faun.getName(), is("Faun"));
+        assertThat(faun.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks gorgon = protocol.getHardforks().get(6);
+        assertThat(gorgon.getName(), is("Gorgon"));
+        assertThat(gorgon.getBlockHeight(), is(BigInteger.ZERO));
 
         assertThat(protocol.getStandbyCommittee(), hasSize(1));
         assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(),
@@ -946,7 +982,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(10));
+        assertThat(plugins, hasSize(11));
     }
 
     @Test
