@@ -42,8 +42,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PolicyContractTest {
 
-    private static final Hash160 POLICYCONTRACT_HASH =
-            new Hash160("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b");
+    private static final Hash160 POLICYCONTRACT_HASH = new Hash160("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b");
 
     private PolicyContract policyContract;
     private Account account1;
@@ -76,6 +75,12 @@ public class PolicyContractTest {
     public void testGetExecFeeFactor() throws IOException {
         setUpWireMockForInvokeFunction("getExecFeeFactor", "policy_getExecFeeFactor.json");
         assertThat(policyContract.getExecFeeFactor(), is(new BigInteger("30")));
+    }
+
+    @Test
+    public void testGetExecPicoFeeFactor() throws IOException {
+        setUpWireMockForInvokeFunction("getExecPicoFeeFactor", "policy_getExecPicoFeeFactor.json");
+        assertThat(policyContract.getExecPicoFeeFactor(), is(new BigInteger("505372")));
     }
 
     @Test

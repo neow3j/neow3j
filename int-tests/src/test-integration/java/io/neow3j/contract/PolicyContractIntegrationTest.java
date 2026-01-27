@@ -80,11 +80,12 @@ public class PolicyContractIntegrationTest {
     public void testSetAndGetExecFeeFactor() throws Throwable {
         BigInteger expectedInitialExecFeeFactor = new BigInteger("30");
         BigInteger expectedNewExecFeeFactor = new BigInteger("50");
+        BigInteger expectedNewExecPicoFeeFactor = new BigInteger("506388");
 
         BigInteger execFeeFactor = policyContract.getExecFeeFactor();
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
 
-        // Starting from the Faun hardfork, the exec fee factor is stored with additional 4 decimals compared to
+        // Starting with the Faun hardfork, the exec fee factor is stored with additional 4 decimals compared to
         // before. The method getExecFeeFactor although returns the same decimal representation as before the
         // hardfork. Hence, the value returned by getExecFeeFactor is expected to be the new value divided by 10,000
         // (floor). In this test, the expected return value of getExecFeeFactor after setting it to 506388 is 50.
@@ -99,6 +100,9 @@ public class PolicyContractIntegrationTest {
 
         BigInteger newExecFeeFactor = policyContract.getExecFeeFactor();
         assertThat(newExecFeeFactor, is(expectedNewExecFeeFactor));
+
+        BigInteger newExecPicoFeeFactor = policyContract.getExecPicoFeeFactor();
+        assertThat(newExecPicoFeeFactor, is(expectedNewExecPicoFeeFactor));
     }
 
     @Test

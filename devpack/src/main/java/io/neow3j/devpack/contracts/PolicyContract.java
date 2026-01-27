@@ -17,7 +17,7 @@ public class PolicyContract extends ContractInterface {
      * The maximum execution fee factor that the committee can set.
      * <p>
      * Note that this value is without the additional precision of 4 decimal places which is the underlying value
-     * used starting from the Faun hard fork.
+     * used starting with the Faun hard fork.
      */
     public static final int MaxExecFeeFactor = 100;
 
@@ -123,29 +123,54 @@ public class PolicyContract extends ContractInterface {
     public native boolean recoverFund(Hash160 account, Hash160 token);
 
     /**
-     * Gets the fee factor (without precision) used to calculate the GAS cost of contract executions.
+     * Gets the execution fee factor without additional precision.
      * <p>
-     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that
-     * is executed in a transaction.
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function ignores that additional precision and returns the floored value.
      * <p>
-     * NOTE: Starting from the Faun hard fork, the execution fee factor uses additional precision of 4 decimal
-     * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
+     * As a result, the value returned by this function may be {@code 0} when the actual execution fee factor is
+     * between {@code 0} and {@code 1} (e.g., {@code 0.5} is returned as {@code 0}).
      * <p>
-     * If you are not yet using this function in existing code, consider using the new function
-     * {@code getExecPicoFeeFactor()} which provides the full precision.
+     * For new code, consider using {@link #getExecPicoFeeFactor()}, which provides the full precision.
      *
-     * @return the execution fee factor.
+     * @return the execution fee factor without additional precision.
      */
     @CallFlags(ReadOnly)
     public native int getExecFeeFactor();
 
     /**
+     * Gets the execution fee factor with additional precision.
+     * <p>
+     * The execution fee factor is used to calculate the execution GAS cost by multiplying it with the base cost of
+     * each NeoVM instruction executed in a transaction.
+     * <p>
+     * Starting with the Faun hard fork, the execution fee factor is internally represented using an value with 4
+     * decimal places of additional precision (the "pico" fee factor). This function returns that full-precision value.
+     * <p>
+     * For example, a return value of {@code 995627} represents a fee factor of {@code 99.5627} when interpreted with
+     * 4 decimal places of precision. {@link #getExecFeeFactor()} would return the floored value {@code 99}.
+     *
+     * @return the execution fee factor with additional precision.
+     */
+    @CallFlags(ReadOnly)
+    public native int getExecPicoFeeFactor();
+
+    /**
      * Sets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each NeoVM instruction has a relative cost that is multiplied with this fee factor to result in the actual
-     * GAS cost.
+     * Each NeoVM instruction has a relative cost, which is multiplied by this fee factor to determine the actual GAS
+     * cost.
+     * <p>
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function expects the full precision to be provided. In other words, the value passed to
+     * this function is the same value that will later be returned by {@link #getExecPicoFeeFactor()}, while
+     * {@link #getExecFeeFactor()} returns the floored value without the additional precision.
+     * <p>
+     * For example, to set an execution fee factor of {@code 1.5627}, call this function with {@code 15627}. In this
+     * case, {@link #getExecFeeFactor()} will return {@code 1}, while {@link #getExecPicoFeeFactor()} will return
+     * {@code 15627}.
      *
-     * @param factor the desired factor.
+     * @param factor the execution fee factor.
      */
     @CallFlags(All)
     public native void setExecFeeFactor(int factor);
