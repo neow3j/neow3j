@@ -80,6 +80,7 @@ public class PolicyContractIntegrationTest {
     public void testSetAndGetExecFeeFactor() throws Throwable {
         BigInteger expectedInitialExecFeeFactor = new BigInteger("30");
         BigInteger expectedNewExecFeeFactor = new BigInteger("50");
+        BigInteger expectedNewExecPicoFeeFactor = new BigInteger("506388");
 
         BigInteger execFeeFactor = policyContract.getExecFeeFactor();
         assertThat(execFeeFactor, is(expectedInitialExecFeeFactor));
@@ -99,6 +100,9 @@ public class PolicyContractIntegrationTest {
 
         BigInteger newExecFeeFactor = policyContract.getExecFeeFactor();
         assertThat(newExecFeeFactor, is(expectedNewExecFeeFactor));
+
+        BigInteger newExecPicoFeeFactor = policyContract.getExecPicoFeeFactor();
+        assertThat(newExecPicoFeeFactor, is(expectedNewExecPicoFeeFactor));
     }
 
     @Test

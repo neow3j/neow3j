@@ -26,6 +26,7 @@ public class PolicyContract extends SmartContract {
 
     private static final String GET_FEE_PER_BYTE = "getFeePerByte";
     private static final String GET_EXEC_FEE_FACTOR = "getExecFeeFactor";
+    private static final String GET_EXEC_PICO_FEE_FACTOR = "getExecPicoFeeFactor";
     private static final String GET_STORAGE_PRICE = "getStoragePrice";
     private static final String GET_MILLISECONDS_PER_BLOCK = "getMillisecondsPerBlock";
     private static final String GET_MAX_VALID_UNTIL_BLOCK_INCREMENT = "getMaxValidUntilBlockIncrement";
@@ -70,13 +71,29 @@ public class PolicyContract extends SmartContract {
      * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
      * <p>
      * If you are not yet using this function in existing code, consider using the new function
-     * {@code getExecPicoFeeFactor()} which provides the full precision.
+     * {@link #getExecPicoFeeFactor()} which provides the full precision.
      *
      * @return the execution fee factor.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getExecFeeFactor() throws IOException {
         return callFunctionReturningInt(GET_EXEC_FEE_FACTOR);
+    }
+
+    /**
+     * Gets the fee factor (with additional precision) used to calculate the GAS cost of contract executions.
+     * <p>
+     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that is
+     * executed in a transaction.
+     * <p>
+     * This function returns the execution fee factor in the unit of pico Gas (1 picoGAS = 1e-12 GAS), i.e., with 4
+     * additional decimal places of precision compared to the function {@link #getExecFeeFactor()}.
+     *
+     * @return the execution fee factor with additional precision.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public BigInteger getExecPicoFeeFactor() throws IOException {
+        return callFunctionReturningInt(GET_EXEC_PICO_FEE_FACTOR);
     }
 
     /**
