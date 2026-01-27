@@ -110,6 +110,19 @@ public class PolicyContract extends ContractInterface {
     public native boolean isBlocked(Hash160 scriptHash);
 
     /**
+     * Recovers funds from the given account by transferring its entire balance of the specified token to the native
+     * treasury contract.
+     * <p>
+     * The account must be blocked and have been blocked for at least one year before funds can be recovered.
+     *
+     * @param account the account to recover funds from.
+     * @param token the token to recover.
+     * @return true if successful. False, otherwise.
+     */
+    @CallFlags(All)
+    public native boolean recoverFund(Hash160 account, Hash160 token);
+
+    /**
      * Gets the fee factor (without precision) used to calculate the GAS cost of contract executions.
      * <p>
      * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that

@@ -42,6 +42,7 @@ public class PolicyContract extends SmartContract {
     private static final String BLOCK_ACCOUNT = "blockAccount";
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
     private static final String GET_BLOCKED_ACCOUNTS = "getBlockedAccounts";
+    private static final String RECOVER_FUND = "recoverFund";
 
     /**
      * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for invocations.
@@ -321,6 +322,22 @@ public class PolicyContract extends SmartContract {
     public List<Hash160> getBlockedAccountsUnwrapped() throws IOException {
         List<StackItem> list = callFunctionAndUnwrapIterator(GET_BLOCKED_ACCOUNTS, asList(), DEFAULT_ITERATOR_COUNT);
         return list.stream().map(h -> Hash160.fromAddress(h.getAddress())).collect(Collectors.toList());
+    }
+
+    /**
+     * Creates a transaction script to recover funds from a blocked account.
+     * <p>
+     * The account must be blocked and have been blocked for at least one year before funds can be recovered.
+     * <p>
+     * This method can only be successfully invoked by the committee, i.e., the transaction has to be signed by the
+     * committee members.
+     *
+     * @param account the account to recover funds from.
+     * @param token the token to recover.
+     * @return a {@link TransactionBuilder}.
+     */
+    public TransactionBuilder recoverFund(Hash160 account, Hash160 token) {
+        return invokeFunction(RECOVER_FUND, hash160(account), hash160(token));
     }
 
 }

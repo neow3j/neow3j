@@ -9,11 +9,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.regex.Pattern;
 
 public class WireMockTestHelper {
 
     public static void setUpWireMockForCall(String call, String responseFile, String... params) throws IOException {
-
         String responseBody = loadFile("/responses/" + responseFile);
 
         StringBuilder regexPattern = new StringBuilder()
@@ -39,9 +39,7 @@ public class WireMockTestHelper {
                         .withBody(responseBody)));
     }
 
-    public static void setUpWireMockForInvokeFunction(String contractFunction, String responseFile)
-            throws IOException {
-
+    public static void setUpWireMockForInvokeFunction(String contractFunction, String responseFile) throws IOException {
         String responseBody = loadFile("/responses/" + responseFile);
 
         WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
@@ -54,9 +52,7 @@ public class WireMockTestHelper {
                         .withBody(responseBody)));
     }
 
-    public static void setUpWireMockForBalanceOf(String accountScriptHash, String responseFile)
-            throws IOException {
-
+    public static void setUpWireMockForBalanceOf(String accountScriptHash, String responseFile) throws IOException {
         String responseBody = loadFile("/responses/" + responseFile);
 
         WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
@@ -64,6 +60,19 @@ public class WireMockTestHelper {
                         + ".*\"method\":\"invokefunction\""
                         + ".*\"params\":.*\"balanceOf\".*"
                         + ".*\"" + accountScriptHash + "\".*"))
+                .willReturn(WireMock.aResponse()
+                        .withStatus(200)
+                        .withBody(responseBody)));
+    }
+
+    public static void setUpWireMockForInvokeScript(String script, String responseFile) throws IOException {
+        String responseBody = loadFile("/responses/" + responseFile);
+
+        WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
+                // Pattern quote is necessary because the script is in Base64 format which contains special characters.
+                .withRequestBody(new RegexPattern(""
+                        + ".*\"method\":\"invokescript\""
+                        + ".*\"params\":.*\"" + Pattern.quote(script) + "\".*"))
                 .willReturn(WireMock.aResponse()
                         .withStatus(200)
                         .withBody(responseBody)));
