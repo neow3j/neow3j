@@ -21,7 +21,6 @@ import java.math.BigInteger;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
-import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
@@ -30,7 +29,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
 @ContractTest(
-        blockTime = 5,
+        blockTime = 15,
         contracts = {TestContract1.class, TestContract2.class},
         batchFile = "test/example.batch",
         configFile = "test/example.neo-express"
@@ -121,7 +120,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(5)
+    @Order(1)
     public void testFastForwardOneBlockWithSeconds() throws Exception {
         // Forward a single block
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -193,7 +192,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(1)
+    @Order(5)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
         // Forward blocks and time with distinct time units
         BigInteger startIndex = currentBlockIndex(neow3j);
