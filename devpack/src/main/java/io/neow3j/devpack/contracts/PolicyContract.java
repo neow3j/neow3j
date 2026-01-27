@@ -1,6 +1,7 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
@@ -92,6 +93,12 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(All)
     public native boolean unblockAccount(Hash160 scriptHash);
+
+    /**
+     * @return an iterator of all blocked accounts.
+     */
+    @CallFlags(ReadOnly)
+    public native Iterator<Hash160> getBlockedAccounts();
 
     /**
      * Checks if the given account is blocked.
