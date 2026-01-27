@@ -1,14 +1,17 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.AttributeType;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.PolicyContract;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +27,7 @@ import static io.neow3j.test.TestProperties.policyContractHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -89,6 +93,18 @@ public class PolicyContractIntegrationTest {
         // Check if it was unblocked.
         response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void testRecoverFund() throws Throwable {
+        // No need to test the functionality of recoverFund here – only that the function exists in the native
+        // PolicyContract.
+        ct.signWithCommitteeAccount();
+        io.neow3j.types.Hash160 anyAccount = new io.neow3j.types.Hash160("0xa400ff00ff00ff00ff00ff00ff00ff00ff00ff01");
+        InvocationResult result = ct.callInvokeFunction("recoverFund", hash160(anyAccount),
+                hash160(NeoToken.SCRIPT_HASH)).getInvocationResult();
+        assertThat(result.getState(), is(NeoVMStateType.FAULT));
+        assertThat(result.getException(), containsString("Request not found."));
     }
 
     @Test
@@ -164,7 +180,7 @@ public class PolicyContractIntegrationTest {
     }
 
     @Permission(nativeContract = NativeContract.PolicyContract, methods = "*")
-    static class PolicyContractIntegrationTestContract {
+    public static class PolicyContractIntegrationTestContract {
 
         static PolicyContract policyContract = new PolicyContract();
 
@@ -186,6 +202,10 @@ public class PolicyContractIntegrationTest {
 
         public static boolean isBlocked(Hash160 scriptHash) {
             return policyContract.isBlocked(scriptHash);
+        }
+
+        public static boolean recoverFund(Hash160 account, Hash160 token) {
+            return policyContract.recoverFund(account, token);
         }
 
         public static boolean unblockAccount(Hash160 scriptHash) {
