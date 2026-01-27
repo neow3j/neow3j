@@ -5,9 +5,7 @@ import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
 import static io.neow3j.devpack.constants.CallFlags.All;
-import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
-import static io.neow3j.devpack.constants.CallFlags.States;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
@@ -16,6 +14,9 @@ public class PolicyContract extends ContractInterface {
 
     /**
      * The maximum execution fee factor that the committee can set.
+     * <p>
+     * Note that this value is without the additional precision of 4 decimal places which is the underlying value
+     * used starting from the Faun hard fork.
      */
     public static final int MaxExecFeeFactor = 100;
 
@@ -102,10 +103,16 @@ public class PolicyContract extends ContractInterface {
     public native boolean isBlocked(Hash160 scriptHash);
 
     /**
-     * Gets the fee factor used to calculate the GAS cost of contract executions.
+     * Gets the fee factor (without precision) used to calculate the GAS cost of contract executions.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result in the actual
-     * GAS cost.
+     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that
+     * is executed in a transaction.
+     * <p>
+     * NOTE: Starting from the Faun hard fork, the execution fee factor uses additional precision of 4 decimal
+     * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
+     * <p>
+     * If you are not yet using this function in existing code, consider using the new function
+     * {@code getExecPicoFeeFactor()} which provides the full precision.
      *
      * @return the execution fee factor.
      */

@@ -88,7 +88,11 @@ public class PolicyContractIntegrationTest {
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(99));
+        // Starting from the Faun hard fork, the setter expects additional precision of 4 decimal places, while
+        // getExecFeeFactor returns the floored value without the additional precision.
+        // 995627 represents 99.5627 with 4 decimal places.
+        // In order to get the full precise value, use getExecPicoFeeFactor().
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(995627));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));

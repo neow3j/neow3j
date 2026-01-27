@@ -57,7 +57,13 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the execution fee factor.
+     * Gets the execution fee factor without precision.
+     * <p>
+     * Note that starting from the Faun hard fork, the execution fee factor uses additional precision of 4 decimal
+     * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
+     * <p>
+     * If you are not yet using this function in existing code, consider using the new function
+     * {@code getExecPicoFeeFactor()} which provides the full precision.
      *
      * @return the execution fee factor.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -146,12 +152,15 @@ public class PolicyContract extends SmartContract {
     /**
      * Creates a transaction script to set the execution fee factor and initializes a {@link TransactionBuilder}
      * based on this script.
+     * <p>
+     * Starting from the Faun hard fork, this method requires the factor to use additional precision of 4 decimal
+     * places. For example, to set the factor to what previously would have been 12, you now need to set it to 120'000.
      *
-     * @param fee the execution fee factor.
+     * @param factor the execution fee factor.
      * @return a {@link TransactionBuilder}.
      */
-    public TransactionBuilder setExecFeeFactor(BigInteger fee) {
-        return invokeFunction(SET_EXEC_FEE_FACTOR, integer(fee));
+    public TransactionBuilder setExecFeeFactor(BigInteger factor) {
+        return invokeFunction(SET_EXEC_FEE_FACTOR, integer(factor));
     }
 
     /**
@@ -219,7 +228,7 @@ public class PolicyContract extends SmartContract {
      * committee members.
      *
      * @param attributeType the type of the transaction attribute.
-     * @param fee the attribute fee.
+     * @param fee           the attribute fee.
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder setAttributeFee(TransactionAttributeType attributeType, BigInteger fee) {
