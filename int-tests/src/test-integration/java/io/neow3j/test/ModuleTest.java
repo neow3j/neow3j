@@ -121,7 +121,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(1)
+    @Order(5)
     public void testFastForwardOneBlockWithSeconds() throws Exception {
         // Forward a single block
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -193,7 +193,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(5)
+    @Order(1)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
         waitUntilBlockCountIsGreaterThan(neow3j, currentBlockIndex(neow3j).add(BigInteger.ONE));
 
