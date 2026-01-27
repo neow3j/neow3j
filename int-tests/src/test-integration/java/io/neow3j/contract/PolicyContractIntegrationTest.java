@@ -33,7 +33,7 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -224,8 +224,8 @@ public class PolicyContractIntegrationTest {
 
         Iterator<Hash160> blockedAccountsIt = policyContract.getBlockedAccounts();
         List<Hash160> blockedAccounts = blockedAccountsIt.traverse(100);
-        assertThat(blockedAccounts, hasSize(1));
-        assertThat(blockedAccounts.get(0), is(blockAccount.getScriptHash()));
+        assertThat(blockedAccounts.size(), greaterThanOrEqualTo(1));
+        assertTrue(blockedAccounts.stream().anyMatch(h -> h.equals(blockAccount.getScriptHash())));
 
         tx = policyContract.unblockAccount(blockAccount.getScriptHash())
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
@@ -260,8 +260,8 @@ public class PolicyContractIntegrationTest {
         assertTrue(isBlocked);
 
         List<Hash160> blockedAccounts = policyContract.getBlockedAccountsUnwrapped();
-        assertThat(blockedAccounts, hasSize(1));
-        assertThat(blockedAccounts.get(0), is(blockAccount.getScriptHash()));
+        assertThat(blockedAccounts.size(), greaterThanOrEqualTo(1));
+        assertTrue(blockedAccounts.stream().anyMatch(h -> h.equals(blockAccount.getScriptHash())));
 
         tx = policyContract.unblockAccount(blockAccount.getAddress())
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
@@ -278,9 +278,9 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void testRecoverFund() throws Throwable {
-        Hash160 anyAccount = new Hash160("0x0123456789abcdef0123456789abcdef01234567");
+        Hash160 accountToRecoverFrom = new Hash160("0x0123456789abcdef0123456789abcdef01234567");
         // Block the account.
-        Transaction tx = policyContract.blockAccount(anyAccount)
+        Transaction tx = policyContract.blockAccount(accountToRecoverFrom)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         Witness multiSigWitness = createMultiSigWitness(
@@ -292,7 +292,7 @@ public class PolicyContractIntegrationTest {
         // Try to recover funds from the blocked account. It has not been blocked for one year, so the operation
         // is expected to fail with a specific exception.
         neow3j.allowTransmissionOnFault();
-        tx = policyContract.recoverFund(anyAccount, NeoToken.SCRIPT_HASH)
+        tx = policyContract.recoverFund(accountToRecoverFrom, NeoToken.SCRIPT_HASH)
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
         multiSigWitness = createMultiSigWitness(
@@ -305,6 +305,18 @@ public class PolicyContractIntegrationTest {
         assertThat(log.getFirstExecution().getState(), is(NeoVMStateType.FAULT));
         assertThat(log.getFirstExecution().getException(),
                 containsString("Request must be signed at least 1 year ago. Remaining time: 364d 23h"));
+
+        tx = policyContract.unblockAccount(accountToRecoverFrom)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        multiSigWitness = createMultiSigWitness(
+                asList(signMessage(tx.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        txHash = tx.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        boolean isBlocked = policyContract.isBlocked(accountToRecoverFrom);
+        assertFalse(isBlocked);
     }
 
 }
