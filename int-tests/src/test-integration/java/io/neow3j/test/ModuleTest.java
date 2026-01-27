@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
 @ContractTest(
-        blockTime = 5,
+        blockTime = 1,
         contracts = {TestContract1.class, TestContract2.class},
         batchFile = "test/example.batch",
         configFile = "test/example.neo-express"
@@ -121,7 +121,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(5)
+    @Order(1)
     public void testFastForwardOneBlockWithSeconds() throws Exception {
         // Forward a single block
         BigInteger startIndex = currentBlockIndex(neow3j);
@@ -193,7 +193,7 @@ public class ModuleTest {
     }
 
     @Test
-    @Order(1)
+    @Order(5)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
         waitUntilBlockCountIsGreaterThan(neow3j, currentBlockIndex(neow3j).add(BigInteger.ONE));
 
