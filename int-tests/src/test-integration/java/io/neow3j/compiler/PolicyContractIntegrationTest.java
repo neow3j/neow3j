@@ -28,6 +28,7 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -119,6 +120,17 @@ public class PolicyContractIntegrationTest {
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(99)));
+        assertThat(res.get(2).getInteger(), is(BigInteger.valueOf(995627)));
+    }
+
+    @Test
+    public void testExecFeeFactor() throws IOException {
+        BigInteger execFeeFactor = ct.callInvokeFunction("getExecFeeFactor").getInvocationResult()
+                .getFirstStackItem().getInteger();
+        BigInteger execPicoFeeFactor = ct.callInvokeFunction("getExecPicoFeeFactor").getInvocationResult()
+                .getFirstStackItem().getInteger();
+        assertThat(execPicoFeeFactor, greaterThan(BigInteger.ZERO));
+        assertThat(execPicoFeeFactor.divide(BigInteger.valueOf(10000)), is(execFeeFactor));
     }
 
     @Test
@@ -217,11 +229,20 @@ public class PolicyContractIntegrationTest {
         }
 
         public static int[] setAndGetExecFeeFactor(int newFactor) {
-            int[] factors = new int[2];
+            int[] factors = new int[3];
             factors[0] = policyContract.getExecFeeFactor();
             policyContract.setExecFeeFactor(newFactor);
             factors[1] = policyContract.getExecFeeFactor();
+            factors[2] = policyContract.getExecPicoFeeFactor();
             return factors;
+        }
+
+        public static int getExecFeeFactor() {
+            return policyContract.getExecFeeFactor();
+        }
+
+        public static int getExecPicoFeeFactor() {
+            return policyContract.getExecPicoFeeFactor();
         }
 
         public static int[] setAndGetStoragePrice(int newPrice) {

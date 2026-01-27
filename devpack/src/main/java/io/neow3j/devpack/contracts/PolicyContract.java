@@ -125,14 +125,14 @@ public class PolicyContract extends ContractInterface {
     /**
      * Gets the fee factor (without precision) used to calculate the GAS cost of contract executions.
      * <p>
-     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that
-     * is executed in a transaction.
+     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that is
+     * executed in a transaction.
      * <p>
      * NOTE: Starting from the Faun hard fork, the execution fee factor uses additional precision of 4 decimal
      * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
      * <p>
      * If you are not yet using this function in existing code, consider using the new function
-     * {@code getExecPicoFeeFactor()} which provides the full precision.
+     * {@link #getExecPicoFeeFactor()} which provides the full precision.
      *
      * @return the execution fee factor.
      */
@@ -140,10 +140,27 @@ public class PolicyContract extends ContractInterface {
     public native int getExecFeeFactor();
 
     /**
+     * Gets the fee factor (with additional precision) used to calculate the GAS cost of contract executions.
+     * <p>
+     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that is
+     * executed in a transaction.
+     * <p>
+     * This function returns the execution fee factor in the unit of pico Gas (1 picoGAS = 1e-12 GAS), i.e., with 4
+     * additional decimal places of precision compared to the function {@link #getExecFeeFactor()}.
+     *
+     * @return the execution fee factor with additional precision.
+     */
+    @CallFlags(ReadOnly)
+    public native int getExecPicoFeeFactor();
+
+    /**
      * Sets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
      * Each NeoVM instruction has a relative cost that is multiplied with this fee factor to result in the actual
      * GAS cost.
+     * <p>
+     * Note that the execution fee factor has an additional precision of 4 decimal places starting from the Faun hard
+     * fork. Use the full precision for the factor value in this function, i.e., use pico Gas (1 picoGAS = 1e-12 GAS).
      *
      * @param factor the desired factor.
      */
