@@ -1,15 +1,20 @@
 package io.neow3j.contract;
 
+import io.neow3j.constants.NeoConstants;
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.types.Hash160;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static java.util.Arrays.asList;
 
 /**
  * Represents a Policy contract and provides methods to invoke it.
@@ -36,6 +41,7 @@ public class PolicyContract extends SmartContract {
     private static final String SET_ATTRIBUTE_FEE = "setAttributeFee";
     private static final String BLOCK_ACCOUNT = "blockAccount";
     private static final String UNBLOCK_ACCOUNT = "unblockAccount";
+    private static final String GET_BLOCKED_ACCOUNTS = "getBlockedAccounts";
 
     /**
      * Constructs a new {@link PolicyContract} that uses the given {@link Neow3j} instance for invocations.
@@ -289,6 +295,32 @@ public class PolicyContract extends SmartContract {
      */
     public TransactionBuilder unblockAccount(Hash160 accountToUnblock) {
         return invokeFunction(UNBLOCK_ACCOUNT, hash160(accountToUnblock));
+    }
+
+    /**
+     * Get blocked accounts as iterator.
+     *
+     * @return an iterator of blocked accounts.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Iterator<Hash160> getBlockedAccounts() throws IOException {
+        return callFunctionReturningIterator(h -> Hash160.fromAddress(h.getAddress()), GET_BLOCKED_ACCOUNTS);
+    }
+
+    /**
+     * Get blocked accounts as a list.
+     * <p>
+     * Use this method if sessions are disabled on the Neo node.
+     * <p>
+     * This method returns at most {@link NeoConstants#MAX_ITERATOR_ITEMS_DEFAULT} values. If there are more values,
+     * connect to a Neo node that supports sessions and use {@link #getBlockedAccounts()}.
+     *
+     * @return
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public List<Hash160> getBlockedAccountsUnwrapped() throws IOException {
+        List<StackItem> list = callFunctionAndUnwrapIterator(GET_BLOCKED_ACCOUNTS, asList(), DEFAULT_ITERATOR_COUNT);
+        return list.stream().map(h -> Hash160.fromAddress(h.getAddress())).collect(Collectors.toList());
     }
 
 }

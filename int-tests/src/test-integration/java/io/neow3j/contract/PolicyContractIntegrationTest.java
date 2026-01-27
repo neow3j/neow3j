@@ -6,6 +6,7 @@ import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.Witness;
+import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,6 +16,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigInteger;
 import java.util.Collections;
+import java.util.List;
 
 import static io.neow3j.helper.FundingHelper.CLIENT_1;
 import static io.neow3j.helper.FundingHelper.CLIENT_2;
@@ -28,6 +30,7 @@ import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -199,8 +202,7 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void testBlockAndUnblockAccount() throws Throwable {
-        Account blockAccount =
-                Account.fromWIF("Kz7mT4rHmHg25k8SUzNhMoibJEwFxEHmq4cHWU6NygsJPh5zEhFK");
+        Account blockAccount = Account.fromWIF("Kz7mT4rHmHg25k8SUzNhMoibJEwFxEHmq4cHWU6NygsJPh5zEhFK");
 
         boolean isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);
@@ -217,6 +219,11 @@ public class PolicyContractIntegrationTest {
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
 
+        Iterator<Hash160> blockedAccountsIt = policyContract.getBlockedAccounts();
+        List<Hash160> blockedAccounts = blockedAccountsIt.traverse(100);
+        assertThat(blockedAccounts, hasSize(1));
+        assertThat(blockedAccounts.get(0), is(blockAccount.getScriptHash()));
+
         tx = policyContract.unblockAccount(blockAccount.getScriptHash())
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
                 .getUnsignedTransaction();
@@ -232,8 +239,7 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void testBlockAndUnblockAccount_fromAddress() throws Throwable {
-        Account blockAccount =
-                Account.fromWIF("Kz7mT4rHmHg25k8SUzNhMoibJEwFxEHmq4cHWU6NygsJPh5zEhFK");
+        Account blockAccount = Account.fromWIF("Kz7mT4rHmHg25k8SUzNhMoibJEwFxEHmq4cHWU6NygsJPh5zEhFK");
 
         boolean isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertFalse(isBlocked);
@@ -249,6 +255,10 @@ public class PolicyContractIntegrationTest {
 
         isBlocked = policyContract.isBlocked(blockAccount.getScriptHash());
         assertTrue(isBlocked);
+
+        List<Hash160> blockedAccounts = policyContract.getBlockedAccountsUnwrapped();
+        assertThat(blockedAccounts, hasSize(1));
+        assertThat(blockedAccounts.get(0), is(blockAccount.getScriptHash()));
 
         tx = policyContract.unblockAccount(blockAccount.getAddress())
                 .signers(calledByEntry(COMMITTEE_ACCOUNT))
