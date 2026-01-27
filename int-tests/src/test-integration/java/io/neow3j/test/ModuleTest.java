@@ -21,6 +21,7 @@ import java.math.BigInteger;
 import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
@@ -194,6 +195,8 @@ public class ModuleTest {
     @Test
     @Order(5)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
+        waitUntilBlockCountIsGreaterThan(neow3j, currentBlockIndex(neow3j).add(BigInteger.ONE));
+
         // Forward blocks and time with distinct time units
         BigInteger startIndex = currentBlockIndex(neow3j);
         long startTime = getBlockTimeInSeconds(neow3j, startIndex);
