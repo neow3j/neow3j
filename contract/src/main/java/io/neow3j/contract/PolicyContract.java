@@ -315,7 +315,7 @@ public class PolicyContract extends SmartContract {
      * This method returns at most {@link NeoConstants#MAX_ITERATOR_ITEMS_DEFAULT} values. If there are more values,
      * connect to a Neo node that supports sessions and use {@link #getBlockedAccounts()}.
      *
-     * @return
+     * @return a list of blocked accounts.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public List<Hash160> getBlockedAccountsUnwrapped() throws IOException {
