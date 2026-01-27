@@ -30,7 +30,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.is;
 
 @ContractTest(
-        blockTime = 1,
+        blockTime = 15,
         contracts = {TestContract1.class, TestContract2.class},
         batchFile = "test/example.batch",
         configFile = "test/example.neo-express"
