@@ -194,7 +194,6 @@ public class ModuleTest {
     @Test
     @Order(5)
     public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
-        Await.waitUntilBlockCountIsGreaterThan(neow3j, currentBlockIndex(neow3j).add(BigInteger.ONE));
         // Forward blocks and time with distinct time units
         BigInteger startIndex = currentBlockIndex(neow3j);
         long startTime = getBlockTimeInSeconds(neow3j, startIndex);
