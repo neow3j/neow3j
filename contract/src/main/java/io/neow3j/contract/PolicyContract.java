@@ -65,15 +65,17 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the execution fee factor without precision.
+     * Gets the execution fee factor without additional precision.
      * <p>
-     * Note that starting from the Faun hard fork, the execution fee factor uses additional precision of 4 decimal
-     * places WHICH THIS FUNCTION IGNORES, i.e., it returns the floored value without the additional precision.
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function ignores that additional precision and returns the floored value.
      * <p>
-     * If you are not yet using this function in existing code, consider using the new function
-     * {@link #getExecPicoFeeFactor()} which provides the full precision.
+     * As a result, the value returned by this function may be {@code 0} when the actual execution fee factor is
+     * between {@code 0} and {@code 1} (e.g., {@code 0.5} is returned as {@code 0}).
+     * <p>
+     * For new code, consider using {@link #getExecPicoFeeFactor()}, which provides the full precision.
      *
-     * @return the execution fee factor.
+     * @return the execution fee factor without additional precision.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
     public BigInteger getExecFeeFactor() throws IOException {
@@ -81,13 +83,16 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Gets the fee factor (with additional precision) used to calculate the GAS cost of contract executions.
+     * Gets the execution fee factor with additional precision.
      * <p>
-     * The execution fee factor is the factor that is multiplied with the base cost of each NeoVM instruction that is
-     * executed in a transaction.
+     * The execution fee factor is used to calculate the execution GAS cost by multiplying it with the base cost of
+     * each NeoVM instruction executed in a transaction.
      * <p>
-     * This function returns the execution fee factor in the unit of pico Gas (1 picoGAS = 1e-12 GAS), i.e., with 4
-     * additional decimal places of precision compared to the function {@link #getExecFeeFactor()}.
+     * Starting with the Faun hard fork, the execution fee factor is internally represented using an value with 4
+     * decimal places of additional precision (the "pico" fee factor). This function returns that full-precision value.
+     * <p>
+     * For example, a return value of {@code 995627} represents a fee factor of {@code 99.5627} when interpreted with
+     * 4 decimal places of precision. {@link #getExecFeeFactor()} would return the floored value {@code 99}.
      *
      * @return the execution fee factor with additional precision.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -174,11 +179,20 @@ public class PolicyContract extends SmartContract {
     }
 
     /**
-     * Creates a transaction script to set the execution fee factor and initializes a {@link TransactionBuilder}
-     * based on this script.
+     * Creates a transaction script to set the fee factor used to calculate the GAS cost of contract executions, and
+     * initializes a {@link TransactionBuilder} based on this script.
      * <p>
-     * Starting from the Faun hard fork, this method requires the factor to use additional precision of 4 decimal
-     * places. For example, to set the factor to what previously would have been 12, you now need to set it to 120'000.
+     * Each NeoVM instruction has a relative cost, which is multiplied by this fee factor to determine the actual GAS
+     * cost.
+     * <p>
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function expects the full precision to be provided. In other words, the value passed to
+     * this function is the same value that will later be returned by {@link #getExecPicoFeeFactor()}, while
+     * {@link #getExecFeeFactor()} returns the floored value without the additional precision.
+     * <p>
+     * For example, to set an execution fee factor of {@code 1.5627}, call this function with {@code 15627}. In this
+     * case, {@link #getExecFeeFactor()} will return {@code 1}, while {@link #getExecPicoFeeFactor()} will return
+     * {@code 15627}.
      *
      * @param factor the execution fee factor.
      * @return a {@link TransactionBuilder}.
@@ -350,7 +364,7 @@ public class PolicyContract extends SmartContract {
      * committee members.
      *
      * @param account the account to recover funds from.
-     * @param token the token to recover.
+     * @param token   the token to recover.
      * @return a {@link TransactionBuilder}.
      */
     public TransactionBuilder recoverFund(Hash160 account, Hash160 token) {

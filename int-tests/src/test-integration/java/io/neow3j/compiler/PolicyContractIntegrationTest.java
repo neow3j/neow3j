@@ -111,7 +111,7 @@ public class PolicyContractIntegrationTest {
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
         ct.signWithCommitteeAccount();
-        // Starting from the Faun hard fork, the setter expects additional precision of 4 decimal places, while
+        // Starting with the Faun hard fork, the setter expects additional precision of 4 decimal places, while
         // getExecFeeFactor returns the floored value without the additional precision.
         // 995627 represents 99.5627 with 4 decimal places.
         // In order to get the full precise value, use getExecPicoFeeFactor().
