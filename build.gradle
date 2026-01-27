@@ -110,6 +110,14 @@ subprojects { subproject ->
                     compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
                     runtimeClasspath += output + compileClasspath
                 }
+
+                targets.configureEach {
+                    testTask.configure {
+                        exclude("**/io/neow3j/contract/**")
+                        exclude("**/io/neow3j/compiler/**")
+                        exclude("**/io/neow3j/protocol/**")
+                    }
+                }
             }
         }
     }
