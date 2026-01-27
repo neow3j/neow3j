@@ -1,6 +1,7 @@
 package io.neow3j.compiler;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.AttributeType;
 import io.neow3j.devpack.constants.NativeContract;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.neow3j.test.TestProperties.policyContractHash;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -57,31 +59,35 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
+        io.neow3j.types.Hash160 accountToBlock = ct.getDefaultAccount().getScriptHash();
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        NeoInvokeFunction response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Block the account
-        Hash256 txHash = ct.invokeFunctionAndAwaitExecution("blockAccount",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution("blockAccount", hash160(accountToBlock));
         assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was blocked.
-        response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
+        // Check that it is part of the blocked accounts
+        List<io.neow3j.types.Hash160> blockedAccounts = ct.callAndTraverseIterator("getBlockedAccounts")
+                .stream()
+                .map(a -> io.neow3j.types.Hash160.fromAddress(a.getAddress()))
+                .collect(Collectors.toList());
+        assertThat(blockedAccounts, hasSize(1));
+        assertThat(blockedAccounts.get(0), is(accountToBlock));
+
         // Unblock the account
-        txHash = ct.invokeFunctionAndAwaitExecution("unblockAccount",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        txHash = ct.invokeFunctionAndAwaitExecution("unblockAccount", hash160(accountToBlock));
         assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was unblocked.
-        response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -172,6 +178,10 @@ public class PolicyContractIntegrationTest {
 
         public static boolean blockAccount(Hash160 scriptHash) {
             return policyContract.blockAccount(scriptHash);
+        }
+
+        public static Iterator<Hash160> getBlockedAccounts() {
+            return policyContract.getBlockedAccounts();
         }
 
         public static boolean isBlocked(Hash160 scriptHash) {
