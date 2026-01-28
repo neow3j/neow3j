@@ -2,6 +2,7 @@ package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
@@ -108,6 +109,46 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(ReadOnly)
     public native boolean isBlocked(Hash160 scriptHash);
+
+    /**
+     * Removes a whitelist entry for a contract method with fixed execution and storage fees.
+     * <p>
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When removed,
+     * the method will again be charged according to the global execution and storage fee factors.
+     *
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     */
+    @CallFlags(All)
+    public native void removeWhitelistFeeContract(Hash160 contract, String method, int argCount);
+
+    /**
+     * Adds or updates a whitelist entry for a contract method with fixed execution and storage fees.
+     * <p>
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When
+     * whitelisted, the method is charged a fixed system fee, overriding both the execution fee (opcode and interop
+     * prices multiplied by the execution fee factor) and the storage fee (storage prices multiplied by the storage
+     * fee factor).
+     *
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     * @param fixedFee the fixed system fee applied to the method.
+     */
+    @CallFlags(All)
+    public native void setWhitelistFeeContract(Hash160 contract, String method, int argCount, int fixedFee);
+
+    /**
+     * Returns an iterator over whitelist entries for contract methods with fixed system fees.
+     * <p>
+     * Each returned {@link WhitelistFeeEntry} represents a contract method for which both the execution fee and the
+     * storage fee are overridden by a fixed system fee.
+     *
+     * @return an iterator over {@link WhitelistFeeEntry} instances.
+     */
+    @CallFlags(ReadOnly)
+    public native Iterator<WhitelistFeeEntry> getWhitelistFeeContracts();
 
     /**
      * Recovers funds from the given account by transferring its entire balance of the specified token to the native
@@ -250,5 +291,31 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(All)
     public native void setAttributeFee(byte attributeType, int fee);
+
+    /**
+     * Represents a whitelist entry for a contract method with a fixed system fee.
+     */
+    @Struct
+    public static class WhitelistFeeEntry {
+        /**
+         * The script hash of the smart contract.
+         */
+        public Hash160 contract;
+
+        /**
+         * The name of the contract method.
+         */
+        public String method;
+
+        /**
+         * The number of arguments the method accepts.
+         */
+        public int argCount;
+
+        /**
+         * The fixed system fee applied to the method.
+         */
+        public int fixedFee;
+    }
 
 }

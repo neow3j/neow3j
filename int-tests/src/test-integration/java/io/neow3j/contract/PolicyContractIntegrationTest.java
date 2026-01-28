@@ -1,5 +1,6 @@
 package io.neow3j.contract;
 
+import io.neow3j.contract.types.WhitelistFeeEntry;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.http.HttpService;
@@ -32,8 +33,11 @@ import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,6 +46,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class PolicyContractIntegrationTest {
 
     private static Neow3j neow3j;
+
     private static PolicyContract policyContract;
 
     @Container
@@ -321,6 +326,69 @@ public class PolicyContractIntegrationTest {
 
         boolean isBlocked = policyContract.isBlocked(accountToRecoverFrom);
         assertFalse(isBlocked);
+    }
+
+    /**
+     * Whitelists the Neo and Gas transfer methods, assert the state before and after. Then, removes the Gas transfer
+     * method from the whitelist and asserts the final state.
+     */
+    @Test
+    public void testWhitelistFeeContract() throws Throwable {
+        List<WhitelistFeeEntry> contractsBefore = policyContract.getWhitelistFeeContractsUnwrapped();
+        assertThat(contractsBefore, hasSize(0));
+        Iterator<WhitelistFeeEntry> itBefore = policyContract.getWhitelistFeeContracts();
+        List<WhitelistFeeEntry> itContractsBefore = itBefore.traverse(100);
+        assertThat(itContractsBefore, hasSize(0));
+
+        // Whitelist the Neo and Gas transfer methods.
+        Transaction txNeo = policyContract.setWhitelistFeeContract(NeoToken.SCRIPT_HASH, "transfer", 4,
+                        BigInteger.ZERO)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitnessNeo = createMultiSigWitness(
+                asList(signMessage(txNeo.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHashNeo = txNeo.addWitness(multiSigWitnessNeo).send().getSendRawTransaction().getHash();
+        Transaction txGas = policyContract.setWhitelistFeeContract(GasToken.SCRIPT_HASH, "transfer", 4,
+                        new BigInteger("1234"))
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitnessGas = createMultiSigWitness(
+                asList(signMessage(txGas.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHashGas = txGas.addWitness(multiSigWitnessGas).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHashNeo, neow3j);
+        waitUntilTransactionIsExecuted(txHashGas, neow3j);
+
+        WhitelistFeeEntry expectedWhitelistNeo =
+                new WhitelistFeeEntry(NeoToken.SCRIPT_HASH, "transfer", 4, BigInteger.ZERO);
+        WhitelistFeeEntry expectedWhitelistGas =
+                new WhitelistFeeEntry(GasToken.SCRIPT_HASH, "transfer", 4, new BigInteger("1234"));
+
+        List<WhitelistFeeEntry> contractsAfter = policyContract.getWhitelistFeeContractsUnwrapped();
+        assertThat(contractsAfter, hasSize(2));
+        assertThat(contractsAfter, containsInAnyOrder(expectedWhitelistNeo, expectedWhitelistGas));
+
+        Iterator<WhitelistFeeEntry> itContractsAfter = policyContract.getWhitelistFeeContracts();
+        List<WhitelistFeeEntry> itListContractsAfter = itContractsAfter.traverse(100);
+
+        assertThat(itListContractsAfter, hasSize(2));
+        assertThat(itListContractsAfter, containsInAnyOrder(expectedWhitelistNeo, expectedWhitelistGas));
+
+        // Remove Gas transfer whitelist entry.
+        Transaction txRemoveGas = policyContract.removeWhitelistFeeContract(GasToken.SCRIPT_HASH, "transfer", 4)
+                .signers(calledByEntry(COMMITTEE_ACCOUNT))
+                .getUnsignedTransaction();
+        Witness multiSigWitness = createMultiSigWitness(
+                asList(signMessage(txRemoveGas.getHashData(), DEFAULT_ACCOUNT.getECKeyPair())),
+                COMMITTEE_ACCOUNT.getVerificationScript());
+        Hash256 txHash = txRemoveGas.addWitness(multiSigWitness).send().getSendRawTransaction().getHash();
+        waitUntilTransactionIsExecuted(txHash, neow3j);
+
+        List<WhitelistFeeEntry> contractsFinal = policyContract.getWhitelistFeeContractsUnwrapped();
+        assertThat(contractsFinal, hasSize(1));
+        // Only the Neo transfer method whitelist entry is expected to remain.
+        assertThat(contractsFinal, contains(expectedWhitelistNeo));
     }
 
 }

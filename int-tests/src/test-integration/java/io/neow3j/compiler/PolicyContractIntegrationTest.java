@@ -1,5 +1,6 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.GasToken;
 import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Iterator;
@@ -26,6 +27,7 @@ import java.util.stream.Collectors;
 import static io.neow3j.test.TestProperties.policyContractHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
@@ -44,7 +46,8 @@ public class PolicyContractIntegrationTest {
     private String testName;
 
     @RegisterExtension
-    public static ContractTestExtension ct = new ContractTestExtension(PolicyContractIntegrationTestContract.class.getName());
+    public static ContractTestExtension ct = new ContractTestExtension(
+            PolicyContractIntegrationTestContract.class.getName());
 
     @BeforeEach
     void init(TestInfo testInfo) {
@@ -94,6 +97,42 @@ public class PolicyContractIntegrationTest {
         // Check if it was unblocked.
         response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void testWhitelistContracts() throws Throwable {
+        // Assert initial state
+        InvocationResult response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        assertThat(response.getFirstStackItem().getList(), hasSize(0));
+
+        // Add two whitelist entries
+        ct.signWithCommitteeAccount();
+        ct.invokeFunctionAndAwaitExecution("setWhitelistFeeContract", hash160(NeoToken.SCRIPT_HASH), string("transfer"),
+                integer(4),
+                integer(4567));
+        ct.invokeFunctionAndAwaitExecution("setWhitelistFeeContract", hash160(GasToken.SCRIPT_HASH), string("transfer"),
+                integer(4), integer(123));
+
+        // Verify that both were added and the getWhitelistFeeContracts function works as expected.
+        response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        List<StackItem> list = response.getFirstStackItem().getList();
+        assertThat(list, hasSize(8));
+        assertThat(list.get(0).getAddress(), is(GasToken.SCRIPT_HASH.toAddress()));
+        assertThat(list.get(1).getString(), is("transfer"));
+        assertThat(list.get(2).getInteger().intValue(), is(4));
+        assertThat(list.get(3).getInteger().intValue(), is(123));
+        assertThat(list.get(4).getAddress(), is(NeoToken.SCRIPT_HASH.toAddress()));
+        assertThat(list.get(5).getString(), is("transfer"));
+        assertThat(list.get(6).getInteger().intValue(), is(4));
+        assertThat(list.get(7).getInteger().intValue(), is(4567));
+
+        // Clean up
+        ct.invokeFunctionAndAwaitExecution("removeWhitelistFeeContract", hash160(NeoToken.SCRIPT_HASH),
+                string("transfer"), integer(4));
+        ct.invokeFunctionAndAwaitExecution("removeWhitelistFeeContract", hash160(GasToken.SCRIPT_HASH),
+                string("transfer"), integer(4));
+        response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        assertThat(response.getFirstStackItem().getList(), hasSize(0));
     }
 
     @Test
@@ -214,6 +253,38 @@ public class PolicyContractIntegrationTest {
 
         public static boolean isBlocked(Hash160 scriptHash) {
             return policyContract.isBlocked(scriptHash);
+        }
+
+        public static void removeWhitelistFeeContract(Hash160 contract, String method, int argCount) {
+            policyContract.removeWhitelistFeeContract(contract, method, argCount);
+        }
+
+        public static void setWhitelistFeeContract(Hash160 contract, String method, int argCount, int fixedFee) {
+            policyContract.setWhitelistFeeContract(contract, method, argCount, fixedFee);
+        }
+
+        public static io.neow3j.devpack.List<Object> getWhitelistFeeContracts() {
+            Iterator<PolicyContract.WhitelistFeeEntry> it = policyContract.getWhitelistFeeContracts();
+            // Just to demonstrate that the iterator works.
+            io.neow3j.devpack.List<Hash160> contracts = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<String> methods = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<Integer> argCounts = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<Integer> fixedFees = new io.neow3j.devpack.List<>();
+            while (it.next()) {
+                PolicyContract.WhitelistFeeEntry entry = it.get();
+                contracts.add(entry.contract);
+                methods.add(entry.method);
+                argCounts.add(entry.argCount);
+                fixedFees.add(entry.fixedFee);
+            }
+            io.neow3j.devpack.List<Object> all = new io.neow3j.devpack.List<>();
+            for (int i = 0; i < contracts.size(); i++) {
+                all.add(contracts.get(i));
+                all.add(methods.get(i));
+                all.add(argCounts.get(i));
+                all.add(fixedFees.get(i));
+            }
+            return all;
         }
 
         public static boolean recoverFund(Hash160 account, Hash160 token) {

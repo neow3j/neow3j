@@ -1,6 +1,7 @@
 package io.neow3j.contract;
 
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.contract.types.WhitelistFeeEntry;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.transaction.TransactionAttributeType;
@@ -14,6 +15,7 @@ import java.util.stream.Collectors;
 
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static java.util.Arrays.asList;
 
 /**
@@ -33,6 +35,9 @@ public class PolicyContract extends SmartContract {
     private static final String GET_MAX_TRACEABLE_BLOCKS = "getMaxTraceableBlocks";
     private static final String GET_ATTRIBUTE_FEE = "getAttributeFee";
     private static final String IS_BLOCKED = "isBlocked";
+    private static final String REMOVE_WHITELIST_FEE_CONTRACT = "removeWhitelistFeeContract";
+    private static final String SET_WHITELIST_FEE_CONTRACT = "setWhitelistFeeContract";
+    private static final String GET_WHITELIST_FEE_CONTRACT = "getWhitelistFeeContracts";
     private static final String SET_FEE_PER_BYTE = "setFeePerByte";
     private static final String SET_EXEC_FEE_FACTOR = "setExecFeeFactor";
     private static final String SET_STORAGE_PRICE = "setStoragePrice";
@@ -162,6 +167,49 @@ public class PolicyContract extends SmartContract {
      */
     public boolean isBlocked(Hash160 scriptHash) throws IOException {
         return callFunctionReturningBool(IS_BLOCKED, hash160(scriptHash));
+    }
+
+    /**
+     * Creates a transaction script to remove a whitelist entry for a contract method with fixed execution and
+     * storage fees and initializes a {@link TransactionBuilder} for that script.
+     * <p>
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When removed,
+     * the method will again be charged according to the global execution and storage fee factors.
+     * <p>
+     * This operation can only be successfully executed by the committee; therefore, the resulting transaction must
+     * be signed by the committee members.
+     *
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     * @return a {@link TransactionBuilder} initialized with the removal script.
+     */
+    public TransactionBuilder removeWhitelistFeeContract(Hash160 contract, String method, int argCount) {
+        return invokeFunction(REMOVE_WHITELIST_FEE_CONTRACT, hash160(contract), string(method), integer(argCount));
+    }
+
+    /**
+     * Creates a transaction script to add or update a whitelist entry for a contract method with fixed execution and
+     * storage fees and initializes a {@link TransactionBuilder} for that script.
+     * <p>
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When
+     * whitelisted, the method is charged a fixed system fee, overriding both the execution fee (opcode and interop
+     * prices multiplied by the execution fee factor) and the storage fee (storage prices multiplied by the storage
+     * fee factor).
+     * <p>
+     * This operation can only be successfully executed by the committee; therefore, the resulting transaction must
+     * be signed by the committee members.
+     *
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     * @param fixedFee the fixed system fee applied to the method.
+     * @return a {@link TransactionBuilder} initialized with the whitelist update script.
+     */
+    public TransactionBuilder setWhitelistFeeContract(Hash160 contract, String method, int argCount,
+            BigInteger fixedFee) {
+        return invokeFunction(SET_WHITELIST_FEE_CONTRACT, hash160(contract), string(method), integer(argCount),
+                integer(fixedFee));
     }
 
     /**
@@ -369,6 +417,44 @@ public class PolicyContract extends SmartContract {
      */
     public TransactionBuilder recoverFund(Hash160 account, Hash160 token) {
         return invokeFunction(RECOVER_FUND, hash160(account), hash160(token));
+    }
+
+    /**
+     * Returns an iterator over whitelist entries for contract methods with fixed system fees.
+     * <p>
+     * Each returned {@link WhitelistFeeEntry} represents a contract method for which both the execution fee and the
+     * storage fee are overridden by a fixed system fee.
+     * <p>
+     * This method allows retrieving the complete whitelist across multiple RPC calls, but it requires the connected
+     * node to have sessions enabled.
+     * <p>
+     * If the node has sessions disabled, use {@link #getWhitelistFeeContractsUnwrapped()}, noting that it only
+     * returns the first {@value #DEFAULT_ITERATOR_COUNT} entries.
+     *
+     * @return an iterator over {@link WhitelistFeeEntry} instances.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public Iterator<WhitelistFeeEntry> getWhitelistFeeContracts() throws IOException {
+        return callFunctionReturningIterator(WhitelistFeeEntry::fromStackItem, GET_WHITELIST_FEE_CONTRACT);
+    }
+
+    /**
+     * Returns whitelist entries for contract methods with fixed system fees as a list.
+     * <p>
+     * Each returned {@link WhitelistFeeEntry} represents a contract method for which both the execution fee and the
+     * storage fee are overridden by a fixed system fee.
+     * <p>
+     * This is a convenience method that unwraps only the first {@value #DEFAULT_ITERATOR_COUNT} entries. If the
+     * whitelist contains more entries, use {@link #getWhitelistFeeContracts()} to retrieve the complete set
+     * (requires sessions enabled).
+     *
+     * @return a list of {@link WhitelistFeeEntry} instances (limited to the first {@value #DEFAULT_ITERATOR_COUNT}
+     * entries).
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     */
+    public List<WhitelistFeeEntry> getWhitelistFeeContractsUnwrapped() throws IOException {
+        return callFunctionAndUnwrapIterator(GET_WHITELIST_FEE_CONTRACT, asList(), DEFAULT_ITERATOR_COUNT)
+                .stream().map(WhitelistFeeEntry::fromStackItem).collect(Collectors.toList());
     }
 
 }
