@@ -48,7 +48,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 @SuppressWarnings("unchecked")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class StorageMapIntegrationTest {
+public class StorageMapWithContextIntegrationTest {
 
     // Store data to a key parameter that contains the prefix
     private static final String STORE_DATA_FULLKEY = "storeDataFullKey";

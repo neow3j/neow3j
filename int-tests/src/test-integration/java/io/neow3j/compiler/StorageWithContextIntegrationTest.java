@@ -51,7 +51,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("unchecked")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class StorageIntegrationTest {
+public class StorageWithContextIntegrationTest {
 
     private static final String STORE_DATA = "storeData";
     private static final String STORE_INT = "storeInteger";
