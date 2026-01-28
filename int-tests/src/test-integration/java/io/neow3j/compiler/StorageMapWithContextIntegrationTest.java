@@ -198,9 +198,7 @@ public class StorageMapWithContextIntegrationTest {
 
     @Test
     public void createMapWithStringPrefix() throws IOException {
-        InvocationResult res = ct.callInvokeFunction(testName, string(PREFIX3), byteArray(KEY3))
-                .getInvocationResult();
-        // The method tries to write with a read-only storage context, i.e., it should FAULT.
+        InvocationResult res = ct.callInvokeFunction(testName, string(PREFIX3), byteArray(KEY3)).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA3));
     }
 

@@ -1285,6 +1285,7 @@ public class Storage {
      * @param value   the value to store.
      * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #put(ByteStringType, boolean)} instead.
      */
+    @Deprecated
     @Instruction(interopService = SYSTEM_STORAGE_PUT)
     public static native void put(StorageContext context, ByteStringType key, boolean value);
 

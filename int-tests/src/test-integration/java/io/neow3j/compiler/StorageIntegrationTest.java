@@ -1528,8 +1528,30 @@ public class StorageIntegrationTest {
     public void findWithFindOptionDeserializeValues() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
-        assertTrue(map.containsKey(new ByteStringStackItem(KEY1_HEX)));
-        assertTrue(map.containsKey(new ByteStringStackItem("0102")));
+        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
+        assertTrue(map.containsKey(expectedKey));
+        List<StackItem> val = map.get(expectedKey).getList();
+        assertThat(val, hasSize(2));
+        assertThat(val.get(0).getInteger().intValue(), is(12));
+        assertThat(val.get(1).getString(), is("test"));
+    }
+
+    @Test
+    public void findWithFindOptionDeserializeValuesAndPickField0() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
+        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
+        assertTrue(map.containsKey(expectedKey));
+        assertThat(map.get(expectedKey).getInteger().intValue(), is(12));
+    }
+
+    @Test
+    public void findWithFindOptionDeserializeValuesAndPickField1() throws IOException {
+        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
+        Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
+        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
+        assertTrue(map.containsKey(expectedKey));
+        assertThat(map.get(expectedKey).getString(), is("test"));
     }
 
     @Test
@@ -2362,17 +2384,39 @@ public class StorageIntegrationTest {
             return list;
         }
 
-        public static io.neow3j.devpack.Map<ByteString, ByteString> findWithFindOptionDeserializeValues() {
-            Storage.put(hexToBytes("0102"), hexToBytes("102030"));
-            int findOption = FindOptions.DeserializeValues & FindOptions.PickField0;
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(hexToBytes("01"), findOption);
-            io.neow3j.devpack.Map<ByteString, ByteString> map = new io.neow3j.devpack.Map<>();
-            it.next();
-            Struct<ByteString, ByteString> entry = it.get();
-            map.put(entry.key, entry.value);
-            it.next();
-            entry = it.get();
-            map.put(entry.key, entry.value);
+        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValues() {
+            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
+            int findOption = FindOptions.DeserializeValues;
+            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
+            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
+            while (it.next()) {
+                Struct<ByteString, Object> entry = it.get();
+                map.put(entry.key, entry.value);
+            }
+            return map;
+        }
+
+        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValuesAndPickField0() {
+            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
+            int findOption = FindOptions.DeserializeValues | FindOptions.PickField0;
+            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
+            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
+            while (it.next()) {
+                Struct<ByteString, Object> entry = it.get();
+                map.put(entry.key, entry.value);
+            }
+            return map;
+        }
+
+        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValuesAndPickField1() {
+            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
+            int findOption = FindOptions.DeserializeValues | FindOptions.PickField1;
+            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
+            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
+            while (it.next()) {
+                Struct<ByteString, Object> entry = it.get();
+                map.put(entry.key, entry.value);
+            }
             return map;
         }
 
