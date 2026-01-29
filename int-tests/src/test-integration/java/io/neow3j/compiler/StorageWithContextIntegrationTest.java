@@ -6,6 +6,7 @@ import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.devpack.Storage;
+import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
@@ -50,73 +51,56 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SuppressWarnings("unchecked")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class StorageIntegrationTest {
+public class StorageWithContextIntegrationTest {
 
     private static final String STORE_DATA = "storeData";
-
     private static final String STORE_INT = "storeInteger";
 
     private static final String KEY1_HEX = "01";
-
     private static final String DATA1 = "0001020304";
 
     private static final String KEY2_STRING = "hello";
-
     private static final String DATA2 = "world";
 
     private static final String KEY3_HEX = "04";
-
     private static final Integer KEY3_INT = 4;
-
     private static final BigInteger INTEGER3 = BigInteger.valueOf(42);
 
     private static final String KEY4_STRING = "io/neow3j";
-
     private static final BigInteger INTEGER4 = BigInteger.valueOf(13);
 
     private static final Integer KEY5_INT = 42;
-
     private static final String DATA5 = "neoooww";
 
     private static final String KEY6_HEX = "12";
-
     private static final boolean BOOLEAN_6 = true;
 
     private static final String KEY7_HEX = "13";
-
     private static final boolean BOOLEAN_7 = false;
 
     private static final String KEY8_HEX = "14";
-
     private static final String DATA8 = "00";
 
     private static final String KEY_HASH160_HEX = "f68f181731a47036a99f04dad90043a744edec0f";
-
     private static final Hash160 KEY_HASH160 = new Hash160(KEY_HASH160_HEX);
 
     private static final String KEY_HASH256_HEX = "257d342421fb5373a4d2ee7254ee7a968da66b2179b27c855e0462434c6386fd";
-
     private static final Hash256 KEY_HASH256 = new Hash256(KEY_HASH256_HEX);
 
     private static final String KEY_ECPOINT_HEX = "03afcc76bedc01df1d28f95f4e173fdb1d7271c974a46e7cf277e7776737bebdf2";
-
     private static final ECPublicKey KEY_ECPOINT = new ECPublicKey(hexStringToByteArray(KEY_ECPOINT_HEX));
 
     private static final String ECPOINT_HEX_VAL = "02e986f4c8e007554e0c8d38861c273cc1a20eaf828417221fab6e4be9060ffcb7";
-
     private static final ECPublicKey ECPOINT_VAL = new ECPublicKey(hexStringToByteArray(ECPOINT_HEX_VAL));
 
     private static final String ECPOINT_HEX_VAL_2 =
             "0232e49fe7e4beea4b38d5cb71270ff63617aa7b59d071d26d37e5888bf23e2f51";
-
     private static final ECPublicKey ECPOINT_VAL_2 = new ECPublicKey(hexStringToByteArray(ECPOINT_HEX_VAL_2));
 
     private static final int KEY_WITHOUT_VALUE = 8;
-
     private static final String KEY_HEX_WITHOUT_VALUE = "08";
 
     private static Hash256 hash256;
-
     private String testName;
 
     @RegisterExtension
@@ -1528,30 +1512,8 @@ public class StorageIntegrationTest {
     public void findWithFindOptionDeserializeValues() throws IOException {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
-        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
-        assertTrue(map.containsKey(expectedKey));
-        List<StackItem> val = map.get(expectedKey).getList();
-        assertThat(val, hasSize(2));
-        assertThat(val.get(0).getInteger().intValue(), is(12));
-        assertThat(val.get(1).getString(), is("test"));
-    }
-
-    @Test
-    public void findWithFindOptionDeserializeValuesAndPickField0() throws IOException {
-        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
-        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
-        assertTrue(map.containsKey(expectedKey));
-        assertThat(map.get(expectedKey).getInteger().intValue(), is(12));
-    }
-
-    @Test
-    public void findWithFindOptionDeserializeValuesAndPickField1() throws IOException {
-        InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
-        Map<StackItem, StackItem> map = res.getStack().get(0).getMap();
-        ByteStringStackItem expectedKey = new ByteStringStackItem("abcdabcd");
-        assertTrue(map.containsKey(expectedKey));
-        assertThat(map.get(expectedKey).getString(), is("test"));
+        assertTrue(map.containsKey(new ByteStringStackItem(KEY1_HEX)));
+        assertTrue(map.containsKey(new ByteStringStackItem("0102")));
     }
 
     @Test
@@ -1569,16 +1531,19 @@ public class StorageIntegrationTest {
     // endregion find
 
     static class StorageIntegrationTestContract {
+
+        static StorageContext ctx = Storage.getStorageContext();
+
         // region store
 
         public static void storeData(byte[] key, byte[] data) {
             byte[] d = new ByteString(data).toByteArray();
             assert d instanceof byte[];
-            Storage.put(key, d);
+            Storage.put(ctx, key, d);
         }
 
         public static void storeInteger(byte[] key, int value) {
-            Storage.put(key, value);
+            Storage.put(ctx, key, value);
         }
 
         // endregion
@@ -1587,34 +1552,34 @@ public class StorageIntegrationTest {
         public static ByteString getByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.get(k);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString getByByteStringKey(ByteString key) {
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString getByStringKey(String key) {
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString getByIntegerKey(int key) {
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString getByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString getByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString getByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         // endregion
@@ -1623,46 +1588,46 @@ public class StorageIntegrationTest {
         public static io.neow3j.devpack.Hash160 getHash160ByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByByteStringKey(ByteString key) {
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByStringKey(String key) {
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByIntegerKey(int key) {
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash160 getHash160ByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            io.neow3j.devpack.Hash160 hash = Storage.getHash160(key);
+            io.neow3j.devpack.Hash160 hash = Storage.getHash160(ctx, key);
             assert io.neow3j.devpack.Hash160.isValid(hash);
             return hash;
         }
@@ -1673,46 +1638,46 @@ public class StorageIntegrationTest {
         public static io.neow3j.devpack.Hash256 getHash256ByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByByteStringKey(ByteString key) {
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByStringKey(String key) {
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByIntegerKey(int key) {
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
 
         public static io.neow3j.devpack.Hash256 getHash256ByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            io.neow3j.devpack.Hash256 hash = Storage.getHash256(key);
+            io.neow3j.devpack.Hash256 hash = Storage.getHash256(ctx, key);
             assert io.neow3j.devpack.Hash256.isValid(hash);
             return hash;
         }
@@ -1723,46 +1688,46 @@ public class StorageIntegrationTest {
         public static ECPoint getECPointByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByByteStringKey(ByteString key) {
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByStringKey(String key) {
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByIntegerKey(int key) {
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
 
         public static ECPoint getECPointByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            ECPoint point = Storage.getECPoint(key);
+            ECPoint point = Storage.getECPoint(ctx, key);
             assert ECPoint.isValid(point);
             return point;
         }
@@ -1773,34 +1738,34 @@ public class StorageIntegrationTest {
         public static byte[] getByteArrayByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.getByteArray(k);
+            return Storage.getByteArray(ctx, k);
         }
 
         public static byte[] getByteArrayByByteStringKey(ByteString key) {
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         public static byte[] getByteArrayByStringKey(String key) {
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         public static byte[] getByteArrayByIntegerKey(int key) {
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         public static byte[] getByteArrayByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         public static byte[] getByteArrayByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         public static byte[] getByteArrayByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.getByteArray(key);
+            return Storage.getByteArray(ctx, key);
         }
 
         // endregion
@@ -1809,34 +1774,34 @@ public class StorageIntegrationTest {
         public static String getStringByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.getString(k);
+            return Storage.getString(ctx, k);
         }
 
         public static String getStringByByteStringKey(ByteString key) {
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         public static String getStringByStringKey(String key) {
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         public static String getStringByIntegerKey(int key) {
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         public static String getStringByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         public static String getStringByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         public static String getStringByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.getString(key);
+            return Storage.getString(ctx, key);
         }
 
         // endregion
@@ -1845,36 +1810,36 @@ public class StorageIntegrationTest {
         public static boolean getBooleanByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.getBoolean(k);
+            return Storage.getBoolean(ctx, k);
         }
 
         public static boolean getBooleanByByteStringKey(ByteString key) {
             assert key instanceof ByteString;
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByStringKey(String key) {
             assert key instanceof String;
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByIntegerKey(Integer key) {
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         public static boolean getBooleanByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.getBoolean(key);
+            return Storage.getBoolean(ctx, key);
         }
 
         // endregion
@@ -1883,67 +1848,67 @@ public class StorageIntegrationTest {
         public static int getIntByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.getInt(k);
+            return Storage.getInt(ctx, k);
         }
 
         public static int getIntOrZeroByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            return Storage.getIntOrZero(k);
+            return Storage.getIntOrZero(ctx, k);
         }
 
         public static int getIntByByteStringKey(ByteString key) {
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByByteStringKey(ByteString key) {
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         public static int getIntByStringKey(String key) {
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByStringKey(String key) {
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         public static int getIntByIntegerKey(int key) {
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByIntegerKey(int key) {
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         public static int getIntByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByHash160Key(io.neow3j.devpack.Hash160 key) {
             assert io.neow3j.devpack.Hash160.isValid(key);
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         public static int getIntByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByHash256Key(io.neow3j.devpack.Hash256 key) {
             assert io.neow3j.devpack.Hash256.isValid(key);
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         public static int getIntByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.getInt(key);
+            return Storage.getInt(ctx, key);
         }
 
         public static int getIntOrZeroByECPointKey(ECPoint key) {
             assert ECPoint.isValid(key);
-            return Storage.getIntOrZero(key);
+            return Storage.getIntOrZero(ctx, key);
         }
 
         // endregion
@@ -1954,60 +1919,60 @@ public class StorageIntegrationTest {
             assert k instanceof byte[];
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(k, v);
-            return Storage.get(k);
+            Storage.put(ctx, k, v);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyByteStringValue(byte[] key, ByteString value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyStringValue(byte[] key, String value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyIntegerValue(byte[] key, int value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyBooleanValue(byte[] key, boolean value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyHash160Value(byte[] key,
                 io.neow3j.devpack.Hash160 value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyHash256Value(byte[] key,
                 io.neow3j.devpack.Hash256 value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString putByteArrayKeyECPointValue(byte[] key, ECPoint value) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
             assert ECPoint.isValid(value);
-            Storage.put(k, value);
-            return Storage.get(k);
+            Storage.put(ctx, k, value);
+            return Storage.get(ctx, k);
         }
 
         // endregion
@@ -2016,46 +1981,46 @@ public class StorageIntegrationTest {
         public static ByteString putByteStringKeyByteArrayValue(ByteString key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key);
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyByteStringValue(ByteString key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyStringValue(ByteString key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyIntegerValue(ByteString key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyBooleanValue(ByteString key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyHash160Value(ByteString key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyHash256Value(ByteString key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putByteStringKeyECPointValue(ByteString key, ECPoint value) {
-            Storage.put(key, value);
+            Storage.put(ctx, key, value);
             assert ECPoint.isValid(value);
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         // endregion
@@ -2064,46 +2029,46 @@ public class StorageIntegrationTest {
         public static ByteString putStringKeyByteArrayValue(String key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key);
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyByteStringValue(String key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyStringValue(String key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyIntegerValue(String key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyBooleanValue(String key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyHash160Value(String key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyHash256Value(String key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putStringKeyECPointValue(String key, ECPoint value) {
-            Storage.put(key, value);
+            Storage.put(ctx, key, value);
             assert ECPoint.isValid(value);
-            return Storage.get(key);
+            return Storage.get(ctx, key);
         }
 
         // endregion
@@ -2112,53 +2077,53 @@ public class StorageIntegrationTest {
         public static ByteString putIntegerKeyByteArrayValue(int key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key);
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyByteStringValue(int key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyStringValue(int key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyIntegerValue(int key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyBooleanValue(int key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyHash160Value(int key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyHash256Value(int key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         // just to be safe byte input uses method with int parameter
 
         public static ByteString putByteKeyStringValue(byte key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString putIntegerKeyECPointValue(int key, ECPoint value) {
             assert ECPoint.isValid(value);
-            Storage.put(key, value);
-            return Storage.get(key);
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key);
         }
 
         // endregion
@@ -2167,46 +2132,46 @@ public class StorageIntegrationTest {
         public static ByteString putHash160KeyByteArrayValue(io.neow3j.devpack.Hash160 key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyByteStringValue(io.neow3j.devpack.Hash160 key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyStringValue(io.neow3j.devpack.Hash160 key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyIntegerValue(io.neow3j.devpack.Hash160 key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyBooleanValue(io.neow3j.devpack.Hash160 key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyHash160Value(io.neow3j.devpack.Hash160 key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyHash256Value(io.neow3j.devpack.Hash160 key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash160KeyECPointValue(io.neow3j.devpack.Hash160 key, ECPoint value) {
-            Storage.put(key, value);
+            Storage.put(ctx, key, value);
             assert ECPoint.isValid(value);
-            return Storage.get(key.toByteString());
+            return Storage.get(ctx, key.toByteString());
         }
 
         // endregion
@@ -2215,46 +2180,46 @@ public class StorageIntegrationTest {
         public static ByteString putHash256KeyByteArrayValue(io.neow3j.devpack.Hash256 key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyByteStringValue(io.neow3j.devpack.Hash256 key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyStringValue(io.neow3j.devpack.Hash256 key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyIntegerValue(io.neow3j.devpack.Hash256 key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyBooleanValue(io.neow3j.devpack.Hash256 key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyHash160Value(io.neow3j.devpack.Hash256 key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyHash256Value(io.neow3j.devpack.Hash256 key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putHash256KeyECPointValue(io.neow3j.devpack.Hash256 key, ECPoint value) {
             assert ECPoint.isValid(value);
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         // endregion
@@ -2263,45 +2228,45 @@ public class StorageIntegrationTest {
         public static ByteString putECPointKeyByteArrayValue(ECPoint key, byte[] value) {
             byte[] v = new ByteString(value).toByteArray();
             assert v instanceof byte[];
-            Storage.put(key, v);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, v);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyByteStringValue(ECPoint key, ByteString value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyStringValue(ECPoint key, String value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyIntegerValue(ECPoint key, int value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyBooleanValue(ECPoint key, boolean value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyHash160Value(ECPoint key,
                 io.neow3j.devpack.Hash160 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyHash256Value(ECPoint key,
                 io.neow3j.devpack.Hash256 value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         public static ByteString putECPointKeyECPointValue(ECPoint key, ECPoint value) {
-            Storage.put(key, value);
-            return Storage.get(key.toByteString());
+            Storage.put(ctx, key, value);
+            return Storage.get(ctx, key.toByteString());
         }
 
         // endregion
@@ -2310,72 +2275,75 @@ public class StorageIntegrationTest {
         public static ByteString deleteByByteArrayKey(byte[] key) {
             byte[] k = new ByteString(key).toByteArray();
             assert k instanceof byte[];
-            Storage.delete(k);
-            return Storage.get(k);
+            Storage.delete(ctx, k);
+            return Storage.get(ctx, k);
         }
 
         public static ByteString deleteByByteStringKey(ByteString key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString deleteByStringKey(String key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString deleteByIntegerKey(int key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString deleteByHash160Key(io.neow3j.devpack.Hash160 key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString deleteByHash256Key(io.neow3j.devpack.Hash256 key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         public static ByteString deleteByECPointKey(ECPoint key) {
-            Storage.delete(key);
-            return Storage.get(key);
+            Storage.delete(ctx, key);
+            return Storage.get(ctx, key);
         }
 
         // endregion delete
         // region find
 
-        public static Struct<ByteString, ByteString> findByByteStringPrefix(ByteString prefix) {
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(prefix, FindOptions.None);
+        public static Iterator.Struct<ByteString, ByteString> findByByteStringPrefix(ByteString prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Struct<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
+        public static Iterator.Struct<ByteString, ByteString> findByByteArrayPrefix(byte[] prefix) {
             byte[] p = new ByteString(prefix).toByteArray();
             assert p instanceof byte[];
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(p, FindOptions.None);
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, p, FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Struct<ByteString, ByteString> findByStringPrefix(String prefix) {
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(prefix, FindOptions.None);
+        public static Iterator.Struct<ByteString, ByteString> findByStringPrefix(String prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
             return it.get();
         }
 
-        public static Struct<ByteString, ByteString> findByIntegerPrefix(int prefix) {
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(prefix, FindOptions.None);
+        public static Iterator.Struct<ByteString, ByteString> findByIntegerPrefix(int prefix) {
+            Iterator<Iterator.Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+                    FindOptions.None);
             it.next();
             return it.get();
         }
 
         public static io.neow3j.devpack.List<ByteString> findWithFindOptionValuesOnly() {
-            Storage.put(hexToBytes("0102"), hexToBytes("102030"));
-            Iterator<ByteString> it = Storage.find(hexToBytes("01"), FindOptions.ValuesOnly);
+            Storage.put(ctx, hexToBytes("0102"), hexToBytes("102030"));
+            Iterator<ByteString> it = Storage.find(ctx, hexToBytes("01"), FindOptions.ValuesOnly);
             io.neow3j.devpack.List<ByteString> list = new io.neow3j.devpack.List<>();
             it.next();
             list.add(it.get());
@@ -2384,59 +2352,38 @@ public class StorageIntegrationTest {
             return list;
         }
 
-        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValues() {
-            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
-            int findOption = FindOptions.DeserializeValues;
-            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
-            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
-            while (it.next()) {
-                Struct<ByteString, Object> entry = it.get();
-                map.put(entry.key, entry.value);
-            }
-            return map;
-        }
-
-        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValuesAndPickField0() {
-            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
-            int findOption = FindOptions.DeserializeValues | FindOptions.PickField0;
-            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
-            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
-            while (it.next()) {
-                Struct<ByteString, Object> entry = it.get();
-                map.put(entry.key, entry.value);
-            }
-            return map;
-        }
-
-        public static io.neow3j.devpack.Map<ByteString, Object> findWithFindOptionDeserializeValuesAndPickField1() {
-            Storage.put(hexToBytes("abcdabcd"), hexToBytes("400221010c280474657374"));
-            int findOption = FindOptions.DeserializeValues | FindOptions.PickField1;
-            Iterator<Struct<ByteString, Object>> it = Storage.find(hexToBytes("abcd"), findOption);
-            io.neow3j.devpack.Map<ByteString, Object> map = new io.neow3j.devpack.Map<>();
-            while (it.next()) {
-                Struct<ByteString, Object> entry = it.get();
-                map.put(entry.key, entry.value);
-            }
+        public static io.neow3j.devpack.Map<ByteString, ByteString> findWithFindOptionDeserializeValues() {
+            Storage.put(ctx, hexToBytes("0102"), hexToBytes("102030"));
+            int findOption = FindOptions.DeserializeValues & FindOptions.PickField0;
+            Iterator<Struct<ByteString, ByteString>> it = Storage.find(ctx,
+                    hexToBytes("01"), findOption);
+            io.neow3j.devpack.Map<ByteString, ByteString> map = new io.neow3j.devpack.Map<>();
+            it.next();
+            Struct<ByteString, ByteString> entry = it.get();
+            map.put(entry.key, entry.value);
+            it.next();
+            entry = it.get();
+            map.put(entry.key, entry.value);
             return map;
         }
 
         // endregion
         // region find backwards
 
-        public static Iterator<Struct<ByteString, ByteString>> findFindOptionsNone() {
+        public static Iterator<Iterator.Struct<ByteString, ByteString>> findFindOptionsNone() {
             prepareStorageForFindBackwards();
-            return Storage.find(hexToBytes("ff"), FindOptions.None);
+            return Storage.find(ctx, hexToBytes("ff"), FindOptions.None);
         }
 
-        public static Iterator<Struct<ByteString, ByteString>> findBackwards() {
+        public static Iterator<Iterator.Struct<ByteString, ByteString>> findBackwards() {
             prepareStorageForFindBackwards();
-            return Storage.find(hexToBytes("ff"), FindOptions.Backwards);
+            return Storage.find(ctx, hexToBytes("ff"), FindOptions.Backwards);
         }
 
         private static void prepareStorageForFindBackwards() {
-            Storage.put(hexToBytes("ff00"), hexToBytes("112233"));
-            Storage.put(hexToBytes("ff01"), hexToBytes("445566"));
-            Storage.put(hexToBytes("ff02"), hexToBytes("778899"));
+            Storage.put(ctx, hexToBytes("ff00"), hexToBytes("112233"));
+            Storage.put(ctx, hexToBytes("ff01"), hexToBytes("445566"));
+            Storage.put(ctx, hexToBytes("ff02"), hexToBytes("778899"));
         }
 
         // endregion
