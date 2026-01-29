@@ -2,10 +2,12 @@ package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
@@ -16,25 +18,31 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.contract.SmartContract.DEFAULT_ITERATOR_COUNT;
+import static io.neow3j.script.ScriptBuilder.buildContractCallAndUnwrapIterator;
+import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeScript;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.utils.Numeric.toHexString;
+import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class PolicyContractTest {
 
-    private static final Hash160 POLICYCONTRACT_HASH =
-            new Hash160("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b");
+    private static final Hash160 POLICYCONTRACT_HASH = new Hash160("cc5e4edd9f5f8dba8bb65734541df7a1c081c67b");
 
     private PolicyContract policyContract;
     private Account account1;
@@ -70,6 +78,12 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testGetExecPicoFeeFactor() throws IOException {
+        setUpWireMockForInvokeFunction("getExecPicoFeeFactor", "policy_getExecPicoFeeFactor.json");
+        assertThat(policyContract.getExecPicoFeeFactor(), is(new BigInteger("505372")));
+    }
+
+    @Test
     public void testGetStoragePrice() throws IOException {
         setUpWireMockForInvokeFunction("getStoragePrice", "policy_getStoragePrice.json");
         assertThat(policyContract.getStoragePrice(), is(new BigInteger("100000")));
@@ -97,6 +111,26 @@ public class PolicyContractTest {
     public void testIsBlocked() throws IOException {
         setUpWireMockForInvokeFunction("isBlocked", "policy_isBlocked.json");
         assertFalse(policyContract.isBlocked(account1.getScriptHash()));
+    }
+
+    @Test
+    public void testGetBlockedAccounts() throws IOException {
+        setUpWireMockForInvokeFunction("getBlockedAccounts", "invokefunction_iterator_session.json");
+        Iterator<Hash160> it = policyContract.getBlockedAccounts();
+        assertNotNull(it.getIteratorId());
+        assertNotNull(it.getSessionId());
+        assertNotNull(it.getMapper());
+    }
+
+    @Test
+    public void testGetBlockedAccountsUnwrapped() throws IOException {
+        String scriptBase64 = Base64.encode(toHexString(buildContractCallAndUnwrapIterator(PolicyContract.SCRIPT_HASH,
+                "getBlockedAccounts", asList(), DEFAULT_ITERATOR_COUNT)));
+        setUpWireMockForInvokeScript(scriptBase64, "policy_getBlockedAccountsUnwrapped.json");
+
+        List<Hash160> blockedAccounts = policyContract.getBlockedAccountsUnwrapped();
+        assertThat(blockedAccounts, hasSize(1));
+        assertThat(blockedAccounts.get(0), is(new Hash160("0x69ecca587293047be4c59159bf8bc399985c160d")));
     }
 
     @Test
@@ -358,6 +392,20 @@ public class PolicyContractTest {
         assertThat(tx.getScript(), is(expectedScript));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
                 is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
+    public void testRecoverFund() {
+        Hash160 accountToRecoverFrom = account1.getScriptHash();
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "recoverFund",
+                        asList(hash160(accountToRecoverFrom), hash160(NeoToken.SCRIPT_HASH)))
+                .toArray();
+
+        TransactionBuilder b = policyContract.recoverFund(accountToRecoverFrom, NeoToken.SCRIPT_HASH);
+        assertThat(b.getScript(), is(expectedScript));
     }
 
     @Test

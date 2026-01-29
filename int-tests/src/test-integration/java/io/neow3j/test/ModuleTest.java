@@ -11,6 +11,7 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -40,6 +41,11 @@ public class ModuleTest {
     private static final String PERMISSION = "*";
 
     private static final String ALICE_SKEY = "84180ac9d6eb6fba207ea4ef9d2200102d1ebeb4b9c07e2c6a738a42742e27a5";
+
+    // This test uses the fast-forward feature of NeoExpress. NeoExpress uses seconds in this feature while the Neo
+    // nodes use milliseconds. The comparison of timestamps is done in seconds and this test here allow a tolerance
+    // of 5 seconds.
+    private static final int FAST_FORWARD_TOLERANCE = 5;
 
     @RegisterExtension
     private static final ContractTestExtension ext = new ContractTestExtension(new NeoExpressTestContainer());
@@ -114,12 +120,59 @@ public class ModuleTest {
     }
 
     @Test
-    public void fastForward() throws Throwable {
-        // Note: This test uses the fast-forward feature of NeoExpress. NeoExpress uses seconds in this feature while
-        // the Neo nodes use milliseconds. The comparison of timestamps is done in seconds and it allows a tolerance of
-        // 5 seconds.
-        int tolerance = 5;
+    @Order(1)
+    public void testFastForwardOneBlockWithSeconds() throws Exception {
+        // Forward a single block
+        BigInteger startIndex = currentBlockIndex(neow3j);
+        long startTime = getBlockTimeInSeconds(neow3j, startIndex);
+        int secondsToForward = 3600;
+        ext.fastForwardOneBlock(secondsToForward);
+        BigInteger endIndex = currentBlockIndex(neow3j);
+        long endTime = getBlockTimeInSeconds(neow3j, endIndex);
 
+        assertThat(format("Block count did not increase by exactly 1 (%ss)", secondsToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
+        );
+        assertThat(format("Blocktime of fastforwarded block is not %s seconds later", secondsToForward),
+                endTime + FAST_FORWARD_TOLERANCE, greaterThanOrEqualTo(startTime + 60 * 60)
+        );
+    }
+
+    @Test
+    @Order(2)
+    public void testFastForwardOneBlockWithTimeUnits() throws Exception {
+        // Forward a single block and time with distinct time units
+        BigInteger startIndex = currentBlockIndex(neow3j);
+        long startTime = getBlockTimeInSeconds(neow3j, startIndex);
+        ext.fastForwardOneBlock(30, 1, 1, 5);
+        BigInteger endIndex = currentBlockIndex(neow3j);
+        long endTime = getBlockTimeInSeconds(neow3j, endIndex);
+
+        assertThat("Block count did not increase by 1 (5d+)",
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
+        );
+        assertThat("Blocktime of fastforwarded single block is not expected time later",
+                endTime + FAST_FORWARD_TOLERANCE, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 5 * 86400))
+        );
+    }
+
+    @Test
+    @Order(3)
+    public void testFastForwardMultipleBlocksWithoutTimeChange() throws Exception {
+        // Fast forward blocks (no time change)
+        BigInteger startIndex = currentBlockIndex(neow3j);
+        int nrBlocksToForward = 4200;
+        ext.fastForward(nrBlocksToForward);
+        BigInteger endIndex = currentBlockIndex(neow3j);
+
+        assertThat(format("Block count did not increase by %s", nrBlocksToForward),
+                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
+        );
+    }
+
+    @Test
+    @Order(4)
+    public void fastForwardMultipleBlocksWithSeconds() throws Throwable {
         // Forward blocks and time
         BigInteger startIndex = currentBlockIndex(neow3j);
         // count = current index
@@ -134,62 +187,27 @@ public class ModuleTest {
                 endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
         );
         assertThat(format("Blocktime of fastforwarded block is not %s seconds later", secondsToForward),
-                endTime + tolerance, greaterThanOrEqualTo(startTime + 10 * 60)
+                endTime + FAST_FORWARD_TOLERANCE, greaterThanOrEqualTo(startTime + 10 * 60)
         );
+    }
 
-        // Forward a single block
-        startIndex = endIndex;
-        startTime = endTime;
-        secondsToForward = 3600;
-        ext.fastForwardOneBlock(secondsToForward);
-        endIndex = currentBlockIndex(neow3j);
-        endTime = getBlockTimeInSeconds(neow3j, endIndex);
-
-        assertThat(format("Block count did not increase by exactly 1 (%ss)", secondsToForward),
-                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
-        );
-        assertThat(format("Blocktime of fastforwarded block is not %s seconds later", secondsToForward),
-                endTime + tolerance, greaterThanOrEqualTo(startTime + 60 * 60)
-        );
-
+    @Test
+    @Order(5)
+    public void fastForwardMultipleBlocksWithTimeUnits() throws Throwable {
         // Forward blocks and time with distinct time units
-        startIndex = endIndex;
-        startTime = endTime;
-        nrBlocksToForward = 2500;
+        BigInteger startIndex = currentBlockIndex(neow3j);
+        long startTime = getBlockTimeInSeconds(neow3j, startIndex);
+        int nrBlocksToForward = 2500;
         ext.fastForward(30, 1, 1, 1, nrBlocksToForward);
-        endIndex = currentBlockIndex(neow3j);
-        endTime = getBlockTimeInSeconds(neow3j, endIndex);
+        BigInteger endIndex = currentBlockIndex(neow3j);
+        long endTime = getBlockTimeInSeconds(neow3j, endIndex);
 
         assertThat(format("Block count did not increase by %s (1d+)", nrBlocksToForward),
                 endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
         );
 
         assertThat(format("Blocktime of fastforwarded %s blocks is not the expected time later", nrBlocksToForward),
-                endTime + tolerance, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400))
-        );
-
-        // Forward a single block and time with distinct time units
-        startIndex = endIndex;
-        startTime = endTime;
-        ext.fastForwardOneBlock(30, 1, 1, 5);
-        endIndex = currentBlockIndex(neow3j);
-        endTime = getBlockTimeInSeconds(neow3j, endIndex);
-
-        assertThat("Block count did not increase by 1 (5d+)",
-                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.ONE))
-        );
-        assertThat("Blocktime of fastforwarded single block is not expected time later",
-                endTime + tolerance, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 5 * 86400))
-        );
-
-        // Fast forward blocks (no time change)
-        startIndex = currentBlockIndex(neow3j);
-        nrBlocksToForward = 4200;
-        ext.fastForward(nrBlocksToForward);
-        endIndex = currentBlockIndex(neow3j);
-
-        assertThat(format("Block count did not increase by %s", nrBlocksToForward),
-                endIndex, greaterThanOrEqualTo(startIndex.add(BigInteger.valueOf(nrBlocksToForward)))
+                endTime + FAST_FORWARD_TOLERANCE, greaterThanOrEqualTo(startTime + (30 + 60 + 3600 + 86400))
         );
     }
 

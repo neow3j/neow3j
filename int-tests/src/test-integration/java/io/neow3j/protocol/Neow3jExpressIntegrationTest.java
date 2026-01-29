@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
@@ -205,9 +206,9 @@ public class Neow3jExpressIntegrationTest {
         assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
 
         String resumeMessage = container.resume();
-        System.out.println(resumeMessage);
         assertThat(resumeMessage, containsString("Neo-express started."));
-        assertThat(resumeMessage, containsString("Neo express is running"));
+
+        waitUntilBlockCountIsGreaterThan(getNeow3jExpress(), BigInteger.ZERO);
 
         BigInteger blockCountAfterResuming = getNeow3jExpress().getBlockCount().send().getBlockCount();
         assertThat(blockCountAfterResuming.intValue(), is(greaterThanOrEqualTo(blockCountBeforeStopping.intValue())));

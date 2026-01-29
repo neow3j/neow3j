@@ -1,13 +1,13 @@
 package io.neow3j.devpack.contracts;
 
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
+import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.annotations.CallFlags;
 
 import static io.neow3j.devpack.constants.CallFlags.All;
-import static io.neow3j.devpack.constants.CallFlags.AllowNotify;
 import static io.neow3j.devpack.constants.CallFlags.ReadOnly;
-import static io.neow3j.devpack.constants.CallFlags.States;
 
 /**
  * Represents an interface to the native PolicyContract that manages system policies on the Neo blockchain.
@@ -16,6 +16,9 @@ public class PolicyContract extends ContractInterface {
 
     /**
      * The maximum execution fee factor that the committee can set.
+     * <p>
+     * Note that this value is without the additional precision of 4 decimal places which is the underlying value
+     * used starting with the Faun hard fork.
      */
     public static final int MaxExecFeeFactor = 100;
 
@@ -93,6 +96,12 @@ public class PolicyContract extends ContractInterface {
     public native boolean unblockAccount(Hash160 scriptHash);
 
     /**
+     * @return an iterator of all blocked accounts.
+     */
+    @CallFlags(ReadOnly)
+    public native Iterator<Hash160> getBlockedAccounts();
+
+    /**
      * Checks if the given account is blocked.
      *
      * @param scriptHash the script hash of the account.
@@ -102,23 +111,107 @@ public class PolicyContract extends ContractInterface {
     public native boolean isBlocked(Hash160 scriptHash);
 
     /**
-     * Gets the fee factor used to calculate the GAS cost of contract executions.
+     * Removes a whitelist entry for a contract method with fixed execution and storage fees.
      * <p>
-     * Each neo-vm instruction has a relative cost that is multiplied with this fee factor to result in the actual
-     * GAS cost.
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When removed,
+     * the method will again be charged according to the global execution and storage fee factors.
      *
-     * @return the execution fee factor.
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     */
+    @CallFlags(All)
+    public native void removeWhitelistFeeContract(Hash160 contract, String method, int argCount);
+
+    /**
+     * Adds or updates a whitelist entry for a contract method with fixed execution and storage fees.
+     * <p>
+     * The whitelist entry is identified by the contract script hash, method name, and argument count. When
+     * whitelisted, the method is charged a fixed system fee, overriding both the execution fee (opcode and interop
+     * prices multiplied by the execution fee factor) and the storage fee (storage prices multiplied by the storage
+     * fee factor).
+     *
+     * @param contract the script hash of the smart contract.
+     * @param method   the name of the contract method.
+     * @param argCount the number of arguments the method accepts.
+     * @param fixedFee the fixed system fee applied to the method.
+     */
+    @CallFlags(All)
+    public native void setWhitelistFeeContract(Hash160 contract, String method, int argCount, int fixedFee);
+
+    /**
+     * Returns an iterator over whitelist entries for contract methods with fixed system fees.
+     * <p>
+     * Each returned {@link WhitelistFeeEntry} represents a contract method for which both the execution fee and the
+     * storage fee are overridden by a fixed system fee.
+     *
+     * @return an iterator over {@link WhitelistFeeEntry} instances.
+     */
+    @CallFlags(ReadOnly)
+    public native Iterator<WhitelistFeeEntry> getWhitelistFeeContracts();
+
+    /**
+     * Recovers funds from the given account by transferring its entire balance of the specified token to the native
+     * treasury contract.
+     * <p>
+     * The account must be blocked and have been blocked for at least one year before funds can be recovered.
+     *
+     * @param account the account to recover funds from.
+     * @param token the token to recover.
+     * @return true if successful. False, otherwise.
+     */
+    @CallFlags(All)
+    public native boolean recoverFund(Hash160 account, Hash160 token);
+
+    /**
+     * Gets the execution fee factor without additional precision.
+     * <p>
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function ignores that additional precision and returns the floored value.
+     * <p>
+     * As a result, the value returned by this function may be {@code 0} when the actual execution fee factor is
+     * between {@code 0} and {@code 1} (e.g., {@code 0.5} is returned as {@code 0}).
+     * <p>
+     * For new code, consider using {@link #getExecPicoFeeFactor()}, which provides the full precision.
+     *
+     * @return the execution fee factor without additional precision.
      */
     @CallFlags(ReadOnly)
     public native int getExecFeeFactor();
 
     /**
+     * Gets the execution fee factor with additional precision.
+     * <p>
+     * The execution fee factor is used to calculate the execution GAS cost by multiplying it with the base cost of
+     * each NeoVM instruction executed in a transaction.
+     * <p>
+     * Starting with the Faun hard fork, the execution fee factor is internally represented using an value with 4
+     * decimal places of additional precision (the "pico" fee factor). This function returns that full-precision value.
+     * <p>
+     * For example, a return value of {@code 995627} represents a fee factor of {@code 99.5627} when interpreted with
+     * 4 decimal places of precision. {@link #getExecFeeFactor()} would return the floored value {@code 99}.
+     *
+     * @return the execution fee factor with additional precision.
+     */
+    @CallFlags(ReadOnly)
+    public native int getExecPicoFeeFactor();
+
+    /**
      * Sets the fee factor used to calculate the GAS cost of contract executions.
      * <p>
-     * Each NeoVM instruction has a relative cost that is multiplied with this fee factor to result in the actual
-     * GAS cost.
+     * Each NeoVM instruction has a relative cost, which is multiplied by this fee factor to determine the actual GAS
+     * cost.
+     * <p>
+     * Note that starting with the Faun hard fork, the execution fee factor supports an additional precision of 4
+     * decimal places. This function expects the full precision to be provided. In other words, the value passed to
+     * this function is the same value that will later be returned by {@link #getExecPicoFeeFactor()}, while
+     * {@link #getExecFeeFactor()} returns the floored value without the additional precision.
+     * <p>
+     * For example, to set an execution fee factor of {@code 1.5627}, call this function with {@code 15627}. In this
+     * case, {@link #getExecFeeFactor()} will return {@code 1}, while {@link #getExecPicoFeeFactor()} will return
+     * {@code 15627}.
      *
-     * @param factor the desired factor.
+     * @param factor the execution fee factor.
      */
     @CallFlags(All)
     public native void setExecFeeFactor(int factor);
@@ -198,5 +291,31 @@ public class PolicyContract extends ContractInterface {
      */
     @CallFlags(All)
     public native void setAttributeFee(byte attributeType, int fee);
+
+    /**
+     * Represents a whitelist entry for a contract method with a fixed system fee.
+     */
+    @Struct
+    public static class WhitelistFeeEntry {
+        /**
+         * The script hash of the smart contract.
+         */
+        public Hash160 contract;
+
+        /**
+         * The name of the contract method.
+         */
+        public String method;
+
+        /**
+         * The number of arguments the method accepts.
+         */
+        public int argCount;
+
+        /**
+         * The fixed system fee applied to the method.
+         */
+        public int fixedFee;
+    }
 
 }
