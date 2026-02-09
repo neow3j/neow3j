@@ -2,11 +2,13 @@ package io.neow3j.contract;
 
 import com.github.tomakehurst.wiremock.client.WireMock;
 import com.github.tomakehurst.wiremock.junit5.WireMockExtension;
+import io.neow3j.contract.types.WhitelistFeeEntry;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.Transaction;
+import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.TransactionBuilder;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.types.Hash160;
@@ -29,6 +31,7 @@ import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
+import static io.neow3j.types.ContractParameter.string;
 import static io.neow3j.utils.Numeric.toHexString;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
@@ -108,9 +111,51 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testGetAttributeFee() throws IOException {
+        setUpWireMockForInvokeFunction("getAttributeFee", "invokefunction_returnInt.json");
+        assertThat(policyContract.getAttributeFee(TransactionAttributeType.HIGH_PRIORITY),
+                is(new BigInteger("42")));
+    }
+
+    @Test
     public void testIsBlocked() throws IOException {
         setUpWireMockForInvokeFunction("isBlocked", "policy_isBlocked.json");
         assertFalse(policyContract.isBlocked(account1.getScriptHash()));
+    }
+
+    @Test
+    public void testRemoveWhitelistFeeContract() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokefunction_any_for_gasconsumed.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Hash160 contract = NeoToken.SCRIPT_HASH;
+        String method = "transfer";
+        int argCount = 4;
+        Account signerAccount = account1;
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "removeWhitelistFeeContract",
+                        asList(
+                                hash160(contract),
+                                string(method),
+                                integer(argCount)
+                        )
+                ).toArray();
+
+        Transaction tx = policyContract.removeWhitelistFeeContract(contract, method, argCount)
+                .signers(calledByEntry(signerAccount))
+                .sign();
+
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(signerAccount.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(signerAccount.getVerificationScript().getScript()));
     }
 
     @Test
@@ -131,6 +176,43 @@ public class PolicyContractTest {
         List<Hash160> blockedAccounts = policyContract.getBlockedAccountsUnwrapped();
         assertThat(blockedAccounts, hasSize(1));
         assertThat(blockedAccounts.get(0), is(new Hash160("0x69ecca587293047be4c59159bf8bc399985c160d")));
+    }
+
+    @Test
+    public void testSetWhitelistFeeContract() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokefunction_any_for_gasconsumed.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Hash160 contract = NeoToken.SCRIPT_HASH;
+        String method = "transfer";
+        int argCount = 4;
+        BigInteger fixedFee = new BigInteger("12345");
+        Account signerAccount = account1;
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "setWhitelistFeeContract",
+                        asList(
+                                hash160(contract),
+                                string(method),
+                                integer(argCount),
+                                integer(fixedFee)
+                        )
+                ).toArray();
+
+        Transaction tx = policyContract.setWhitelistFeeContract(contract, method, argCount, fixedFee)
+                .signers(calledByEntry(signerAccount))
+                .sign();
+
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(signerAccount.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(signerAccount.getVerificationScript().getScript()));
     }
 
     @Test
@@ -290,6 +372,38 @@ public class PolicyContractTest {
     }
 
     @Test
+    public void testSetAttributeFee() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokefunction_any_for_gasconsumed.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        TransactionAttributeType attribute = TransactionAttributeType.HIGH_PRIORITY;
+        BigInteger attributeFee = new BigInteger("83674");
+
+        byte[] expectedScript = new ScriptBuilder()
+                .contractCall(
+                        PolicyContract.SCRIPT_HASH,
+                        "setAttributeFee",
+                        asList(
+                                integer(attribute.byteValue()),
+                                integer(attributeFee)
+                        )
+                ).toArray();
+
+        Transaction tx = policyContract.setAttributeFee(attribute, attributeFee)
+                .signers(calledByEntry(account1))
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSigners().get(0).getScriptHash(), is(account1.getScriptHash()));
+        assertThat(tx.getSigners().get(0).getScopes(), contains(WitnessScope.CALLED_BY_ENTRY));
+        assertThat(tx.getScript(), is(expectedScript));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript(),
+                is(account1.getVerificationScript().getScript()));
+    }
+
+    @Test
     public void testBlockAccount() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("invokescript", "policy_blockAccount.json");
@@ -406,6 +520,33 @@ public class PolicyContractTest {
 
         TransactionBuilder b = policyContract.recoverFund(accountToRecoverFrom, NeoToken.SCRIPT_HASH);
         assertThat(b.getScript(), is(expectedScript));
+    }
+
+    @Test
+    public void testGetWhitelistFeeContracts() throws IOException {
+        setUpWireMockForInvokeFunction("getWhitelistFeeContracts", "invokefunction_iterator_session.json");
+        Iterator<WhitelistFeeEntry> it = policyContract.getWhitelistFeeContracts();
+        assertNotNull(it.getIteratorId());
+        assertNotNull(it.getSessionId());
+        assertNotNull(it.getMapper());
+    }
+
+    @Test
+    public void testGetWhitelistFeeContractsUnwrapped() throws IOException {
+        String scriptBase64 = Base64.encode(toHexString(buildContractCallAndUnwrapIterator(PolicyContract.SCRIPT_HASH,
+                "getWhitelistFeeContracts", asList(), DEFAULT_ITERATOR_COUNT)));
+
+        setUpWireMockForInvokeScript(scriptBase64, "policy_unwrapWhitelistFeeContracts.json");
+
+        WhitelistFeeEntry neoTransferWhitelistEntry = new WhitelistFeeEntry(NeoToken.SCRIPT_HASH, "transfer", 4,
+                BigInteger.ZERO);
+        WhitelistFeeEntry gasTransferWhitelistEntry = new WhitelistFeeEntry(GasToken.SCRIPT_HASH, "transfer", 4,
+                new BigInteger("1234"));
+
+        List<WhitelistFeeEntry> whitelistFeeEntries = policyContract.getWhitelistFeeContractsUnwrapped();
+        assertThat(whitelistFeeEntries, hasSize(2));
+        assertThat(whitelistFeeEntries.get(0), is(gasTransferWhitelistEntry));
+        assertThat(whitelistFeeEntries.get(1), is(neoTransferWhitelistEntry));
     }
 
     @Test
