@@ -197,6 +197,24 @@ public class StdLib extends ContractInterface {
     public native ByteString base58CheckDecode(String input);
 
     /**
+     * Encodes the given byte string to its hexadecimal string representation.
+     *
+     * @param input the bytes to encode.
+     * @return the encoded string.
+     */
+    @CallFlags(ReadOnly)
+    public native String hexEncode(ByteString input);
+
+    /**
+     * Decodes the given hexadecimal string into a byte string.
+     *
+     * @param input the hexadecimal string.
+     * @return the decoded byte string.
+     */
+    @CallFlags(ReadOnly)
+    public native ByteString hexDecode(String input);
+
+    /**
      * Converts the given number to its string representation.
      * <p>
      * The hexadecimal representation uses the 2's complement to represent negative numbers. Always the smallest

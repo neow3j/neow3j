@@ -114,6 +114,24 @@ public class StdLibIntegrationTest {
     }
 
     @Test
+    public void hexEncode() throws IOException {
+        byte[] input = new byte[]{0x5F, 0x68, 0x65, 0x2C, 0x7A, 0x73, 0x42};
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(input));
+        StackItem stackItem = response.getInvocationResult().getStack().get(0);
+        assertThat(stackItem.getType(), is(StackItemType.BYTE_STRING));
+        assertThat(stackItem.getString(), is("5f68652c7a7342"));
+    }
+
+    @Test
+    public void hexDecode() throws IOException {
+        String input = "5f68652c7a7342";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, string(input));
+        StackItem stackItem = response.getInvocationResult().getStack().get(0);
+        assertThat(stackItem.getType(), is(StackItemType.BYTE_STRING));
+        assertThat(stackItem.getByteArray(), is(new byte[]{0x5F, 0x68, 0x65, 0x2C, 0x7A, 0x73, 0x42}));
+    }
+
+    @Test
     public void base64Encode() throws IOException {
         String bytes = "54686520717569636b2062726f776e20666f78206a756d7073206f766572203133206c617a7920646f67732e";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(bytes));
@@ -349,6 +367,14 @@ public class StdLibIntegrationTest {
 
         public static ByteString base58CheckDecode(String encoded) {
             return stdLib.base58CheckDecode(encoded);
+        }
+
+        public static String hexEncode(ByteString input) {
+            return stdLib.hexEncode(input);
+        }
+
+        public static ByteString hexDecode(String input) {
+            return stdLib.hexDecode(input);
         }
 
         public static String itoa(int i, int base) {
