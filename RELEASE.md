@@ -104,5 +104,4 @@ To publish the Gradle plugin from your currently checked out code base run:
    neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g.,
    `neoxp-3.4.18`.
 
-[^1]: It is not easy to exclude the `gradle-plugin` subproject from the `publish` task in the build script.
-The `nexus.publish-plugin` automatically includes all projects that use the `maven-publish` plugin and the  `gradle-plugin` subproject does implicitly use that plugin. Thus, it is always included when executing `./gradlew publish` and has to be explicitly excluded with the `-x` flag.
+[^1]: It is not trivial to exclude all tasks of the `gradle-plugin` subproject solely using the `gradlew` wrapper. Thus, we exclude all relevant tasks (using `-x`) that should not run when publishing releases to Sonatype.
