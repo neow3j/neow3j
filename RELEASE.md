@@ -51,9 +51,9 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked-out code base, run:
 ```bash
-./gradlew --info -x :gradle-plugin:publish  publish
+./gradlew --info -x :gradle-plugin:publish -x :gradle-plugin:releaseMavenCentralPortalPublication -x :gradle-plugin:zipMavenCentralPortalPublication clean publish zipMavenCentralPortalPublication releaseMavenCentralPortalPublication
 ```
-The task `publish` compiles, packages, signs and uploads the artifacts to Sonatype. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the command with the `-x` flag[^1].
+The task `publish` compiles, packages, and signs the artifacts, while the tasks `zipMavenCentralPortalPublication` and `releaseMavenCentralPortalPublication` zip the artifacts and uploads (release!) to Sonatype, respectively. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the command with the `-x` flag[^1].
 
 To publish the Gradle plugin from your currently checked out code base run:
 ```bash
