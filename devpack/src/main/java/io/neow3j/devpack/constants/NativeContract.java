@@ -18,6 +18,8 @@ public enum NativeContract {
     PolicyContract(NativeContract.PolicyContractScriptHash),
     RoleManagement(NativeContract.RoleManagementScriptHash),
     OracleContract(NativeContract.OracleContractScriptHash),
+    Notary(NativeContract.NotaryScriptHash),
+    Treasury(NativeContract.TreasuryScriptHash),
     // This value is required as default dummy value in the Permission annotation interface.
     None(Hash160.ZERO.toString());
 
@@ -30,6 +32,8 @@ public enum NativeContract {
     public static final String PolicyContractScriptHash = "0xcc5e4edd9f5f8dba8bb65734541df7a1c081c67b";
     public static final String RoleManagementScriptHash = "0x49cf4e5378ffcd4dec034fd98a174c5491e395e2";
     public static final String OracleContractScriptHash = "0xfe924b7cfe89ddd271abaf7210a80a7e11178758";
+    public static final String NotaryScriptHash = "0xc1e14f19c3e60d0b9244d06dd7ba9b113135ec3b";
+    public static final String TreasuryScriptHash = "0x156326f25b1b5d839a4d326aeaa75383c9563ac1";
 
     private final Hash160 contractHash;
 

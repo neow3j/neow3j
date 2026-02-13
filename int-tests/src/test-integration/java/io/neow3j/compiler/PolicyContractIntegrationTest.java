@@ -1,13 +1,18 @@
 package io.neow3j.compiler;
 
+import io.neow3j.contract.GasToken;
+import io.neow3j.contract.NeoToken;
 import io.neow3j.devpack.Hash160;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.AttributeType;
 import io.neow3j.devpack.constants.NativeContract;
 import io.neow3j.devpack.contracts.PolicyContract;
+import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.types.Hash256;
+import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,11 +22,15 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static io.neow3j.test.TestProperties.policyContractHash;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
+import static io.neow3j.types.ContractParameter.string;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -37,7 +46,8 @@ public class PolicyContractIntegrationTest {
     private String testName;
 
     @RegisterExtension
-    public static ContractTestExtension ct = new ContractTestExtension(PolicyContractIntegrationTestContract.class.getName());
+    public static ContractTestExtension ct = new ContractTestExtension(
+            PolicyContractIntegrationTestContract.class.getName());
 
     @BeforeEach
     void init(TestInfo testInfo) {
@@ -57,42 +67,109 @@ public class PolicyContractIntegrationTest {
 
     @Test
     public void blockAndUnblockAccountAndIsBlocked() throws Throwable {
+        io.neow3j.types.Hash160 accountToBlock = ct.getDefaultAccount().getScriptHash();
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        NeoInvokeFunction response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
 
         // Block the account
-        Hash256 txHash = ct.invokeFunctionAndAwaitExecution("blockAccount",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        Hash256 txHash = ct.invokeFunctionAndAwaitExecution("blockAccount", hash160(accountToBlock));
         assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was blocked.
-        response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
+        // Check that it is part of the blocked accounts
+        List<io.neow3j.types.Hash160> blockedAccounts = ct.callAndTraverseIterator("getBlockedAccounts")
+                .stream()
+                .map(a -> io.neow3j.types.Hash160.fromAddress(a.getAddress()))
+                .collect(Collectors.toList());
+        assertThat(blockedAccounts, hasSize(1));
+        assertThat(blockedAccounts.get(0), is(accountToBlock));
+
         // Unblock the account
-        txHash = ct.invokeFunctionAndAwaitExecution("unblockAccount",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        txHash = ct.invokeFunctionAndAwaitExecution("unblockAccount", hash160(accountToBlock));
         assertTrue(ct.getNeow3j().getApplicationLog(txHash).send().getApplicationLog()
                 .getExecutions().get(0).getStack().get(0).getBoolean());
 
         // Check if it was unblocked.
-        response = ct.callInvokeFunction("isBlocked",
-                hash160(ct.getDefaultAccount().getScriptHash()));
+        response = ct.callInvokeFunction("isBlocked", hash160(accountToBlock));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void testWhitelistContracts() throws Throwable {
+        // Assert initial state
+        InvocationResult response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        assertThat(response.getFirstStackItem().getList(), hasSize(0));
+
+        // Add two whitelist entries
+        ct.signWithCommitteeAccount();
+        ct.invokeFunctionAndAwaitExecution("setWhitelistFeeContract", hash160(NeoToken.SCRIPT_HASH), string("transfer"),
+                integer(4),
+                integer(4567));
+        ct.invokeFunctionAndAwaitExecution("setWhitelistFeeContract", hash160(GasToken.SCRIPT_HASH), string("transfer"),
+                integer(4), integer(123));
+
+        // Verify that both were added and the getWhitelistFeeContracts function works as expected.
+        response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        List<StackItem> list = response.getFirstStackItem().getList();
+        assertThat(list, hasSize(8));
+        assertThat(list.get(0).getAddress(), is(GasToken.SCRIPT_HASH.toAddress()));
+        assertThat(list.get(1).getString(), is("transfer"));
+        assertThat(list.get(2).getInteger().intValue(), is(4));
+        assertThat(list.get(3).getInteger().intValue(), is(123));
+        assertThat(list.get(4).getAddress(), is(NeoToken.SCRIPT_HASH.toAddress()));
+        assertThat(list.get(5).getString(), is("transfer"));
+        assertThat(list.get(6).getInteger().intValue(), is(4));
+        assertThat(list.get(7).getInteger().intValue(), is(4567));
+
+        // Clean up
+        ct.invokeFunctionAndAwaitExecution("removeWhitelistFeeContract", hash160(NeoToken.SCRIPT_HASH),
+                string("transfer"), integer(4));
+        ct.invokeFunctionAndAwaitExecution("removeWhitelistFeeContract", hash160(GasToken.SCRIPT_HASH),
+                string("transfer"), integer(4));
+        response = ct.callInvokeFunction("getWhitelistFeeContracts").getInvocationResult();
+        assertThat(response.getFirstStackItem().getList(), hasSize(0));
+    }
+
+    @Test
+    public void testRecoverFund() throws Throwable {
+        // No need to test the functionality of recoverFund here – only that the function exists in the native
+        // PolicyContract.
+        ct.signWithCommitteeAccount();
+        io.neow3j.types.Hash160 anyAccount = new io.neow3j.types.Hash160("0xa400ff00ff00ff00ff00ff00ff00ff00ff00ff01");
+        InvocationResult result = ct.callInvokeFunction("recoverFund", hash160(anyAccount),
+                hash160(NeoToken.SCRIPT_HASH)).getInvocationResult();
+        assertThat(result.getState(), is(NeoVMStateType.FAULT));
+        assertThat(result.getException(), containsString("Request not found."));
     }
 
     @Test
     public void setAndGetExecFeeFactor() throws IOException {
         ct.signWithCommitteeAccount();
-        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(99));
+        // Starting with the Faun hard fork, the setter expects additional precision of 4 decimal places, while
+        // getExecFeeFactor returns the floored value without the additional precision.
+        // 995627 represents 99.5627 with 4 decimal places.
+        // In order to get the full precise value, use getExecPicoFeeFactor().
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, integer(995627));
 
         List<StackItem> res = response.getInvocationResult().getStack().get(0).getList();
         assertThat(res.get(0).getInteger(), is(BigInteger.valueOf(DEFAULT_EXEC_FEE_FACTOR)));
         assertThat(res.get(1).getInteger(), is(BigInteger.valueOf(99)));
+        assertThat(res.get(2).getInteger(), is(BigInteger.valueOf(995627)));
+    }
+
+    @Test
+    public void testExecFeeFactor() throws IOException {
+        BigInteger execFeeFactor = ct.callInvokeFunction("getExecFeeFactor").getInvocationResult()
+                .getFirstStackItem().getInteger();
+        BigInteger execPicoFeeFactor = ct.callInvokeFunction("getExecPicoFeeFactor").getInvocationResult()
+                .getFirstStackItem().getInteger();
+        assertThat(execPicoFeeFactor, greaterThan(BigInteger.ZERO));
+        assertThat(execPicoFeeFactor.divide(BigInteger.valueOf(10000)), is(execFeeFactor));
     }
 
     @Test
@@ -154,7 +231,7 @@ public class PolicyContractIntegrationTest {
     }
 
     @Permission(nativeContract = NativeContract.PolicyContract, methods = "*")
-    static class PolicyContractIntegrationTestContract {
+    public static class PolicyContractIntegrationTestContract {
 
         static PolicyContract policyContract = new PolicyContract();
 
@@ -170,8 +247,48 @@ public class PolicyContractIntegrationTest {
             return policyContract.blockAccount(scriptHash);
         }
 
+        public static Iterator<Hash160> getBlockedAccounts() {
+            return policyContract.getBlockedAccounts();
+        }
+
         public static boolean isBlocked(Hash160 scriptHash) {
             return policyContract.isBlocked(scriptHash);
+        }
+
+        public static void removeWhitelistFeeContract(Hash160 contract, String method, int argCount) {
+            policyContract.removeWhitelistFeeContract(contract, method, argCount);
+        }
+
+        public static void setWhitelistFeeContract(Hash160 contract, String method, int argCount, int fixedFee) {
+            policyContract.setWhitelistFeeContract(contract, method, argCount, fixedFee);
+        }
+
+        public static io.neow3j.devpack.List<Object> getWhitelistFeeContracts() {
+            Iterator<PolicyContract.WhitelistFeeEntry> it = policyContract.getWhitelistFeeContracts();
+            // Just to demonstrate that the iterator works.
+            io.neow3j.devpack.List<Hash160> contracts = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<String> methods = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<Integer> argCounts = new io.neow3j.devpack.List<>();
+            io.neow3j.devpack.List<Integer> fixedFees = new io.neow3j.devpack.List<>();
+            while (it.next()) {
+                PolicyContract.WhitelistFeeEntry entry = it.get();
+                contracts.add(entry.contract);
+                methods.add(entry.method);
+                argCounts.add(entry.argCount);
+                fixedFees.add(entry.fixedFee);
+            }
+            io.neow3j.devpack.List<Object> all = new io.neow3j.devpack.List<>();
+            for (int i = 0; i < contracts.size(); i++) {
+                all.add(contracts.get(i));
+                all.add(methods.get(i));
+                all.add(argCounts.get(i));
+                all.add(fixedFees.get(i));
+            }
+            return all;
+        }
+
+        public static boolean recoverFund(Hash160 account, Hash160 token) {
+            return policyContract.recoverFund(account, token);
         }
 
         public static boolean unblockAccount(Hash160 scriptHash) {
@@ -183,11 +300,20 @@ public class PolicyContractIntegrationTest {
         }
 
         public static int[] setAndGetExecFeeFactor(int newFactor) {
-            int[] factors = new int[2];
+            int[] factors = new int[3];
             factors[0] = policyContract.getExecFeeFactor();
             policyContract.setExecFeeFactor(newFactor);
             factors[1] = policyContract.getExecFeeFactor();
+            factors[2] = policyContract.getExecPicoFeeFactor();
             return factors;
+        }
+
+        public static int getExecFeeFactor() {
+            return policyContract.getExecFeeFactor();
+        }
+
+        public static int getExecPicoFeeFactor() {
+            return policyContract.getExecPicoFeeFactor();
         }
 
         public static int[] setAndGetStoragePrice(int newPrice) {

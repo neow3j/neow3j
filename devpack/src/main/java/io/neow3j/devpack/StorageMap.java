@@ -6,6 +6,8 @@ import io.neow3j.devpack.constants.InteropService;
 import io.neow3j.devpack.constants.OpCode;
 import io.neow3j.devpack.constants.StackItemType;
 
+import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_GETCONTEXT;
+
 /**
  * A key-value view on the entries of smart contract's storage with a specific prefix.
  * <p>
@@ -23,7 +25,9 @@ public class StorageMap {
      *
      * @param context the storage to look for the entries.
      * @param prefix  the prefix.
+     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(ByteStringType)} instead.
      */
+    @Deprecated
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
@@ -31,11 +35,25 @@ public class StorageMap {
     }
 
     /**
+     * Constructs a new {@code StorageMap} with the given prefix.
+     *
+     * @param prefix the prefix.
+     * @since 3.24.1
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
+    public StorageMap(ByteStringType prefix) {
+    }
+
+    /**
      * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
      * @param context the storage to look for the entries.
      * @param prefix  the prefix.
+     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(byte[])} instead.
      */
+    @Deprecated
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
@@ -43,11 +61,25 @@ public class StorageMap {
     }
 
     /**
+     * Constructs a new {@code StorageMap} with the given prefix.
+     *
+     * @param prefix the prefix.
+     * @since 3.24.1
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
+    public StorageMap(byte[] prefix) {
+    }
+
+    /**
      * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
      *
      * @param context the storage to look for the entries.
      * @param prefix  the prefix.
+     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(String)} instead.
      */
+    @Deprecated
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
@@ -55,15 +87,15 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
+     * Constructs a new {@code StorageMap} with the given prefix.
      *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
+     * @param prefix the prefix.
+     * @since 3.24.1
      */
-    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, int prefix) {
+    public StorageMap(String prefix) {
     }
 
     /**
@@ -71,11 +103,51 @@ public class StorageMap {
      *
      * @param context the storage to look for the entries.
      * @param prefix  the prefix.
+     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(int)} instead.
      */
+    @Deprecated
+    @Instruction(opcode = OpCode.SWAP)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
+    public StorageMap(StorageContext context, int prefix) {
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} with the given prefix.
+     *
+     * @param prefix the prefix.
+     * @since 3.24.1
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
+    public StorageMap(int prefix) {
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
+     *
+     * @param context the storage to look for the entries.
+     * @param prefix  the prefix.
+     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(byte)} instead.
+     */
+    @Deprecated
     @Instruction(opcode = OpCode.SWAP)
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
     public StorageMap(StorageContext context, byte prefix) {
+    }
+
+    /**
+     * Constructs a new {@code StorageMap} with the given prefix.
+     *
+     * @param prefix the prefix.
+     * @since 3.24.1
+     */
+    @Instruction(interopService = SYSTEM_STORAGE_GETCONTEXT)
+    @Instruction(opcode = OpCode.PUSH2)
+    @Instruction(opcode = OpCode.PACK)
+    public StorageMap(byte prefix) {
     }
 
     // endregion

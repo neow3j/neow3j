@@ -50,12 +50,9 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked-out code base, run:
 ```bash
-./gradlew --info -x :gradle-plugin:publishToSonatype  publishToSonatype closeAndReleaseSonatypeStagingRepository
+./gradlew --info -x :gradle-plugin:publish -x :gradle-plugin:releaseMavenCentralPortalPublication -x :gradle-plugin:zipMavenCentralPortalPublication clean publish zipMavenCentralPortalPublication releaseMavenCentralPortalPublication
 ```
-The task `publishToSonatype` compiles, packages, signs and uploads the artifacts to Sonatype into a "Staging
-Repository". The task `closeAndReleaseSonatypeStagingRepository` closes and releases that Staging Repository to 
-Maven Central. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the 
-command with the `-x` flag[^1].
+The task `publish` compiles, packages, and signs the artifacts, while the tasks `zipMavenCentralPortalPublication` and `releaseMavenCentralPortalPublication` zip the artifacts and uploads (release!) to Sonatype, respectively. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the command with the `-x` flag[^1].
 
 To publish the Gradle plugin from your currently checked out code base run:
 ```bash
@@ -106,7 +103,4 @@ To publish the Gradle plugin from your currently checked out code base run:
    neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g.,
    `neoxp-3.4.18`.
 
-[^1]: It is not easy to exclude the `gradle-plugin` subproject from the `publishToSonatype` task in the build script.
-The `nexus.publish-plugin` automatically includes all projects that use the `maven-publish` plugin and the 
-`gradle-plugin` subproject does implicitly use that plugin. Thus, it is always included when executing `./gradlew
-publishToSonatype` and has to be explicitly excluded with the `-x` flag.
+[^1]: It is not trivial to exclude all tasks of the `gradle-plugin` subproject solely using the `gradlew` wrapper. Thus, we exclude all relevant tasks (using `-x`) that should not run when publishing releases to Sonatype.
