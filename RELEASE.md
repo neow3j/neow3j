@@ -15,7 +15,6 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 1. Create a branch `release` from `main`.
 2. Make sure the release version number is set in the following files:
    - `build.gradle`, in the `version` property
-   - `Compiler.java`, in the `COMPILER_NAME` constant
    - `README.md`, in the sections that explain how to import neow3j
 3. Commit and push the `release` branch, and open a pull request to `main`.
 4. Once the pull request has been merged, tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. 

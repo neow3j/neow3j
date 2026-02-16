@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.stream.Collectors;
 
 import static io.neow3j.compiler.AsmHelper.getAnnotationNode;
@@ -58,7 +59,12 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class Compiler {
 
-    public static final String COMPILER_NAME = "neow3j-3.24.1";
+    public static final String COMPILER_NAME = "neow3j";
+
+    // Properties file that holds the compiler version.
+    private static final String COMPILER_PROPERTIES = "io/neow3j/compiler/compiler.properties";
+    // Key in the properties file that holds the compiler version.
+    private static final String VERSION_KEY = "compiler.version";
 
     // Check the following table for a complete version list:
     // https://docs.oracle.com/javase/specs/jvms/se14/html/jvms-4.html#jvms-4.1-200-B.2
@@ -88,6 +94,35 @@ public class Compiler {
 
     public Compiler(ClassLoader classLoader) {
         compUnit = new CompilationUnit(classLoader);
+    }
+
+    private static String compilerIdentifier() {
+        return COMPILER_NAME + "-" + loadCompilerVersion();
+    }
+
+    static String loadCompilerVersion() {
+        Properties p = new Properties();
+        try (InputStream in = Compiler.class.getClassLoader().getResourceAsStream(COMPILER_PROPERTIES)) {
+            if (in == null) {
+                throw new IllegalStateException(format("Missing resource '%s'. The build must include and expand this" +
+                        " file via processResources.", COMPILER_PROPERTIES));
+            }
+            p.load(in);
+        } catch (IOException e) {
+            throw new IllegalStateException(format("Failed to read '%s'", COMPILER_PROPERTIES));
+        }
+
+        String v = p.getProperty(VERSION_KEY);
+        if (v == null || v.trim().isEmpty()) {
+            throw new IllegalStateException(format("Missing property '%s' in '%s'.", VERSION_KEY, COMPILER_PROPERTIES));
+        }
+
+        v = v.trim();
+        if (v.contains("${") || v.contains("@")) {
+            throw new IllegalStateException(format("Unexpanded version placeholder '%s' in '%s'. Ensure Gradle " +
+                    "expands %s during processResources.", v, COMPILER_PROPERTIES, VERSION_KEY));
+        }
+        return v;
     }
 
     public static ContractParameterType mapTypeToParameterType(Type type) {
@@ -465,7 +500,7 @@ public class Compiler {
     private void finalizeCompilation() {
         compUnit.getNeoModule().finalizeModule();
         String sourceUrl = getSourceUrl(compUnit.getContractClass());
-        NefFile nef = new NefFile(COMPILER_NAME, sourceUrl, compUnit.getNeoModule().getMethodTokens(),
+        NefFile nef = new NefFile(compilerIdentifier(), sourceUrl, compUnit.getNeoModule().getMethodTokens(),
                 compUnit.getNeoModule().toByteArray());
         ContractManifest manifest = ManifestBuilder.buildManifest(compUnit);
         compUnit.setNef(nef);
