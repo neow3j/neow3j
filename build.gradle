@@ -21,7 +21,7 @@ ext {
     jupiterVersion = '5.10.0'
     logbackVersion = '1.3.14'
     mockitoVersion = '4.11.0'
-    testcontainersVersion = '1.19.3'
+    testcontainersVersion = '2.0.3'
     wiremockVersion = '2.35.1'
 }
 

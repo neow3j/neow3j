@@ -10,5 +10,5 @@ dependencies {
             project(':devpack'),
             project(':devpack-test'),
             project(':test-tools'),
-            "org.testcontainers:junit-jupiter:$testcontainersVersion"
+            "org.testcontainers:testcontainers-junit-jupiter:$testcontainersVersion"
 }
