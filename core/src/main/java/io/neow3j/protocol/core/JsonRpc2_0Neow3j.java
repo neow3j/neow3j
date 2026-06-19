@@ -51,6 +51,7 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -650,6 +651,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 asList(Base64.encode(rawTransactionHex)),
                 neow3jService,
                 NeoSendRawTransaction.class);
+    }
+
+    /**
+     * Relays a completed transaction {@link ContractParametersContext} to the network.
+     *
+     * @param context the completed transaction signature context to relay.
+     * @return the request object that returns the relayed transaction hash.
+     */
+    @Override
+    public Request<?, NeoRelay> relay(ContractParametersContext context) {
+        return new Request<>(
+                "relay",
+                asList(context),
+                neow3jService,
+                NeoRelay.class);
     }
 
     /**

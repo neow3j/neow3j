@@ -45,6 +45,7 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -142,6 +143,8 @@ public interface Neo {
     Request<?, NeoGetVersion> getVersion();
 
     Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex);
+
+    Request<?, NeoRelay> relay(ContractParametersContext context);
 
     Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
 

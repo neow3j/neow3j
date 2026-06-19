@@ -12,8 +12,8 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * This class models a transaction signature context that can be exchanged with Neo CLI's {@code sign <json>} command
- * and with the RPC {@code sign} method.
+ * This class models a transaction signature context that can be exchanged with Neo CLI's {@code sign <json>} and
+ * {@code relay <json>} commands, and with the RPC {@code sign} and {@code relay} methods.
  * <p>
  * The {@code ContractParametersContext} contains an unsigned Neo transaction, its hash, the target network, and one
  * context item per signer. Each context item contains the signer's verification script, the parameters required by
@@ -22,7 +22,8 @@ import java.util.Objects;
  * The JSON produced by Neo CLI for incomplete signature contexts, e.g., multi-signature transactions, can be
  * deserialized into this class and passed directly to the RPC {@code sign} method. Likewise, a context returned by
  * the RPC {@code sign} method can be serialized and passed back to Neo CLI's {@code sign <json>} command on another
- * node if more signatures are required.
+ * node if more signatures are required. Once all required signatures are present, the completed context can be passed
+ * to the RPC {@code relay} method or Neo CLI's {@code relay <json>} command to broadcast the transaction.
  * <p>
  * Example RPC request payload:
  * <pre>{@code
