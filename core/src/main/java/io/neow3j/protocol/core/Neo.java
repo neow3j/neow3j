@@ -49,6 +49,7 @@ import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
@@ -198,6 +199,10 @@ public interface Neo {
     Request<?, NeoCalculateNetworkFee> calculateNetworkFee(String transactionHex);
 
     Request<?, NeoListAddress> listAddress();
+
+    Request<?, NeoSignMessage> signMessage(String message);
+
+    Request<?, NeoSignMessage> signMessage(String message, boolean avoidSignatureReplay);
 
     Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to, BigInteger amount);
 

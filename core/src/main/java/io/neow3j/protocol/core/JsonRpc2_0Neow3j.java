@@ -55,6 +55,7 @@ import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
@@ -1011,6 +1012,42 @@ public class JsonRpc2_0Neow3j extends Neow3j {
                 emptyList(),
                 neow3jService,
                 NeoListAddress.class);
+    }
+
+    /**
+     * Signs a message with all standard accounts in the opened wallet.
+     * <p>
+     * This signs the generated message payload directly. Use {@link #signMessage(String, boolean)} with
+     * {@code avoidSignatureReplay} set to {@code true} to sign a network-specific replay-protected digest instead.
+     *
+     * @param message the message to sign.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoSignMessage> signMessage(String message) {
+        return signMessage(message, false);
+    }
+
+    /**
+     * Signs a message with all standard accounts in the opened wallet.
+     * <p>
+     * If {@code avoidSignatureReplay} is {@code false}, the node signs the generated message payload directly. If it
+     * is {@code true}, the node signs a network-specific digest instead, equivalent to
+     * {@code SHA256(network || Hash256(payload))}. This prevents the produced signatures from being replayed on a
+     * different Neo network.
+     *
+     * @param message              the message to sign.
+     * @param avoidSignatureReplay whether to sign a network-specific replay-protected digest instead of the raw
+     *                             payload.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoSignMessage> signMessage(String message, boolean avoidSignatureReplay) {
+        return new Request<>(
+                "signmsg",
+                asList(message, avoidSignatureReplay),
+                neow3jService,
+                NeoSignMessage.class);
     }
 
     /**
