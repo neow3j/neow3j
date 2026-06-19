@@ -11,6 +11,7 @@ import io.neow3j.protocol.core.response.OracleResponseCode;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.witnessrule.AndCondition;
 import io.neow3j.transaction.witnessrule.BooleanCondition;
 import io.neow3j.transaction.witnessrule.CalledByContractCondition;
@@ -22,12 +23,15 @@ import io.neow3j.transaction.witnessrule.OrCondition;
 import io.neow3j.transaction.witnessrule.ScriptHashCondition;
 import io.neow3j.transaction.witnessrule.WitnessRule;
 import io.neow3j.transaction.witnessrule.WitnessAction;
+import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static io.neow3j.test.TestProperties.committeeAccountScriptHash;
@@ -36,6 +40,7 @@ import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.string;
+import static io.neow3j.types.ContractParameterType.SIGNATURE;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 
@@ -393,6 +398,41 @@ public class RequestTest extends RequestTester {
         verifyResult("{\"jsonrpc\":\"2.0\"," +
                 "\"method\":\"sendrawtransaction\"," +
                 "\"params\":[\"gAAAAdQFqwPnNqAconfZSxN3ETx+lhu0VQUR/h1AjzDHeoJlAAACm3z/2qZ0vq4Pkw6+YIWvkJPl/lazSlwiDM3Pbvwzb8UAypo7AAAAACO6JwPFMmPo1uUi3DIgMznc2O7pm3z/2qZ0vq4Pkw6+YIWvkJPl/lazSlwiDM3Pbvwzb8UAGnEYAgAAAClfg/g/xDn1bm4fsGLYnG9TgmPXAUFANxHjZvyZ53oRC2yWtfiCjvlWptXPpctjJzQZFJARsPMNxUWPqlnkhn0Kx1N+MkyYEku2kf7KXF3fbtIPStt3giMhAmW/kGvzhfvz93eDLlWoeZG8++GbCX+3xcouQCWk1eXWrA==\"]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testRelay() throws Exception {
+        String signature = "YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==";
+        Map<String, String> signatures = new HashMap<>();
+        signatures.put("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b", signature);
+
+        Map<String, ContractParametersContext.ContextItem> items = new HashMap<>();
+        items.put("0x69ecca587293047be4c59159bf8bc399985c160d",
+                new ContractParametersContext.ContextItem(
+                        "DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB",
+                        asList(new ContractParameter(SIGNATURE, Base64.decode(signature))),
+                        signatures));
+        ContractParametersContext context = new ContractParametersContext(
+                "0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb",
+                "AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=",
+                items,
+                894710606L);
+
+        neow3j.relay(context).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"relay\"," +
+                "\"params\":[{" +
+                "\"type\":\"Neo.Network.P2P.Payloads.Transaction\"," +
+                "\"hash\":\"0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb\"," +
+                "\"data\":\"AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=\"," +
+                "\"items\":{\"0x69ecca587293047be4c59159bf8bc399985c160d\":{" +
+                "\"script\":\"DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB\"," +
+                "\"parameters\":[{\"type\":\"Signature\",\"value\":\"" + signature + "\"}]," +
+                "\"signatures\":{\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\":" +
+                "\"" + signature + "\"}}}," +
+                "\"network\":894710606}]," +
                 "\"id\":1}");
     }
 
@@ -1055,6 +1095,36 @@ public class RequestTest extends RequestTester {
                 "\"NaCsFrmoJepqCJSxnTyb41CXVSjr3dMjuL\"," +
                 "10" +
                 "]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testSign() throws Exception {
+        Map<String, ContractParametersContext.ContextItem> items = new HashMap<>();
+        items.put("0x69ecca587293047be4c59159bf8bc399985c160d",
+                new ContractParametersContext.ContextItem(
+                        "DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB",
+                        asList(new ContractParameter(SIGNATURE)),
+                        new HashMap<>()));
+        ContractParametersContext context = new ContractParametersContext(
+                "0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb",
+                "AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=",
+                items,
+                894710606L);
+
+        neow3j.sign(context).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"sign\"," +
+                "\"params\":[{" +
+                "\"type\":\"Neo.Network.P2P.Payloads.Transaction\"," +
+                "\"hash\":\"0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb\"," +
+                "\"data\":\"AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=\"," +
+                "\"items\":{\"0x69ecca587293047be4c59159bf8bc399985c160d\":{" +
+                "\"script\":\"DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB\"," +
+                "\"parameters\":[{\"type\":\"Signature\"}]," +
+                "\"signatures\":{}}}," +
+                "\"network\":894710606}]," +
                 "\"id\":1}");
     }
 

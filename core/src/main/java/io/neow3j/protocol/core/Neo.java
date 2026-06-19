@@ -45,10 +45,12 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSign;
 import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
@@ -57,6 +59,7 @@ import io.neow3j.protocol.core.response.NeoValidateAddress;
 import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.TransactionSendToken;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.Signer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -141,6 +144,8 @@ public interface Neo {
 
     Request<?, NeoSendRawTransaction> sendRawTransaction(String rawTransactionHex);
 
+    Request<?, NeoRelay> relay(ContractParametersContext context);
+
     Request<?, NeoSubmitBlock> submitBlock(String serializedBlockAsHex);
 
     //endregion
@@ -221,6 +226,8 @@ public interface Neo {
     Request<?, NeoSendToAddress> sendToAddress(Hash160 tokenHash, Hash160 to, BigInteger amount);
 
     Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken);
+
+    Request<?, NeoSign> sign(ContractParametersContext context);
 
     Request<?, NeoCancelTransaction> cancelTransaction(Hash256 txHash, List<Hash160> signers, BigInteger extraFee);
 

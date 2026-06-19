@@ -51,10 +51,12 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSign;
 import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
@@ -66,6 +68,7 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.Signer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -651,6 +654,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     /**
+     * Relays a completed transaction {@link ContractParametersContext} to the network.
+     *
+     * @param context the completed transaction signature context to relay.
+     * @return the request object that returns the relayed transaction hash.
+     */
+    @Override
+    public Request<?, NeoRelay> relay(ContractParametersContext context) {
+        return new Request<>(
+                "relay",
+                asList(context),
+                neow3jService,
+                NeoRelay.class);
+    }
+
+    /**
      * Broadcasts a new block over the NEO network.
      *
      * @param serializedBlockAsHex the block in hexadecimal.
@@ -1214,6 +1232,21 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken) {
         return sendToAddress(txSendToken.getToken(), Hash160.fromAddress(txSendToken.getAddress()),
                 txSendToken.getValue());
+    }
+
+    /**
+     * Signs a transaction {@link ContractParametersContext} using the currently opened wallet.
+     *
+     * @param context the transaction signature context to sign.
+     * @return the request object that returns the updated {@link ContractParametersContext}.
+     */
+    @Override
+    public Request<?, NeoSign> sign(ContractParametersContext context) {
+        return new Request<>(
+                "sign",
+                asList(context),
+                neow3jService,
+                NeoSign.class);
     }
 
     /**
