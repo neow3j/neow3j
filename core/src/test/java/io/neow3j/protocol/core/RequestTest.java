@@ -402,6 +402,41 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testRelay() throws Exception {
+        String signature = "YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==";
+        Map<String, String> signatures = new HashMap<>();
+        signatures.put("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b", signature);
+
+        Map<String, ContractParametersContext.ContextItem> items = new HashMap<>();
+        items.put("0x69ecca587293047be4c59159bf8bc399985c160d",
+                new ContractParametersContext.ContextItem(
+                        "DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB",
+                        asList(new ContractParameter(SIGNATURE, Base64.decode(signature))),
+                        signatures));
+        ContractParametersContext context = new ContractParametersContext(
+                "0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb",
+                "AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=",
+                items,
+                894710606L);
+
+        neow3j.relay(context).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"relay\"," +
+                "\"params\":[{" +
+                "\"type\":\"Neo.Network.P2P.Payloads.Transaction\"," +
+                "\"hash\":\"0x7d33e9d9ce06fe9c3a0b1965d385f9a8ebd1fd63c4833d830edfcbd9bb3e51bb\"," +
+                "\"data\":\"AJNTPmQAAAAAAADrDAAAAAAAAH8ABG9uZXcDCQwUET4AAAAAAADrDAAAAAAAAH8=\"," +
+                "\"items\":{\"0x69ecca587293047be4c59159bf8bc399985c160d\":{" +
+                "\"script\":\"DCEEDOk0FGwS3/AIw0rGq7f1ahL4nmlNhpzWNtmWteFd4fxtB\"," +
+                "\"parameters\":[{\"type\":\"Signature\",\"value\":\"" + signature + "\"}]," +
+                "\"signatures\":{\"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\":" +
+                "\"" + signature + "\"}}}," +
+                "\"network\":894710606}]," +
+                "\"id\":1}");
+    }
+
+    @Test
     public void testSubmitBlock() throws Exception {
         neow3j.submitBlock("00000000000000000000000000000000").send();
 

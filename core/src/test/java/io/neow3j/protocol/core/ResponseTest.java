@@ -68,6 +68,7 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -1828,6 +1829,25 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testRelay() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoRelay relay = deserialiseResponse(NeoRelay.class);
+        assertThat(relay.getRelayedTransaction(), is(notNullValue()));
+        Hash256 expectedHash = new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770");
+        assertThat(relay.getRelayedTransaction().getHash(), is(expectedHash));
+        assertThat(relay.getRelayedTransaction(), is(new NeoRelay.RelayedTransaction(expectedHash)));
+    }
+
+    @Test
     public void testSubmitBlock() {
         buildResponse(
                 "{\n" +
@@ -3185,7 +3205,6 @@ public class ResponseTest extends ResponseTester {
         HashMap<String, String> sigs = new HashMap<>();
         sigs.put(expectedPubKey, expectedSigBase64);
         ContractParameter expectedSignatureParam = ContractParameter.signature(expectedSigBytes);
-
 
         ContractParametersContext.ContextItem expecteditem = new ContractParametersContext.ContextItem(expectedScript,
                 asList(expectedSignatureParam), sigs);
