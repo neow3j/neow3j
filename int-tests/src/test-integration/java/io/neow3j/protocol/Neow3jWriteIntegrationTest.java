@@ -105,7 +105,6 @@ public class Neow3jWriteIntegrationTest {
         Hash160 to = Hash160.fromAddress(RECIPIENT);
         io.neow3j.transaction.Transaction unsignedTx = new GasToken(getNeow3j())
                 .transfer(from, to, BigInteger.ONE)
-                .signers(calledByEntry(from))
                 .getUnsignedTransaction();
 
         ContractParametersContext context = unsignedTx.toContractParametersContext();

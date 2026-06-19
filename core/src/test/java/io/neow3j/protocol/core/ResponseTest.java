@@ -3206,10 +3206,10 @@ public class ResponseTest extends ResponseTester {
         sigs.put(expectedPubKey, expectedSigBase64);
         ContractParameter expectedSignatureParam = ContractParameter.signature(expectedSigBytes);
 
-        ContractParametersContext.ContextItem expecteditem = new ContractParametersContext.ContextItem(expectedScript,
+        ContractParametersContext.ContextItem expectedItem = new ContractParametersContext.ContextItem(expectedScript,
                 asList(expectedSignatureParam), sigs);
         String expectedScriptHash = "0x05859de95ccbbd5668e0f055b208273634d4657f";
-        expectedItems.put(expectedScriptHash, expecteditem);
+        expectedItems.put(expectedScriptHash, expectedItem);
 
         ContractParametersContext context = deserialiseResponse(NeoSign.class).getContext();
         assertThat(context, is(notNullValue()));
