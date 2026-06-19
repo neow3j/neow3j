@@ -55,6 +55,7 @@ import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSign;
 import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
@@ -66,6 +67,7 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.core.response.TransactionSigner;
 import io.neow3j.protocol.rx.JsonRpc2_0Rx;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.Signer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
@@ -1214,6 +1216,25 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     public Request<?, NeoSendToAddress> sendToAddress(TransactionSendToken txSendToken) {
         return sendToAddress(txSendToken.getToken(), Hash160.fromAddress(txSendToken.getAddress()),
                 txSendToken.getValue());
+    }
+
+    /**
+     * Signs a transaction {@link ContractParametersContext} using the currently opened wallet.
+     * <p>
+     * The context is compatible with the JSON produced and consumed by the Neo CLI {@code sign <json>} command. If the
+     * context is still incomplete after signing, the returned context can be passed to another node or to the CLI for
+     * additional signatures.
+     *
+     * @param context the transaction signature context to sign.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoSign> sign(ContractParametersContext context) {
+        return new Request<>(
+                "sign",
+                asList(context),
+                neow3jService,
+                NeoSign.class);
     }
 
     /**
