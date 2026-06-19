@@ -1020,6 +1020,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * This signs the generated message payload directly. Use {@link #signMessage(String, boolean)} with
      * {@code avoidSignatureReplay} set to {@code true} to sign a network-specific replay-protected digest instead.
+     * The payload is built from the UTF-8 bytes of the generated salt concatenated with {@code message}.
      *
      * @param message the message to sign.
      * @return the request object.
@@ -1035,7 +1036,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * If {@code avoidSignatureReplay} is {@code false}, the node signs the generated message payload directly. If it
      * is {@code true}, the node signs a network-specific digest instead, equivalent to
      * {@code SHA256(network || Hash256(payload))}. This prevents the produced signatures from being replayed on a
-     * different Neo network.
+     * different Neo network. The payload is built from the UTF-8 bytes of the generated salt concatenated with
+     * {@code message}.
      *
      * @param message              the message to sign.
      * @param avoidSignatureReplay whether to sign a network-specific replay-protected digest instead of the raw
@@ -1056,7 +1058,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * This verifies the signature against the generated message payload directly. Use
      * {@link #verifyMessage(String, String, String, String, boolean)} with {@code avoidSignatureReplay} set to
-     * {@code true} to verify a network-specific replay-protected digest instead.
+     * {@code true} to verify a network-specific replay-protected digest instead. The payload is rebuilt from the UTF-8
+     * bytes of {@code salt} concatenated with {@code message}.
      *
      * @param message   the original message that was signed.
      * @param signature the signature in hexadecimal format.
@@ -1074,7 +1077,8 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * <p>
      * If {@code avoidSignatureReplay} is {@code false}, the node verifies the signature against the generated message
      * payload directly. If it is {@code true}, the node verifies the signature against a network-specific digest
-     * instead, equivalent to {@code SHA256(network || Hash256(payload))}.
+     * instead, equivalent to {@code SHA256(network || Hash256(payload))}. The payload is rebuilt from the UTF-8 bytes
+     * of {@code salt} concatenated with {@code message}.
      *
      * @param message              the original message that was signed.
      * @param signature            the signature in hexadecimal format.
