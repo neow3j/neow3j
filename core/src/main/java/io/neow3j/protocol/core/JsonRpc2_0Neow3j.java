@@ -1220,13 +1220,9 @@ public class JsonRpc2_0Neow3j extends Neow3j {
 
     /**
      * Signs a transaction {@link ContractParametersContext} using the currently opened wallet.
-     * <p>
-     * The context is compatible with the JSON produced and consumed by the Neo CLI {@code sign <json>} command. If the
-     * context is still incomplete after signing, the returned context can be passed to another node or to the CLI for
-     * additional signatures.
      *
      * @param context the transaction signature context to sign.
-     * @return the request object.
+     * @return the request object that returns the updated {@link ContractParametersContext}.
      */
     @Override
     public Request<?, NeoSign> sign(ContractParametersContext context) {

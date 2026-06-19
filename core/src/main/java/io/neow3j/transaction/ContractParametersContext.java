@@ -9,11 +9,63 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * This class is used to produce a JSON object from a transaction that is then used for signing in neo-cli. The
- * {@code ContractParametersContext} contains the script of a Neo transaction and witnesses for that transaction,
- * i.e., verification scripts and the corresponding signatures.
+ * This class models a transaction signature context that can be exchanged with Neo CLI's {@code sign <json>} command
+ * and with the RPC {@code sign} method.
+ * <p>
+ * The {@code ContractParametersContext} contains an unsigned Neo transaction, its hash, the target network, and one
+ * context item per signer. Each context item contains the signer's verification script, the parameters required by
+ * that script, and any signatures that have already been collected.
+ * <p>
+ * The JSON produced by Neo CLI for incomplete signature contexts, e.g., multi-signature transactions, can be
+ * deserialized into this class and passed directly to the RPC {@code sign} method. Likewise, a context returned by
+ * the RPC {@code sign} method can be serialized and passed back to Neo CLI's {@code sign <json>} command on another
+ * node if more signatures are required.
+ * <p>
+ * Example RPC request payload:
+ * <pre>{@code
+ * {
+ *   "jsonrpc": "2.0",
+ *   "id": 1,
+ *   "method": "sign",
+ *   "params": [{
+ *     "type": "Neo.Network.P2P.Payloads.Transaction",
+ *     "hash": "A Hash256 transaction hash",
+ *     "data": "A Base64-encoded serialized unsigned transaction",
+ *     "items": {
+ *       "0xScriptHash": {
+ *         "script": "A Base64-encoded verification script",
+ *         "parameters": [{ "type": "Signature", "value": null }],
+ *         "signatures": { "Hex public key": "A Base64-encoded signature" }
+ *       }
+ *     },
+ *     "network": 894710606
+ *   }]
+ * }
+ * }</pre>
+ * <p>
+ * Example RPC response payload:
+ * <pre>{@code
+ * {
+ *   "jsonrpc": "2.0",
+ *   "id": 1,
+ *   "result": {
+ *     "type": "Neo.Network.P2P.Payloads.Transaction",
+ *     "hash": "A Hash256 transaction hash",
+ *     "data": "A Base64-encoded serialized unsigned transaction",
+ *     "items": {
+ *       "0xScriptHash": {
+ *         "script": "A Base64-encoded verification script",
+ *         "parameters": [{ "type": "Signature", "value": null }],
+ *         "signatures": { "Hex public key": "A Base64-encoded signature" }
+ *       }
+ *     },
+ *     "network": 894710606
+ *   }
+ * }
+ * }</pre>
  */
 public class ContractParametersContext {
 
@@ -27,10 +79,15 @@ public class ContractParametersContext {
     private String data;
 
     @JsonProperty
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
     private Map<String, ContextItem> items;
 
     @JsonProperty
     private long network;
+
+    public ContractParametersContext() {
+        this.items = new HashMap<>();
+    }
 
     public ContractParametersContext(String hash, String data, Map<String, ContextItem> items, long network) {
         this.hash = hash;
@@ -76,6 +133,38 @@ public class ContractParametersContext {
         return network;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ContractParametersContext)) {
+            return false;
+        }
+        ContractParametersContext that = (ContractParametersContext) o;
+        return getNetwork() == that.getNetwork() &&
+                Objects.equals(getType(), that.getType()) &&
+                Objects.equals(getHash(), that.getHash()) &&
+                Objects.equals(getData(), that.getData()) &&
+                Objects.equals(getItems(), that.getItems());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getType(), getHash(), getData(), getItems(), getNetwork());
+    }
+
+    @Override
+    public String toString() {
+        return "ContractParametersContext{" +
+                "type='" + type + '\'' +
+                ", hash='" + hash + '\'' +
+                ", data='" + data + '\'' +
+                ", items=" + items +
+                ", network=" + network +
+                '}';
+    }
+
     public static class ContextItem {
 
         @JsonProperty
@@ -86,7 +175,10 @@ public class ContractParametersContext {
         private List<ContractParameter> parameters = new ArrayList<>();
 
         @JsonProperty
-        private Map<String, String> signatures;
+        private Map<String, String> signatures = new HashMap<>();
+
+        public ContextItem() {
+        }
 
         public ContextItem(String script, List<ContractParameter> parameters, Map<String, String> signatures) {
             this.script = script;
@@ -113,6 +205,34 @@ public class ContractParametersContext {
          */
         public Map<String, String> getSignatures() {
             return signatures;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof ContextItem)) {
+                return false;
+            }
+            ContextItem that = (ContextItem) o;
+            return Objects.equals(getScript(), that.getScript()) &&
+                    Objects.equals(getParameters(), that.getParameters()) &&
+                    Objects.equals(getSignatures(), that.getSignatures());
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getScript(), getParameters(), getSignatures());
+        }
+
+        @Override
+        public String toString() {
+            return "ContextItem{" +
+                    "script='" + script + '\'' +
+                    ", parameters=" + parameters +
+                    ", signatures=" + signatures +
+                    '}';
         }
     }
 
