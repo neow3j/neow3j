@@ -54,6 +54,7 @@ import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.transaction.Signer;
@@ -203,6 +204,11 @@ public interface Neo {
     Request<?, NeoSignMessage> signMessage(String message);
 
     Request<?, NeoSignMessage> signMessage(String message, boolean avoidSignatureReplay);
+
+    Request<?, NeoVerifyMessage> verifyMessage(String message, String signature, String publicKey, String salt);
+
+    Request<?, NeoVerifyMessage> verifyMessage(String message, String signature, String publicKey, String salt,
+            boolean avoidSignatureReplay);
 
     Request<?, NeoSendFrom> sendFrom(Hash160 tokenHash, Hash160 from, Hash160 to, BigInteger amount);
 
