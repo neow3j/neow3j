@@ -38,6 +38,7 @@ import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.Signer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
@@ -55,6 +56,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
@@ -85,6 +87,7 @@ import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -104,6 +107,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -1200,6 +1204,43 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
                 sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
         assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
+    public void testSign() throws IOException {
+        String hash = "0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06";
+        String data = "AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS";
+        String accountScriptHash = "0x05859de95ccbbd5668e0f055b208273634d4657f";
+
+        String script = "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6";
+        ContractParameter param = new ContractParameter(ContractParameterType.SIGNATURE);
+        ContractParametersContext.ContextItem witness = new ContractParametersContext.ContextItem(script,
+                asList(param), emptyMap());
+        HashMap<String, ContractParametersContext.ContextItem> witnessMap = new HashMap<>();
+        witnessMap.put(accountScriptHash, witness);
+
+        long network = getNeow3j().getNetworkMagic();
+
+        ContractParametersContext context = new ContractParametersContext(hash, data, witnessMap, network);
+        ContractParametersContext signedContext = getNeow3j().sign(context).send().getContext();
+
+        assertEquals(hash, signedContext.getHash());
+        assertEquals(data, signedContext.getData());
+        assertEquals(network, signedContext.getNetwork());
+        // The items of the returned context should now have a witness
+        assertNotEquals(witnessMap, signedContext.getItems());
+
+        assertThat(signedContext.getItems().size(), is(1));
+        ContractParametersContext.ContextItem item = signedContext.getItems().get(accountScriptHash);
+        assertNotNull(item);
+        assertThat(item.getScript(), is(script));
+        assertThat(item.getParameters(), hasSize(1));
+        // The returned parameter should now contain a signature and thus no longer be equal to the initial param
+        ContractParameter paramWithSig = item.getParameters().get(0);
+        assertNotEquals(param, paramWithSig);
+
+        String signatureInParam = toHexString((byte[]) paramWithSig.getValue());
+        assertThat(hexStringToByteArray(signatureInParam).length, is(64));
     }
 
     // TokenTracker: Nep17
