@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.response.ConflictsAttribute;
 import io.neow3j.protocol.core.response.ContractManifest;
@@ -71,6 +72,7 @@ import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSign;
 import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
@@ -94,6 +96,7 @@ import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.witnessrule.WitnessRule;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.transaction.witnessrule.WitnessAction;
@@ -3139,6 +3142,78 @@ public class ResponseTest extends ResponseTester {
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
+    }
+
+    @Test
+    public void testSign() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 8,\n" +
+                        "    \"result\": {\n" +
+                        "        \"type\": \"Neo.Network.P2P.Payloads.Transaction\",\n" +
+                        "        \"hash\": \"0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06\",\n" +
+                        "        \"data\": \"AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS\",\n" +
+                        "        \"items\": {\n" +
+                        "            \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
+                        "                \"script\": \"EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6\",\n" +
+                        "                \"parameters\": [\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"Signature\",\n" +
+                        "                        \"value\": \"YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"signatures\": {\n" +
+                        "                    \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\": \"YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==\"\n" +
+                        "                }\n" +
+                        "            }\n" +
+                        "        },\n" +
+                        "        \"network\": 5195086\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedHash = "0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06";
+        String expectedData = "AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS";
+        long expectedNetwork = 5195086L;
+
+        HashMap<String, ContractParametersContext.ContextItem> expectedItems = new HashMap<>();
+        String expectedScript = "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6";
+        String expectedPubKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSigBase64 = "YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==";
+        byte[] expectedSigBytes = Base64.decode(expectedSigBase64);
+        HashMap<String, String> sigs = new HashMap<>();
+        sigs.put(expectedPubKey, expectedSigBase64);
+        ContractParameter expectedSignatureParam = ContractParameter.signature(expectedSigBytes);
+
+
+        ContractParametersContext.ContextItem expecteditem = new ContractParametersContext.ContextItem(expectedScript,
+                asList(expectedSignatureParam), sigs);
+        String expectedScriptHash = "0x05859de95ccbbd5668e0f055b208273634d4657f";
+        expectedItems.put(expectedScriptHash, expecteditem);
+
+        ContractParametersContext context = deserialiseResponse(NeoSign.class).getContext();
+        assertThat(context, is(notNullValue()));
+
+        assertThat(context.getType(), is("Neo.Network.P2P.Payloads.Transaction"));
+        assertThat(context.getHash(), is(expectedHash));
+        assertThat(context.getData(), is(expectedData));
+        assertThat(context.getNetwork(), is(expectedNetwork));
+        assertThat(context.getItems(), is(notNullValue()));
+        assertThat(context.getItems().size(), is(1));
+
+        ContractParametersContext.ContextItem item = context.getItems().get(expectedScriptHash);
+        assertThat(item, is(notNullValue()));
+        assertThat(item.getScript(), is(expectedScript));
+        assertThat(item.getParameters(), hasSize(1));
+        assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
+        assertArrayEquals(expectedSigBytes, (byte[]) item.getParameters().get(0).getValue());
+        assertThat(item.getSignatures().size(), is(1));
+        assertThat(item.getSignatures().get(expectedPubKey), is(expectedSigBase64));
+
+        ContractParametersContext expectedContext = new ContractParametersContext(expectedHash, expectedData,
+                expectedItems, expectedNetwork);
+        assertThat(context, is(expectedContext));
     }
 
     // TokenTracker: Nep17
