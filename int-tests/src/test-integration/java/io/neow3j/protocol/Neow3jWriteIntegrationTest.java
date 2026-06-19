@@ -37,7 +37,6 @@ import java.math.BigInteger;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
-import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
