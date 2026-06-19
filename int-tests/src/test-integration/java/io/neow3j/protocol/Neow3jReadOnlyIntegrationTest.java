@@ -31,6 +31,7 @@ import io.neow3j.protocol.core.response.NeoNetworkFee;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
 import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
@@ -1167,6 +1168,40 @@ public class Neow3jReadOnlyIntegrationTest {
 
         String varByteSize = toHexStringNoPrefix(BigInteger.valueOf(salt.length() + messageToSign.length()));
         assertThat(signedMessage.getPayload(), is("010001f0" + varByteSize + payloadHex + "0000"));
+    }
+
+    @Test
+    public void verifyMessage() throws IOException {
+        String message = "Hello world!";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt())
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
+    public void verifyMessage_withNetwork() throws IOException {
+        String message = "Hello world!";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message, true).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt(), true)
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
     }
 
     // TokenTracker: Nep17
