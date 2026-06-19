@@ -874,6 +874,46 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testSignMessage() throws Exception {
+        neow3j.signMessage("message").send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"signmsg\"," +
+                "\"params\":[\"message\",false]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testSignMessageAvoidSignatureReplay() throws Exception {
+        neow3j.signMessage("message", true).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"signmsg\"," +
+                "\"params\":[\"message\",true]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testVerifyMessage() throws Exception {
+        neow3j.verifyMessage("message", "signatureHex", "publicKeyHex", "saltHex").send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"verifymsg\"," +
+                "\"params\":[\"message\",\"signatureHex\",\"publicKeyHex\",\"saltHex\",false]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testVerifyMessageAvoidSignatureReplay() throws Exception {
+        neow3j.verifyMessage("message", "signatureHex", "publicKeyHex", "saltHex", true).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"verifymsg\"," +
+                "\"params\":[\"message\",\"signatureHex\",\"publicKeyHex\",\"saltHex\",true]," +
+                "\"id\":1}");
+    }
+
+    @Test
     public void testSendFrom() throws Exception {
         neow3j.sendFrom(
                 new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),

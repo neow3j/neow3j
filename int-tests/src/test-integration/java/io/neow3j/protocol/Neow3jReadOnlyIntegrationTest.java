@@ -29,7 +29,9 @@ import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoListPlugins.Plugin;
 import io.neow3j.protocol.core.response.NeoNetworkFee;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
@@ -43,7 +45,6 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -78,6 +79,11 @@ import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -929,7 +935,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScript(Numeric.toHexString(script), signer)
+                .invokeScript(toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 
@@ -957,7 +963,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScriptDiagnostics(Numeric.toHexString(script), signer)
+                .invokeScriptDiagnostics(toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 
@@ -1097,6 +1103,103 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(addresses);
         assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+    }
+
+    @Test
+    public void testSignMessage() throws IOException {
+        String messageToSign = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(messageToSign).send().getSignedMessage();
+
+        assertThat(signedMessage.getCurve(), is("secp256r1"));
+        assertThat(signedMessage.getAlgorithm(), is("payload = 010001f0 + VarBytes(Salt + Message) + 0000"));
+        assertThat(signedMessage.getMode(), is("Sign(payload)"));
+
+        List<NeoSignMessage.SignedMessage.MessageSignature> sigs = signedMessage.getSignatures();
+        assertThat(sigs, hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature sig = sigs.get(0);
+        assertThat(sig.getAddress(), is("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP"));
+        assertThat(sig.getPublicKey(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        String signature = sig.getSignature();
+        assertNotNull(signature);
+        assertTrue(isValidHexString(signature));
+        assertThat(hexStringToByteArray(signature).length, is(64));
+
+        String salt = sig.getSalt();
+        assertNotNull(salt);
+        assertTrue(isValidHexString(salt));
+        assertThat(hexStringToByteArray(salt).length, is(16));
+
+        byte[] paramBytes = (salt + messageToSign).getBytes(UTF_8);
+        String varByteSizeHex = toHexStringNoPrefix(BigInteger.valueOf(paramBytes.length));
+        String paramBytesHex = toHexStringNoPrefix(paramBytes);
+        assertThat(signedMessage.getPayload(), is("010001f0" + varByteSizeHex + paramBytesHex + "0000"));
+    }
+
+    @Test
+    public void testSignMessage_withNetwork() throws IOException {
+        String messageToSign = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(messageToSign, true)
+                .send().getSignedMessage();
+
+        assertThat(signedMessage.getCurve(), is("secp256r1"));
+        assertThat(signedMessage.getAlgorithm(), is("payload = 010001f0 + VarBytes(Salt + Message) + 0000"));
+        assertThat(signedMessage.getMode(), is("Sign(SHA256(network || Hash256(payload)))"));
+
+        List<NeoSignMessage.SignedMessage.MessageSignature> sigs = signedMessage.getSignatures();
+        assertThat(sigs, hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature sig = sigs.get(0);
+        assertThat(sig.getAddress(), is("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP"));
+        assertThat(sig.getPublicKey(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        String signature = sig.getSignature();
+        assertNotNull(signature);
+        assertTrue(isValidHexString(signature));
+        assertThat(hexStringToByteArray(signature).length, is(64));
+
+        String salt = sig.getSalt();
+        assertNotNull(salt);
+        assertTrue(isValidHexString(salt));
+        assertThat(hexStringToByteArray(salt).length, is(16));
+
+        byte[] paramBytes = (salt + messageToSign).getBytes(UTF_8);
+        String varByteSizeHex = toHexStringNoPrefix(BigInteger.valueOf(paramBytes.length));
+        String paramBytesHex = toHexStringNoPrefix(paramBytes);
+        assertThat(signedMessage.getPayload(), is("010001f0" + varByteSizeHex + paramBytesHex + "0000"));
+    }
+
+    @Test
+    public void testVerifyMessage() throws IOException {
+        String message = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt())
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
+    public void testVerifyMessage_withNetwork() throws IOException {
+        String message = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message, true).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt(), true)
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
     }
 
     // TokenTracker: Nep17
