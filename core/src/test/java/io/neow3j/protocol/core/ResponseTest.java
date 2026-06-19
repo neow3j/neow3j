@@ -71,6 +71,7 @@ import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
@@ -2767,6 +2768,62 @@ public class ResponseTest extends ResponseTester {
         assertThat(neoAddress.getHasKey(), is(false));
         assertThat(neoAddress.getLabel(), is(nullValue()));
         assertThat(neoAddress.getWatchOnly(), is(true));
+    }
+
+    @Test
+    public void testSignMessage() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"curve\": \"secp256r1\",\n" +
+                        "        \"algorithm\": \"payload = 010001f0 + VarBytes(Salt + Message) + 0000\",\n" +
+                        "        \"mode\": \"Sign(payload)\",\n" +
+                        "        \"payload\": \"010001f02c613733343866323434353962333830306233303033616662313636396464343248656c6c6f20776f726c64210000\",\n" +
+                        "        \"signatures\": [\n" +
+                        "            {\n" +
+                        "                \"address\": \"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\",\n" +
+                        "                \"publickey\": \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\",\n" +
+                        "                \"signature\": \"39675922cd5ffcc27bb2174400133d737f0e8d2bce8526c3a03247616e93ab6a953bd18ac2c4350566cc6ec7fae36cf9bcbf05b4649846aeaf6be32d1751f37f\",\n" +
+                        "                \"salt\": \"a7348f24459b3800b3003afb1669dd42\"\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedCurve = "secp256r1";
+        String expectedAlgorithm = "payload = 010001f0 + VarBytes(Salt + Message) + 0000";
+        String expectedMode = "Sign(payload)";
+        String expectedPayload = "010001f02c613733343866323434353962333830306233303033616662313636396464343248656c6c6f20776f726c64210000";
+
+        String expectedSigAddress = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+        String expectedSigPublicKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSignature = "39675922cd5ffcc27bb2174400133d737f0e8d2bce8526c3a03247616e93ab6a953bd18ac2c4350566cc6ec7fae36cf9bcbf05b4649846aeaf6be32d1751f37f";
+        String expectedSalt = "a7348f24459b3800b3003afb1669dd42";
+
+        NeoSignMessage.SignedMessage signedMessage = deserialiseResponse(NeoSignMessage.class).getSignedMessage();
+        assertThat(signedMessage, is(notNullValue()));
+        assertThat(signedMessage.getCurve(), is(expectedCurve));
+        assertThat(signedMessage.getAlgorithm(), is(expectedAlgorithm));
+        assertThat(signedMessage.getMode(), is(expectedMode));
+        assertThat(signedMessage.getPayload(), is(expectedPayload));
+        assertThat(signedMessage.getSignatures(), hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature firstSig = signedMessage.getSignatures().get(0);
+        assertThat(firstSig.getAddress(), is(expectedSigAddress));
+        assertThat(firstSig.getPublicKey(), is(expectedSigPublicKey));
+        assertThat(firstSig.getSignature(), is(expectedSignature));
+        assertThat(firstSig.getSalt(), is(expectedSalt));
+
+        NeoSignMessage.SignedMessage.MessageSignature expectedMessageSignature =
+                new NeoSignMessage.SignedMessage.MessageSignature(expectedSigAddress, expectedSigPublicKey,
+                        expectedSignature, expectedSalt);
+        assertEquals(expectedMessageSignature, firstSig);
+
+        NeoSignMessage.SignedMessage expectedSignedMessage = new NeoSignMessage.SignedMessage(expectedCurve,
+                expectedAlgorithm, expectedMode, expectedPayload, asList(expectedMessageSignature));
+        assertEquals(expectedSignedMessage, signedMessage);
     }
 
     @Test

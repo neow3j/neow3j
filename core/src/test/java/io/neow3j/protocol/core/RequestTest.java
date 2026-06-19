@@ -874,6 +874,26 @@ public class RequestTest extends RequestTester {
     }
 
     @Test
+    public void testSignMessage() throws Exception {
+        neow3j.signMessage("message").send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"signmsg\"," +
+                "\"params\":[\"message\",false]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testSignMessageAvoidSignatureReplay() throws Exception {
+        neow3j.signMessage("message", true).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"signmsg\"," +
+                "\"params\":[\"message\",true]," +
+                "\"id\":1}");
+    }
+
+    @Test
     public void testSendFrom() throws Exception {
         neow3j.sendFrom(
                 new Hash160("0xde5f57d430d3dece511cf975a8d37848cb9e0525"),
