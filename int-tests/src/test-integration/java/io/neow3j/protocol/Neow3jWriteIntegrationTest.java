@@ -1,10 +1,13 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.GasToken;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoCancelTransaction;
 import io.neow3j.protocol.core.response.NeoGetTransaction;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -16,10 +19,12 @@ import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.utils.Await;
+import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -31,6 +36,8 @@ import java.math.BigInteger;
 
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
@@ -88,6 +95,31 @@ public class Neow3jWriteIntegrationTest {
         RawTransaction rawTx = sendRawTransaction.getSendRawTransaction();
         Hash256 hash = rawTx.getHash();
         assertThat(hash, is(new Hash256("0xda5a53a79ac399e07c6eea366c192a4942fa930d6903ffc10b497f834a538fee")));
+    }
+
+    @Test
+    public void testRelay() throws Throwable {
+        String pubKeyStr = defaultAccountPublicKey();
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(pubKeyStr);
+        Account from = Account.fromPublicKey(pubKey);
+        Hash160 to = Hash160.fromAddress(RECIPIENT);
+        io.neow3j.transaction.Transaction unsignedTx = new GasToken(getNeow3j())
+                .transfer(from, to, BigInteger.ONE)
+                .signers(calledByEntry(from))
+                .getUnsignedTransaction();
+
+        ContractParametersContext context = unsignedTx.toContractParametersContext();
+        ContractParametersContext signedContext = getNeow3j().sign(context).send().getContext();
+
+        NeoRelay relay = getNeow3j()
+                .relay(signedContext)
+                .send();
+
+        Hash256 hash = relay.getRelayedTransaction().getHash();
+        assertThat(hash, is(unsignedTx.getTxId()));
+        waitUntilTransactionIsExecuted(hash, getNeow3j());
+        assertThat(neow3j.getApplicationLog(hash).send().getApplicationLog().getFirstExecution().getState(),
+                is(NeoVMStateType.HALT));
     }
 
     @Disabled("Future work, act as a consensus to submit blocks.")
