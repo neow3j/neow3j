@@ -76,6 +76,7 @@ import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
@@ -2824,6 +2825,45 @@ public class ResponseTest extends ResponseTester {
         NeoSignMessage.SignedMessage expectedSignedMessage = new NeoSignMessage.SignedMessage(expectedCurve,
                 expectedAlgorithm, expectedMode, expectedPayload, asList(expectedMessageSignature));
         assertEquals(expectedSignedMessage, signedMessage);
+    }
+
+    @Test
+    public void testVerifyMessage() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"address\": \"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\",\n" +
+                        "        \"publickey\": \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\",\n" +
+                        "        \"signature\": \"f37cc3ec451cff21810ec569b7173edc3e8218dc6d46bec14e6e561c2d45beee495459b89cabb85fc522d6eece1a0dbe2373b06f7b38f521749c225eda7d5870\",\n" +
+                        "        \"salt\": \"9f88d5333cabbbeace6d1d183286569e\",\n" +
+                        "        \"status\": \"Valid\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedAddress = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+        String expectedPublicKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSignature =
+                "f37cc3ec451cff21810ec569b7173edc3e8218dc6d46bec14e6e561c2d45beee495459b89cabb85fc522d6eece1a0dbe2373b06f7b38f521749c225eda7d5870";
+        String expectedSalt = "9f88d5333cabbbeace6d1d183286569e";
+        String expectedStatus = "Valid";
+
+        NeoVerifyMessage.VerifiedMessage verifiedMessage =
+                deserialiseResponse(NeoVerifyMessage.class).getVerifiedMessage();
+        assertThat(verifiedMessage, is(notNullValue()));
+        assertThat(verifiedMessage.getAddress(), is(expectedAddress));
+        assertThat(verifiedMessage.getPublicKey(), is(expectedPublicKey));
+        assertThat(verifiedMessage.getSignature(), is(expectedSignature));
+        assertThat(verifiedMessage.getSalt(), is(expectedSalt));
+        assertThat(verifiedMessage.getStatus(), is(expectedStatus));
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage =
+                new NeoVerifyMessage.VerifiedMessage(expectedAddress, expectedPublicKey, expectedSignature,
+                        expectedSalt, expectedStatus);
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
     }
 
     @Test
