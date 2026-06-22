@@ -23,11 +23,13 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
@@ -265,6 +267,10 @@ public interface Neo {
     // region DeferredRelay
 
     Request<?, NeoGetPendingValidUntilRelay> getPendingValidUntilRelay();
+
+    Request<?, NeoGetPendingTransaction> getPendingTransaction(Hash256 txHash);
+
+    Request<?, NeoGetRawPendingTransaction> getRawPendingTransaction(Hash256 txHash);
 
     // endregion
 
