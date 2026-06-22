@@ -6,6 +6,7 @@ import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoCancelTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetTransaction;
 import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
@@ -18,12 +19,12 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
-import io.neow3j.utils.Await;
 import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -33,17 +34,28 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
 
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -69,10 +81,9 @@ public class Neow3jWriteIntegrationTest {
     public void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
-        getNeow3j().openWallet(IntegrationTestHelper.NODE_WALLET_PATH, IntegrationTestHelper.NODE_WALLET_PASSWORD)
-                .send();
+        getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", IntegrationTestHelper.NEO_HASH, getNeow3j());
+        waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
     }
 
     private static Neow3j getNeow3j() {
@@ -102,16 +113,13 @@ public class Neow3jWriteIntegrationTest {
         ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(pubKeyStr);
         Account from = Account.fromPublicKey(pubKey);
         Hash160 to = Hash160.fromAddress(RECIPIENT);
-        io.neow3j.transaction.Transaction unsignedTx = new GasToken(getNeow3j())
-                .transfer(from, to, BigInteger.ONE)
+        io.neow3j.transaction.Transaction unsignedTx = new GasToken(getNeow3j()).transfer(from, to, BigInteger.ONE)
                 .getUnsignedTransaction();
 
         ContractParametersContext context = unsignedTx.toContractParametersContext();
         ContractParametersContext signedContext = getNeow3j().sign(context).send().getContext();
 
-        NeoRelay relay = getNeow3j()
-                .relay(signedContext)
-                .send();
+        NeoRelay relay = getNeow3j().relay(signedContext).send();
 
         Hash256 hash = relay.getRelayedTransaction().getHash();
         assertThat(hash, is(unsignedTx.getTxId()));
@@ -120,12 +128,63 @@ public class Neow3jWriteIntegrationTest {
                 is(NeoVMStateType.HALT));
     }
 
+    // DeferredRelay
+
+    @Test
+    public void testGetPendingValidUntilRelay() throws Throwable {
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay pendingState = getNeow3j().getPendingValidUntilRelay()
+                .send().getPendingValidUntilRelay();
+        assertThat(pendingState.getPending(), hasSize(0));
+
+        BigInteger validUntilBlock = BigInteger.valueOf(100000);
+
+        // A node only accepts a transaction for normal relay if its valid-until block is within the node's allowed
+        // future-validity window. The protocol setting for that window is called MaxValidUntilBlockIncrement. This
+        // test sets the transaction beyond that window, so relay returns NotYetValid. However, if the node has the
+        // DeferredRelay plugin enabled, it keeps the fully signed transaction locally and retries it when
+        // its validity window opens.
+        Account signerAccount = Account.fromVerificationScript(new VerificationScript(
+                asList(new ECKeyPair.ECPublicKey(defaultAccountPublicKey())), 1));
+        io.neow3j.transaction.Transaction transaction = new GasToken(getNeow3j()).transfer(DEFAULT_ACCOUNT_HASH,
+                        new Hash160("5544b9af09e62822a775f407c059cef8f929f4ff"), BigInteger.TEN)
+                .validUntilBlock(validUntilBlock.longValue())
+                .signers(calledByEntry(signerAccount))
+                .getUnsignedTransaction();
+        Hash256 txHash = transaction.getTxId();
+        ContractParametersContext unsignedContext = transaction.toContractParametersContext();
+        ContractParametersContext signedContext = getNeow3j().sign(unsignedContext).send().getContext();
+
+        NeoRelay relayResponse = getNeow3j().relay(signedContext).send();
+        assertThat(relayResponse.hasError(), is(true));
+        assertThat(relayResponse.getError().getMessage(), containsString("Expired transaction - NotYetValid"));
+
+        pendingState = getNeow3j().getPendingValidUntilRelay().send().getPendingValidUntilRelay();
+
+        assertNotNull(pendingState);
+        assertThat(pendingState.getEnabled(), is(true));
+        assertNotNull(pendingState.getHeight());
+        assertNotNull(pendingState.getMaxValidUntilBlockIncrement());
+        assertThat(pendingState.getPendingCheckFrequency(), is(1));
+        assertThat(pendingState.getPendingRelayMaxTransactions(), is(1000));
+
+        List<NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction> pendingTransactions =
+                pendingState.getPending();
+        assertNotNull(pendingTransactions);
+        assertThat(pendingTransactions, hasSize(1));
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction pendingTx = pendingTransactions.get(0);
+        assertThat(pendingTx.getHash(), is(txHash));
+        assertThat(pendingTx.getValidUntilBlock(), is(validUntilBlock));
+        assertThat(pendingTx.getSize(), is(246));
+        assertThat(pendingTx.getBlocksUntilDeadline(), greaterThan(BigInteger.valueOf(99900)));
+        assertThat(pendingTx.getBlocksUntilDeadline(), lessThan(BigInteger.valueOf(100100)));
+
+        assertThat(pendingState.getCount(), is(pendingTransactions.size()));
+    }
+
     @Disabled("Future work, act as a consensus to submit blocks.")
     @Test
     public void testSubmitBlock() throws IOException {
-        NeoSubmitBlock submitBlock = getNeow3j()
-                .submitBlock("")
-                .send();
+        NeoSubmitBlock submitBlock = getNeow3j().submitBlock("").send();
 
         Boolean getSubmitBlock = submitBlock.getSubmitBlock();
 
@@ -134,10 +193,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendFrom() throws IOException {
-        NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(
-                        IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.COMMITTEE_HASH,
-                        IntegrationTestHelper.DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(NEO_HASH, COMMITTEE_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -149,11 +205,8 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
-        TransactionSendToken txSendToken = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN,
-                defaultAccountAddress());
-        NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(IntegrationTestHelper.COMMITTEE_HASH, txSendToken)
-                .send();
+        TransactionSendToken txSendToken = new TransactionSendToken(NEO_HASH, BigInteger.TEN, defaultAccountAddress());
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(COMMITTEE_HASH, txSendToken).send();
 
         Transaction tx = sendFrom.getSendFrom();
 
@@ -164,12 +217,10 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendMany() throws IOException {
-        NeoSendMany sendMany = getNeow3j()
-                .sendMany(asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
-                                defaultAccountAddress()),
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
-                .send();
+        NeoSendMany sendMany = getNeow3j().sendMany(asList(
+                new TransactionSendToken(NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                new TransactionSendToken(NEO_HASH, BigInteger.TEN, RECIPIENT))
+        ).send();
 
         assertNotNull(sendMany.getSendMany());
 
@@ -182,26 +233,26 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendManyWithFrom() throws IOException {
-        NeoSendMany response = getNeow3j()
-                .sendMany(IntegrationTestHelper.COMMITTEE_HASH, asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
-                                defaultAccountAddress()),
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
-                .send();
+        NeoSendMany response = getNeow3j().sendMany(
+                COMMITTEE_HASH,
+                asList(
+                        new TransactionSendToken(NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                        new TransactionSendToken(NEO_HASH, BigInteger.TEN, RECIPIENT)
+                )
+        ).send();
 
         assertNotNull(response.getSendMany());
         Transaction tx = response.getSendMany();
         assertThat(tx.getSender(), is(committeeAccountAddress()));
 
         waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
-        Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send()
-                .getApplicationLog().getExecutions().get(0);
+        Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send().getApplicationLog()
+                .getExecutions().get(0);
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT);
-        InvocationResult invocationResult = neow3j.invokeFunctionDiagnostics(IntegrationTestHelper.NEO_HASH,
-                        "balanceOf", asList(hash160(recipient2Hash160))).send()
-                .getInvocationResult();
+        InvocationResult invocationResult = neow3j.invokeFunctionDiagnostics(NEO_HASH, "balanceOf",
+                asList(hash160(recipient2Hash160))).send().getInvocationResult();
         assertThat(invocationResult.getStack().get(0).getInteger().intValue(), is(10));
 
         Diagnostics diagnostics = invocationResult.getDiagnostics();
@@ -211,9 +262,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendMany_Empty_Transaction() throws IOException {
-        NeoSendMany sendMany = getNeow3j()
-                .sendMany(emptyList())
-                .send();
+        NeoSendMany sendMany = getNeow3j().sendMany(emptyList()).send();
 
         assertThrows(RpcResponseErrorException.class, sendMany::getSendMany);
         assertNotNull(sendMany.getError());
@@ -223,9 +272,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress() throws IOException {
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.DEFAULT_ACCOUNT_HASH,
-                        BigInteger.TEN)
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();
@@ -235,11 +282,9 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws IOException {
-        TransactionSendToken transactionSendToken =
-                new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, defaultAccountAddress());
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(transactionSendToken)
-                .send();
+        TransactionSendToken transactionSendToken = new TransactionSendToken(NEO_HASH, BigInteger.TEN,
+                defaultAccountAddress());
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendToken).send();
 
         Transaction tx = sendToAddress.getSendToAddress();
 
@@ -248,15 +293,13 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException {
-        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
-                defaultAccountAddress());
+        TransactionSendToken param = new TransactionSendToken(NEO_HASH, BigInteger.ONE, defaultAccountAddress());
         Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
 
         waitUntilTransactionIsExecuted(tx.getHash(), getNeow3j());
 
-        NeoCancelTransaction cancel = getNeow3j()
-                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
-                .send();
+        NeoCancelTransaction cancel = getNeow3j().cancelTransaction(tx.getHash(),
+                asList(Hash160.fromAddress(defaultAccountAddress())), null).send();
 
         assertThat(cancel.getError().getMessage(),
                 is("Inventory already exists - This tx is already confirmed, can't be cancelled."));
@@ -268,13 +311,11 @@ public class Neow3jWriteIntegrationTest {
      */
     @Test
     public void cancelTransactionSucceedsWithSingleSigner() throws IOException {
-        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
-                defaultAccountAddress());
+        TransactionSendToken param = new TransactionSendToken(NEO_HASH, BigInteger.ONE, defaultAccountAddress());
         Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
 
-        NeoCancelTransaction cancel = getNeow3j()
-                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
-                .send();
+        NeoCancelTransaction cancel = getNeow3j().cancelTransaction(tx.getHash(),
+                asList(Hash160.fromAddress(defaultAccountAddress())), null).send();
 
         assertFalse(cancel.hasError());
         Transaction cancelTx = cancel.getTransaction();
