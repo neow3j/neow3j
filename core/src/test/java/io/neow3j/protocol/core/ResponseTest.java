@@ -46,11 +46,13 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
@@ -3637,6 +3639,69 @@ public class ResponseTest extends ResponseTester {
                 new NeoGetPendingValidUntilRelay.PendingValidUntilRelay(BigInteger.valueOf(123),
                         5760L, asList(expectedPendingTransaction), true, 1, 1000, 1);
         assertEquals(expectedPendingState, pendingState);
+    }
+
+    @Test
+    public void testGetRawPendingTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": \"AAECAwQ=\"\n" +
+                        "}"
+        );
+
+        NeoGetRawPendingTransaction response = deserialiseResponse(NeoGetRawPendingTransaction.class);
+
+        assertThat(response.getRawPendingTransaction(), is("AAECAwQ="));
+    }
+
+    @Test
+    public void testGetPendingTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
+                        "        \"size\": 234,\n" +
+                        "        \"version\": 0,\n" +
+                        "        \"nonce\": 123,\n" +
+                        "        \"sender\": \"NUVaphLqZj5KaTXsQ1TtnwfoKCtEieN9cU\",\n" +
+                        "        \"sysfee\": \"1234\",\n" +
+                        "        \"netfee\": \"567\",\n" +
+                        "        \"validuntilblock\": 456,\n" +
+                        "        \"signers\": [],\n" +
+                        "        \"attributes\": [],\n" +
+                        "        \"script\": \"AQID\",\n" +
+                        "        \"witnesses\": [],\n" +
+                        "        \"blocksuntildeadline\": 333\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetPendingTransaction response = deserialiseResponse(NeoGetPendingTransaction.class);
+        NeoGetPendingTransaction.PendingTransaction tx = response.getPendingTransaction();
+
+        assertThat(tx, is(notNullValue()));
+        assertThat(tx.getHash(),
+                is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
+        assertThat(tx.getSize(), is(234L));
+        assertThat(tx.getVersion(), is(0));
+        assertThat(tx.getNonce(), is(123L));
+        assertThat(tx.getSender(), is("NUVaphLqZj5KaTXsQ1TtnwfoKCtEieN9cU"));
+        assertThat(tx.getSysFee(), is("1234"));
+        assertThat(tx.getNetFee(), is("567"));
+        assertThat(tx.getValidUntilBlock(), is(456L));
+        assertThat(tx.getSigners(), is(empty()));
+        assertThat(tx.getAttributes(), is(empty()));
+        assertThat(tx.getScript(), is("AQID"));
+        assertThat(tx.getWitnesses(), is(empty()));
+        assertThat(tx.getBlocksUntilDeadline(), is(BigInteger.valueOf(333)));
+        assertThat(tx.getBlockHash(), is(nullValue()));
+        assertThat(tx.getConfirmations(), is(0));
+        assertThat(tx.getBlockTime(), is(0L));
+        assertThat(tx.getVMState(), is(nullValue()));
     }
 
     // StateService
