@@ -1206,6 +1206,18 @@ public class RequestTest extends RequestTester {
         );
     }
 
+    // DeferredRelay
+
+    @Test
+    public void testGetPendingValidUntilRelay() throws Exception {
+        neow3j.getPendingValidUntilRelay().send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getpendingvaliduntilrelay\"," +
+                "\"params\":[]," +
+                "\"id\":1}");
+    }
+
     // StateService
 
     @Test

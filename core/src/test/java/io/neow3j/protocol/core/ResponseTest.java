@@ -46,6 +46,7 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
@@ -3585,6 +3586,57 @@ public class ResponseTest extends ResponseTester {
         thrown = assertThrows(IndexOutOfBoundsException.class,
                 () -> getApplicationLog.getResult().getFirstExecution().getFirstNotification());
         assertThat(thrown.getMessage(), containsString("did not send any notifications"));
+    }
+
+    // DeferredRelay
+
+    @Test
+    public void testGetPendingValidUntilRelay() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"height\": 123,\n" +
+                        "        \"maxvaliduntilblockincrement\": 5760,\n" +
+                        "        \"pending\": [\n" +
+                        "            {\n" +
+                        "                \"hash\": \"0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770\",\n" +
+                        "                \"validuntilblock\": 456,\n" +
+                        "                \"size\": 234,\n" +
+                        "                \"blocksuntildeadline\": 333\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"enabled\": true,\n" +
+                        "        \"pendingcheckfrequency\": 1,\n" +
+                        "        \"pendingrelaymaxtransactions\": 1000,\n" +
+                        "        \"count\": 1\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetPendingValidUntilRelay response = deserialiseResponse(NeoGetPendingValidUntilRelay.class);
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay pendingState = response.getPendingValidUntilRelay();
+
+        assertThat(pendingState, is(notNullValue()));
+        assertThat(pendingState.getHeight(), is(BigInteger.valueOf(123)));
+        assertThat(pendingState.getMaxValidUntilBlockIncrement(), is(5760L));
+        assertThat(pendingState.getEnabled(), is(true));
+        assertThat(pendingState.getPendingCheckFrequency(), is(1));
+        assertThat(pendingState.getPendingRelayMaxTransactions(), is(1000));
+        assertThat(pendingState.getCount(), is(1));
+        assertThat(pendingState.getPending(), hasSize(1));
+
+        Hash256 expectedHash = new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770");
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction expectedPendingTransaction =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction(
+                        expectedHash, BigInteger.valueOf(456), 234, BigInteger.valueOf(333));
+        assertThat(pendingState.getPending().get(0), is(expectedPendingTransaction));
+
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay expectedPendingState =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay(BigInteger.valueOf(123),
+                        5760L, asList(expectedPendingTransaction), true, 1, 1000, 1);
+        assertEquals(expectedPendingState, pendingState);
     }
 
     // StateService
