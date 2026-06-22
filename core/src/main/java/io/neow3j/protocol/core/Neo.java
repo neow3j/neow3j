@@ -23,6 +23,7 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
@@ -260,6 +261,12 @@ public interface Neo {
     Request<?, NeoGetApplicationLog> getApplicationLog(Hash256 txHash);
 
     //endregion
+
+    // region DeferredRelay
+
+    Request<?, NeoGetPendingValidUntilRelay> getPendingValidUntilRelay();
+
+    // endregion
 
     //region StateService
 

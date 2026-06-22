@@ -29,6 +29,7 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
@@ -1299,6 +1300,23 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     // endregion ApplicationLogs
+    // region DeferredRelay
+
+    /**
+     * Returns NotYetValid transactions queued by the connected node's DeferredRelay plugin and its settings.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetPendingValidUntilRelay> getPendingValidUntilRelay() {
+        return new Request<>(
+                "getpendingvaliduntilrelay",
+                emptyList(),
+                neow3jService,
+                NeoGetPendingValidUntilRelay.class);
+    }
+
+    // endregion
     // region TokenTracker NEP-17
 
     /**
