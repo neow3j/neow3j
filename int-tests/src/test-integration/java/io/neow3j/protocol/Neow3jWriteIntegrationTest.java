@@ -6,7 +6,9 @@ import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoCancelTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetTransaction;
 import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
@@ -131,7 +133,8 @@ public class Neow3jWriteIntegrationTest {
     // DeferredRelay
 
     @Test
-    public void testGetPendingValidUntilRelay() throws Throwable {
+    public void testDeferredRelayPendingTransactionRpcMethods() throws Throwable {
+        // Start from an empty DeferredRelay queue so the transaction added below is the only expected entry.
         NeoGetPendingValidUntilRelay.PendingValidUntilRelay pendingState = getNeow3j().getPendingValidUntilRelay()
                 .send().getPendingValidUntilRelay();
         assertThat(pendingState.getPending(), hasSize(0));
@@ -154,10 +157,13 @@ public class Neow3jWriteIntegrationTest {
         ContractParametersContext unsignedContext = transaction.toContractParametersContext();
         ContractParametersContext signedContext = getNeow3j().sign(unsignedContext).send().getContext();
 
+        // relay returns an RPC error because the transaction is outside the normal relay window, but the
+        // DeferredRelay plugin still stores it for later retry.
         NeoRelay relayResponse = getNeow3j().relay(signedContext).send();
         assertThat(relayResponse.hasError(), is(true));
         assertThat(relayResponse.getError().getMessage(), containsString("Expired transaction - NotYetValid"));
 
+        // getpendingvaliduntilrelay exposes the queue summary and plugin settings.
         pendingState = getNeow3j().getPendingValidUntilRelay().send().getPendingValidUntilRelay();
 
         assertNotNull(pendingState);
@@ -177,6 +183,21 @@ public class Neow3jWriteIntegrationTest {
         assertThat(pendingTx.getSize(), is(246));
         assertThat(pendingTx.getBlocksUntilDeadline(), greaterThan(BigInteger.valueOf(99900)));
         assertThat(pendingTx.getBlocksUntilDeadline(), lessThan(BigInteger.valueOf(100100)));
+
+        // getrawpendingtx mirrors getrawtransaction's raw and verbose shapes, but reads from the DeferredRelay queue.
+        NeoGetRawPendingTransaction rawPendingTxResponse = getNeow3j().getRawPendingTransaction(txHash).send();
+        String rawPendingTx = rawPendingTxResponse.getRawPendingTransaction();
+        assertNotNull(rawPendingTx);
+        assertFalse(rawPendingTx.isEmpty());
+
+        NeoGetPendingTransaction.PendingTransaction verbosePendingTx = getNeow3j().getPendingTransaction(txHash)
+                .send().getPendingTransaction();
+        assertNotNull(verbosePendingTx);
+        assertThat(verbosePendingTx.getHash(), is(txHash));
+        assertThat(verbosePendingTx.getValidUntilBlock(), is(validUntilBlock.longValue()));
+        assertThat(verbosePendingTx.getSize(), is(pendingTx.getSize().longValue()));
+        assertThat(verbosePendingTx.getBlocksUntilDeadline(), greaterThan(BigInteger.valueOf(99900)));
+        assertThat(verbosePendingTx.getBlocksUntilDeadline(), lessThan(BigInteger.valueOf(100100)));
 
         assertThat(pendingState.getCount(), is(pendingTransactions.size()));
     }
