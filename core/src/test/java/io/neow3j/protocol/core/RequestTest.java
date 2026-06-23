@@ -1206,6 +1206,40 @@ public class RequestTest extends RequestTester {
         );
     }
 
+    // DeferredRelay
+
+    @Test
+    public void testGetPendingValidUntilRelay() throws Exception {
+        neow3j.getPendingValidUntilRelay().send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getpendingvaliduntilrelay\"," +
+                "\"params\":[]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testGetPendingTransaction() throws Exception {
+        Hash256 hash = new Hash256("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6");
+        neow3j.getPendingTransaction(hash).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getrawpendingtx\"," +
+                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",true]," +
+                "\"id\":1}");
+    }
+
+    @Test
+    public void testGetRawPendingTransaction() throws Exception {
+        Hash256 hash = new Hash256("0x1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6");
+        neow3j.getRawPendingTransaction(hash).send();
+
+        verifyResult("{\"jsonrpc\":\"2.0\"," +
+                "\"method\":\"getrawpendingtx\"," +
+                "\"params\":[\"1f31821787b0a53df0ff7d6e0e7ecba3ac19dd517d6d2ea5aaf00432c20831d6\",false]," +
+                "\"id\":1}");
+    }
+
     // StateService
 
     @Test

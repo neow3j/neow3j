@@ -29,10 +29,13 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
@@ -1299,6 +1302,53 @@ public class JsonRpc2_0Neow3j extends Neow3j {
     }
 
     // endregion ApplicationLogs
+    // region DeferredRelay
+
+    /**
+     * Returns NotYetValid transactions queued by the connected node's DeferredRelay plugin and its settings.
+     *
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetPendingValidUntilRelay> getPendingValidUntilRelay() {
+        return new Request<>(
+                "getpendingvaliduntilrelay",
+                emptyList(),
+                neow3jService,
+                NeoGetPendingValidUntilRelay.class);
+    }
+
+    /**
+     * Gets a queued NotYetValid transaction by hash from the connected node's DeferredRelay queue.
+     *
+     * @param txHash the transaction hash.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetPendingTransaction> getPendingTransaction(Hash256 txHash) {
+        return new Request<>(
+                "getrawpendingtx",
+                asList(txHash, true),
+                neow3jService,
+                NeoGetPendingTransaction.class);
+    }
+
+    /**
+     * Gets a Base64-encoded queued NotYetValid transaction by hash from the connected node's DeferredRelay queue.
+     *
+     * @param txHash the transaction hash.
+     * @return the request object.
+     */
+    @Override
+    public Request<?, NeoGetRawPendingTransaction> getRawPendingTransaction(Hash256 txHash) {
+        return new Request<>(
+                "getrawpendingtx",
+                asList(txHash, false),
+                neow3jService,
+                NeoGetRawPendingTransaction.class);
+    }
+
+    // endregion
     // region TokenTracker NEP-17
 
     /**
