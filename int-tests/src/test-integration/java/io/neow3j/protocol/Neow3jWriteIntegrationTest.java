@@ -37,6 +37,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
 import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
@@ -48,6 +49,7 @@ import static io.neow3j.test.TestProperties.defaultAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Await.waitUntil;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
@@ -73,6 +75,7 @@ public class Neow3jWriteIntegrationTest {
 
     protected static final int INVALID_PARAMS_CODE = -32602;
     protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
+    protected static final int DEFERRED_RELAY_MAX_WAIT_TIME = 30;
 
     private static Neow3j neow3j;
 
@@ -139,7 +142,9 @@ public class Neow3jWriteIntegrationTest {
                 .send().getPendingValidUntilRelay();
         assertThat(pendingState.getPending(), hasSize(0));
 
-        BigInteger validUntilBlock = BigInteger.valueOf(100000);
+        BigInteger validUntilBlock = pendingState.getHeight()
+                .add(BigInteger.valueOf(pendingState.getMaxValidUntilBlockIncrement()))
+                .add(BigInteger.valueOf(1000));
 
         // A node only accepts a transaction for normal relay if its valid-until block is within the node's allowed
         // future-validity window. The protocol setting for that window is called MaxValidUntilBlockIncrement. This
@@ -164,7 +169,7 @@ public class Neow3jWriteIntegrationTest {
         assertThat(relayResponse.getError().getMessage(), containsString("NotYetValid"));
 
         // getpendingvaliduntilrelay exposes the queue summary and plugin settings.
-        pendingState = getNeow3j().getPendingValidUntilRelay().send().getPendingValidUntilRelay();
+        pendingState = waitUntilDeferredRelayContains(txHash);
 
         assertNotNull(pendingState);
         assertThat(pendingState.getEnabled(), is(true));
@@ -177,7 +182,10 @@ public class Neow3jWriteIntegrationTest {
                 pendingState.getPending();
         assertNotNull(pendingTransactions);
         assertThat(pendingTransactions, hasSize(1));
-        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction pendingTx = pendingTransactions.get(0);
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction pendingTx = pendingTransactions.stream()
+                .filter(t -> t.getHash().equals(txHash))
+                .findFirst()
+                .get();
         assertThat(pendingTx.getHash(), is(txHash));
         assertThat(pendingTx.getValidUntilBlock(), is(validUntilBlock));
         assertThat(pendingTx.getSize(), greaterThan(0));
@@ -203,6 +211,18 @@ public class Neow3jWriteIntegrationTest {
         assertThat(verbosePendingTx.getBlocksUntilDeadline(), lessThan(expectedBlocksUntilDeadline.add(tolerance)));
 
         assertThat(pendingState.getCount(), is(pendingTransactions.size()));
+    }
+
+    private static NeoGetPendingValidUntilRelay.PendingValidUntilRelay waitUntilDeferredRelayContains(Hash256 txHash) {
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay[] pendingState =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay[1];
+
+        waitUntil(() -> {
+            pendingState[0] = getNeow3j().getPendingValidUntilRelay().send().getPendingValidUntilRelay();
+            return pendingState[0].getPending().stream().anyMatch(t -> t.getHash().equals(txHash));
+        }, is(true), DEFERRED_RELAY_MAX_WAIT_TIME, TimeUnit.SECONDS);
+
+        return pendingState[0];
     }
 
     @Disabled("Future work, act as a consensus to submit blocks.")
