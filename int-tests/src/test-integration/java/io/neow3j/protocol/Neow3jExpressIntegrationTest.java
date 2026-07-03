@@ -135,7 +135,7 @@ public class Neow3jExpressIntegrationTest {
                 .send()
                 .getFilename();
 
-        assertThat(filename, is("/neoxp/checkpoint-1.neoxp-checkpoint"));
+        assertThat(filename, is(NeoExpressTestContainer.CONTAINER_WORKDIR + "checkpoint-1.neoxp-checkpoint"));
     }
 
     @Test
