@@ -1,5 +1,6 @@
 package io.neow3j.protocol.core;
 
+import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.core.response.ConflictsAttribute;
 import io.neow3j.protocol.core.response.ContractManifest;
@@ -45,10 +46,13 @@ import io.neow3j.protocol.core.response.NeoGetNep17Balances;
 import io.neow3j.protocol.core.response.NeoGetNep17Transfers;
 import io.neow3j.protocol.core.response.NeoGetNewAddress;
 import io.neow3j.protocol.core.response.NeoGetNextBlockValidators;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
 import io.neow3j.protocol.core.response.NeoGetPeers;
 import io.neow3j.protocol.core.response.NeoGetProof;
 import io.neow3j.protocol.core.response.NeoGetRawBlock;
 import io.neow3j.protocol.core.response.NeoGetRawMemPool;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetRawTransaction;
 import io.neow3j.protocol.core.response.NeoGetState;
 import io.neow3j.protocol.core.response.NeoGetStateHeight;
@@ -67,14 +71,18 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoListAddress;
 import io.neow3j.protocol.core.response.NeoListPlugins;
 import io.neow3j.protocol.core.response.NeoOpenWallet;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSign;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoSubmitBlock;
 import io.neow3j.protocol.core.response.NeoTerminateSession;
 import io.neow3j.protocol.core.response.NeoTraverseIterator;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.NeoVerifyProof;
 import io.neow3j.protocol.core.response.NeoWitness;
 import io.neow3j.protocol.core.response.Nep17Contract;
@@ -92,6 +100,7 @@ import io.neow3j.protocol.core.stackitem.ByteStringStackItem;
 import io.neow3j.protocol.core.stackitem.InteropInterfaceStackItem;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.core.witnessrule.WitnessRule;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.TransactionAttributeType;
 import io.neow3j.transaction.WitnessScope;
 import io.neow3j.transaction.witnessrule.WitnessAction;
@@ -1823,6 +1832,25 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testRelay() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoRelay relay = deserialiseResponse(NeoRelay.class);
+        assertThat(relay.getRelayedTransaction(), is(notNullValue()));
+        Hash256 expectedHash = new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770");
+        assertThat(relay.getRelayedTransaction().getHash(), is(expectedHash));
+        assertThat(relay.getRelayedTransaction(), is(new NeoRelay.RelayedTransaction(expectedHash)));
+    }
+
+    @Test
     public void testSubmitBlock() {
         buildResponse(
                 "{\n" +
@@ -2770,6 +2798,101 @@ public class ResponseTest extends ResponseTester {
     }
 
     @Test
+    public void testSignMessage() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"curve\": \"secp256r1\",\n" +
+                        "        \"algorithm\": \"payload = 010001f0 + VarBytes(Salt + Message) + 0000\",\n" +
+                        "        \"mode\": \"Sign(payload)\",\n" +
+                        "        \"payload\": \"010001f02c613733343866323434353962333830306233303033616662313636396464343248656c6c6f20776f726c64210000\",\n" +
+                        "        \"signatures\": [\n" +
+                        "            {\n" +
+                        "                \"address\": \"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\",\n" +
+                        "                \"publickey\": \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\",\n" +
+                        "                \"signature\": \"39675922cd5ffcc27bb2174400133d737f0e8d2bce8526c3a03247616e93ab6a953bd18ac2c4350566cc6ec7fae36cf9bcbf05b4649846aeaf6be32d1751f37f\",\n" +
+                        "                \"salt\": \"a7348f24459b3800b3003afb1669dd42\"\n" +
+                        "            }\n" +
+                        "        ]\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedCurve = "secp256r1";
+        String expectedAlgorithm = "payload = 010001f0 + VarBytes(Salt + Message) + 0000";
+        String expectedMode = "Sign(payload)";
+        String expectedPayload = "010001f02c613733343866323434353962333830306233303033616662313636396464343248656c6c6f20776f726c64210000";
+
+        String expectedSigAddress = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+        String expectedSigPublicKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSignature = "39675922cd5ffcc27bb2174400133d737f0e8d2bce8526c3a03247616e93ab6a953bd18ac2c4350566cc6ec7fae36cf9bcbf05b4649846aeaf6be32d1751f37f";
+        String expectedSalt = "a7348f24459b3800b3003afb1669dd42";
+
+        NeoSignMessage.SignedMessage signedMessage = deserialiseResponse(NeoSignMessage.class).getSignedMessage();
+        assertThat(signedMessage, is(notNullValue()));
+        assertThat(signedMessage.getCurve(), is(expectedCurve));
+        assertThat(signedMessage.getAlgorithm(), is(expectedAlgorithm));
+        assertThat(signedMessage.getMode(), is(expectedMode));
+        assertThat(signedMessage.getPayload(), is(expectedPayload));
+        assertThat(signedMessage.getSignatures(), hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature firstSig = signedMessage.getSignatures().get(0);
+        assertThat(firstSig.getAddress(), is(expectedSigAddress));
+        assertThat(firstSig.getPublicKey(), is(expectedSigPublicKey));
+        assertThat(firstSig.getSignature(), is(expectedSignature));
+        assertThat(firstSig.getSalt(), is(expectedSalt));
+
+        NeoSignMessage.SignedMessage.MessageSignature expectedMessageSignature =
+                new NeoSignMessage.SignedMessage.MessageSignature(expectedSigAddress, expectedSigPublicKey,
+                        expectedSignature, expectedSalt);
+        assertEquals(expectedMessageSignature, firstSig);
+
+        NeoSignMessage.SignedMessage expectedSignedMessage = new NeoSignMessage.SignedMessage(expectedCurve,
+                expectedAlgorithm, expectedMode, expectedPayload, asList(expectedMessageSignature));
+        assertEquals(expectedSignedMessage, signedMessage);
+    }
+
+    @Test
+    public void testVerifyMessage() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"address\": \"NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP\",\n" +
+                        "        \"publickey\": \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\",\n" +
+                        "        \"signature\": \"f37cc3ec451cff21810ec569b7173edc3e8218dc6d46bec14e6e561c2d45beee495459b89cabb85fc522d6eece1a0dbe2373b06f7b38f521749c225eda7d5870\",\n" +
+                        "        \"salt\": \"9f88d5333cabbbeace6d1d183286569e\",\n" +
+                        "        \"status\": \"Valid\"\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedAddress = "NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP";
+        String expectedPublicKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSignature =
+                "f37cc3ec451cff21810ec569b7173edc3e8218dc6d46bec14e6e561c2d45beee495459b89cabb85fc522d6eece1a0dbe2373b06f7b38f521749c225eda7d5870";
+        String expectedSalt = "9f88d5333cabbbeace6d1d183286569e";
+        String expectedStatus = "Valid";
+
+        NeoVerifyMessage.VerifiedMessage verifiedMessage =
+                deserialiseResponse(NeoVerifyMessage.class).getVerifiedMessage();
+        assertThat(verifiedMessage, is(notNullValue()));
+        assertThat(verifiedMessage.getAddress(), is(expectedAddress));
+        assertThat(verifiedMessage.getPublicKey(), is(expectedPublicKey));
+        assertThat(verifiedMessage.getSignature(), is(expectedSignature));
+        assertThat(verifiedMessage.getSalt(), is(expectedSalt));
+        assertThat(verifiedMessage.getStatus(), is(expectedStatus));
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage =
+                new NeoVerifyMessage.VerifiedMessage(expectedAddress, expectedPublicKey, expectedSignature,
+                        expectedSalt, expectedStatus);
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
     public void testSendFrom() {
         buildResponse(
                 "{\n" +
@@ -3042,6 +3165,77 @@ public class ResponseTest extends ResponseTester {
                                 "EQwhA/HsPB4oPogN5unEifDyfBkAfFM4WqpMDJF8MgB57a3yEQtBMHOzuw=="
                         )
                 ));
+    }
+
+    @Test
+    public void testSign() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 8,\n" +
+                        "    \"result\": {\n" +
+                        "        \"type\": \"Neo.Network.P2P.Payloads.Transaction\",\n" +
+                        "        \"hash\": \"0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06\",\n" +
+                        "        \"data\": \"AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS\",\n" +
+                        "        \"items\": {\n" +
+                        "            \"0x05859de95ccbbd5668e0f055b208273634d4657f\": {\n" +
+                        "                \"script\": \"EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6\",\n" +
+                        "                \"parameters\": [\n" +
+                        "                    {\n" +
+                        "                        \"type\": \"Signature\",\n" +
+                        "                        \"value\": \"YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==\"\n" +
+                        "                    }\n" +
+                        "                ],\n" +
+                        "                \"signatures\": {\n" +
+                        "                    \"033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b\": \"YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==\"\n" +
+                        "                }\n" +
+                        "            }\n" +
+                        "        },\n" +
+                        "        \"network\": 5195086\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        String expectedHash = "0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06";
+        String expectedData = "AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS";
+        long expectedNetwork = 5195086L;
+
+        HashMap<String, ContractParametersContext.ContextItem> expectedItems = new HashMap<>();
+        String expectedScript = "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6";
+        String expectedPubKey = "033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b";
+        String expectedSigBase64 = "YxRUahrkQXcwAb7Rd5e5KCbN20r9vN8/zXlZhGqs1wIkIEB8yK17B4P+4yeWNfjnEkpLn9lqI2mUF+1zIxVWsA==";
+        byte[] expectedSigBytes = Base64.decode(expectedSigBase64);
+        HashMap<String, String> sigs = new HashMap<>();
+        sigs.put(expectedPubKey, expectedSigBase64);
+        ContractParameter expectedSignatureParam = ContractParameter.signature(expectedSigBytes);
+
+        ContractParametersContext.ContextItem expectedItem = new ContractParametersContext.ContextItem(expectedScript,
+                asList(expectedSignatureParam), sigs);
+        String expectedScriptHash = "0x05859de95ccbbd5668e0f055b208273634d4657f";
+        expectedItems.put(expectedScriptHash, expectedItem);
+
+        ContractParametersContext context = deserialiseResponse(NeoSign.class).getContext();
+        assertThat(context, is(notNullValue()));
+
+        assertThat(context.getType(), is("Neo.Network.P2P.Payloads.Transaction"));
+        assertThat(context.getHash(), is(expectedHash));
+        assertThat(context.getData(), is(expectedData));
+        assertThat(context.getNetwork(), is(expectedNetwork));
+        assertThat(context.getItems(), is(notNullValue()));
+        assertThat(context.getItems().size(), is(1));
+
+        ContractParametersContext.ContextItem item = context.getItems().get(expectedScriptHash);
+        assertThat(item, is(notNullValue()));
+        assertThat(item.getScript(), is(expectedScript));
+        assertThat(item.getParameters(), hasSize(1));
+        assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
+        assertArrayEquals(expectedSigBytes, (byte[]) item.getParameters().get(0).getValue());
+        assertThat(item.getSignatures().size(), is(1));
+        assertThat(item.getSignatures().get(expectedPubKey), is(expectedSigBase64));
+
+        ContractParametersContext expectedContext = new ContractParametersContext(expectedHash, expectedData,
+                expectedItems, expectedNetwork);
+        assertThat(context, is(expectedContext));
     }
 
     // TokenTracker: Nep17
@@ -3394,6 +3588,120 @@ public class ResponseTest extends ResponseTester {
         thrown = assertThrows(IndexOutOfBoundsException.class,
                 () -> getApplicationLog.getResult().getFirstExecution().getFirstNotification());
         assertThat(thrown.getMessage(), containsString("did not send any notifications"));
+    }
+
+    // DeferredRelay
+
+    @Test
+    public void testGetPendingValidUntilRelay() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"height\": 123,\n" +
+                        "        \"maxvaliduntilblockincrement\": 5760,\n" +
+                        "        \"pending\": [\n" +
+                        "            {\n" +
+                        "                \"hash\": \"0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770\",\n" +
+                        "                \"validuntilblock\": 456,\n" +
+                        "                \"size\": 234,\n" +
+                        "                \"blocksuntildeadline\": 333\n" +
+                        "            }\n" +
+                        "        ],\n" +
+                        "        \"enabled\": true,\n" +
+                        "        \"pendingcheckfrequency\": 1,\n" +
+                        "        \"pendingrelaymaxtransactions\": 1000,\n" +
+                        "        \"count\": 1\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetPendingValidUntilRelay response = deserialiseResponse(NeoGetPendingValidUntilRelay.class);
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay pendingState = response.getPendingValidUntilRelay();
+
+        assertThat(pendingState, is(notNullValue()));
+        assertThat(pendingState.getHeight(), is(BigInteger.valueOf(123)));
+        assertThat(pendingState.getMaxValidUntilBlockIncrement(), is(5760L));
+        assertThat(pendingState.getEnabled(), is(true));
+        assertThat(pendingState.getPendingCheckFrequency(), is(1));
+        assertThat(pendingState.getPendingRelayMaxTransactions(), is(1000));
+        assertThat(pendingState.getCount(), is(1));
+        assertThat(pendingState.getPending(), hasSize(1));
+
+        Hash256 expectedHash = new Hash256("0xb0748d216c9c0d0498094cdb50407035917b350fc0338c254b78f944f723b770");
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction expectedPendingTransaction =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction(
+                        expectedHash, BigInteger.valueOf(456), 234, BigInteger.valueOf(333));
+        assertThat(pendingState.getPending().get(0), is(expectedPendingTransaction));
+
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay expectedPendingState =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay(BigInteger.valueOf(123),
+                        5760L, asList(expectedPendingTransaction), true, 1, 1000, 1);
+        assertEquals(expectedPendingState, pendingState);
+    }
+
+    @Test
+    public void testGetRawPendingTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": \"AAECAwQ=\"\n" +
+                        "}"
+        );
+
+        NeoGetRawPendingTransaction response = deserialiseResponse(NeoGetRawPendingTransaction.class);
+
+        assertThat(response.getRawPendingTransaction(), is("AAECAwQ="));
+    }
+
+    @Test
+    public void testGetPendingTransaction() {
+        buildResponse(
+                "{\n" +
+                        "    \"jsonrpc\": \"2.0\",\n" +
+                        "    \"id\": 1,\n" +
+                        "    \"result\": {\n" +
+                        "        \"hash\": \"0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7\",\n" +
+                        "        \"size\": 234,\n" +
+                        "        \"version\": 0,\n" +
+                        "        \"nonce\": 123,\n" +
+                        "        \"sender\": \"NUVaphLqZj5KaTXsQ1TtnwfoKCtEieN9cU\",\n" +
+                        "        \"sysfee\": \"1234\",\n" +
+                        "        \"netfee\": \"567\",\n" +
+                        "        \"validuntilblock\": 456,\n" +
+                        "        \"signers\": [],\n" +
+                        "        \"attributes\": [],\n" +
+                        "        \"script\": \"AQID\",\n" +
+                        "        \"witnesses\": [],\n" +
+                        "        \"blocksuntildeadline\": 333\n" +
+                        "    }\n" +
+                        "}"
+        );
+
+        NeoGetPendingTransaction response = deserialiseResponse(NeoGetPendingTransaction.class);
+        NeoGetPendingTransaction.PendingTransaction tx = response.getPendingTransaction();
+
+        assertThat(tx, is(notNullValue()));
+        assertThat(tx.getHash(),
+                is(new Hash256("0x28870d1ed61ef167e99354249c622504b0d81d814eaa87dbf8612c91b9b303b7")));
+        assertThat(tx.getSize(), is(234L));
+        assertThat(tx.getVersion(), is(0));
+        assertThat(tx.getNonce(), is(123L));
+        assertThat(tx.getSender(), is("NUVaphLqZj5KaTXsQ1TtnwfoKCtEieN9cU"));
+        assertThat(tx.getSysFee(), is("1234"));
+        assertThat(tx.getNetFee(), is("567"));
+        assertThat(tx.getValidUntilBlock(), is(456L));
+        assertThat(tx.getSigners(), is(empty()));
+        assertThat(tx.getAttributes(), is(empty()));
+        assertThat(tx.getScript(), is("AQID"));
+        assertThat(tx.getWitnesses(), is(empty()));
+        assertThat(tx.getBlocksUntilDeadline(), is(BigInteger.valueOf(333)));
+        assertThat(tx.getBlockHash(), is(nullValue()));
+        assertThat(tx.getConfirmations(), is(0));
+        assertThat(tx.getBlockTime(), is(0L));
+        assertThat(tx.getVMState(), is(nullValue()));
     }
 
     // StateService
