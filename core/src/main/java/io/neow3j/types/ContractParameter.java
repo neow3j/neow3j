@@ -602,9 +602,6 @@ public class ContractParameter {
         }
 
         private Object deserializeValue(Object value, ContractParameterType type) throws IOException {
-            if (value == null) {
-                return null;
-            }
             switch (type) {
                 case PUBLIC_KEY:
                     // Here we expect a simple byte array which is converted to a hex string. The byte order is not
