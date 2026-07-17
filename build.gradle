@@ -7,9 +7,9 @@ plugins {
 
 ext {
     asmVersion = '9.6'
-    bouncycastleVersion = '1.77'
+    bouncycastleVersion = '1.78'
     grpcProtobufVersion = '1.49.0'
-    jacksonVersion = '2.13.4.2'
+    jacksonVersion = '2.18.3'
     javaWebSocketVersion = '1.5.3'
     jnaVersion = '5.12.1'
     okhttpVersion = '4.12.0'
