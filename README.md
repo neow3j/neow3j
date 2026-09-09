@@ -12,17 +12,13 @@
 <img src="./images/neow3j-neo3-with-balloon.png" alt="Bongo Cat Neow3j" width="400" height="291" />
 </p>
 
-Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and
-Smart Contracts using the Java platform (Java, Kotlin, Android). It is an open-source project
-developed by the community and maintained by [AxLabs](https://axlabs.com).
+Neow3j is a development toolkit that provides easy and reliable tools to build Neo dApps and Smart Contracts using the Java platform (Java, Kotlin, Android). It is an open-source project developed by the community and maintained by [AxLabs](https://axlabs.com).
 
 **Visit [neow3j.io](https://neow3j.io) for more information and technical documentation.**
 
 # Quickstart
 
-Neow3j is composed of an **SDK** for dApp development and a **devpack** for smart contract
-development -- which also includes a **compiler** (JVM to NeoVM). The following sections describe
-how to get started with them! :rocket:
+Neow3j is composed of an **SDK** for dApp development and a **devpack** for smart contract development -- which also includes a **compiler** (JVM to NeoVM). The following sections describe how to get started with them! :rocket:
 
 ## SDK
 
@@ -45,13 +41,11 @@ __Maven__
 </dependency>
 ```
 
-Releases are available for Neo Legacy and Neo N3. The example above shows the newest release of neow3j for
-Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
+Releases are available for Neo Legacy and Neo N3. The example above shows the newest release of neow3j for Neo N3. To use the latest release for Neo Legacy, use the version `2.4.0`.
 
 ## Devpack/Compiler
 
-For smart contract development, you need the `io.neow3j:devpack` dependency. It provides all Neo-related
-utilities to write your first smart contract on the Neo blockchain!
+For smart contract development, you need the `io.neow3j:devpack` dependency. It provides all Neo-related utilities to write your first smart contract on the Neo blockchain!
 
 Then, add the following dependency to your project.
 
@@ -100,22 +94,24 @@ Join the [AxLabs Discord](https://discord.gg/UxQDsAzH) server to chat with us an
     - Some sub-projects depend on others, e.g., `contract` and `devpack` depend on `core`, or`compiler` depends on `contract` and `devpack`.
     - All integration tests live in their own sub-project called `int-tests`. The reason being dependency issues if we place the tests in their respective project. 
 
-## Who's using neow3j? :rocket:
+## Who’s using or has used neow3j? :rocket:
 
 * [Binance](https://binance.com)
-* [OKEx](https://okex.com)
+* [OKX](https://okx.com)
 * [AxLabs](https://axlabs.com)
 * [GrantShares](https://grantshares.io)
-* [Flamingo (FUSD)](https://flamingo-1.gitbook.io/user-guide/v/master/flamingo-stablecoin-fusd)
+* [Flamingo (FUSD)](https://flamingo-1.gitbook.io/user-guide/flamingo-stablecoin-fusd)
 * [NeoCompounder (cNEO)](https://neocompounder.com/)
 * [Neo Blockchain Toolkit](https://marketplace.visualstudio.com/items?itemName=ngd-seattle.neo-blockchain-toolkit)
-* [NekoHit](https://nekohit.com)
-* [NeoCandy](https://neocandy.io)
-* [Neo Playground](https://neo-playground.dev)
-* [Elements](https://www.getelements.dev)
-* [intellij-neo](https://github.com/intellij-neo/intellij-neo)
-* Would like to be listed here? [Contact us](mailto:info@neow3j.io)
-  or [open an issue](https://github.com/neow3j/neow3j/issues).
+* [NekoHit](https://github.com/NekoHitDev/Ritmin)
+* [NeoCandy](https://neonewstoday.com/general/neo-candy-begins-distributing-candy-community-token-aims-to-reward-neo-ecosystem-dapp-users/)
+* Neo Playground
+* Elements
+* intellij-neo
+
+Some projects listed above are no longer actively maintained, but are included because they were built using neow3j.
+
+Would like to be listed here? [Contact us](mailto:info@neow3j.io) or [open an issue](https://github.com/neow3j/neow3j/issues).
 
 ## Donate :moneybag:
 
@@ -131,6 +127,4 @@ Help the development of neow3j by sponsoring us using the following addresses:
 ## Thanks and Credits :pray:
 
 * [NEO Foundation](https://neo.org/contributors) & [NEO Global Development (NGD)](https://neo.org/contributors)
-* This project was strongly based on [web3j](https://web3j.io) latest
-  on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254). We are really
-  thankful for it. :smiley:
+* This project was strongly based on [web3j](https://web3j.io) latest on [this commit](https://github.com/web3j/web3j/commit/2a259ece9736c0338fbb66b1be4c04aba0855254). We are really thankful for it. :smiley:
