@@ -7,7 +7,6 @@ dependencies {
             "io.reactivex.rxjava2:rxjava:$rxjavaVersion"
 
     implementation "com.squareup.okhttp3:logging-interceptor:$okhttpVersion",
-            "org.java-websocket:Java-WebSocket:$javaWebSocketVersion",
             "org.slf4j:slf4j-api:$slf4jVersion",
             "org.awaitility:awaitility:$awaitility"
 
