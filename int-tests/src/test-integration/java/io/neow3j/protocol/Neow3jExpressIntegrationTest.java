@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
+import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThan;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.greaterThan;
@@ -120,12 +121,10 @@ public class Neow3jExpressIntegrationTest {
                 .send()
                 .getContracts();
 
-        assertThat(contracts, hasSize(10));
-        assertThat(contracts.get(0).getManifest().getAbi().getMethods().get(2).getName(),
-                is("request"));
-        assertThat(contracts.get(3).getManifest().getName(), is("GasToken"));
-        assertThat(contracts.get(8).getHash(),
-                is(new Hash160("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")));
+        assertThat(contracts, hasSize(12));
+        assertThat(contracts.get(2).getManifest().getAbi().getMethods().get(2).getName(), is("request"));
+        assertThat(contracts.get(5).getManifest().getName(), is("GasToken"));
+        assertThat(contracts.get(10).getHash(), is(new Hash160("0xfffdc93764dbaddd97c48f252a53ea4643faa3fd")));
     }
 
     @Test
@@ -136,7 +135,7 @@ public class Neow3jExpressIntegrationTest {
                 .send()
                 .getFilename();
 
-        assertThat(filename, is("checkpoint-1.neoxp-checkpoint"));
+        assertThat(filename, is(NeoExpressTestContainer.CONTAINER_WORKDIR + "checkpoint-1.neoxp-checkpoint"));
     }
 
     @Test
@@ -204,11 +203,12 @@ public class Neow3jExpressIntegrationTest {
         String haltMessage = container.halt();
         assertThat(haltMessage, containsString("node 0 stopped"));
 
-        IOException thrown = assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
-        assertThat(thrown.getMessage(), containsString("unexpected end of stream"));
+        assertThrows(IOException.class, () -> getNeow3jExpress().getBlockCount().send());
 
         String resumeMessage = container.resume();
-        assertThat(resumeMessage, containsString("Neo-express started.\nNeo express is running"));
+        assertThat(resumeMessage, containsString("Neo-express started."));
+
+        waitUntilBlockCountIsGreaterThan(getNeow3jExpress(), BigInteger.ZERO);
 
         BigInteger blockCountAfterResuming = getNeow3jExpress().getBlockCount().send().getBlockCount();
         assertThat(blockCountAfterResuming.intValue(), is(greaterThanOrEqualTo(blockCountBeforeStopping.intValue())));

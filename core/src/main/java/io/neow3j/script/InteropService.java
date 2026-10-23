@@ -58,6 +58,10 @@ public enum InteropService {
     SYSTEM_STORAGE_FIND("System.Storage.Find", 1 << 15),
     SYSTEM_STORAGE_PUT("System.Storage.Put", 1 << 15),
     SYSTEM_STORAGE_DELETE("System.Storage.Delete", 1 << 15),
+    SYSTEM_STORAGE_LOCAL_GET("System.Storage.Local.Get", 1 << 15),
+    SYSTEM_STORAGE_LOCAL_FIND("System.Storage.Local.Find", 1 << 15),
+    SYSTEM_STORAGE_LOCAL_PUT("System.Storage.Local.Put", 1 << 15),
+    SYSTEM_STORAGE_LOCAL_DELETE("System.Storage.Local.Delete", 1 << 15),
 
     DUMMY("Dummy", 0);
 

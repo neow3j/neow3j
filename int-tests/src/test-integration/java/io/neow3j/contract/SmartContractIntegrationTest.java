@@ -17,9 +17,9 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
-import static io.neow3j.contract.IntegrationTestHelper.registerCandidateAndAwaitExecution;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithNeo;
+import static io.neow3j.helper.CandidateRegistrationHelper.registerCandidateAndAwaitExecution;
 import static io.neow3j.contract.NeoToken.GET_ALL_CANDIDATES;
 import static io.neow3j.contract.NeoToken.candidateMapper;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;

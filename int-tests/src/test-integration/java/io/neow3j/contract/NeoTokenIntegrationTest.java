@@ -21,12 +21,12 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
 
-import static io.neow3j.contract.IntegrationTestHelper.COMMITTEE_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
-import static io.neow3j.contract.IntegrationTestHelper.registerCandidateAndAwaitExecution;
-import static io.neow3j.contract.IntegrationTestHelper.unregisterCandidateAndAwaitExecution;
+import static io.neow3j.helper.FundingHelper.COMMITTEE_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithNeo;
+import static io.neow3j.helper.CandidateRegistrationHelper.registerCandidateAndAwaitExecution;
+import static io.neow3j.helper.CandidateRegistrationHelper.unregisterCandidateAndAwaitExecution;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;

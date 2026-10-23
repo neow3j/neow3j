@@ -121,6 +121,14 @@ public class TestProperties {
         return getValue("oracleContractHash");
     }
 
+    public static String notaryContractHash() {
+        return getValue("notaryContractHash");
+    }
+
+    public static String treasuryContractHash() {
+        return getValue("treasuryContractHash");
+    }
+
     public static String gasTokenName() {
         return getValue("gasTokenName");
     }

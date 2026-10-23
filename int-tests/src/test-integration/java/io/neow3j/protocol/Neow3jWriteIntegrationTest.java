@@ -1,10 +1,16 @@
 package io.neow3j.protocol;
 
+import io.neow3j.contract.GasToken;
+import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.core.response.Diagnostics;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog.Execution;
 import io.neow3j.protocol.core.response.NeoCancelTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingTransaction;
+import io.neow3j.protocol.core.response.NeoGetPendingValidUntilRelay;
+import io.neow3j.protocol.core.response.NeoGetRawPendingTransaction;
 import io.neow3j.protocol.core.response.NeoGetTransaction;
+import io.neow3j.protocol.core.response.NeoRelay;
 import io.neow3j.protocol.core.response.NeoSendFrom;
 import io.neow3j.protocol.core.response.NeoSendMany;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
@@ -15,11 +21,13 @@ import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.response.TransactionSendToken;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.test.NeoTestContainer;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
-import io.neow3j.utils.Await;
+import io.neow3j.wallet.Account;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -28,16 +36,30 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.DEFAULT_ACCOUNT_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NEO_HASH;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PASSWORD;
+import static io.neow3j.protocol.IntegrationTestHelper.NODE_WALLET_PATH;
 import static io.neow3j.test.TestProperties.committeeAccountAddress;
 import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountPublicKey;
+import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.hash160;
+import static io.neow3j.utils.Await.waitUntil;
+import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -53,6 +75,7 @@ public class Neow3jWriteIntegrationTest {
 
     protected static final int INVALID_PARAMS_CODE = -32602;
     protected static final String INVALID_PARAMS_MESSAGE = "Invalid params";
+    protected static final int DEFERRED_RELAY_MAX_WAIT_TIME = 30;
 
     private static Neow3j neow3j;
 
@@ -63,10 +86,9 @@ public class Neow3jWriteIntegrationTest {
     public void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         // open the wallet for JSON-RPC calls
-        getNeow3j().openWallet(IntegrationTestHelper.NODE_WALLET_PATH, IntegrationTestHelper.NODE_WALLET_PASSWORD)
-                .send();
+        getNeow3j().openWallet(NODE_WALLET_PATH, NODE_WALLET_PASSWORD).send();
         // ensure that the wallet with NEO/GAS is initialized for the tests
-        Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", IntegrationTestHelper.NEO_HASH, getNeow3j());
+        waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", NEO_HASH, getNeow3j());
     }
 
     private static Neow3j getNeow3j() {
@@ -90,12 +112,123 @@ public class Neow3jWriteIntegrationTest {
         assertThat(hash, is(new Hash256("0xda5a53a79ac399e07c6eea366c192a4942fa930d6903ffc10b497f834a538fee")));
     }
 
+    @Test
+    public void testRelay() throws Throwable {
+        String pubKeyStr = defaultAccountPublicKey();
+        ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(pubKeyStr);
+        Account from = Account.fromPublicKey(pubKey);
+        Hash160 to = Hash160.fromAddress(RECIPIENT);
+        io.neow3j.transaction.Transaction unsignedTx = new GasToken(getNeow3j()).transfer(from, to, BigInteger.ONE)
+                .getUnsignedTransaction();
+
+        ContractParametersContext context = unsignedTx.toContractParametersContext();
+        ContractParametersContext signedContext = getNeow3j().sign(context).send().getContext();
+
+        NeoRelay relay = getNeow3j().relay(signedContext).send();
+
+        Hash256 hash = relay.getRelayedTransaction().getHash();
+        assertThat(hash, is(unsignedTx.getTxId()));
+        waitUntilTransactionIsExecuted(hash, getNeow3j());
+        assertThat(neow3j.getApplicationLog(hash).send().getApplicationLog().getFirstExecution().getState(),
+                is(NeoVMStateType.HALT));
+    }
+
+    // DeferredRelay
+
+    @Test
+    public void testDeferredRelayPendingTransactionRpcMethods() throws Throwable {
+        // Start from an empty DeferredRelay queue so the transaction added below is the only expected entry.
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay pendingState = getNeow3j().getPendingValidUntilRelay()
+                .send().getPendingValidUntilRelay();
+        assertThat(pendingState.getPending(), hasSize(0));
+
+        BigInteger validUntilBlock = pendingState.getHeight()
+                .add(BigInteger.valueOf(pendingState.getMaxValidUntilBlockIncrement()))
+                .add(BigInteger.valueOf(1000));
+
+        // A node only accepts a transaction for normal relay if its valid-until block is within the node's allowed
+        // future-validity window. The protocol setting for that window is called MaxValidUntilBlockIncrement. This
+        // test sets the transaction beyond that window, so relay returns NotYetValid. However, if the node has the
+        // DeferredRelay plugin enabled, it keeps the fully signed transaction locally and retries it when
+        // its validity window opens.
+        Account signerAccount = Account.fromVerificationScript(new VerificationScript(
+                asList(new ECKeyPair.ECPublicKey(defaultAccountPublicKey())), 1));
+        io.neow3j.transaction.Transaction transaction = new GasToken(getNeow3j()).transfer(DEFAULT_ACCOUNT_HASH,
+                        new Hash160("5544b9af09e62822a775f407c059cef8f929f4ff"), BigInteger.TEN)
+                .validUntilBlock(validUntilBlock.longValue())
+                .signers(calledByEntry(signerAccount))
+                .getUnsignedTransaction();
+        Hash256 txHash = transaction.getTxId();
+        ContractParametersContext unsignedContext = transaction.toContractParametersContext();
+        ContractParametersContext signedContext = getNeow3j().sign(unsignedContext).send().getContext();
+
+        // relay returns an RPC error because the transaction is outside the normal relay window, but the
+        // DeferredRelay plugin still stores it for later retry.
+        NeoRelay relayResponse = getNeow3j().relay(signedContext).send();
+        assertThat(relayResponse.hasError(), is(true));
+        assertThat(relayResponse.getError().getMessage(), containsString("NotYetValid"));
+
+        // getpendingvaliduntilrelay exposes the queue summary and plugin settings.
+        pendingState = waitUntilDeferredRelayContains(txHash);
+
+        assertNotNull(pendingState);
+        assertThat(pendingState.getEnabled(), is(true));
+        assertNotNull(pendingState.getHeight());
+        assertNotNull(pendingState.getMaxValidUntilBlockIncrement());
+        assertThat(pendingState.getPendingCheckFrequency(), is(1));
+        assertThat(pendingState.getPendingRelayMaxTransactions(), is(1000));
+
+        List<NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction> pendingTransactions =
+                pendingState.getPending();
+        assertNotNull(pendingTransactions);
+        assertThat(pendingTransactions, hasSize(1));
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay.PendingTransaction pendingTx = pendingTransactions.stream()
+                .filter(t -> t.getHash().equals(txHash))
+                .findFirst()
+                .get();
+        assertThat(pendingTx.getHash(), is(txHash));
+        assertThat(pendingTx.getValidUntilBlock(), is(validUntilBlock));
+        assertThat(pendingTx.getSize(), greaterThan(0));
+        BigInteger expectedBlocksUntilDeadline = validUntilBlock.subtract(pendingState.getHeight());
+        BigInteger tolerance = BigInteger.valueOf(10);
+        assertThat(pendingTx.getBlocksUntilDeadline(), greaterThan(expectedBlocksUntilDeadline.subtract(tolerance)));
+        assertThat(pendingTx.getBlocksUntilDeadline(), lessThan(expectedBlocksUntilDeadline.add(tolerance)));
+
+        // getrawpendingtx mirrors getrawtransaction's raw and verbose shapes, but reads from the DeferredRelay queue.
+        NeoGetRawPendingTransaction rawPendingTxResponse = getNeow3j().getRawPendingTransaction(txHash).send();
+        String rawPendingTx = rawPendingTxResponse.getRawPendingTransaction();
+        assertNotNull(rawPendingTx);
+        assertFalse(rawPendingTx.isEmpty());
+
+        NeoGetPendingTransaction.PendingTransaction verbosePendingTx = getNeow3j().getPendingTransaction(txHash)
+                .send().getPendingTransaction();
+        assertNotNull(verbosePendingTx);
+        assertThat(verbosePendingTx.getHash(), is(txHash));
+        assertThat(verbosePendingTx.getValidUntilBlock(), is(validUntilBlock.longValue()));
+        assertThat(verbosePendingTx.getSize(), is(pendingTx.getSize().longValue()));
+        assertThat(verbosePendingTx.getBlocksUntilDeadline(),
+                greaterThan(expectedBlocksUntilDeadline.subtract(tolerance)));
+        assertThat(verbosePendingTx.getBlocksUntilDeadline(), lessThan(expectedBlocksUntilDeadline.add(tolerance)));
+
+        assertThat(pendingState.getCount(), is(pendingTransactions.size()));
+    }
+
+    private static NeoGetPendingValidUntilRelay.PendingValidUntilRelay waitUntilDeferredRelayContains(Hash256 txHash) {
+        NeoGetPendingValidUntilRelay.PendingValidUntilRelay[] pendingState =
+                new NeoGetPendingValidUntilRelay.PendingValidUntilRelay[1];
+
+        waitUntil(() -> {
+            pendingState[0] = getNeow3j().getPendingValidUntilRelay().send().getPendingValidUntilRelay();
+            return pendingState[0].getPending().stream().anyMatch(t -> t.getHash().equals(txHash));
+        }, is(true), DEFERRED_RELAY_MAX_WAIT_TIME, TimeUnit.SECONDS);
+
+        return pendingState[0];
+    }
+
     @Disabled("Future work, act as a consensus to submit blocks.")
     @Test
     public void testSubmitBlock() throws IOException {
-        NeoSubmitBlock submitBlock = getNeow3j()
-                .submitBlock("")
-                .send();
+        NeoSubmitBlock submitBlock = getNeow3j().submitBlock("").send();
 
         Boolean getSubmitBlock = submitBlock.getSubmitBlock();
 
@@ -104,10 +237,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendFrom() throws IOException {
-        NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(
-                        IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.COMMITTEE_HASH,
-                        IntegrationTestHelper.DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(NEO_HASH, COMMITTEE_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendFrom.getSendFrom();
@@ -119,11 +249,8 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendFrom_TransactionSendAsset() throws IOException {
-        TransactionSendToken txSendToken = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN,
-                defaultAccountAddress());
-        NeoSendFrom sendFrom = getNeow3j()
-                .sendFrom(IntegrationTestHelper.COMMITTEE_HASH, txSendToken)
-                .send();
+        TransactionSendToken txSendToken = new TransactionSendToken(NEO_HASH, BigInteger.TEN, defaultAccountAddress());
+        NeoSendFrom sendFrom = getNeow3j().sendFrom(COMMITTEE_HASH, txSendToken).send();
 
         Transaction tx = sendFrom.getSendFrom();
 
@@ -134,12 +261,10 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendMany() throws IOException {
-        NeoSendMany sendMany = getNeow3j()
-                .sendMany(asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
-                                defaultAccountAddress()),
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
-                .send();
+        NeoSendMany sendMany = getNeow3j().sendMany(asList(
+                new TransactionSendToken(NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                new TransactionSendToken(NEO_HASH, BigInteger.TEN, RECIPIENT))
+        ).send();
 
         assertNotNull(sendMany.getSendMany());
 
@@ -152,26 +277,26 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendManyWithFrom() throws IOException {
-        NeoSendMany response = getNeow3j()
-                .sendMany(IntegrationTestHelper.COMMITTEE_HASH, asList(
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, new BigInteger("100"),
-                                defaultAccountAddress()),
-                        new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, RECIPIENT)))
-                .send();
+        NeoSendMany response = getNeow3j().sendMany(
+                COMMITTEE_HASH,
+                asList(
+                        new TransactionSendToken(NEO_HASH, new BigInteger("100"), defaultAccountAddress()),
+                        new TransactionSendToken(NEO_HASH, BigInteger.TEN, RECIPIENT)
+                )
+        ).send();
 
         assertNotNull(response.getSendMany());
         Transaction tx = response.getSendMany();
         assertThat(tx.getSender(), is(committeeAccountAddress()));
 
         waitUntilTransactionIsExecuted(response.getSendMany().getHash(), neow3j);
-        Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send()
-                .getApplicationLog().getExecutions().get(0);
+        Execution execution = neow3j.getApplicationLog(response.getSendMany().getHash()).send().getApplicationLog()
+                .getExecutions().get(0);
         assertThat(execution.getState(), is(NeoVMStateType.HALT));
 
         Hash160 recipient2Hash160 = Hash160.fromAddress(RECIPIENT);
-        InvocationResult invocationResult = neow3j.invokeFunctionDiagnostics(IntegrationTestHelper.NEO_HASH,
-                        "balanceOf", asList(hash160(recipient2Hash160))).send()
-                .getInvocationResult();
+        InvocationResult invocationResult = neow3j.invokeFunctionDiagnostics(NEO_HASH, "balanceOf",
+                asList(hash160(recipient2Hash160))).send().getInvocationResult();
         assertThat(invocationResult.getStack().get(0).getInteger().intValue(), is(10));
 
         Diagnostics diagnostics = invocationResult.getDiagnostics();
@@ -181,9 +306,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendMany_Empty_Transaction() throws IOException {
-        NeoSendMany sendMany = getNeow3j()
-                .sendMany(emptyList())
-                .send();
+        NeoSendMany sendMany = getNeow3j().sendMany(emptyList()).send();
 
         assertThrows(RpcResponseErrorException.class, sendMany::getSendMany);
         assertNotNull(sendMany.getError());
@@ -193,9 +316,7 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress() throws IOException {
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(IntegrationTestHelper.NEO_HASH, IntegrationTestHelper.DEFAULT_ACCOUNT_HASH,
-                        BigInteger.TEN)
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(NEO_HASH, DEFAULT_ACCOUNT_HASH, BigInteger.TEN)
                 .send();
 
         Transaction tx = sendToAddress.getSendToAddress();
@@ -205,11 +326,9 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void testSendToAddress_TransactionSendAsset() throws IOException {
-        TransactionSendToken transactionSendToken =
-                new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.TEN, defaultAccountAddress());
-        NeoSendToAddress sendToAddress = getNeow3j()
-                .sendToAddress(transactionSendToken)
-                .send();
+        TransactionSendToken transactionSendToken = new TransactionSendToken(NEO_HASH, BigInteger.TEN,
+                defaultAccountAddress());
+        NeoSendToAddress sendToAddress = getNeow3j().sendToAddress(transactionSendToken).send();
 
         Transaction tx = sendToAddress.getSendToAddress();
 
@@ -218,15 +337,13 @@ public class Neow3jWriteIntegrationTest {
 
     @Test
     public void cancelTransactionFailsBecauseTransactionWasAlreadyConfirmed() throws IOException {
-        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
-                defaultAccountAddress());
+        TransactionSendToken param = new TransactionSendToken(NEO_HASH, BigInteger.ONE, defaultAccountAddress());
         Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
 
         waitUntilTransactionIsExecuted(tx.getHash(), getNeow3j());
 
-        NeoCancelTransaction cancel = getNeow3j()
-                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
-                .send();
+        NeoCancelTransaction cancel = getNeow3j().cancelTransaction(tx.getHash(),
+                asList(Hash160.fromAddress(defaultAccountAddress())), null).send();
 
         assertThat(cancel.getError().getMessage(),
                 is("Inventory already exists - This tx is already confirmed, can't be cancelled."));
@@ -238,13 +355,11 @@ public class Neow3jWriteIntegrationTest {
      */
     @Test
     public void cancelTransactionSucceedsWithSingleSigner() throws IOException {
-        TransactionSendToken param = new TransactionSendToken(IntegrationTestHelper.NEO_HASH, BigInteger.ONE,
-                defaultAccountAddress());
+        TransactionSendToken param = new TransactionSendToken(NEO_HASH, BigInteger.ONE, defaultAccountAddress());
         Transaction tx = getNeow3j().sendToAddress(param).send().getSendToAddress();
 
-        NeoCancelTransaction cancel = getNeow3j()
-                .cancelTransaction(tx.getHash(), asList(Hash160.fromAddress(defaultAccountAddress())), null)
-                .send();
+        NeoCancelTransaction cancel = getNeow3j().cancelTransaction(tx.getHash(),
+                asList(Hash160.fromAddress(defaultAccountAddress())), null).send();
 
         assertFalse(cancel.hasError());
         Transaction cancelTx = cancel.getTransaction();

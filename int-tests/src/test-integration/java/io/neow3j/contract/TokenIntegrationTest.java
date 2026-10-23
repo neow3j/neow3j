@@ -11,7 +11,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.io.IOException;
 import java.math.BigInteger;
 
-import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
+import static io.neow3j.helper.FundingHelper.GAS_HASH;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;

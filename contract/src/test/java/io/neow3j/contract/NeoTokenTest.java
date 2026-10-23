@@ -485,15 +485,17 @@ public class NeoTokenTest {
         Iterator<NeoToken.Candidate> it = new NeoToken(neow).getAllCandidatesIterator();
         assertThat(it.getMapper(), is(NeoToken.candidateMapper()));
 
-        List<NeoToken.Candidate> candidates = it.traverse(2);
         ECPublicKey pubKey1 = new ECPublicKey("02607a38b8010a8f401c25dd01df1b74af1827dd16b821fc07451f2ef7f02da60f");
         BigInteger votes1 = BigInteger.valueOf(340356);
         ECPublicKey pubKey2 = new ECPublicKey("037279f3a507817251534181116cb38ef30468b25074827db34cbbc6adc8873932");
         BigInteger votes2 = BigInteger.valueOf(10000000);
-        assertThat(candidates.get(0).getPublicKey(), is(pubKey1));
-        assertThat(candidates.get(0).getVotes(), is(votes1));
-        assertThat(candidates.get(1).getPublicKey(), is(pubKey2));
-        assertThat(candidates.get(1).getVotes(), is(votes2));
+
+        NeoToken.Candidate expectedCandidate1 = new NeoToken.Candidate(pubKey1, votes1);
+        NeoToken.Candidate expectedCandidate2 = new NeoToken.Candidate(pubKey2, votes2);
+
+        List<NeoToken.Candidate> candidates = it.traverse(2);
+        assertThat(candidates.get(0), is(expectedCandidate1));
+        assertThat(candidates.get(1), is(expectedCandidate2));
 
         it.terminateSession();
     }

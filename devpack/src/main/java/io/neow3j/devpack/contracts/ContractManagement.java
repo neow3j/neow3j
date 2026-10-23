@@ -33,6 +33,15 @@ public class ContractManagement extends ContractInterface {
     public native Contract getContract(Hash160 hash);
 
     /**
+     * Checks if the given script hash is a contract.
+     *
+     * @param hash the script hash to be verified.
+     * @return true if the given script hash is a contract. False otherwise.
+     */
+    @CallFlags(ReadOnly)
+    public native Boolean isContract(Hash160 hash);
+
+    /**
      * Gets the deployed contract with the specified id.
      *
      * @param id the contract id.

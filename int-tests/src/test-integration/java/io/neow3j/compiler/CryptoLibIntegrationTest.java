@@ -4,7 +4,7 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
-import io.neow3j.devpack.constants.NamedCurve;
+import io.neow3j.devpack.constants.NamedCurveHash;
 import io.neow3j.devpack.contracts.CryptoLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.wallet.Account;
@@ -42,6 +42,15 @@ public class CryptoLibIntegrationTest {
     }
 
     @Test
+    public void recoverSecp256K1() throws IOException {
+        String messageHashHex = "5ae8317d34d1e595e3fa7247db80c0af4320cce1116de187f8f7e2e099c0d8d0";
+        String sigHex = "45c0b7f8c09a9e1f1cea0c25785594427b6bf8f9f878a8af0b1abbb48e16d0920d8becd0c220f67c51217eecfd7184ef0732481c843857e6bc7fc095c4f6b78801";
+        String expectedRecoveredPubKeyHex = "034a071e8a6e10aada2b8cf39fa3b5fb3400b04e99ea8ae64ceea1a977dbeaf5d5";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(messageHashHex), byteArray(sigHex));
+        assertThat(response.getInvocationResult().getFirstStackItem().getHexString(), is(expectedRecoveredPubKeyHex));
+    }
+
+    @Test
     public void sha256() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray("0102030405"));
         assertThat(response.getInvocationResult().getStack().get(0).getHexString(),
@@ -76,12 +85,12 @@ public class CryptoLibIntegrationTest {
         String signature =
                 "a30ded6e19be5573a6f6a5ff37c35d4ae76ff35ab4bee03b5b5bfbbef371f812ff70b5b480462807948a2ffb24dd8771484d9ca5a90333f9e6db69a6c8802a63";
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
-                publicKey(pubKey), signature(signature), integer(NamedCurve.Secp256r1));
+                publicKey(pubKey), signature(signature), integer(NamedCurveHash.secp256r1SHA256));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
 
         message = "0102030406"; // small change in message.
         response = ct.callInvokeFunction(testName, byteArray(message), publicKey(pubKey),
-                signature(signature), integer(NamedCurve.Secp256r1));
+                signature(signature), integer(NamedCurveHash.secp256r1SHA256));
         assertFalse(response.getInvocationResult().getStack().get(0).getBoolean());
     }
 
@@ -93,8 +102,19 @@ public class CryptoLibIntegrationTest {
                 account.getECKeyPair());
         NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message),
                 publicKey(account.getECKeyPair().getPublicKey().getEncoded(true)),
-                signature(signatureData), integer(NamedCurve.Secp256r1));
+                signature(signatureData), integer(NamedCurveHash.secp256r1SHA256));
         assertTrue(response.getInvocationResult().getStack().get(0).getBoolean());
+    }
+
+    @Test
+    public void verifyWithEd25519() throws IOException {
+        String message = "af82";
+        String publicKey = "fc51cd8e6218a1a38da47ed00230f0580816ed13ba3303ac5deb911548908025";
+        String signature =
+                "6291d657deec24024827e69c3abe01a30ce548a284743a445e3680d7db5ac3ac18ff9b538d16f290ae67f760984dc6594a7c15e9716ed28dc027beceea1ec40a";
+        NeoInvokeFunction response = ct.callInvokeFunction(testName, byteArray(message), byteArray(publicKey),
+                signature(signature));
+        assertTrue(response.getInvocationResult().getFirstStackItem().getBoolean());
     }
 
     @Test
@@ -105,6 +125,10 @@ public class CryptoLibIntegrationTest {
     }
 
     static class CryptoLibIntegrationTestContract {
+
+        public static ECPoint recoverSecp256K1(ByteString messageHash, ByteString signature) {
+            return new CryptoLib().recoverSecp256K1(messageHash, signature);
+        }
 
         public static ByteString sha256(ByteString value) {
             return new CryptoLib().sha256(value);
@@ -130,6 +154,10 @@ public class CryptoLibIntegrationTest {
         public static boolean verifyWithECDsaWithSignatureData(ByteString message, ECPoint pubKey,
                 ByteString signature, byte curve) {
             return new CryptoLib().verifyWithECDsa(message, pubKey, signature, curve);
+        }
+
+        public static boolean verifyWithEd25519(ByteString message, ECPoint pubKey, ByteString signature) {
+            return new CryptoLib().verifyWithEd25519(message, pubKey, signature);
         }
 
         public static Hash160 getHash() {

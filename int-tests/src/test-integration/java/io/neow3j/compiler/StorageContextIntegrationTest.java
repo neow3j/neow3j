@@ -32,7 +32,7 @@ public class StorageContextIntegrationTest {
         InvocationResult res = ct.callInvokeFunction(testName).getInvocationResult();
         // The method tries to write with a read-only storage context, i.e., it should FAULT.
         assertThat(res.getState(), is(NeoVMStateType.FAULT));
-        assertThat(res.getException(), is("StorageContext is readonly (Parameter 'context')"));
+        assertThat(res.getException(), is("StorageContext is read-only (Parameter 'context')"));
     }
 
 

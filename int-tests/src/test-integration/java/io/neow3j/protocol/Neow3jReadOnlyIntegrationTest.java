@@ -29,13 +29,16 @@ import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoListPlugins.Plugin;
 import io.neow3j.protocol.core.response.NeoNetworkFee;
 import io.neow3j.protocol.core.response.NeoSendToAddress;
+import io.neow3j.protocol.core.response.NeoSignMessage;
 import io.neow3j.protocol.core.response.NeoValidateAddress;
+import io.neow3j.protocol.core.response.NeoVerifyMessage;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.AccountSigner;
+import io.neow3j.transaction.ContractParametersContext;
 import io.neow3j.transaction.Signer;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.types.ContractParameterType;
@@ -43,7 +46,6 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.StackItemType;
-import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 
 import static io.neow3j.protocol.IntegrationTestHelper.COMMITTEE_HASH;
@@ -71,15 +74,23 @@ import static io.neow3j.test.TestProperties.gasTokenHash;
 import static io.neow3j.test.TestProperties.gasTokenName;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.TestProperties.oracleContractHash;
+import static io.neow3j.test.TestProperties.treasuryContractHash;
 import static io.neow3j.transaction.AccountSigner.calledByEntry;
 import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
+import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexString;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyMap;
 import static java.util.Collections.singletonList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.greaterThan;
@@ -96,6 +107,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -342,7 +354,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .send()
                 .getNativeContracts();
 
-        assertThat(nativeContracts, hasSize(9));
+        assertThat(nativeContracts, hasSize(11));
         ContractState contractState1 = nativeContracts.get(0);
         assertThat(contractState1.getId().intValue(), is(-1));
         assertThat(contractState1.getUpdateCounter(), is(0));
@@ -354,8 +366,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef1.getSource(), is(""));
         assertThat(nef1.getTokens(), hasSize(0));
         assertThat(nef1.getScript(), is(
-                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef1.getChecksum(), is(1094259016L));
+                "EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef1.getChecksum(), is(3581846399L));
 
         ContractManifest manifest1 = contractState1.getManifest();
         assertThat(manifest1.getName(), is("ContractManagement"));
@@ -363,9 +375,9 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest1.getSupportedStandards(), hasSize(0));
 
         ContractABI abi1 = manifest1.getAbi();
-        assertThat(abi1.getMethods(), hasSize(11));
+        assertThat(abi1.getMethods(), hasSize(12));
         assertThat(abi1.getMethods().get(10).getName(), is("update"));
-        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(3));
+        assertThat(abi1.getMethods().get(10).getParameters(), hasSize(2));
         assertThat(abi1.getMethods().get(10).getReturnType(), is(ContractParameterType.VOID));
         assertThat(abi1.getMethods().get(10).getOffset(), is(70));
         assertFalse(abi1.getMethods().get(10).isSafe());
@@ -398,7 +410,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getName(), is("OracleContract"));
         assertThat(manifest8.getGroups(), hasSize(0));
         assertTrue(manifest8.getFeatures().isEmpty());
-        assertThat(manifest8.getSupportedStandards(), hasSize(0));
+        assertThat(manifest8.getSupportedStandards(), hasSize(1));
+        assertThat(manifest8.getSupportedStandards(), containsInAnyOrder("NEP-30"));
 
         ContractABI abi8 = manifest8.getAbi();
         assertThat(abi8.getMethods(), hasSize(5));
@@ -421,6 +434,33 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(manifest8.getPermissions().get(0).getMethods().get(0), is("*"));
         assertThat(manifest8.getTrusts(), hasSize(0));
         assertNull(manifest8.getExtra());
+
+        ContractState contractState10 = nativeContracts.get(10);
+        assertThat(contractState10.getId().intValue(), is(-11));
+        assertThat(contractState10.getHash(), is(new Hash160(treasuryContractHash())));
+
+        ContractManifest manifest10 = contractState10.getManifest();
+        assertThat(manifest10.getName(), is("Treasury"));
+        assertTrue(manifest10.getFeatures().isEmpty());
+        assertThat(manifest10.getSupportedStandards(), hasSize(3));
+        assertThat(manifest10.getSupportedStandards(), containsInAnyOrder("NEP-26", "NEP-27", "NEP-30"));
+
+        ContractABI abi10 = manifest10.getAbi();
+        assertThat(abi10.getMethods(), hasSize(3));
+        ContractMethod method10 = abi10.getMethods().get(2);
+        assertThat(method10.getName(), is("verify"));
+        assertThat(method10.getParameters(), hasSize(0));
+        assertThat(method10.getReturnType(), is(ContractParameterType.BOOLEAN));
+        assertThat(method10.getOffset(), is(14));
+        assertTrue(method10.isSafe());
+        assertThat(abi10.getEvents(), hasSize(0));
+
+        assertThat(manifest10.getPermissions(), hasSize(1));
+        assertThat(manifest10.getPermissions().get(0).getContract(), is("*"));
+        assertThat(manifest10.getPermissions().get(0).getMethods(), hasSize(1));
+        assertThat(manifest10.getPermissions().get(0).getMethods().get(0), is("*"));
+        assertThat(manifest10.getTrusts(), hasSize(0));
+        assertNull(manifest10.getExtra());
     }
 
     @Test
@@ -440,8 +480,8 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(nef.getSource(), is(""));
         assertThat(nef.getTokens(), is(empty()));
         assertThat(nef.getScript(),
-                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0A="));
-        assertThat(nef.getChecksum(), is(1325686241L));
+                is("EEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dAEEEa93tnQBBBGvd7Z0AQQRr3e2dA"));
+        assertThat(nef.getChecksum(), is(1991619121L));
 
         ContractManifest manifest = contractState.getManifest();
         assertNotNull(manifest);
@@ -452,13 +492,13 @@ public class Neow3jReadOnlyIntegrationTest {
         assertNotNull(abi);
 
         assertNotNull(abi.getMethods());
-        assertThat(abi.getMethods(), hasSize(20));
-        ContractMethod method = abi.getMethods().get(11);
+        assertThat(abi.getMethods(), hasSize(21));
+        ContractMethod method = abi.getMethods().get(12);
         assertThat(method.getName(), is("registerCandidate"));
         assertThat(method.getParameters().get(0).getName(), is("pubkey"));
         assertThat(method.getParameters().get(0).getType(),
                 is(ContractParameterType.PUBLIC_KEY));
-        assertThat(method.getOffset(), is(77));
+        assertThat(method.getOffset(), is(84));
         assertThat(method.getReturnType(), is(ContractParameterType.BOOLEAN));
         assertFalse(method.isSafe());
 
@@ -628,6 +668,22 @@ public class Neow3jReadOnlyIntegrationTest {
     @Test
     public void testFindStorage() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(GAS_HASH, "")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(4)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(4));
+        assertThat(storageEntries.get(3).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(3).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_withStartIndex() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(GAS_HASH, "", BigInteger.ZERO)
                 .send()
                 .getFoundStorage();
@@ -643,6 +699,22 @@ public class Neow3jReadOnlyIntegrationTest {
 
     @Test
     public void testFindStorage_contractId() throws IOException {
+        NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
+                .findStorage(BigInteger.valueOf(-6), "14")
+                .send()
+                .getFoundStorage();
+
+        assertFalse(foundStorageActual.isTruncated());
+        assertThat(foundStorageActual.getNext(), is(BigInteger.valueOf(3)));
+        List<ContractStorageEntry> storageEntries = foundStorageActual.getStorageEntries();
+        assertThat(storageEntries, hasSize(3));
+        assertThat(storageEntries.get(2).getKeyHex(), is("0x147f65d434362708b255f0e06856bdcb5ce99d8505"));
+        // value changes based on blockchain progress, hence only comparing the start of the value
+        assertThat(storageEntries.get(2).getValueHex(), containsString("0x41012107"));
+    }
+
+    @Test
+    public void testFindStorage_contractId_withStartIndex() throws IOException {
         NeoFindStorage.FoundStorage foundStorageActual = getNeow3j()
                 .findStorage(BigInteger.valueOf(-6), "14", BigInteger.ONE)
                 .send()
@@ -725,7 +797,7 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol protocol = neoVersion.getProtocol();
         assertThat(protocol.getValidatorsCount(), is(1));
         assertThat(protocol.getMilliSecondsPerBlock(), is(1_000L));
-        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(86_400L));
+        assertThat(protocol.getMaxValidUntilBlockIncrement(), is(5760L));
         assertThat(protocol.getMaxTraceableBlocks(), is(2_102_400L));
         assertThat(protocol.getAddressVersion(), is(53));
         assertThat(protocol.getMaxTransactionsPerBlock(), is(512L));
@@ -733,7 +805,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(4));
+        assertThat(protocol.getHardforks(), hasSize(7));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -746,6 +818,22 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks domovoi = protocol.getHardforks().get(3);
         assertThat(domovoi.getName(), is("Domovoi"));
         assertThat(domovoi.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks echidna = protocol.getHardforks().get(4);
+        assertThat(echidna.getName(), is("Echidna"));
+        assertThat(echidna.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks faun = protocol.getHardforks().get(5);
+        assertThat(faun.getName(), is("Faun"));
+        assertThat(faun.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks gorgon = protocol.getHardforks().get(6);
+        assertThat(gorgon.getName(), is("Gorgon"));
+        assertThat(gorgon.getBlockHeight(), is(BigInteger.ZERO));
+
+        assertThat(protocol.getStandbyCommittee(), hasSize(1));
+        assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(),
+                is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        assertThat(protocol.getSeedList(), hasSize(1));
+        assertThat(protocol.getSeedList().get(0), is("localhost:40333"));
     }
 
     // SmartContract Methods
@@ -851,7 +939,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScript(Numeric.toHexString(script), signer)
+                .invokeScript(toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 
@@ -879,7 +967,7 @@ public class Neow3jReadOnlyIntegrationTest {
 
         AccountSigner signer = calledByEntry(new Hash160(committeeAccountScriptHash()));
         InvocationResult invoc = getNeow3j()
-                .invokeScriptDiagnostics(Numeric.toHexString(script), signer)
+                .invokeScriptDiagnostics(toHexString(script), signer)
                 .send()
                 .getInvocationResult();
 
@@ -904,7 +992,7 @@ public class Neow3jReadOnlyIntegrationTest {
                 .getPlugins();
 
         assertNotNull(plugins);
-        assertThat(plugins, hasSize(10));
+        assertThat(plugins, hasSize(12));
     }
 
     @Test
@@ -1019,6 +1107,140 @@ public class Neow3jReadOnlyIntegrationTest {
 
         assertNotNull(addresses);
         assertThat(addresses, hasSize(greaterThanOrEqualTo(0)));
+    }
+
+    @Test
+    public void testSignMessage() throws IOException {
+        String messageToSign = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(messageToSign).send().getSignedMessage();
+
+        assertThat(signedMessage.getCurve(), is("secp256r1"));
+        assertThat(signedMessage.getAlgorithm(), is("payload = 010001f0 + VarBytes(Salt + Message) + 0000"));
+        assertThat(signedMessage.getMode(), is("Sign(payload)"));
+
+        List<NeoSignMessage.SignedMessage.MessageSignature> sigs = signedMessage.getSignatures();
+        assertThat(sigs, hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature sig = sigs.get(0);
+        assertThat(sig.getAddress(), is("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP"));
+        assertThat(sig.getPublicKey(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        String signature = sig.getSignature();
+        assertNotNull(signature);
+        assertTrue(isValidHexString(signature));
+        assertThat(hexStringToByteArray(signature).length, is(64));
+
+        String salt = sig.getSalt();
+        assertNotNull(salt);
+        assertTrue(isValidHexString(salt));
+        assertThat(hexStringToByteArray(salt).length, is(16));
+
+        byte[] paramBytes = (salt + messageToSign).getBytes(UTF_8);
+        String varByteSizeHex = toHexStringNoPrefix(BigInteger.valueOf(paramBytes.length));
+        String paramBytesHex = toHexStringNoPrefix(paramBytes);
+        assertThat(signedMessage.getPayload(), is("010001f0" + varByteSizeHex + paramBytesHex + "0000"));
+    }
+
+    @Test
+    public void testSignMessage_withNetwork() throws IOException {
+        String messageToSign = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(messageToSign, true)
+                .send().getSignedMessage();
+
+        assertThat(signedMessage.getCurve(), is("secp256r1"));
+        assertThat(signedMessage.getAlgorithm(), is("payload = 010001f0 + VarBytes(Salt + Message) + 0000"));
+        assertThat(signedMessage.getMode(), is("Sign(SHA256(network || Hash256(payload)))"));
+
+        List<NeoSignMessage.SignedMessage.MessageSignature> sigs = signedMessage.getSignatures();
+        assertThat(sigs, hasSize(1));
+        NeoSignMessage.SignedMessage.MessageSignature sig = sigs.get(0);
+        assertThat(sig.getAddress(), is("NM7Aky765FG8NhhwtxjXRx7jEL1cnw7PBP"));
+        assertThat(sig.getPublicKey(), is("033a4d051b04b7fc0230d2b1aaedfd5a84be279a5361a7358db665ad7857787f1b"));
+
+        String signature = sig.getSignature();
+        assertNotNull(signature);
+        assertTrue(isValidHexString(signature));
+        assertThat(hexStringToByteArray(signature).length, is(64));
+
+        String salt = sig.getSalt();
+        assertNotNull(salt);
+        assertTrue(isValidHexString(salt));
+        assertThat(hexStringToByteArray(salt).length, is(16));
+
+        byte[] paramBytes = (salt + messageToSign).getBytes(UTF_8);
+        String varByteSizeHex = toHexStringNoPrefix(BigInteger.valueOf(paramBytes.length));
+        String paramBytesHex = toHexStringNoPrefix(paramBytes);
+        assertThat(signedMessage.getPayload(), is("010001f0" + varByteSizeHex + paramBytesHex + "0000"));
+    }
+
+    @Test
+    public void testVerifyMessage() throws IOException {
+        String message = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt())
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
+    public void testVerifyMessage_withNetwork() throws IOException {
+        String message = "Hello world! 你好";
+        NeoSignMessage.SignedMessage signedMessage = getNeow3j().signMessage(message, true).send().getSignedMessage();
+
+        NeoSignMessage.SignedMessage.MessageSignature sig = signedMessage.getSignatures().get(0);
+        NeoVerifyMessage.VerifiedMessage verifiedMessage = getNeow3j()
+                .verifyMessage(message, sig.getSignature(), sig.getPublicKey(), sig.getSalt(), true)
+                .send().getVerifiedMessage();
+
+        assertTrue(verifiedMessage.isValid());
+
+        NeoVerifyMessage.VerifiedMessage expectedVerifiedMessage = new NeoVerifyMessage.VerifiedMessage(
+                sig.getAddress(), sig.getPublicKey(), sig.getSignature(), sig.getSalt(), "Valid");
+        assertEquals(expectedVerifiedMessage, verifiedMessage);
+    }
+
+    @Test
+    public void testSign() throws IOException {
+        String hash = "0xd1e66d4f1c6ca8128e75e719038f8dc805ca7ad6173e94f5d3d34315bf861b06";
+        String data = "AGY8Nz+WP5gAAAAAAAzDEgAAAAAAgxYAAAF/ZdQ0NicIslXw4GhWvctc6Z2FBQEAVgsaDBQzqUMWJHs1Gr6DdwAqnsvxCvU2JgwUDRZcmJnDi79ZkcXkewSTcljK7GkUwB8MCHRyYW5zZmVyDBT1Y+pAvCg9TQ4FxI6jBbPyoHNA70FifVtS";
+        String accountScriptHash = "0x05859de95ccbbd5668e0f055b208273634d4657f";
+
+        String script = "EQwhAzpNBRsEt/wCMNKxqu39WoS+J5pTYac1jbZlrXhXeH8bEUGe0Nw6";
+        ContractParameter param = new ContractParameter(ContractParameterType.SIGNATURE);
+        ContractParametersContext.ContextItem witness = new ContractParametersContext.ContextItem(script,
+                asList(param), emptyMap());
+        HashMap<String, ContractParametersContext.ContextItem> witnessMap = new HashMap<>();
+        witnessMap.put(accountScriptHash, witness);
+
+        long network = getNeow3j().getNetworkMagic();
+
+        ContractParametersContext context = new ContractParametersContext(hash, data, witnessMap, network);
+        ContractParametersContext signedContext = getNeow3j().sign(context).send().getContext();
+
+        assertEquals(hash, signedContext.getHash());
+        assertEquals(data, signedContext.getData());
+        assertEquals(network, signedContext.getNetwork());
+        // The items of the returned context should now have a witness
+        assertNotEquals(witnessMap, signedContext.getItems());
+
+        assertThat(signedContext.getItems().size(), is(1));
+        ContractParametersContext.ContextItem item = signedContext.getItems().get(accountScriptHash);
+        assertNotNull(item);
+        assertThat(item.getScript(), is(script));
+        assertThat(item.getParameters(), hasSize(1));
+        // The returned parameter should now contain a signature and thus no longer be equal to the initial param
+        ContractParameter paramWithSig = item.getParameters().get(0);
+        assertNotEquals(param, paramWithSig);
+
+        String signatureInParam = toHexString((byte[]) paramWithSig.getValue());
+        assertThat(hexStringToByteArray(signatureInParam).length, is(64));
     }
 
     // TokenTracker: Nep17

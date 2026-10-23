@@ -1,0 +1,13 @@
+{
+  "PluginConfiguration": {
+    "Path": "DeferredRelay_{0}",
+    "MaxTransactions": 1000,
+    "MaxTransactionsPerSender": 100,
+    "MinNetworkFee": 0,
+    "CheckFrequency": 1,
+    "UnhandledExceptionPolicy": "StopPlugin"
+  },
+  "Dependency": [
+    "RpcServer"
+  ]
+}

@@ -1,5 +1,29 @@
 description 'neow3j: JVM Compiler to NeoVM'
 
+// Inject the Gradle project version into the compiler at build time.
+//
+// The compiler version is written into the NEF file and must exactly reflect the version that produced it (including
+// "-SNAPSHOT" when applicable).
+//
+// This uses resource filtering on compiler.properties instead of hardcoding the version in Java to avoid manual
+// updates and to keep a single source of truth (project.version).
+//
+// IMPORTANT:
+// - The placeholder in compiler.properties MUST match the key used here.
+// - If this expansion is removed or renamed, the compiler will fail at runtime when loading its version (by design,
+//   to prevent invalid NEFs).
+// - Do NOT add a compiler.properties file under test resources, as test resources shadow main resources and will
+//   break version injection.
+tasks.named("processResources") {
+    // Inject the project version into the resource filtering inputs so Gradle re-runs this task when version changes.
+    inputs.property("compilerVersion", project.version.toString())
+
+    // Expand placeholders like ${compilerVersion} in this specific file at build time.
+    filesMatching("io/neow3j/compiler/compiler.properties") {
+        expand(compilerVersion: project.version.toString())
+    }
+}
+
 dependencies {
     api "org.ow2.asm:asm-tree:$asmVersion"
 

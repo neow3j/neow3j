@@ -15,7 +15,6 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 1. Create a branch `release` from `main`.
 2. Make sure the release version number is set in the following files:
    - `build.gradle`, in the `version` property
-   - `Compiler.java`, in the `COMPILER_NAME` constant
    - `README.md`, in the sections that explain how to import neow3j
 3. Commit and push the `release` branch, and open a pull request to `main`.
 4. Once the pull request has been merged, tag the `main` branch at the **top** commit. Tag format, e.g., `3.14.0`. 
@@ -29,8 +28,8 @@ at [neow3j.io](https://neow3j.io) is up-to-date.
 The following properties are required to create a release:
 - `signingKey`, the PGP key used to sign neow3j artifacts, ASCII armored and encrypted
 - `signingPassword`, the password for the PGP key
-- `sonatypeUsername`, the username for the Sonatype account, should be a token and not the actual username
-- `sonatypePassword`, the password for the Sonatype account, should be a token and not the actual password 
+- `mavenCentralPortalUsername`, the username for the Maven Central Sonatype account, should be a token and not the actual username
+- `mavenCentralPortalUsername`, the password for the Maven Central Sonatype account, should be a token and not the actual password
 - `gradle.publish.key`, the API key for the Gradle Plugin Repository
 - `gradle.publish.secret`, the API secret for the Gradle Plugin Repository
 
@@ -51,12 +50,9 @@ xxx9E\n\
 
 To publish the SDK and devpack artifacts from the currently checked-out code base, run:
 ```bash
-./gradlew --info -x :gradle-plugin:publishToSonatype -x :neofs:publishToSonatype  publishToSonatype closeAndReleaseSonatypeStagingRepository
+./gradlew --info -x :gradle-plugin:publish -x :gradle-plugin:releaseMavenCentralPortalPublication -x :gradle-plugin:zipMavenCentralPortalPublication clean publish zipMavenCentralPortalPublication releaseMavenCentralPortalPublication
 ```
-The task `publishToSonatype` compiles, packages, signs and uploads the artifacts to Sonatype into a "Staging
-Repository". The task `closeAndReleaseSonatypeStagingRepository` closes and releases that Staging Repository to 
-Maven Central. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the 
-command with the `-x` flag[^1].
+The task `publish` compiles, packages, and signs the artifacts, while the tasks `zipMavenCentralPortalPublication` and `releaseMavenCentralPortalPublication` zip the artifacts and uploads (release!) to Sonatype, respectively. We don't want to release all subprojects to Maven Central. Thus, you can exclude them from the command with the `-x` flag[^1].
 
 To publish the Gradle plugin from your currently checked out code base run:
 ```bash
@@ -107,7 +103,4 @@ To publish the Gradle plugin from your currently checked out code base run:
    neow3j-test-docker repository. Use the `main` branch and set the version to the tag used in the last step, e.g.,
    `neoxp-3.4.18`.
 
-[^1]: It is not easy to exclude the `gradle-plugin` subproject from the `publishToSonatype` task in the build script.
-The `nexus.publish-plugin` automatically includes all projects that use the `maven-publish` plugin and the 
-`gradle-plugin` subproject does implicitly use that plugin. Thus, it is always included when executing `./gradlew
-publishToSonatype` and has to be explicitly excluded with the `-x` flag.
+[^1]: It is not trivial to exclude all tasks of the `gradle-plugin` subproject solely using the `gradlew` wrapper. Thus, we exclude all relevant tasks (using `-x`) that should not run when publishing releases to Sonatype.

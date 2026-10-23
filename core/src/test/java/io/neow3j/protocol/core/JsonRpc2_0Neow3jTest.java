@@ -14,7 +14,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import static io.neow3j.protocol.Neow3jConfig.defaultNeow3jConfig;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

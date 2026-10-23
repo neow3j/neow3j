@@ -2,6 +2,7 @@ package io.neow3j.devpack.constants;
 
 /**
  * Interoperability services that a Neo node provides to the NeoVM execution environment.
+ * <p>
  * These services can be used in smart contract code via the {@link OpCode#SYSCALL} instruction.
  */
 // This enum can also be found in the neow3j core module (io.neow3j.script.InteropService). Make sure to update it here
@@ -190,6 +191,26 @@ public enum InteropService {
      * Deletes an entry from the storage.
      */
     SYSTEM_STORAGE_DELETE,
+
+    /**
+     * Gets the entry with the specified key from the local contract storage.
+     */
+    SYSTEM_STORAGE_LOCAL_GET,
+
+    /**
+     * Finds the entries from the local contract storage with a given prefix.
+     */
+    SYSTEM_STORAGE_LOCAL_FIND,
+
+    /**
+     * Puts a new entry into the local contract storage.
+     */
+    SYSTEM_STORAGE_LOCAL_PUT,
+
+    /**
+     * Deletes an entry from the local contract storage.
+     */
+    SYSTEM_STORAGE_LOCAL_DELETE,
 
     /**
      * A dummy value used as a placeholder.

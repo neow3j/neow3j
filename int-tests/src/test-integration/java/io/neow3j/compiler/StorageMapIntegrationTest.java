@@ -5,7 +5,6 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.InvocationResult;
@@ -46,6 +45,16 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+/**
+ * Integration tests for the StorageMap class.
+ * <p>
+ * These tests replicate the same test sample as in StorageMapWithContextIntegrationTest. They intend to completely
+ * replace it once the deprecated constructors of StorageMap have been removed.
+ * <p>
+ * Once the deprecated constructors are removed, the StorageMap functions that currently use the general storage
+ * interops can be replaced with the local storage interops and the context can be removed completely from the
+ * StorageMap class.
+ */
 @SuppressWarnings("unchecked")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class StorageMapIntegrationTest {
@@ -198,9 +207,7 @@ public class StorageMapIntegrationTest {
 
     @Test
     public void createMapWithStringPrefix() throws IOException {
-        InvocationResult res = ct.callInvokeFunction(testName, string(PREFIX3), byteArray(KEY3))
-                .getInvocationResult();
-        // The method tries to write with a read-only storage context, i.e., it should FAULT.
+        InvocationResult res = ct.callInvokeFunction(testName, string(PREFIX3), byteArray(KEY3)).getInvocationResult();
         assertThat(res.getStack().get(0).getHexString(), is(DATA3));
     }
 
@@ -1477,13 +1484,12 @@ public class StorageMapIntegrationTest {
 
         // default prefix
         static ByteString prefix = hexToBytes("0001");
-        static StorageContext ctx = Storage.getStorageContext();
-        static StorageMap map = new StorageMap(ctx, prefix.toByteArray());
+        static StorageMap map = new StorageMap(prefix.toByteArray());
 
         // region store and delete data
 
         public static void storeDataFullKey(byte[] fullKey, byte[] data) {
-            Storage.put(ctx, fullKey, data);
+            Storage.put(fullKey, data);
         }
 
         public static void storeData(ByteString key, ByteString data) {
@@ -1507,32 +1513,32 @@ public class StorageMapIntegrationTest {
 
         public static ByteString createMapWithByteStringPrefix(ByteString prefix, ByteString key) {
             assert prefix instanceof ByteString;
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             return map.get(key);
         }
 
         public static ByteString createMapWithByteArrayPrefix(byte[] prefix, ByteString key) {
             byte[] prefixByteArray = new ByteString(prefix).toByteArray();
             assert prefixByteArray instanceof byte[];
-            StorageMap map = new StorageMap(ctx, prefixByteArray);
+            StorageMap map = new StorageMap(prefixByteArray);
             return map.get(key);
         }
 
         public static ByteString createMapWithStringPrefix(String prefix, ByteString key) {
             assert prefix instanceof String;
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             return map.get(key);
         }
 
         public static ByteString createMapWithIntegerPrefix(Integer prefix, ByteString key) {
             assert prefix instanceof Integer;
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             return map.get(key);
         }
 
         public static ByteString createMapWithBytePrefix(Byte prefix, ByteString key) {
             assert prefix instanceof Byte;
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             return map.get(key);
         }
 
@@ -1841,44 +1847,42 @@ public class StorageMapIntegrationTest {
 
         public static ByteString putByteArrayKeyByteArrayValue(byte[] key, byte[] value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteArrayKeyByteStringValue(byte[] key, ByteString value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteArrayKeyIntegerValue(byte[] key, int value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteArrayKeyBooleanValue(byte[] key, boolean value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteArrayKeyStringValue(byte[] key, String value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putByteArrayKeyHash160Value(byte[] key,
-                io.neow3j.devpack.Hash160 value) {
+        public static ByteString putByteArrayKeyHash160Value(byte[] key, io.neow3j.devpack.Hash160 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putByteArrayKeyHash256Value(byte[] key,
-                io.neow3j.devpack.Hash256 value) {
+        public static ByteString putByteArrayKeyHash256Value(byte[] key, io.neow3j.devpack.Hash256 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteArrayKeyECPointValue(byte[] key, ECPoint value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion
@@ -1886,45 +1890,43 @@ public class StorageMapIntegrationTest {
 
         public static ByteString putByteStringKeyByteArrayValue(ByteString key, byte[] value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteStringKeyByteStringValue(ByteString key, ByteString value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteStringKeyIntegerValue(ByteString key, int value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteStringKeyBooleanValue(ByteString key, boolean value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteStringKeyStringValue(ByteString key, String value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putByteStringKeyHash160Value(ByteString key,
-                io.neow3j.devpack.Hash160 value) {
+        public static ByteString putByteStringKeyHash160Value(ByteString key, io.neow3j.devpack.Hash160 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putByteStringKeyHash256Value(ByteString key,
-                io.neow3j.devpack.Hash256 value) {
+        public static ByteString putByteStringKeyHash256Value(ByteString key, io.neow3j.devpack.Hash256 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putByteStringKeyECPointValue(ByteString key, ECPoint value) {
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion
@@ -1932,45 +1934,44 @@ public class StorageMapIntegrationTest {
 
         public static ByteString putStringKeyByteArrayValue(String key, byte[] value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyByteStringValue(String key, ByteString value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyIntegerValue(String key, int value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyBooleanValue(String key, boolean value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyStringValue(String key, String value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyHash160Value(String key,
                 io.neow3j.devpack.Hash160 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putStringKeyHash256Value(String key,
-                io.neow3j.devpack.Hash256 value) {
+        public static ByteString putStringKeyHash256Value(String key, io.neow3j.devpack.Hash256 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putStringKeyECPointValue(String key, ECPoint value) {
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion
@@ -1978,45 +1979,44 @@ public class StorageMapIntegrationTest {
 
         public static ByteString putIntegerKeyByteArrayValue(int key, byte[] value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyByteStringValue(int key, ByteString value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyIntegerValue(int key, int value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyBooleanValue(int key, boolean value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyStringValue(int key, String value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyHash160Value(int key,
                 io.neow3j.devpack.Hash160 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
-        public static ByteString putIntegerKeyHash256Value(int key,
-                io.neow3j.devpack.Hash256 value) {
+        public static ByteString putIntegerKeyHash256Value(int key, io.neow3j.devpack.Hash256 value) {
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putIntegerKeyECPointValue(int key, ECPoint value) {
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion put integer key
@@ -2025,52 +2025,52 @@ public class StorageMapIntegrationTest {
         public static ByteString putHash160KeyByteArrayValue(io.neow3j.devpack.Hash160 key, byte[] value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyByteStringValue(io.neow3j.devpack.Hash160 key, ByteString value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyIntegerValue(io.neow3j.devpack.Hash160 key, int value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyBooleanValue(io.neow3j.devpack.Hash160 key, boolean value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyStringValue(io.neow3j.devpack.Hash160 key, String value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyHash160Value(io.neow3j.devpack.Hash160 key,
                 io.neow3j.devpack.Hash160 value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putHash160KeyHash256Value(io.neow3j.devpack.Hash160 key,
                 io.neow3j.devpack.Hash256 value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash160KeyECPointValue(io.neow3j.devpack.Hash160 key, ECPoint value) {
             assert io.neow3j.devpack.Hash160.isValid(key);
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         // endregion
@@ -2079,52 +2079,52 @@ public class StorageMapIntegrationTest {
         public static ByteString putHash256KeyByteArrayValue(io.neow3j.devpack.Hash256 key, byte[] value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyByteStringValue(io.neow3j.devpack.Hash256 key, ByteString value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyIntegerValue(io.neow3j.devpack.Hash256 key, int value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyBooleanValue(io.neow3j.devpack.Hash256 key, boolean value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyStringValue(io.neow3j.devpack.Hash256 key, String value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyHash160Value(io.neow3j.devpack.Hash256 key,
                 io.neow3j.devpack.Hash160 value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putHash256KeyHash256Value(io.neow3j.devpack.Hash256 key,
                 io.neow3j.devpack.Hash256 value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString putHash256KeyECPointValue(io.neow3j.devpack.Hash256 key, ECPoint value) {
             assert io.neow3j.devpack.Hash256.isValid(key);
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         // endregion
@@ -2133,50 +2133,50 @@ public class StorageMapIntegrationTest {
         public static ByteString putECPointKeyByteArrayValue(ECPoint key, byte[] value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyByteStringValue(ECPoint key, ByteString value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyIntegerValue(ECPoint key, int value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyBooleanValue(ECPoint key, boolean value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyStringValue(ECPoint key, String value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyHash160Value(ECPoint key, io.neow3j.devpack.Hash160 value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteArray()));
+            return Storage.get(prefix.concat(key.toByteArray()));
         }
 
         public static ByteString putECPointKeyHash256Value(ECPoint key, io.neow3j.devpack.Hash256 value) {
             assert ECPoint.isValid(key);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key.toByteString()));
+            return Storage.get(prefix.concat(key.toByteString()));
         }
 
         public static ByteString putECPointKeyECPointValue(ECPoint key, ECPoint value) {
             assert ECPoint.isValid(key);
             assert ECPoint.isValid(value);
             map.put(key, value);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion
@@ -2184,37 +2184,37 @@ public class StorageMapIntegrationTest {
 
         public static ByteString deleteByByteArrayKey(byte[] key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByByteStringKey(ByteString key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByStringKey(String key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByInteger(int key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByHash160(io.neow3j.devpack.Hash160 key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByHash256(io.neow3j.devpack.Hash256 key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         public static ByteString deleteByECPoint(ECPoint key) {
             map.delete(key);
-            return Storage.get(ctx, prefix.concat(key));
+            return Storage.get(prefix.concat(key));
         }
 
         // endregion

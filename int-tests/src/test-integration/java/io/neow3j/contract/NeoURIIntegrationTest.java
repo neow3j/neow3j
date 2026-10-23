@@ -13,12 +13,12 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_1;
-import static io.neow3j.contract.IntegrationTestHelper.CLIENT_2;
-import static io.neow3j.contract.IntegrationTestHelper.DEFAULT_ACCOUNT;
-import static io.neow3j.contract.IntegrationTestHelper.GAS_HASH;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithGas;
-import static io.neow3j.contract.IntegrationTestHelper.fundAccountsWithNeo;
+import static io.neow3j.helper.FundingHelper.CLIENT_1;
+import static io.neow3j.helper.FundingHelper.CLIENT_2;
+import static io.neow3j.helper.FundingHelper.DEFAULT_ACCOUNT;
+import static io.neow3j.helper.FundingHelper.GAS_HASH;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithGas;
+import static io.neow3j.helper.FundingHelper.fundAccountsWithNeo;
 import static io.neow3j.utils.Await.waitUntilBlockCountIsGreaterThanZero;
 import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static org.hamcrest.MatcherAssert.assertThat;
