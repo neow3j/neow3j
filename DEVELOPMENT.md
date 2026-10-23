@@ -125,17 +125,16 @@ If you would like to locally test GitHub Actions workflows, it's not required to
 
 1. Follow the [installation steps](https://github.com/nektos/act#installation).
 
-2. [Create a PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) for your
-   GitHub user, for reading container registries (i.e., ghcr.io).
+2. [Create a PAT](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) for your GitHub user, for reading container registries (i.e., ghcr.io). The integration workflow logs in to ghcr.io with username `${{ github.actor }}` and password `${{ secrets.GITHUB_TOKEN }}`. On GitHub both are provided automatically. `act` defaults the actor to `nektos/act` and has no `GITHUB_TOKEN`, so it needs your GitHub username and a real token.
 
 3. Edit your local `~/.actrc` file and add the following lines in the end:
 
     ```
-    -s CR_PAT_USERNAME=<YOUR_GITHUB_USERNAME>
-    -s CR_PAT=<YOUR_GITHUB_PAT_TOKEN>
+    -a <YOUR_GITHUB_USERNAME>
+    -s GITHUB_TOKEN=<YOUR_GITHUB_PAT_TOKEN>
     ```
 
-4. If you would like to run the `.github/workflows/integration.yml`, run the following command:
+4. The integration job runs on `ubuntu-latest` with `contents: read` and `packages: read`. `act` uses its default Ubuntu image for that runner. To run `.github/workflows/integration.yml`:
 
    ```
     act --detect-event -W .github/workflows/integration.yml
