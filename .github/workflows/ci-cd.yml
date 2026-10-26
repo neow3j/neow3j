@@ -4,8 +4,16 @@ on:
   push:
   pull_request:
 
+# Pushes are grouped by ref, pull requests by PR number. Newer runs cancel in-progress runs within the same group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
+    # A same-repo push already starts this workflow. Skip the pull_request run so it does not start a second build.
+    # Forks never trigger push on this repository.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
