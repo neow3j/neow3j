@@ -40,4 +40,4 @@ jobs:
             # act runs this step inside a container. Ryuk's published port is on the Docker host.
             export TESTCONTAINERS_HOST_OVERRIDE=host.docker.internal
           fi
-          ./gradlew --info --warning-mode=all clean integrationTest
+          ./gradlew --console=plain --warning-mode=all clean integrationTest

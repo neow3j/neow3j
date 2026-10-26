@@ -12,3 +12,11 @@ dependencies {
             project(':test-tools'),
             "org.testcontainers:testcontainers-junit-jupiter:$testcontainersVersion"
 }
+
+tasks.named('integrationTest', Test) {
+    // Log individual test results as they complete for CI visibility.
+    testLogging {
+        events 'passed', 'skipped', 'failed'
+        exceptionFormat = 'full'
+    }
+}
