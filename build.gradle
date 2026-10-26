@@ -67,6 +67,12 @@ subprojects { subproject ->
 
     javadoc {
         options.encoding = 'UTF-8'
+        // Publishing builds javadocJar. Fail the build on the same Javadoc errors that would block a release.
+        failOnError = true
+    }
+
+    tasks.named('check') {
+        dependsOn tasks.named('javadoc')
     }
 
     jacocoTestReport {

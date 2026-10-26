@@ -17,6 +17,8 @@ jobs:
           cache: 'gradle'
       - name: Compile
         run: ./gradlew compileJava compileTestJava compileIntegrationTestJava
+      - name: JavaDoc
+        run: ./gradlew javadoc
       - name: Build with Unit Tests
         run: ./gradlew --info --warning-mode=all check jacocoRootTestReport
       - name: Test Results to CodeCov
