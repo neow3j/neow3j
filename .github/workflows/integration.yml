@@ -2,11 +2,19 @@ name: Integration Tests
 
 on:
   pull_request:
-    types: [ review_requested, ready_for_review ]
+    types: [ review_requested, ready_for_review, synchronize ]
   workflow_dispatch:
+
+# Pull requests group by pr-<number>. Manual runs group by ref.
+# A newer run cancels the in-progress run in the same group.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
+    # Manual runs always build. Pull requests build only when not a draft.
+    if: github.event_name == 'workflow_dispatch' || (github.event.pull_request.draft == false)
     runs-on: ubuntu-latest
     permissions:
       contents: read
