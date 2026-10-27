@@ -23,6 +23,7 @@ import org.junit.jupiter.api.TestInstance;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 
 import static io.neow3j.constants.NeoConstants.MAX_SIGNER_SUBITEMS;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
@@ -60,6 +61,32 @@ public class SignerTest {
         String encPubKey2 = "02958ab88e4cea7ae1848047daeb8883daf5fdf5c1301dbbfe973f0a29fe75de60";
         groupPubKey1 = new ECKeyPair.ECPublicKey(hexStringToByteArray(encPubKey1));
         groupPubKey2 = new ECKeyPair.ECPublicKey(hexStringToByteArray(encPubKey2));
+    }
+
+    @Test
+    public void reportsWhetherASignerCanBeSignedOrExported() throws Exception {
+        AccountSigner signable = AccountSigner.none(acc);
+        assertThat(signable.hasVerificationScript(), is(true));
+        assertThat(signable.canSign(), is(true));
+
+        AccountSigner hashOnly = AccountSigner.calledByEntry(accScriptHash);
+        assertThat(hashOnly.hasVerificationScript(), is(false));
+        assertThat(hashOnly.canSign(), is(false));
+
+        AccountSigner scriptOnly = AccountSigner.none(Account.fromVerificationScript(acc.getVerificationScript()));
+        assertThat(scriptOnly.hasVerificationScript(), is(true));
+        assertThat(scriptOnly.canSign(), is(false));
+
+        Account encrypted = Account.fromWIF("Kzt94tAAiZSgH7Yt4i25DW6jJFprZFPSqTgLr5dWmWgKDKCjXMfZ");
+        encrypted.encryptPrivateKey("pwd");
+        AccountSigner encryptedSigner = AccountSigner.none(encrypted);
+        assertThat(encryptedSigner.hasVerificationScript(), is(true));
+        assertThat(encryptedSigner.canSign(), is(false));
+
+        Account multiSig = Account.createMultiSigAccount(Arrays.asList(groupPubKey1, groupPubKey2), 1);
+        AccountSigner multiSigSigner = AccountSigner.none(multiSig);
+        assertThat(multiSigSigner.hasVerificationScript(), is(true));
+        assertThat(multiSigSigner.canSign(), is(false));
     }
 
     @Test

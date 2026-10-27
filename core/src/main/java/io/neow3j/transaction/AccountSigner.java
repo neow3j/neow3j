@@ -1,5 +1,6 @@
 package io.neow3j.transaction;
 
+import io.neow3j.script.VerificationScript;
 import io.neow3j.types.Hash160;
 import io.neow3j.wallet.Account;
 
@@ -29,6 +30,38 @@ public class AccountSigner extends Signer {
      */
     public Account getAccount() {
         return account;
+    }
+
+    /**
+     * Checks whether this signer's account holds a verification script.
+     * <p>
+     * A hash-only account, created from an address or script hash, does not. It can still be used as a signer, but
+     * its witness size is unknown. Network fee calculation then assumes a standard single-sig verification script,
+     * which is only accurate for an ordinary address. An account created from a verification script, a public key,
+     * or a multi-sig script does hold one, so the fee can be sized from that script and the signer can be exported
+     * in a contract parameters context.
+     *
+     * @return true if the account has a verification script.
+     */
+    public boolean hasVerificationScript() {
+        return account.getVerificationScript() != null;
+    }
+
+    /**
+     * Checks whether this signer can be witnessed locally by {@link TransactionBuilder#sign()}.
+     * <p>
+     * That requires a decrypted single-sig key whose verification script is a standard signature check. A hash-only
+     * account, an account with only a verification script, an account whose private key is still encrypted, and a
+     * multi-sig account are not locally signable.
+     *
+     * @return true if {@link TransactionBuilder#sign()} can produce this signer's witness.
+     */
+    public boolean canSign() {
+        if (account.isMultiSig() || account.getECKeyPair() == null) {
+            return false;
+        }
+        VerificationScript verificationScript = account.getVerificationScript();
+        return verificationScript != null && verificationScript.isSingleSigScript();
     }
 
     /**

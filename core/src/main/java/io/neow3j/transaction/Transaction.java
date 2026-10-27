@@ -560,6 +560,11 @@ public class Transaction extends NeoSerializable {
                 throw new UnsupportedOperationException("Cannot handle contract signers");
             }
             AccountSigner accountSigner = (AccountSigner) signer;
+            if (!accountSigner.hasVerificationScript()) {
+                throw new TransactionConfigurationException(format("Cannot create a contract parameters context " +
+                        "for hash-only account %s because it has no verification script.",
+                        accountSigner.getAccount().getAddress()));
+            }
             VerificationScript verificationScript = accountSigner.getAccount().getVerificationScript();
 
             // Check if there's a witness for this signer and add all corresponding signatures as parameters.

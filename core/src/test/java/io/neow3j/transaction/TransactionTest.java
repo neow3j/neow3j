@@ -642,6 +642,30 @@ public class TransactionTest {
     }
 
     @Test
+    public void toContractParameterContext_hashOnlySigner() {
+        Account signable = Account.create();
+        Account hashOnly = Account.fromAddress(signable.getAddress());
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.none(hashOnly));
+
+        Transaction tx = new Transaction(neow3j,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> tx.toContractParametersContext(0));
+        assertThat(thrown.getMessage(), containsString("hash-only account"));
+        assertThat(thrown.getMessage(), containsString(hashOnly.getAddress()));
+    }
+
+    @Test
     public void testToJson() throws JsonProcessingException {
         List<Signer> signers = new ArrayList<>();
         signers.add(AccountSigner.global(account1));
