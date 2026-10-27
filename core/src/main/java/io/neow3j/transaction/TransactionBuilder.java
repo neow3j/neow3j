@@ -506,10 +506,13 @@ public class TransactionBuilder {
     }
 
     /**
-     * Builds the transaction, creates signatures for every signer and adds them to the transaction as witnesses.
+     * Builds the transaction, creates signatures for every account signer that can be signed locally, and adds them
+     * to the transaction as witnesses.
      * <p>
-     * For each signer of the transaction, a corresponding account with an EC key pair must exist in the wallet set
-     * on this transaction builder.
+     * Each {@link AccountSigner} must be locally signable ({@link AccountSigner#canSign()}). A hash-only account, an
+     * account whose private key is still encrypted, an account that only holds a verification script, and a multi-sig
+     * account cannot be signed here. {@link ContractSigner}s are witnessed from their verify parameters and do not
+     * need a key.
      * <p>
      * Note, that this function uses the network magic number of the Neo node that this {@link TransactionBuilder}
      * object's {@link TransactionBuilder#neow3j} instance is connected to.
@@ -529,11 +532,13 @@ public class TransactionBuilder {
     }
 
     /**
-     * Builds the transaction, creates signatures for every signer and adds them to the transaction as witnesses.
+     * Builds the transaction, creates signatures for every account signer that can be signed locally, and adds them
+     * to the transaction as witnesses.
      * <p>
-     * For each signer of the transaction, a corresponding account with an EC key pair must exist in the wallet set
-     * on this transaction builder.
-     * <p>
+     * Each {@link AccountSigner} must be locally signable ({@link AccountSigner#canSign()}). A hash-only account, an
+     * account whose private key is still encrypted, an account that only holds a verification script, and a multi-sig
+     * account cannot be signed here. {@link ContractSigner}s are witnessed from their verify parameters and do not
+     * need a key.
      *
      * @param networkMagic the network's magic number to use.
      * @return the signed transaction.
@@ -544,6 +549,7 @@ public class TransactionBuilder {
      *                                           sender cannot cover the transaction fees.
      */
     public Transaction sign(long networkMagic) throws Throwable {
+        ensureSignersCanBeSigned();
         transaction = getUnsignedTransaction();
         byte[] txBytes = transaction.getHashData(networkMagic);
         transaction.getSigners().forEach(signer -> {
@@ -551,16 +557,37 @@ public class TransactionBuilder {
                 ContractSigner contractSigner = (ContractSigner) signer;
                 transaction.addWitness(createContractWitness(contractSigner.getVerifyParameters()));
             } else {
-                Account a = ((AccountSigner) signer).getAccount();
-                if (a.isMultiSig()) {
-                    throw new IllegalStateException("Transactions with multi-sig signers cannot be signed " +
-                            "automatically.");
-                } else {
-                    signWithAccount(txBytes, a);
-                }
+                signWithAccount(txBytes, ((AccountSigner) signer).getAccount());
             }
         });
         return transaction;
+    }
+
+    private void ensureSignersCanBeSigned() {
+        for (Signer signer : signers) {
+            if (!(signer instanceof AccountSigner)) {
+                continue;
+            }
+            AccountSigner accountSigner = (AccountSigner) signer;
+            if (accountSigner.canSign()) {
+                continue;
+            }
+            Account account = accountSigner.getAccount();
+            if (account.isMultiSig()) {
+                throw new IllegalStateException("Transactions with multi-sig signers cannot be signed " +
+                        "automatically.");
+            }
+            if (account.getEncryptedPrivateKey() != null) {
+                throw new TransactionConfigurationException(format("Cannot create transaction signature because the " +
+                        "private key of account %s is encrypted. Decrypt it before signing.", account.getAddress()));
+            }
+            if (!accountSigner.hasVerificationScript()) {
+                throw new TransactionConfigurationException(format("Cannot create transaction signature because " +
+                        "account %s is hash-only and has no verification script.", account.getAddress()));
+            }
+            throw new TransactionConfigurationException(format("Cannot create transaction signature because account " +
+                    "%s does not hold a private key.", account.getAddress()));
+        }
     }
 
     private void signWithAccount(byte[] txBytes, Account acc) {

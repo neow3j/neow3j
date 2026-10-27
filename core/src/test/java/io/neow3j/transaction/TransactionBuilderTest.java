@@ -509,34 +509,26 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failTryingToSignTransactionWithAccountMissingAPrivateKey() throws Throwable {
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
+    public void failTryingToSignTransactionWithAccountMissingAPrivateKey() {
         TransactionBuilder builder = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                 .signers(none(Account.fromAddress(account1.getAddress())))
                 .validUntilBlock(1000);
 
-        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class, builder::sign);
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> builder.sign(0));
         assertThat(thrown.getMessage(),
-                is(format("Cannot create transaction signature because account %s does not hold a private key.",
-                        account1.getAddress())));
+                is(format("Cannot create transaction signature because account %s is hash-only and has no " +
+                        "verification script.", account1.getAddress())));
     }
 
     @Test
-    public void failAutomaticallySigningWithMultiSigAccountSigner() throws Throwable {
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
+    public void failAutomaticallySigningWithMultiSigAccountSigner() {
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
                 () -> new TransactionBuilder(neow)
                         .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                         .signers(none(createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
-                        .sign());
+                        .sign(0));
         assertThat(thrown.getMessage(), is("Transactions with multi-sig signers cannot be signed automatically."));
     }
 
@@ -555,12 +547,7 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failSigningWithAccountWithoutECKeyPair() throws Throwable {
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
+    public void failSigningWithAccountWithoutECKeyPair() {
         Account accountWithoutKeyPair =
                 Account.fromVerificationScript(account1.getVerificationScript());
 
@@ -568,8 +555,22 @@ public class TransactionBuilderTest {
                 () -> new TransactionBuilder(neow)
                         .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
                         .signers(none(accountWithoutKeyPair))
-                        .sign());
+                        .sign(0));
         assertThat(thrown.getMessage(), containsString(" does not hold a private key."));
+    }
+
+    @Test
+    public void failSigningWithEncryptedPrivateKey() throws Exception {
+        Account encrypted = new Account(ECKeyPair.create(hexStringToByteArray(
+                "1dd37fba80fec4e6a6f13fd708d8dcb3b29def768017052f6c930fa1c5d90bbb")));
+        encrypted.encryptPrivateKey("pwd");
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(encrypted))
+                        .sign(0));
+        assertThat(thrown.getMessage(), containsString("is encrypted"));
     }
 
     @Test
