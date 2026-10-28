@@ -424,8 +424,9 @@ public class CompilerExceptionsTest {
     }
 
     static class ContractClassWithReferenceToStaticVariable {
-        public static void method() {
+        public static Hash160 method() {
             Hash160 owner = NonContractClassWithStaticVariable.owner;
+            return owner;
         }
     }
 
