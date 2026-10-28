@@ -419,11 +419,11 @@ public class NNSIntegrationTest {
         }
 
         public static void setHash(Hash160 contractHash) {
-            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+            Storage.put(0xff, contractHash);
         }
 
         private static NeoNameService getNeoNameService() {
-            return new NeoNameService(Storage.getHash160(Storage.getReadOnlyContext(), 0xff));
+            return new NeoNameService(Storage.getHash160(0xff));
         }
 
         public static Hash160 getOfficialNNSHash() {

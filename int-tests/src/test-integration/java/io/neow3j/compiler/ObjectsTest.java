@@ -3,7 +3,6 @@ package io.neow3j.compiler;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.contracts.StdLib;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -125,14 +124,13 @@ public class ObjectsTest {
             return Helper.concat(Helper.toByteArray(c.s), Helper.toByteArray(Helper.asByte(c.i)));
         }
 
-        static StorageContext ctx = Storage.getStorageContext();
 
         public static void put(String s, byte[] bs, int i) {
-            Storage.put(ctx, "key", new StdLib().serialize(new POJO2(s, bs, i)));
+            Storage.put("key", new StdLib().serialize(new POJO2(s, bs, i)));
         }
 
         public static Object get() {
-            POJO2 obj = (POJO2) new StdLib().deserialize(Storage.get(ctx, "key"));
+            POJO2 obj = (POJO2) new StdLib().deserialize(Storage.get("key"));
             obj.s = "other String";
             obj.pojo1.s = "other String in POJO1";
             obj.i1 = 2_000_000_000;

@@ -4,9 +4,10 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
+import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StringLiteralHelper;
+import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.devpack.annotations.Struct;
 import io.neow3j.devpack.events.Event1Arg;
 import org.junit.jupiter.api.Test;
@@ -38,7 +39,8 @@ public class StaticVariablesTest {
 
     public static class StaticVariablesTestContract {
 
-        static StorageContext ctx = Storage.getStorageContext();
+        @SuppressWarnings("unchecked")
+        static Iterator<ByteString> ctx = Storage.find(new byte[]{0x01}, FindOptions.KeysOnly);
         static Hash160 owner = addressToScriptHash("NVq8SdaVYZ38QnGFV3ViDdFPubm21KG1An");
         static String string = "hello, world!";
         static ByteString byteString = StringLiteralHelper.hexToBytes("0102030405");

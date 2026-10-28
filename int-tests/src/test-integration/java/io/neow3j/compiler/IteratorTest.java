@@ -4,7 +4,6 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Iterator.Struct;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -56,17 +55,16 @@ public class IteratorTest {
 
     static class IteratorTestContract {
 
-        static StorageContext ctx = Storage.getStorageContext();
         static ByteString prefix = hexToBytes("010203");
 
         public static void setUp(ByteString[] values) {
             for (ByteString val : values) {
-                Storage.put(ctx, prefix.concat(val), val);
+                Storage.put(prefix.concat(val), val);
             }
         }
 
         public static io.neow3j.devpack.List<ByteString> getIteratorFromStorageAndIterate() {
-            Iterator<Struct<ByteString, ByteString>> it = Storage.find(ctx, prefix,
+            Iterator<Struct<ByteString, ByteString>> it = Storage.find(prefix,
                     FindOptions.None);
 
             io.neow3j.devpack.List<ByteString> values = new io.neow3j.devpack.List<>();

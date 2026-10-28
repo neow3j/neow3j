@@ -15,24 +15,26 @@ import static io.neow3j.devpack.constants.InteropService.SYSTEM_STORAGE_GETCONTE
  */
 public class StorageMap {
 
-    private StorageContext context;
+    // A StorageMap is a two-element array, not a Java object with assigned fields. Each constructor leaves the
+    // prefix on the stack, pushes this contract's storage context, and PACKs them. The item on top of the stack
+    // becomes index 0, so the array is [context, prefix].
+    //
+    // These fields are never assigned. They exist so a field read compiles to PICKITEM at the field's declaration
+    // index. context must stay first and prefix second. The get, put, delete, and find annotations hardcode those
+    // same indexes. Reordering or removing a field makes equals(StorageMap) read the wrong slot, while those
+    // annotated methods keep using 0 and 1.
+    //
+    // equals(StorageMap) compares the context as well as the prefix. Neo removed the library helpers for using
+    // another contract's storage and left the syscalls in place. This library does the same. A map for another
+    // contract's storage can still be built manually, or passed in, and it can carry the same prefix. Comparing
+    // only the prefix would treat that map as equal to a local one.
+    //
+    // The context comparison is by reference. GetContext returns a new object on every call, so two maps created
+    // with separate constructor calls are not equal, even when the prefix is the same.
+    private Object context;
     private Object prefix;
 
     // region constructors
-
-    /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
-     *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
-     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(ByteStringType)} instead.
-     */
-    @Deprecated
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH2)
-    @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, ByteStringType prefix) {
-    }
 
     /**
      * Constructs a new {@code StorageMap} with the given prefix.
@@ -44,20 +46,6 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
     public StorageMap(ByteStringType prefix) {
-    }
-
-    /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
-     *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
-     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(byte[])} instead.
-     */
-    @Deprecated
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH2)
-    @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, byte[] prefix) {
     }
 
     /**
@@ -73,20 +61,6 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
-     *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
-     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(String)} instead.
-     */
-    @Deprecated
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH2)
-    @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, String prefix) {
-    }
-
-    /**
      * Constructs a new {@code StorageMap} with the given prefix.
      *
      * @param prefix the prefix.
@@ -99,20 +73,6 @@ public class StorageMap {
     }
 
     /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
-     *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
-     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(int)} instead.
-     */
-    @Deprecated
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH2)
-    @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, int prefix) {
-    }
-
-    /**
      * Constructs a new {@code StorageMap} with the given prefix.
      *
      * @param prefix the prefix.
@@ -122,20 +82,6 @@ public class StorageMap {
     @Instruction(opcode = OpCode.PUSH2)
     @Instruction(opcode = OpCode.PACK)
     public StorageMap(int prefix) {
-    }
-
-    /**
-     * Constructs a new {@code StorageMap} from entries with the given prefix in the given {@link StorageContext}.
-     *
-     * @param context the storage to look for the entries.
-     * @param prefix  the prefix.
-     * @deprecated since 3.24.1; planned to be removed in 3.25.0. Use {@link #StorageMap(byte)} instead.
-     */
-    @Deprecated
-    @Instruction(opcode = OpCode.SWAP)
-    @Instruction(opcode = OpCode.PUSH2)
-    @Instruction(opcode = OpCode.PACK)
-    public StorageMap(StorageContext context, byte prefix) {
     }
 
     /**
@@ -1424,11 +1370,13 @@ public class StorageMap {
     public native boolean equals(Object other);
 
     /**
-     * Compares this and the given storage map by value, i.e., checks if they have the same context
-     * and prefix.
+     * Compares the context by reference and the prefix by value.
+     * <p>
+     * {@code System.Storage.GetContext} returns a new context on every call, so maps created with separate
+     * constructor calls do not compare equal.
      *
-     * @param map Other storage map to compare to.
-     * @return True if the two storage maps have the same context and prefix. False otherwise.
+     * @param map the storage map to compare to.
+     * @return true if both maps have the same context instance and the same prefix.
      */
     public boolean equals(StorageMap map) {
         if (this == map) {
@@ -1444,9 +1392,12 @@ public class StorageMap {
         if (checkdPrefixOther instanceof byte[]) {
             checkdPrefixOther = new ByteString((byte[]) checkdPrefixOther);
         }
-        return context.equals(map.context) &&
-                // Behaviour depends on the actual stack item type of the prefixes
+        return sameReference(context, map.context) &&
+                // Behavior depends on the actual stack item type of the prefixes
                 checkedPrefix == checkdPrefixOther;
     }
+
+    @Instruction(opcode = OpCode.EQUAL)
+    private static native boolean sameReference(Object left, Object right);
 
 }

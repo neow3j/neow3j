@@ -11,7 +11,6 @@ import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Runtime;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.Transaction;
 import io.neow3j.devpack.constants.FindOptions;
@@ -222,24 +221,13 @@ public class ObjectInheritedIntegrationTest {
     public void storageMapEquals() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-        // The StorageMap is an ArrayStackItem on the neo-vm, thus, the EQUALS opcode only
-        // compares it by reference. But the separate equals(StorageMap) implementation makes a
-        // comparison by value.
-        assertTrue(boolArr.get(0).getBoolean());
-        assertTrue(boolArr.get(1).getBoolean());
-        assertFalse(boolArr.get(2).getBoolean());
-        assertFalse(boolArr.get(3).getBoolean());
-    }
-
-    @Test
-    public void storageContextEquals() throws IOException {
-        NeoInvokeFunction response = ct.callInvokeFunction(testName);
-        List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-        // The StorageContext is an InteropInterfaceStackItem on the neo-vm, thus, it is only
-        // compared by reference.
+        // equals(Object) compares the map by reference. equals(StorageMap) compares the prefix by
+        // value and the context by reference. Each constructor calls GetContext, which returns a
+        // new context, so two separately constructed maps are not equal even when the prefix matches.
         assertTrue(boolArr.get(0).getBoolean());
         assertFalse(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
+        assertFalse(boolArr.get(3).getBoolean());
     }
 
     @Test
@@ -359,10 +347,9 @@ public class ObjectInheritedIntegrationTest {
         }
 
         public static boolean[] iteratorEquals() {
-            StorageContext ctx = Storage.getStorageContext();
-            Iterator it1 = Storage.find(ctx, "prefix1", FindOptions.None);
-            Iterator it1_other = Storage.find(ctx, "prefix1", FindOptions.None);
-            Iterator it2 = Storage.find(ctx, "prefix2", FindOptions.None);
+            Iterator it1 = Storage.find("prefix1", FindOptions.None);
+            Iterator it1_other = Storage.find("prefix1", FindOptions.None);
+            Iterator it2 = Storage.find("prefix2", FindOptions.None);
             boolean[] b = new boolean[4];
             b[0] = it1.equals(it1);
             b[1] = it1.equals(it1_other);
@@ -398,27 +385,15 @@ public class ObjectInheritedIntegrationTest {
         }
 
         public static boolean[] storageMapEquals() {
-            StorageContext ctx = Storage.getStorageContext();
-            StorageMap m1 = new StorageMap(ctx, new byte[]{0x01, 0x02});
-            StorageMap m1_other = new StorageMap(ctx, new byte[]{0x01, 0x02});
-            StorageMap m2 = new StorageMap(ctx, new byte[]{0x03});
+            StorageMap m1 = new StorageMap(new byte[]{0x01, 0x02});
+            StorageMap m1_other = new StorageMap(new byte[]{0x01, 0x02});
+            StorageMap m2 = new StorageMap(new byte[]{0x03});
 
             boolean[] b = new boolean[4];
             b[0] = m1.equals(m1);
             b[1] = m1.equals(m1_other);
             b[2] = m1.equals(m2);
             b[3] = m1.equals(2);
-            return b;
-        }
-
-        public static boolean[] storageContextEquals() {
-            StorageContext ctx1 = Storage.getStorageContext();
-            StorageContext ctx2 = Storage.getStorageContext();
-
-            boolean[] b = new boolean[3];
-            b[0] = ctx1.equals(ctx1);
-            b[1] = ctx1.equals(ctx2);
-            b[2] = ctx1.equals(2);
             return b;
         }
 

@@ -1,10 +1,9 @@
 package io.neow3j.devpack.constants;
 
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 
 /**
- * These options are to be used with the {@link Storage#find(StorageContext, byte[], int)}} methods and allow to control the kind of
+ * These options are to be used with the {@link Storage#find(byte[], int)} methods and allow to control the kind of
  * iterator that should be returned.
  */
 public class FindOptions {
