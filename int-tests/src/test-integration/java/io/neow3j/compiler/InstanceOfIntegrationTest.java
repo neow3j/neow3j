@@ -7,7 +7,6 @@ import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.List;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StringLiteralHelper;
 import io.neow3j.devpack.constants.FindOptions;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -192,15 +191,14 @@ public class InstanceOfIntegrationTest {
         }
 
         public static boolean instanceOfInteropInterface() {
-            Object obj = Storage.getStorageContext();
+            Object obj = Storage.find(new byte[]{0x01}, FindOptions.None);
             return obj instanceof InteropInterface;
         }
 
         public static boolean instanceOfStruct() {
-            StorageContext ctx = Storage.getStorageContext();
             ByteString prefix = StringLiteralHelper.hexToBytes("010203");
-            Storage.put(ctx, prefix, "value");
-            Iterator it = Storage.find(ctx, prefix, FindOptions.None);
+            Storage.put(prefix, "value");
+            Iterator it = Storage.find(prefix, FindOptions.None);
             it.next();
             Object obj = it.get();
             return obj instanceof Iterator.Struct;

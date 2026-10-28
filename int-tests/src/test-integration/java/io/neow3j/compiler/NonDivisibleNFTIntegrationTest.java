@@ -53,11 +53,11 @@ public class NonDivisibleNFTIntegrationTest {
         }
 
         public static void setHash(Hash160 contractHash) {
-            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+            Storage.put(0xff, contractHash);
         }
 
         private static Hash160 getHash() {
-            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
+            return Storage.getHash160(0xff);
         }
 
     }

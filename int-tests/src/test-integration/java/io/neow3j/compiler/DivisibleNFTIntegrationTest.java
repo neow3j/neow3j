@@ -6,7 +6,6 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
@@ -128,11 +127,11 @@ public class DivisibleNFTIntegrationTest {
         }
 
         public static void setHash(Hash160 contractHash) {
-            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+            Storage.put(0xff, contractHash);
         }
 
         private static Hash160 getHash() {
-            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
+            return Storage.getHash160(0xff);
         }
     }
 
@@ -145,7 +144,6 @@ public class DivisibleNFTIntegrationTest {
     }
 
     static class ConcreteDivisibleNFT {
-        static final StorageContext ctx = Storage.getStorageContext();
         static final byte[] ownerOfMapPrefix = Helper.toByteArray((byte) 1);
 
         public static boolean transfer(Hash160 from, Hash160 to, int amount, ByteString tokenId, Object data) {
@@ -154,7 +152,7 @@ public class DivisibleNFTIntegrationTest {
 
         public static void storeOwnersOf(ByteString tokenId, io.neow3j.devpack.List<Hash160> owners) {
             byte[] prefix = Helper.concat(ownerOfMapPrefix, tokenId.toByteArray());
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             int nrOwners = owners.size();
             for (int i = 0; i < nrOwners; i++) {
                 Hash160 owner = owners.get(i);
@@ -164,7 +162,7 @@ public class DivisibleNFTIntegrationTest {
 
         public static Iterator<ByteString> ownerOf(ByteString tokenId) {
             byte[] prefix = Helper.concat(ownerOfMapPrefix, tokenId.toByteArray());
-            return (Iterator<ByteString>) Storage.find(ctx, prefix, FindOptions.RemovePrefix | FindOptions.KeysOnly);
+            return (Iterator<ByteString>) Storage.find(prefix, FindOptions.RemovePrefix | FindOptions.KeysOnly);
         }
 
         public static int balanceOf(Hash160 account, ByteString tokenId) {

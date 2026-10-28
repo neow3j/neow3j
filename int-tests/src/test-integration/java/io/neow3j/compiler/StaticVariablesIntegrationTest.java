@@ -59,7 +59,7 @@ public class StaticVariablesIntegrationTest {
 
     static class StaticVariablesIntegrationTestContract {
 
-        private static final StorageMap map = new StorageMap(Storage.getStorageContext(), new ByteString("data"));
+        private static final StorageMap map = new StorageMap(new ByteString("data"));
         private static final String platform = "The platform: " + Runtime.getPlatform();
 
         public static void putToStaticStorageMap(ByteString key, ByteString value) {

@@ -7,7 +7,6 @@ import io.neow3j.devpack.Helper;
 import io.neow3j.devpack.Iterator;
 import io.neow3j.devpack.Map;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.StorageMap;
 import io.neow3j.devpack.annotations.Permission;
 import io.neow3j.devpack.constants.FindOptions;
@@ -179,11 +178,11 @@ public class NFTIntegrationTest {
         }
 
         public static void setHash(Hash160 contractHash) {
-            Storage.put(Storage.getStorageContext(), 0xff, contractHash);
+            Storage.put(0xff, contractHash);
         }
 
         private static Hash160 getHash() {
-            return Storage.getHash160(Storage.getReadOnlyContext(), 0xff);
+            return Storage.getHash160(0xff);
         }
     }
 
@@ -199,7 +198,6 @@ public class NFTIntegrationTest {
 
     @SuppressWarnings("unchecked")
     static class ConcreteNonFungibleToken {
-        static final StorageContext ctx = Storage.getStorageContext();
         static final byte[] tokensPrefix = Helper.toByteArray((byte) 1);
         static final byte[] tokensOfPrefix = Helper.toByteArray((byte) 2);
 
@@ -221,7 +219,7 @@ public class NFTIntegrationTest {
 
         public static void storeTokensOf(Hash160 owner, io.neow3j.devpack.List<String> tokens) {
             byte[] prefix = Helper.concat(tokensOfPrefix, owner.toByteArray());
-            StorageMap map = new StorageMap(ctx, prefix);
+            StorageMap map = new StorageMap(prefix);
             int nrTokens = tokens.size();
             for (int i = 0; i < nrTokens; i++) {
                 map.put(tokens.get(i), 1);
@@ -230,7 +228,7 @@ public class NFTIntegrationTest {
 
         public static Iterator<ByteString> tokensOf(Hash160 owner) {
             byte[] concat = Helper.concat(tokensOfPrefix, owner.toByteArray());
-            return (Iterator<ByteString>) Storage.find(ctx, concat, FindOptions.RemovePrefix | FindOptions.KeysOnly);
+            return (Iterator<ByteString>) Storage.find(concat, FindOptions.RemovePrefix | FindOptions.KeysOnly);
         }
 
         public static boolean transfer(Hash160 to, ByteString tokenId, Object data) {
@@ -238,7 +236,7 @@ public class NFTIntegrationTest {
         }
 
         public static void storeTokens(Map<Hash160, byte[]> tokens) {
-            StorageMap map = new StorageMap(ctx, tokensPrefix);
+            StorageMap map = new StorageMap(tokensPrefix);
             Hash160[] keys = tokens.keys();
             for (Hash160 key : keys) {
                 map.put(key, tokens.get(key));
@@ -246,7 +244,7 @@ public class NFTIntegrationTest {
         }
 
         public static Iterator<ByteString> tokens() {
-            return (Iterator<ByteString>) Storage.find(ctx, tokensPrefix, FindOptions.ValuesOnly);
+            return (Iterator<ByteString>) Storage.find(tokensPrefix, FindOptions.ValuesOnly);
         }
 
         public static Map<String, String> properties(ByteString tokenId) {

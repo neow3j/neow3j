@@ -4,7 +4,6 @@ import io.neow3j.devpack.ByteString;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.Notification;
 import io.neow3j.devpack.Storage;
-import io.neow3j.devpack.StorageContext;
 import io.neow3j.devpack.annotations.DisplayName;
 import io.neow3j.devpack.annotations.Instruction;
 import io.neow3j.devpack.annotations.OnVerification;
@@ -426,12 +425,12 @@ public class CompilerExceptionsTest {
 
     static class ContractClassWithReferenceToStaticVariable {
         public static void method() {
-            StorageContext storageContext = NonContractClassWithStaticVariable.ctx.asReadOnly();
+            Hash160 owner = NonContractClassWithStaticVariable.owner;
         }
     }
 
     static class NonContractClassWithStaticVariable {
-        public static final StorageContext ctx = Storage.getStorageContext();
+        public static final Hash160 owner = new Hash160("0xef4073a0f2b305a38ec4050e4d3d28bc40ea63f5");
     }
 
     static class ContractClassWithReferenceToEventInOtherClass {
@@ -481,7 +480,7 @@ public class CompilerExceptionsTest {
     static class InterfaceContractMultipleArgs extends ContractInterface {
         public InterfaceContractMultipleArgs(String hash, String msg) {
             super(hash);
-            Storage.get(Storage.getReadOnlyContext(), msg);
+            Storage.get(msg);
         }
     }
 
@@ -493,7 +492,7 @@ public class CompilerExceptionsTest {
 
     static class ContractUsingNestedSDKMethod {
         public static ByteString method(byte[] bytes) {
-            return Storage.get(Storage.getReadOnlyContext(), ArrayUtils.reverseArray(bytes));
+            return Storage.get(ArrayUtils.reverseArray(bytes));
         }
     }
 
