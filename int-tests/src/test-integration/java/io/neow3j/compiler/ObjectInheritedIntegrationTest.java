@@ -221,11 +221,11 @@ public class ObjectInheritedIntegrationTest {
     public void storageMapEquals() throws IOException {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> boolArr = response.getInvocationResult().getStack().get(0).getList();
-        // The StorageMap is an ArrayStackItem on the neo-vm, thus, the EQUALS opcode only
-        // compares it by reference. But the separate equals(StorageMap) implementation makes a
-        // comparison by value.
+        // equals(Object) compares the map by reference. equals(StorageMap) compares the prefix by
+        // value and the context by reference. Each constructor calls GetContext, which returns a
+        // new context, so two separately constructed maps are not equal even when the prefix matches.
         assertTrue(boolArr.get(0).getBoolean());
-        assertTrue(boolArr.get(1).getBoolean());
+        assertFalse(boolArr.get(1).getBoolean());
         assertFalse(boolArr.get(2).getBoolean());
         assertFalse(boolArr.get(3).getBoolean());
     }

@@ -28,6 +28,9 @@ public class StorageMap {
     // another contract's storage and left the syscalls in place. This library does the same. A map for another
     // contract's storage can still be built manually, or passed in, and it can carry the same prefix. Comparing
     // only the prefix would treat that map as equal to a local one.
+    //
+    // The context comparison is by reference. GetContext returns a new object on every call, so two maps created
+    // with separate constructor calls are not equal, even when the prefix is the same.
     private Object context;
     private Object prefix;
 
@@ -1367,11 +1370,13 @@ public class StorageMap {
     public native boolean equals(Object other);
 
     /**
-     * Compares this and the given storage map by value, i.e., checks if they have the same context
-     * and prefix.
+     * Compares the context by reference and the prefix by value.
+     * <p>
+     * {@code System.Storage.GetContext} returns a new context on every call, so maps created with separate
+     * constructor calls do not compare equal.
      *
-     * @param map Other storage map to compare to.
-     * @return True if the two storage maps have the same context and prefix. False otherwise.
+     * @param map the storage map to compare to.
+     * @return true if both maps have the same context instance and the same prefix.
      */
     public boolean equals(StorageMap map) {
         if (this == map) {
