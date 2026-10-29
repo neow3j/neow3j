@@ -44,6 +44,7 @@ import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
@@ -75,20 +76,24 @@ public class TransactionBuilderIntegrationTest {
         TransactionBuilder b = new TransactionBuilder(neow3j)
                 .script(hexStringToByteArray(TEST_SCRIPT));
 
-        // single-sig account from address, no verification script
-        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
-        Transaction tx = b.signers(AccountSigner.calledByEntry(a)).getUnsignedTransaction();
-        assertThat(tx.getNetworkFee(), is(1178520L));
+        // hash-only account: priced as a standard single-sig verification script
+        Hash160 hashOnly = Hash160.fromAddress(TestProperties.defaultAccountAddress());
+        long singleSigFee = b.signers(AccountSigner.calledByEntry(hashOnly)).getUnsignedTransaction().getNetworkFee();
+        assertThat(singleSigFee, is(1178520L));
 
-        // multi-sig account from address with one participant, no verification script
-        a = Account.createMultiSigAccount(TestProperties.committeeAccountAddress(), 1, 1);
-        tx = b.signers(AccountSigner.calledByEntry(a)).getUnsignedTransaction();
-        assertThat(tx.getNetworkFee(), is(1180580L));
-
-        // multi-sig account from address with seven participants, no verification script
-        a = Account.createMultiSigAccount(TestProperties.committeeAccountAddress(), 5, 7);
-        tx = b.signers(AccountSigner.calledByEntry(a)).getUnsignedTransaction();
-        assertThat(tx.getNetworkFee(), is(7557220L));
+        // Same script hash. Only the threshold and participant count change the priced witness.
+        Hash160 multiSigHash = Hash160.fromAddress(TestProperties.committeeAccountAddress());
+        long oneOfOne = b.signers(AccountSigner.calledByEntry(multiSigHash, 1, 1))
+                .getUnsignedTransaction().getNetworkFee();
+        long oneOfSeven = b.signers(AccountSigner.calledByEntry(multiSigHash, 1, 7))
+                .getUnsignedTransaction().getNetworkFee();
+        long fiveOfSeven = b.signers(AccountSigner.calledByEntry(multiSigHash, 5, 7))
+                .getUnsignedTransaction().getNetworkFee();
+        assertThat(oneOfOne, is(1180580L));
+        assertThat(fiveOfSeven, is(7557220L));
+        assertThat(oneOfOne, greaterThan(singleSigFee));
+        assertThat(oneOfSeven, greaterThan(oneOfOne));
+        assertThat(fiveOfSeven, greaterThan(oneOfSeven));
     }
 
     @Test

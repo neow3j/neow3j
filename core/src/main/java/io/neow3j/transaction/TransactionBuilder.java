@@ -4,7 +4,6 @@ import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.ECKeyPair.ECPublicKey;
 import io.neow3j.protocol.Neow3j;
-import io.neow3j.protocol.Neow3jConfig;
 import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
@@ -18,7 +17,6 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ThreadLocalRandom;
@@ -323,6 +321,10 @@ public class TransactionBuilder {
      * to a Neo node.
      * <p>
      * If you need to build a transaction offline, you need to create a {@link Transaction} object manually.
+     * <p>
+     * A hash-only account signer is priced as a standard single-sig account. A multi-sig signer created with a
+     * signing threshold and participant count is priced from those values. An account whose verification script is
+     * neither single-sig nor multi-sig is rejected before any fee call.
      *
      * @return the unsigned transaction.
      * @throws TransactionConfigurationException if the builder is mis-configured.
@@ -336,16 +338,17 @@ public class TransactionBuilder {
             throw new TransactionConfigurationException("Cannot build a transaction without a script.");
         }
 
+        if (signers.isEmpty()) {
+            throw new IllegalStateException("Cannot create a transaction without signers. At least one signer with " +
+                    "witness scope fee-only or higher is required.");
+        }
+        ensureSignersCanBeBuilt();
+
         if (validUntilBlock == null) {
             // If validUntilBlock is not set explicitly, then set it to the current max. It can
             // happen that the Neo node rejects the transaction when we set the validUntilBlock
             // to the max. To be sure that this does not happen, we decrement the max by 1.
             this.validUntilBlock(fetchCurrentBlockCount() + neow3j.getMaxValidUntilBlockIncrement() - 1);
-        }
-
-        if (signers.isEmpty()) {
-            throw new IllegalStateException("Cannot create a transaction without signers. At least one signer with " +
-                    "witness scope fee-only or higher is required.");
         }
 
         if (isHighPriority() && !isAllowedForHighPriority()) {
@@ -392,26 +395,38 @@ public class TransactionBuilder {
         return signersContainMultiSigWithCommitteeMember(committee);
     }
 
-    // Checks if the signers contains a multi-sig account that contains a committee member.
+    // Checks if the signers contain a multi-sig account that contains a committee member. A multi-sig signer that
+    // only has a script hash, threshold, and participant count has no public keys, so committee membership cannot
+    // be decided from it.
     private boolean signersContainMultiSigWithCommitteeMember(List<Hash160> committee) {
-        Iterator<Signer> iterator = signers.stream().iterator();
-        while (iterator.hasNext()) {
-            Signer signer = iterator.next();
-            if (signer instanceof AccountSigner) {
-                AccountSigner s = (AccountSigner) signer;
-                Account a = s.getAccount();
-                if (a.isMultiSig()) {
-                    boolean containsCommitteeMemberInMultiSig = a.getVerificationScript()
-                            .getPublicKeys()
-                            .stream()
-                            .map(key -> key.getEncoded(true))
-                            .map(Hash160::fromPublicKey)
-                            .anyMatch(committee::contains);
-                    if (containsCommitteeMemberInMultiSig) {
-                        return true;
-                    }
-                }
+        Account undetermined = null;
+        for (Signer signer : signers) {
+            if (!(signer instanceof AccountSigner)) {
+                continue;
             }
+            Account account = ((AccountSigner) signer).getAccount();
+            if (!account.isMultiSig()) {
+                continue;
+            }
+            VerificationScript verificationScript = account.getVerificationScript();
+            if (verificationScript == null) {
+                if (undetermined == null) {
+                    undetermined = account;
+                }
+                continue;
+            }
+            boolean containsCommitteeMember = verificationScript.getPublicKeys().stream()
+                    .map(key -> key.getEncoded(true))
+                    .map(Hash160::fromPublicKey)
+                    .anyMatch(committee::contains);
+            if (containsCommitteeMember) {
+                return true;
+            }
+        }
+        if (undetermined != null) {
+            throw new TransactionConfigurationException(format("Cannot determine whether account %s contains a " +
+                    "committee member because it has no verification script. The public keys are required for a " +
+                    "high-priority transaction.", undetermined.getAddress()));
         }
         return false;
     }
@@ -443,7 +458,6 @@ public class TransactionBuilder {
     private long calcNetworkFee() throws IOException {
         Transaction tx = new Transaction(neow3j, version, nonce, validUntilBlock, signers, 0, 0, attributes, script,
                 new ArrayList<>());
-        boolean hasAtLeastOneSigningAccount = false;
         for (Signer signer : signers) {
             if (signer instanceof ContractSigner) {
                 ContractSigner contractSigner = (ContractSigner) signer;
@@ -454,15 +468,12 @@ public class TransactionBuilder {
                 if (a.isMultiSig()) {
                     verificationScript = createFakeMultiSigVerificationScript(a);
                 } else {
+                    // A hash-only account is assumed to be a standard single-sig address. Multi-sig accounts are
+                    // identified by their signing threshold and participant count.
                     verificationScript = createFakeSingleSigVerificationScript();
                 }
                 tx.addWitness(new Witness(new byte[]{}, verificationScript.getScript()));
-                hasAtLeastOneSigningAccount = true;
             }
-        }
-        if (!hasAtLeastOneSigningAccount) {
-            throw new TransactionConfigurationException("A transaction requires at least one signing account (i.e. an" +
-                    " AccountSigner). None was provided.");
         }
         String txHex = toHexStringNoPrefix(tx.toArray());
         return neow3j.calculateNetworkFee(txHex).send().getNetworkFee().getNetworkFee().longValue();
@@ -511,8 +522,8 @@ public class TransactionBuilder {
      * <p>
      * Each {@link AccountSigner} must be locally signable ({@link AccountSigner#canSign()}). A hash-only account, an
      * account whose private key is still encrypted, an account that only holds a verification script, and a multi-sig
-     * account cannot be signed here. {@link ContractSigner}s are witnessed from their verify parameters and do not
-     * need a key.
+     * account cannot be signed here. A verification script that is not a single-sig script cannot be signed here
+     * either. {@link ContractSigner}s are witnessed from their verify parameters and do not need a key.
      * <p>
      * Note, that this function uses the network magic number of the Neo node that this {@link TransactionBuilder}
      * object's {@link TransactionBuilder#neow3j} instance is connected to.
@@ -537,8 +548,8 @@ public class TransactionBuilder {
      * <p>
      * Each {@link AccountSigner} must be locally signable ({@link AccountSigner#canSign()}). A hash-only account, an
      * account whose private key is still encrypted, an account that only holds a verification script, and a multi-sig
-     * account cannot be signed here. {@link ContractSigner}s are witnessed from their verify parameters and do not
-     * need a key.
+     * account cannot be signed here. A verification script that is not a single-sig script cannot be signed here
+     * either. {@link ContractSigner}s are witnessed from their verify parameters and do not need a key.
      *
      * @param networkMagic the network's magic number to use.
      * @return the signed transaction.
@@ -585,8 +596,43 @@ public class TransactionBuilder {
                 throw new TransactionConfigurationException(format("Cannot create transaction signature because " +
                         "account %s is hash-only and has no verification script.", account.getAddress()));
             }
+            if (!account.getVerificationScript().isSingleSigScript()) {
+                throw new IllegalStateException(format("Cannot sign transaction because account %s has a " +
+                        "verification script that is not a single-sig script.", account.getAddress()));
+            }
             throw new TransactionConfigurationException(format("Cannot create transaction signature because account " +
                     "%s does not hold a private key.", account.getAddress()));
+        }
+    }
+
+    private void ensureSignersCanBeBuilt() {
+        for (Signer signer : signers) {
+            if (!(signer instanceof AccountSigner)) {
+                continue;
+            }
+            AccountSigner accountSigner = (AccountSigner) signer;
+            if (!accountSigner.hasVerificationScript()) {
+                // Hash-only signers are priced as standard single-sig accounts. Multi-sig signers that carry a
+                // signing threshold and participant count are priced from those dimensions.
+                Account account = accountSigner.getAccount();
+                if (account.isMultiSig()) {
+                    try {
+                        AccountSigner.validateMultiSigDimensions(account.getSigningThreshold(),
+                                account.getNrOfParticipants());
+                    } catch (IllegalArgumentException e) {
+                        throw new TransactionConfigurationException(format("Cannot build transaction because " +
+                                "account %s has invalid multi-sig dimensions. %s", account.getAddress(),
+                                e.getMessage()));
+                    }
+                }
+                continue;
+            }
+            VerificationScript verificationScript = accountSigner.getAccount().getVerificationScript();
+            if (!verificationScript.isSingleSigScript() && !verificationScript.isMultiSigScript()) {
+                throw new IllegalStateException(format("Cannot build transaction because account %s has a " +
+                                "verification script that is neither a single-sig nor a multi-sig script.",
+                        accountSigner.getAccount().getAddress()));
+            }
         }
     }
 
