@@ -569,7 +569,7 @@ public class TransactionBuilderTest {
 
     @Test
     public void failBuildingWithInvalidMultiSigDimensions() {
-        Account account = Account.createMultiSigAccount(account1.getAddress(), 3, 2);
+        Account account = createMultiSigAccount(account1.getAddress(), 3, 2);
 
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> new TransactionBuilder(neow)
