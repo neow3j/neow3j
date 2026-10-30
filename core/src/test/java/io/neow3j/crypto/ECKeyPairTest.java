@@ -2,9 +2,12 @@ package io.neow3j.crypto;
 
 import io.neow3j.constants.NeoConstants;
 import io.neow3j.crypto.ECKeyPair.ECPrivateKey;
+import io.neow3j.crypto.ECKeyPair.ECPublicKey;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.types.Hash160;
+import io.neow3j.wallet.Account;
 import org.bouncycastle.math.ec.ECPoint;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -116,6 +119,32 @@ public class ECKeyPairTest {
     public void getScriptHash() {
         ECKeyPair pair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
         assertThat(pair.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
+    }
+
+    @Test
+    public void publicKeyDerivesStandardSingleSigAccountIdentity() {
+        ECPublicKey publicKey = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey())).getPublicKey();
+        Account account = Account.fromPublicKey(publicKey);
+        VerificationScript verificationScript = publicKey.getVerificationScript();
+
+        assertThat(verificationScript, is(account.getVerificationScript()));
+        assertThat(verificationScript.isSingleSigScript(), is(true));
+        assertThat(publicKey.getScriptHash(), is(account.getScriptHash()));
+        assertThat(publicKey.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
+        assertThat(publicKey.getAddress(), is(account.getAddress()));
+        assertThat(publicKey.getAddress(), is(defaultAccountAddress()));
+    }
+
+    @Test
+    public void uncompressedPublicKeyDerivesTheSameSingleSigAccountIdentity() {
+        ECPublicKey compressed = new ECPublicKey(
+                "03b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e136816");
+        ECPublicKey uncompressed = new ECPublicKey(
+                "04b4af8d061b6b320cce6c63bc4ec7894dce107bfc5f5ef5c68a93b4ad1e1368165f4f7fb1c5862465543c06dd5a2aa414f6583f92a5cc3e1d4259df79bf6839c9");
+
+        assertThat(uncompressed.getVerificationScript(), is(compressed.getVerificationScript()));
+        assertThat(uncompressed.getScriptHash(), is(compressed.getScriptHash()));
+        assertThat(uncompressed.getAddress(), is(compressed.getAddress()));
     }
 
     @Test
