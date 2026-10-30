@@ -16,7 +16,9 @@ import io.neow3j.protocol.core.response.NeoInvokeScript;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
+import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.test.TestProperties;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
@@ -269,6 +271,46 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void attributes_highPriority_multiSigWithoutVerificationScript() throws IOException {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+        AccountSigner signer = calledByEntry(account2.getScriptHash(), 1, 2);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .attributes(attr)
+                        .signers(signer)
+                        .getUnsignedTransaction());
+        assertThat(thrown.getMessage(), containsString(signer.getAccount().getAddress()));
+        assertThat(thrown.getMessage(), containsString("no verification script"));
+        assertThat(thrown.getMessage(), containsString("committee member"));
+    }
+
+    @Test
+    public void attributes_highPriority_committeeMemberAndMultiSigWithoutVerificationScript() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getcommittee", "getcommittee.json");
+        setUpWireMockForGetBlockCount(1000);
+
+        HighPriorityAttribute attr = new HighPriorityAttribute();
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .attributes(attr)
+                .signers(none(account1), calledByEntry(account2.getScriptHash(), 1, 2))
+                .getUnsignedTransaction();
+
+        assertThat(tx.getAttributes(), hasSize(1));
+        assertThat(tx.getFirstAttribute().getType(), is(TransactionAttributeType.HIGH_PRIORITY));
+    }
+
+    @Test
     public void attributes_highPriority_noCommitteeMember() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getcommittee", "getcommittee.json");
@@ -509,6 +551,59 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void buildWithHashOnlySingleSigAccount() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(calledByEntry(account1.getScriptHash()))
+                .validUntilBlock(1000)
+                .getUnsignedTransaction();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getSystemFee(), is(984060L));
+        assertThat(tx.getNetworkFee(), is(1230610L));
+    }
+
+    @Test
+    public void failBuildingWithInvalidMultiSigDimensions() {
+        Account account = createMultiSigAccount(account1.getAddress(), 3, 2);
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(account))
+                        .validUntilBlock(1000)
+                        .getUnsignedTransaction());
+        assertThat(thrown.getMessage(), containsString(account.getAddress()));
+        assertThat(thrown.getMessage(), containsString("invalid multi-sig dimensions"));
+        assertThat(thrown.getMessage(), containsString("not higher than the number of participants"));
+    }
+
+    @Test
+    public void buildWithMultiSigDimensions() throws Throwable {
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+
+        AccountSigner signer = calledByEntry(account1.getScriptHash(), 2, 3);
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(signer)
+                .validUntilBlock(1000)
+                .getUnsignedTransaction();
+
+        assertThat(signer.getAccount().isMultiSig(), is(true));
+        assertThat(signer.hasVerificationScript(), is(false));
+        assertThat(signer.getAccount().getSigningThreshold(), is(2));
+        assertThat(signer.getAccount().getNrOfParticipants(), is(3));
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getNetworkFee(), is(1230610L));
+    }
+
+    @Test
     public void failTryingToSignTransactionWithAccountMissingAPrivateKey() {
         TransactionBuilder builder = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
@@ -523,6 +618,16 @@ public class TransactionBuilderTest {
     }
 
     @Test
+    public void failSigningMultiSigSignerWithoutVerificationScript() {
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(calledByEntry(account1.getScriptHash(), 1, 2))
+                        .sign(0));
+        assertThat(thrown.getMessage(), is("Transactions with multi-sig signers cannot be signed automatically."));
+    }
+
+    @Test
     public void failAutomaticallySigningWithMultiSigAccountSigner() {
         IllegalStateException thrown = assertThrows(IllegalStateException.class,
                 () -> new TransactionBuilder(neow)
@@ -533,17 +638,20 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failWithNoSigningAccount() throws Throwable {
+    public void signWithOnlyContractSigner() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
-        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
-                () -> new TransactionBuilder(neow)
-                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                        .signers(ContractSigner.calledByEntry(Account.create().getScriptHash()))
-                        .sign());
-        assertThat(thrown.getMessage(), containsString("transaction requires at least one signing account"));
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(ContractSigner.calledByEntry(Account.create().getScriptHash()))
+                .validUntilBlock(1000)
+                .sign();
+
+        assertThat(tx.getSigners(), hasSize(1));
+        assertThat(tx.getWitnesses(), hasSize(1));
+        assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript().length, is(0));
     }
 
     @Test
@@ -571,6 +679,35 @@ public class TransactionBuilderTest {
                         .signers(none(encrypted))
                         .sign(0));
         assertThat(thrown.getMessage(), containsString("is encrypted"));
+    }
+
+    @Test
+    public void failSigningWithCustomVerificationScript() {
+        Account account = Account.fromVerificationScript(
+                new VerificationScript(new byte[]{(byte) OpCode.PUSH1.getCode()}));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(account))
+                        .sign(0));
+        assertThat(thrown.getMessage(), containsString(account.getAddress()));
+        assertThat(thrown.getMessage(), containsString("not a single-sig script"));
+    }
+
+    @Test
+    public void failBuildingWithCustomVerificationScript() {
+        Account account = Account.fromVerificationScript(
+                new VerificationScript(new byte[]{(byte) OpCode.PUSH1.getCode()}));
+
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(account))
+                        .validUntilBlock(1000)
+                        .getUnsignedTransaction());
+        assertThat(thrown.getMessage(), containsString(account.getAddress()));
+        assertThat(thrown.getMessage(), containsString("neither a single-sig nor a multi-sig"));
     }
 
     @Test
@@ -1178,7 +1315,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        Account a = account1;
 
         neow.allowTransmissionOnFault();
         assertTrue(neow.transmissionOnFaultIsAllowed());
@@ -1208,7 +1345,7 @@ public class TransactionBuilderTest {
     public void testPreventTransmissionOnFault() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
+        Account a = account1;
 
         assertFalse(neow.transmissionOnFaultIsAllowed());
 

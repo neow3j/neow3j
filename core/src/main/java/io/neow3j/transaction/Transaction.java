@@ -19,7 +19,6 @@ import io.neow3j.serialization.NeoSerializable;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.ContractParameter;
-import io.neow3j.types.ContractParameterType;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
@@ -43,6 +42,7 @@ import static io.neow3j.constants.NeoConstants.MAX_TRANSACTION_SIZE;
 import static io.neow3j.crypto.Hash.sha256;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.transaction.Witness.createMultiSigWitness;
+import static io.neow3j.types.ContractParameterType.SIGNATURE;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.convertNetworkMagicNumberToLittleEndian;
@@ -60,11 +60,13 @@ public class Transaction extends NeoSerializable {
     protected Neow3j neow3j;
 
     private byte version;
+
     /**
      * Is a random number added to the transaction to prevent replay attacks. It is an unsigned 32-bit integer in the
      * neo C# implementation. It is represented as a integer here, but when serializing it
      */
     private long nonce;
+
     /**
      * Defines up to which block this transaction remains valid. If this transaction is not added into a block up to
      * this number it will become invalid and be dropped. It is an unsigned 32-bit integer in the neo C#
@@ -72,12 +74,19 @@ public class Transaction extends NeoSerializable {
      * enough range.
      */
     private long validUntilBlock;
+
     private List<Signer> signers;
+
     private long systemFee;
+
     private long networkFee;
+
     private List<TransactionAttribute> attributes;
+
     private byte[] script;
+
     private List<Witness> witnesses;
+
     private BigInteger blockCountWhenSent;
 
     public Transaction() {
@@ -547,6 +556,10 @@ public class Transaction extends NeoSerializable {
      * <p>
      * This function allows to specify a custom network magic number, so that no connection to a Neo node is required
      * and this function can be used offline.
+     * <p>
+     * Contract signers are not supported. An account signer needs its actual single-sig or multi-sig verification
+     * script. A script hash, with or without a multi-sig threshold and participant count, is not enough, because the
+     * public keys are part of the script. Any other verification script cannot be exported.
      *
      * @param networkMagicNumber the magic number of the network this transaction is intended for.
      * @return neo-cli compatible JSON of this transaction.
@@ -557,15 +570,27 @@ public class Transaction extends NeoSerializable {
 
         Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
             if (signer instanceof ContractSigner) {
-                throw new UnsupportedOperationException("Cannot handle contract signers");
+                throw new UnsupportedOperationException(
+                        format("Cannot create a contract parameters context for contract %s.", signer.getScriptHash()));
             }
             AccountSigner accountSigner = (AccountSigner) signer;
             if (!accountSigner.hasVerificationScript()) {
-                throw new TransactionConfigurationException(format("Cannot create a contract parameters context " +
-                        "for hash-only account %s because it has no verification script.",
-                        accountSigner.getAccount().getAddress()));
+                Account account = accountSigner.getAccount();
+                if (account.isMultiSig()) {
+                    throw new TransactionConfigurationException(format("Cannot create a contract parameters context " +
+                            "for account %s because it has no verification script. The signing threshold and " +
+                            "participant count do not provide the public keys.", account.getAddress()));
+                }
+                throw new TransactionConfigurationException(format("Cannot create a contract parameters context for " +
+                        "account %s because it has no verification script.", account.getAddress()));
             }
             VerificationScript verificationScript = accountSigner.getAccount().getVerificationScript();
+            if (!verificationScript.isSingleSigScript() && !verificationScript.isMultiSigScript()) {
+                throw new UnsupportedOperationException(
+                        format("Cannot create a contract parameters context for account %s because its verification " +
+                                        "script is neither a single-sig nor a multi-sig script.",
+                                accountSigner.getAccount().getAddress()));
+            }
 
             // Check if there's a witness for this signer and add all corresponding signatures as parameters.
             List<ContractParameter> params = new ArrayList<>();
@@ -573,11 +598,11 @@ public class Transaction extends NeoSerializable {
                     .map(Witness::getInvocationScript).findFirst()
                     .ifPresent(invocationScript -> invocationScript.getSignatures().stream()
                             .map(Sign.SignatureData::getConcatenated)
-                            .forEach(s -> params.add(new ContractParameter(ContractParameterType.SIGNATURE, s))));
+                            .forEach(s -> params.add(new ContractParameter(SIGNATURE, s))));
             if (params.isEmpty()) {
                 // If no witness was found we need to set the parameter without a value.
                 IntStream.range(0, verificationScript.getSigningThreshold())
-                        .forEach(i -> params.add(new ContractParameter(ContractParameterType.SIGNATURE)));
+                        .forEach(i -> params.add(new ContractParameter(SIGNATURE)));
             }
 
             Map<String, String> pubKeyToSignature = new HashMap<>();

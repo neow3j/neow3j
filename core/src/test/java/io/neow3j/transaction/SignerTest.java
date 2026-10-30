@@ -87,6 +87,27 @@ public class SignerTest {
         AccountSigner multiSigSigner = AccountSigner.none(multiSig);
         assertThat(multiSigSigner.hasVerificationScript(), is(true));
         assertThat(multiSigSigner.canSign(), is(false));
+
+        AccountSigner multiSigDimensions = AccountSigner.global(accScriptHash, 1, 2);
+        assertThat(multiSigDimensions.getScriptHash(), is(accScriptHash));
+        assertThat(multiSigDimensions.getAccount().isMultiSig(), is(true));
+        assertThat(multiSigDimensions.getAccount().getSigningThreshold(), is(1));
+        assertThat(multiSigDimensions.getAccount().getNrOfParticipants(), is(2));
+        assertThat(multiSigDimensions.hasVerificationScript(), is(false));
+        assertThat(multiSigDimensions.canSign(), is(false));
+    }
+
+    @Test
+    public void rejectInvalidMultiSigDimensions() {
+        IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+                () -> AccountSigner.calledByEntry(accScriptHash, 3, 2));
+        assertThat(thrown.getMessage(), containsString("not higher than the number of participants"));
+
+        thrown = assertThrows(IllegalArgumentException.class, () -> AccountSigner.none(accScriptHash, 0, 1));
+        assertThat(thrown.getMessage(), containsString("at least 1"));
+
+        thrown = assertThrows(IllegalArgumentException.class, () -> AccountSigner.global(accScriptHash, 1, 1025));
+        assertThat(thrown.getMessage(), containsString("At most 1024"));
     }
 
     @Test

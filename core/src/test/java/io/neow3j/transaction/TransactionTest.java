@@ -13,6 +13,7 @@ import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.NeoSerializableInterface;
 import io.neow3j.serialization.exceptions.DeserializationException;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
@@ -638,7 +639,32 @@ public class TransactionTest {
 
         UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class,
                 tx::toContractParametersContext);
-        assertThat(thrown.getMessage(), is("Cannot handle contract signers"));
+        assertThat(thrown.getMessage(), containsString("contract"));
+        assertThat(thrown.getMessage(), containsString(dummyHash.toString()));
+    }
+
+    @Test
+    public void toContractParameterContext_customVerificationScript() {
+        Account account = Account.fromVerificationScript(
+                new VerificationScript(new byte[]{(byte) OpCode.PUSH1.getCode()}));
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.none(account));
+
+        Transaction tx = new Transaction(neow3j,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+
+        UnsupportedOperationException thrown = assertThrows(UnsupportedOperationException.class,
+                () -> tx.toContractParametersContext(0));
+        assertThat(thrown.getMessage(), containsString(account.getAddress()));
+        assertThat(thrown.getMessage(), containsString("neither a single-sig nor a multi-sig"));
     }
 
     @Test
@@ -661,8 +687,31 @@ public class TransactionTest {
 
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> tx.toContractParametersContext(0));
-        assertThat(thrown.getMessage(), containsString("hash-only account"));
+        assertThat(thrown.getMessage(), containsString("no verification script"));
         assertThat(thrown.getMessage(), containsString(hashOnly.getAddress()));
+    }
+
+    @Test
+    public void toContractParameterContext_multiSigDimensionsWithoutScript() {
+        Account multiSig = Account.createMultiSigAccount(Account.create().getAddress(), 2, 3);
+        List<Signer> signers = new ArrayList<>();
+        signers.add(AccountSigner.calledByEntry(multiSig.getScriptHash(), 2, 3));
+
+        Transaction tx = new Transaction(neow3j,
+                (byte) 0,
+                0x01020304L,
+                0x01020304L,
+                signers,
+                BigInteger.TEN.pow(8).longValue(),
+                1L,
+                new ArrayList<>(),
+                new byte[]{(byte) OpCode.PUSH1.getCode()},
+                new ArrayList<>());
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> tx.toContractParametersContext(0));
+        assertThat(thrown.getMessage(), containsString(multiSig.getAddress()));
+        assertThat(thrown.getMessage(), containsString("do not provide the public keys"));
     }
 
     @Test
