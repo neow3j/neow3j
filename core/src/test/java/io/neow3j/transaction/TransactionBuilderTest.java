@@ -43,6 +43,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import static com.github.tomakehurst.wiremock.client.WireMock.containing;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
@@ -652,6 +655,53 @@ public class TransactionBuilderTest {
         assertThat(tx.getSigners(), hasSize(1));
         assertThat(tx.getWitnesses(), hasSize(1));
         assertThat(tx.getWitnesses().get(0).getVerificationScript().getScript().length, is(0));
+    }
+
+    @Test
+    public void signSendAndAwaitSubmitsAndWaitsForInclusion() throws Throwable {
+        wireMockExtension.resetRequests();
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
+        setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
+
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(calledByEntry(account1))
+                .validUntilBlock(1000)
+                .signSendAndAwait();
+
+        assertThat(tx.getWitnesses(), hasSize(1));
+        assertThat(tx.getApplicationLog().getExecutions(), hasSize(1));
+        WireMock.verify(postRequestedFor(urlEqualTo("/"))
+                .withRequestBody(containing("\"method\":\"sendrawtransaction\"")));
+        WireMock.verify(postRequestedFor(urlEqualTo("/"))
+                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
+    }
+
+    @Test
+    public void failSignSendAndAwaitWithContractSigner() {
+        TransactionBuilder builder = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(ContractSigner.calledByEntry(account1.getScriptHash()));
+
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                builder::signSendAndAwait);
+        assertThat(thrown.getMessage(), containsString(account1.getAddress()));
+        assertThat(thrown.getMessage(), containsString("not an account signer"));
+    }
+
+    @Test
+    public void failSignSendAndAwaitWithMultiSigAccount() {
+        IllegalStateException thrown = assertThrows(IllegalStateException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
+                        .signSendAndAwait());
+        assertThat(thrown.getMessage(), is("Transactions with multi-sig signers cannot be signed automatically."));
     }
 
     @Test

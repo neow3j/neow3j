@@ -10,6 +10,7 @@ import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.transaction.exceptions.TransactionConfigurationException;
 import io.neow3j.types.Hash160;
+import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
 
 import java.io.IOException;
@@ -31,6 +32,7 @@ import static io.neow3j.transaction.TransactionAttributeType.NOT_VALID_BEFORE;
 import static io.neow3j.transaction.Witness.createContractWitness;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.utils.ArrayUtils.concatenate;
+import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
@@ -572,6 +574,46 @@ public class TransactionBuilder {
             }
         });
         return transaction;
+    }
+
+    /**
+     * Signs this transaction, submits it, and waits until it is included in a block.
+     * <p>
+     * Every signer must be a locally signable single-sig {@link AccountSigner} ({@link AccountSigner#canSign()}).
+     * A contract signer is rejected here. A multi-sig account, a hash-only account, an account whose private key is
+     * still encrypted, and an account whose verification script is not a single-sig script are rejected with the
+     * same errors as {@link #sign()}.
+     * <p>
+     * The wait is the one in {@link io.neow3j.utils.Await#waitUntilTransactionIsExecuted(Hash256, Neow3j)}. The call
+     * fails if the transaction is not included before that wait times out.
+     *
+     * @return the signed transaction after it has been submitted and included in a block.
+     * @throws TransactionConfigurationException if a signer cannot be signed by this method or the builder is
+     *                                           mis-configured.
+     * @throws IOException                       if an error occurs when interacting with the Neo node.
+     * @throws RpcResponseErrorException         if the Neo node returns an error.
+     * @throws Throwable                         a custom exception if one was set to be thrown in the case the
+     *                                           sender cannot cover the transaction fees.
+     */
+    public Transaction signSendAndAwait() throws Throwable {
+        ensureSignersAreLocallySignableAccounts();
+        // Reject accounts that cannot be signed locally before asking the node for the network magic.
+        ensureSignersCanBeSigned();
+        Transaction tx = sign();
+        tx.send().throwOnError();
+        waitUntilTransactionIsExecuted(tx.getTxId(), neow3j);
+        return tx;
+    }
+
+    private void ensureSignersAreLocallySignableAccounts() {
+        for (Signer signer : signers) {
+            if (signer instanceof AccountSigner) {
+                continue;
+            }
+            throw new TransactionConfigurationException(format("Cannot sign, send, and await a transaction because " +
+                    "signer %s is not an account signer. Every signer must be a locally signable single-sig account.",
+                    signer.getScriptHash().toAddress()));
+        }
     }
 
     private void ensureSignersCanBeSigned() {
