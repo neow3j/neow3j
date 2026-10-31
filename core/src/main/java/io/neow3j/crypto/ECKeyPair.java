@@ -2,6 +2,7 @@ package io.neow3j.crypto;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import io.neow3j.constants.NeoConstants;
+import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
 import io.neow3j.serialization.NeoSerializable;
@@ -29,7 +30,6 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import static io.neow3j.crypto.SecurityProviderChecker.addBouncyCastle;
-import static io.neow3j.script.ScriptBuilder.buildVerificationScript;
 import static io.neow3j.utils.Numeric.cleanHexPrefix;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.toBytesPadded;
@@ -77,19 +77,18 @@ public class ECKeyPair {
      * @return the NEO address of the public key.
      */
     public String getAddress() {
-        return getScriptHash().toAddress();
+        return publicKey.getAddress();
     }
 
     /**
-     * Constructs the script hash from this key pairs public key.
+     * Constructs the script hash from this key pair's public key.
      * <p>
      * The script hash is constructed ad hoc each time this method is called.
      *
      * @return the script hash of the public key.
      */
     public Hash160 getScriptHash() {
-        byte[] script = buildVerificationScript(publicKey.getEncoded(true));
-        return Hash160.fromScript(script);
+        return publicKey.getScriptHash();
     }
 
     /**
@@ -386,6 +385,39 @@ public class ECKeyPair {
          */
         public ECPoint getECPoint() {
             return this.ecPoint;
+        }
+
+        /**
+         * Constructs the standard single-signature verification script for this public key.
+         * <p>
+         * The script is constructed ad hoc each time this method is called.
+         *
+         * @return the verification script of this public key.
+         */
+        public VerificationScript getVerificationScript() {
+            return new VerificationScript(this);
+        }
+
+        /**
+         * Constructs the script hash of the standard single-signature account for this public key.
+         * <p>
+         * The script hash is constructed ad hoc each time this method is called.
+         *
+         * @return the script hash of this public key.
+         */
+        public Hash160 getScriptHash() {
+            return getVerificationScript().getScriptHash();
+        }
+
+        /**
+         * Constructs the NEO address of the standard single-signature account for this public key.
+         * <p>
+         * The address is constructed ad hoc each time this method is called.
+         *
+         * @return the NEO address of this public key.
+         */
+        public String getAddress() {
+            return getScriptHash().toAddress();
         }
 
         /**
