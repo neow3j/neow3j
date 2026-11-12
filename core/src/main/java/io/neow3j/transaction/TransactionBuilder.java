@@ -579,10 +579,10 @@ public class TransactionBuilder {
     /**
      * Signs this transaction, submits it, and waits until it is included in a block.
      * <p>
-     * Every signer must be a locally signable single-sig {@link AccountSigner} ({@link AccountSigner#canSign()}).
-     * A contract signer is rejected here. A multi-sig account, a hash-only account, an account whose private key is
-     * still encrypted, and an account whose verification script is not a single-sig script are rejected with the
-     * same errors as {@link #sign()}.
+     * Each {@link AccountSigner} must be locally signable ({@link AccountSigner#canSign()}). A multi-sig account, a
+     * hash-only account, an account whose private key is still encrypted, and an account whose verification script
+     * is not a single-sig script are rejected with the same errors as {@link #sign()}. {@link ContractSigner}s are
+     * witnessed from their verify parameters and do not need a key.
      * <p>
      * The wait is the one in {@link io.neow3j.utils.Await#waitUntilTransactionIsExecuted(Hash256, Neow3j)}. The call
      * fails if the transaction is not included before that wait times out.
@@ -596,24 +596,12 @@ public class TransactionBuilder {
      *                                           sender cannot cover the transaction fees.
      */
     public Transaction signSendAndAwait() throws Throwable {
-        ensureSignersAreLocallySignableAccounts();
         // Reject accounts that cannot be signed locally before asking the node for the network magic.
         ensureSignersCanBeSigned();
         Transaction tx = sign();
         tx.send().throwOnError();
         waitUntilTransactionIsExecuted(tx.getTxId(), neow3j);
         return tx;
-    }
-
-    private void ensureSignersAreLocallySignableAccounts() {
-        for (Signer signer : signers) {
-            if (signer instanceof AccountSigner) {
-                continue;
-            }
-            throw new TransactionConfigurationException(format("Cannot sign, send, and await a transaction because " +
-                    "signer %s is not an account signer. Every signer must be a locally signable single-sig account.",
-                    signer.getScriptHash().toAddress()));
-        }
     }
 
     private void ensureSignersCanBeSigned() {

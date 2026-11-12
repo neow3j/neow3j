@@ -683,15 +683,49 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void failSignSendAndAwaitWithContractSigner() {
+    public void failSignSendAndAwaitWhenSubmissionIsRejected() throws Throwable {
+        wireMockExtension.resetRequests();
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction_error.json");
+        // A height response is available so a missing rejection check would return instead of waiting.
+        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
+
         TransactionBuilder builder = new TransactionBuilder(neow)
                 .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(ContractSigner.calledByEntry(account1.getScriptHash()));
+                .signers(calledByEntry(account1))
+                .validUntilBlock(1000);
 
-        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
-                builder::signSendAndAwait);
-        assertThat(thrown.getMessage(), containsString(account1.getAddress()));
-        assertThat(thrown.getMessage(), containsString("not an account signer"));
+        RpcResponseErrorException thrown = assertThrows(RpcResponseErrorException.class, builder::signSendAndAwait);
+        assertThat(thrown.getMessage(), containsString("Already exists"));
+        WireMock.verify(0, postRequestedFor(urlEqualTo("/"))
+                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
+    }
+
+    @Test
+    public void signSendAndAwaitWithContractSigner() throws Throwable {
+        wireMockExtension.resetRequests();
+        setUpWireMockForCall("getversion", "getversion.json");
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
+        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
+        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
+
+        Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(ContractSigner.calledByEntry(contractHash, string("iamgroot")), calledByEntry(account1))
+                .validUntilBlock(1000)
+                .signSendAndAwait();
+
+        byte[] invocScript = new ScriptBuilder().pushData("iamgroot").toArray();
+        assertThat(tx.getWitnesses(), hasSize(2));
+        assertThat(tx.getWitnesses(), hasItem(new Witness(invocScript, new byte[]{})));
+        WireMock.verify(postRequestedFor(urlEqualTo("/"))
+                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
     }
 
     @Test
