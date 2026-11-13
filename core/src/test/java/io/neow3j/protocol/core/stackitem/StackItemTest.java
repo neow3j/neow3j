@@ -3,6 +3,7 @@ package io.neow3j.protocol.core.stackitem;
 import io.neow3j.crypto.Base64;
 import io.neow3j.protocol.ResponseTester;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
 import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
@@ -74,6 +75,14 @@ public class StackItemTest extends ResponseTester {
         StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
 
         StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getAddress);
+        assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
+    }
+
+    @Test
+    public void throwOnCastingToScriptHashFromIllegalType() throws IOException {
+        StackItem rawItem = getObjectMapper().readValue("{\"type\":\"Integer\",\"value\":\"1124\"}", StackItem.class);
+
+        StackItemCastException thrown = assertThrows(StackItemCastException.class, rawItem::getScriptHash);
         assertThat(thrown.getMessage(), stringContainsInOrder(asList(StackItemType.INTEGER.getValue(), "1124")));
     }
 
@@ -202,6 +211,7 @@ public class StackItemTest extends ResponseTester {
         item = getObjectMapper().readValue(json, StackItem.class);
 
         assertThat(item.getAddress(), is("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz"));
+        assertThat(item.getScriptHash(), is(Hash160.fromAddress("NfFrJpFaLPCVuRRPhmBYRmZqSQLJ5fPuhz")));
         assertThat(item.getHexString(), is("d42cf7a931ce3c46550fd90de482583fc5ea701a"));
         assertThat(item.getByteArray(),
                 is(Numeric.hexStringToByteArray("d42cf7a931ce3c46550fd90de482583fc5ea701a")));
@@ -527,6 +537,12 @@ public class StackItemTest extends ResponseTester {
     public void throwExceptionOnGetAddressFromByteArrayWithIllegalAddress() {
         ByteStringStackItem item = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
         assertThrows(StackItemCastException.class, item::getAddress);
+    }
+
+    @Test
+    public void throwExceptionOnGetScriptHashFromByteArrayWithInvalidHash() {
+        ByteStringStackItem item = new ByteStringStackItem(Numeric.hexStringToByteArray("010203"));
+        assertThrows(StackItemCastException.class, item::getScriptHash);
     }
 
     @Test
