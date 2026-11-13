@@ -17,7 +17,7 @@ import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoGetContractState;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.test.TestProperties;
@@ -203,7 +203,7 @@ public class ContractManagementIntegrationTest {
         Witness multiSigWitness = createMultiSigWitness(
                 asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
-        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
+        TransactionSubmission response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
 
         // Check zero updates have been performed
@@ -248,7 +248,7 @@ public class ContractManagementIntegrationTest {
         Witness multiSigWitness = createMultiSigWitness(
                 asList(signMessage(tx.getHashData(), ct.getDefaultAccount().getECKeyPair())),
                 ct.getCommittee().getVerificationScript());
-        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
+        TransactionSubmission response = tx.addWitness(multiSigWitness).send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(), ct.getNeow3j());
 
         // Check zero updates have been performed

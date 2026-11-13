@@ -5,7 +5,7 @@ import io.neow3j.contract.SmartContract;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.InvocationResult;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.transaction.AccountSigner;
 import io.neow3j.types.ContractParameter;
 import io.neow3j.utils.Await;
@@ -109,7 +109,7 @@ public class ModuleTest {
         Account newAcc = ext.createAccount();
         ContractTestExtension.GenesisAccount gen = ext.getGenesisAccount();
         NeoToken neoToken = new NeoToken(neow3j);
-        NeoSendRawTransaction resp = neoToken
+        TransactionSubmission resp = neoToken
                 .transfer(gen.getMultiSigAccount(), newAcc.getScriptHash(), BigInteger.ONE)
                 .getUnsignedTransaction()
                 .addMultiSigWitness(gen.getMultiSigAccount().getVerificationScript(), gen.getSignerAccounts())

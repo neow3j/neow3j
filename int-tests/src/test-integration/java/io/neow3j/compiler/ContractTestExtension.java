@@ -11,7 +11,7 @@ import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetStorage;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.protocol.core.stackitem.StackItem;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
@@ -117,7 +117,7 @@ public class ContractTestExtension implements AfterAllCallback, BeforeAllCallbac
         Witness multiSigWitness = createMultiSigWitness(
                 asList(signMessage(tx.getHashData(), defaultAccount.getECKeyPair())),
                 committee.getVerificationScript());
-        NeoSendRawTransaction response = tx.addWitness(multiSigWitness).send();
+        TransactionSubmission response = tx.addWitness(multiSigWitness).send();
         if (response.hasError()) {
             throw new RuntimeException(response.getError().getMessage());
         }
@@ -309,7 +309,7 @@ public class ContractTestExtension implements AfterAllCallback, BeforeAllCallbac
             throws Throwable {
 
         Transaction tx;
-        NeoSendRawTransaction response;
+        TransactionSubmission response;
         TransactionBuilder b = contract.invokeFunction(function, params.toArray(new ContractParameter[0]));
         List<Signer> signerList = new ArrayList<>(asList(additionalSigners));
         if (signAsCommittee) {

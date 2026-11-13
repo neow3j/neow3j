@@ -3,7 +3,7 @@ package io.neow3j.protocol;
 import io.neow3j.contract.GasToken;
 import io.neow3j.protocol.core.response.InvocationResult;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.test.NeoTestContainer;
@@ -141,12 +141,11 @@ public class TransactionBuilderIntegrationTest {
 
         GasToken gas = new GasToken(neow3j);
         TransactionBuilder b = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), amount).signers(signer);
-        NeoSendRawTransaction response = b.sign().send();
-        assertFalse(response.hasError());
+        TransactionSubmission submission = b.sign().send();
+        assertFalse(submission.hasError());
+        submission.await();
 
-        Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        NeoApplicationLog log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        NeoApplicationLog log = submission.getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
         assertTrue(log.getExecutions().get(0).getStack().get(0).getBoolean()); // The transfer should be successful.
 
@@ -155,28 +154,13 @@ public class TransactionBuilderIntegrationTest {
         signer = AccountSigner.none(genesis).setRules(rule);
 
         b = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), amount).signers(signer);
-        response = b.sign().send();
-        assertFalse(response.hasError());
-        txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
-        log = neow3j.getApplicationLog(txHash).send().getApplicationLog();
+        submission = b.sign().send();
+        assertFalse(submission.hasError());
+        submission.await();
+
+        log = submission.getApplicationLog();
         assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
         assertFalse(log.getExecutions().get(0).getStack().get(0).getBoolean()); // The transfer should fail.
-    }
-
-    @Test
-    public void signSendAndAwaitWaitsUntilTheTransferIsExecuted() throws Throwable {
-        Account genesis = Account.fromWIF(TestProperties.defaultAccountWIF());
-        Account recipient = Account.create();
-        GasToken gas = new GasToken(neow3j);
-
-        Transaction tx = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), BigInteger.ONE)
-                .signers(AccountSigner.calledByEntry(genesis))
-                .signSendAndAwait();
-
-        NeoApplicationLog log = tx.getApplicationLog();
-        assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
-        assertTrue(log.getExecutions().get(0).getStack().get(0).getBoolean());
     }
 
     @Test
@@ -236,13 +220,12 @@ public class TransactionBuilderIntegrationTest {
         assertThat(tx.getAttributes(), hasSize(1));
         assertThat(tx.getFirstAttribute(), is(conflictsAttribute));
 
-        NeoSendRawTransaction response = tx.send();
-        assertFalse(response.hasError());
-        Hash256 txHash = response.getSendRawTransaction().getHash();
-        Await.waitUntilTransactionIsExecuted(txHash, neow3j);
+        TransactionSubmission submission = tx.send();
+        assertFalse(submission.hasError());
+        submission.await();
 
         io.neow3j.protocol.core.response.Transaction transaction =
-                neow3j.getTransaction(txHash).send().getTransaction();
+                neow3j.getTransaction(submission.getTxId()).send().getTransaction();
         assertThat(transaction.getAttributes(), hasSize(1));
         assertThat(transaction.getFirstAttribute().getType(), is(CONFLICTS));
         assertEquals(transaction.getFirstAttribute(),
@@ -272,7 +255,7 @@ public class TransactionBuilderIntegrationTest {
         assertThat(tx.getAttributes(), hasSize(1));
         assertThat(tx.getFirstAttribute(), is(notValidBeforeAttribute));
 
-        NeoSendRawTransaction response = tx.send();
+        TransactionSubmission response = tx.send();
         assertFalse(response.hasError());
         Hash256 txHash = response.getSendRawTransaction().getHash();
         Await.waitUntilTransactionIsExecuted(txHash, neow3j);

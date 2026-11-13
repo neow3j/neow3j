@@ -8,7 +8,6 @@ import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
@@ -22,8 +21,6 @@ import io.neow3j.types.ContractParameter;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.wallet.Account;
-import io.reactivex.Observable;
-import io.reactivex.functions.Predicate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -86,8 +83,6 @@ public class Transaction extends NeoSerializable {
     private byte[] script;
 
     private List<Witness> witnesses;
-
-    private BigInteger blockCountWhenSent;
 
     public Transaction() {
         signers = new ArrayList<>();
@@ -345,12 +340,12 @@ public class Transaction extends NeoSerializable {
     /**
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
-     * @return the Neo node's response.
+     * @return the submission, including this transaction and the Neo node's raw response.
      * @throws TransactionConfigurationException if the number of signers and witnesses on the transaction are not
      *                                           equal.
      * @throws IOException                       if a problem in communicating with the Neo node occurs.
      */
-    public NeoSendRawTransaction send() throws IOException {
+    public TransactionSubmission send() throws IOException {
         if (getSigners().size() != getWitnesses().size()) {
             throw new TransactionConfigurationException("The transaction does not have the same number of signers and" +
                     " witnesses. For every signer there has to be one witness, even if that witness is empty.");
@@ -361,49 +356,9 @@ public class Transaction extends NeoSerializable {
                     " The maximum size is %s bytes while the transaction has size %s.", MAX_TRANSACTION_SIZE, size));
         }
         String hex = toHexStringNoPrefix(toArray());
-        blockCountWhenSent = neow3j.getBlockCount().send().getBlockCount();
-        return neow3j.sendRawTransaction(hex).send();
-    }
-
-    /**
-     * Creates an {@code Observable} that emits the block number containing this transaction as soon as it has been
-     * integrated in one. The observable completes right after emitting the block number.
-     * <p>
-     * The observable starts tracking the blocks from the point at which the transaction has been sent.
-     *
-     * @return the observable.
-     * @throws IllegalStateException if this transaction has not yet been sent.
-     */
-    public Observable<Long> track() {
-        if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Cannot subscribe before transaction has been sent.");
-        }
-
-        Predicate<NeoGetBlock> pred = neoGetBlock -> neoGetBlock.getBlock().getTransactions() != null &&
-                neoGetBlock.getBlock().getTransactions().stream().anyMatch(tx -> tx.getHash().equals(getTxId()));
-
-        return neow3j.catchUpToLatestAndSubscribeToNewBlocksObservable(blockCountWhenSent, true)
-                .takeUntil(pred)
-                .filter(pred)
-                .map(neoGetBlock -> neoGetBlock.getBlock().getIndex());
-    }
-
-    /**
-     * Gets the application log of this transaction.
-     * <p>
-     * The application log is not cached locally. Every time this method is called, requests are sent to the Neo node.
-     * <p>
-     * If the application log could not be fetched, {@code null} is returned.
-     *
-     * @return the application log.
-     * @throws IOException               if something goes wrong in the communication with the neo-node.
-     * @throws RpcResponseErrorException if the Neo node returns an error.
-     */
-    public NeoApplicationLog getApplicationLog() throws IOException {
-        if (blockCountWhenSent == null) {
-            throw new IllegalStateException("Cannot get the application log before transaction has been sent.");
-        }
-        return neow3j.getApplicationLog(getTxId()).send().getApplicationLog();
+        BigInteger blockCount = neow3j.getBlockCount().send().getBlockCount();
+        NeoSendRawTransaction response = neow3j.sendRawTransaction(hex).send();
+        return new TransactionSubmission(this, response, blockCount);
     }
 
     @Override

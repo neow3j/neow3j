@@ -13,8 +13,6 @@ import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
@@ -43,9 +41,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
-import static com.github.tomakehurst.wiremock.client.WireMock.containing;
-import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
-import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
@@ -658,87 +653,6 @@ public class TransactionBuilderTest {
     }
 
     @Test
-    public void signSendAndAwaitSubmitsAndWaitsForInclusion() throws Throwable {
-        wireMockExtension.resetRequests();
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
-        setUpWireMockForCall("getapplicationlog", "getapplicationlog.json");
-
-        Transaction tx = new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(calledByEntry(account1))
-                .validUntilBlock(1000)
-                .signSendAndAwait();
-
-        assertThat(tx.getWitnesses(), hasSize(1));
-        assertThat(tx.getApplicationLog().getExecutions(), hasSize(1));
-        WireMock.verify(postRequestedFor(urlEqualTo("/"))
-                .withRequestBody(containing("\"method\":\"sendrawtransaction\"")));
-        WireMock.verify(postRequestedFor(urlEqualTo("/"))
-                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
-    }
-
-    @Test
-    public void failSignSendAndAwaitWhenSubmissionIsRejected() throws Throwable {
-        wireMockExtension.resetRequests();
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction_error.json");
-        // A height response is available so a missing rejection check would return instead of waiting.
-        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
-
-        TransactionBuilder builder = new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(calledByEntry(account1))
-                .validUntilBlock(1000);
-
-        RpcResponseErrorException thrown = assertThrows(RpcResponseErrorException.class, builder::signSendAndAwait);
-        assertThat(thrown.getMessage(), containsString("Already exists"));
-        WireMock.verify(0, postRequestedFor(urlEqualTo("/"))
-                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
-    }
-
-    @Test
-    public void signSendAndAwaitWithContractSigner() throws Throwable {
-        wireMockExtension.resetRequests();
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForCall("sendrawtransaction", "sendrawtransaction.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("gettransactionheight", "gettransactionheight.json");
-
-        Hash160 contractHash = new Hash160("e87819d005b730645050f89073a4cd7bf5f6bd3c");
-        Transaction tx = new TransactionBuilder(neow)
-                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                .signers(ContractSigner.calledByEntry(contractHash, string("iamgroot")), calledByEntry(account1))
-                .validUntilBlock(1000)
-                .signSendAndAwait();
-
-        byte[] invocScript = new ScriptBuilder().pushData("iamgroot").toArray();
-        assertThat(tx.getWitnesses(), hasSize(2));
-        assertThat(tx.getWitnesses(), hasItem(new Witness(invocScript, new byte[]{})));
-        WireMock.verify(postRequestedFor(urlEqualTo("/"))
-                .withRequestBody(containing("\"method\":\"gettransactionheight\"")));
-    }
-
-    @Test
-    public void failSignSendAndAwaitWithMultiSigAccount() {
-        IllegalStateException thrown = assertThrows(IllegalStateException.class,
-                () -> new TransactionBuilder(neow)
-                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
-                        .signers(none(createMultiSigAccount(asList(account1.getECKeyPair().getPublicKey()), 1)))
-                        .signSendAndAwait());
-        assertThat(thrown.getMessage(), is("Transactions with multi-sig signers cannot be signed automatically."));
-    }
-
-    @Test
     public void failSigningWithAccountWithoutECKeyPair() {
         Account accountWithoutKeyPair =
                 Account.fromVerificationScript(account1.getVerificationScript());
@@ -873,12 +787,12 @@ public class TransactionBuilderTest {
                 .signers(none(account1))
                 .sign();
 
-        NeoSendRawTransaction response = tx.send();
+        TransactionSubmission submission = tx.send();
 
-        assertThat(response.getError(), nullValue());
+        assertThat(submission.getError(), nullValue());
         // This is not the actual transaction id of the above built transaction but merely the
         // one used in the file `responses/sendrawtransaction.json`.
-        assertThat(response.getSendRawTransaction().getHash(), is(
+        assertThat(submission.getTxId(), is(
                 new Hash256("0x830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a")));
     }
 
@@ -1244,8 +1158,7 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         Neow3j neowSpy = Mockito.spy(neow);
-        Hash256 txHash =
-                new Hash256("1bf80f98084ede43fba9e347b0af546e2e7da9038e019baf0258f09b59f019f0");
+        Hash256 txHash = new Hash256("830816f0c801bcabf919dfa1a90d7b9a4f867482cb4d18d0631a5aa6daefab6a");
         neowSpy = Mockito.when(neowSpy.catchUpToLatestAndSubscribeToNewBlocksObservable(
                         new BigInteger("1000"), true))
                 .thenReturn(Observable.fromArray(createBlock(1000), createBlock(1001),
@@ -1263,39 +1176,16 @@ public class TransactionBuilderTest {
                 .signers(calledByEntry(account1))
                 .sign();
 
-        tx.send();
+        TransactionSubmission submission = tx.send();
         CountDownLatch completedLatch = new CountDownLatch(1);
         AtomicLong receivedBlockNr = new AtomicLong();
-        tx.track().subscribe(
+        submission.track().subscribe(
                 receivedBlockNr::set,
                 throwable -> fail(throwable.getMessage()),
                 completedLatch::countDown);
 
         completedLatch.await(1000, TimeUnit.MILLISECONDS);
         assertThat(receivedBlockNr.get(), is(1002L));
-    }
-
-    @Test
-    public void trackingTransaction_txNotSent() throws Throwable {
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
-        byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
-                asList(hash160(account1.getScriptHash()),
-                        hash160(recipient),
-                        integer(5),
-                        any(null))).toArray();
-
-        Transaction tx = new TransactionBuilder(neow)
-                .script(script)
-                .nonce(0L)
-                .signers(none(account1))
-                .sign();
-
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, tx::track);
-        assertThat(thrown.getMessage(), is("Cannot subscribe before transaction has been sent."));
     }
 
     private NeoGetBlock createBlock(int number) {
@@ -1340,33 +1230,10 @@ public class TransactionBuilderTest {
                 .signers(calledByEntry(account1))
                 .sign();
 
-        tx.send();
-        NeoApplicationLog applicationLog = tx.getApplicationLog();
+        TransactionSubmission submission = tx.send();
+        NeoApplicationLog applicationLog = submission.getApplicationLog();
         assertThat(applicationLog.getTransactionId(),
                 is(new Hash256("0xeb52f99ae5cf923d8905bdd91c4160e2207d20c0cb42f8062f31c6743770e4d1")));
-    }
-
-    @Test
-    public void getApplicationLog_txNotSent() throws Throwable {
-        setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
-        setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
-        setUpWireMockForCall("invokescript", "invokescript_transfer.json");
-        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-
-        byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
-                asList(hash160(account1.getScriptHash()),
-                        hash160(account1),
-                        integer(1),
-                        any(null))).toArray();
-
-        Transaction tx = new TransactionBuilder(neow)
-                .script(script)
-                .signers(calledByEntry(account1))
-                .sign();
-
-        IllegalStateException thrown = assertThrows(IllegalStateException.class, tx::getApplicationLog);
-        assertThat(thrown.getMessage(), is("Cannot get the application log before transaction has been sent."));
     }
 
     @Test
@@ -1389,9 +1256,10 @@ public class TransactionBuilderTest {
                 .script(script)
                 .signers(calledByEntry(account1))
                 .sign();
-        tx.send();
+        TransactionSubmission submission = tx.send();
 
-        assertThrows(RpcResponseErrorException.class, tx::getApplicationLog);
+        assertThat(submission.getApplicationLog(), nullValue());
+        assertFalse(submission.hasHalted());
     }
 
     @Test
