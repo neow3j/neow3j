@@ -19,6 +19,9 @@
 - Do not run publishing, signing, release, or deployment tasks unless explicitly requested.
 
 ## Git and attribution
+- Name task branches with a lowercase type prefix and kebab-case description, using prefixes such as `feat/`, `fix/`, `chore/`, `docs/`, `refactor/`, or `test/`. When a GitHub issue exists, include its number, e.g., `feat/1175-stackitem-script-hash`.
+- Use Conventional Commits for commit subjects: `<type>(<optional-scope>): <short imperative summary>`. Use the GitHub issue reference at the end when applicable, e.g., `feat: add StackItem script hash accessor (#1175)`.
+- Keep the scope attached to the type with no space, e.g., `chore(minor): update dependencies (#1200)`. Do not invent issue numbers; omit the reference if there is no associated issue.
 - Do not create commits, amend commits, or rewrite history unless explicitly requested.
 - Preserve the configured Git author. Do not add AI-tool co-author or attribution trailers unless the user explicitly requests them.
 - For an authorized commit, inspect the final message for unintended attribution trailers.
