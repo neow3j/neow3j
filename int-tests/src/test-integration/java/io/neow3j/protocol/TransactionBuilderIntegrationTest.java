@@ -165,6 +165,21 @@ public class TransactionBuilderIntegrationTest {
     }
 
     @Test
+    public void signSendAndAwaitWaitsUntilTheTransferIsExecuted() throws Throwable {
+        Account genesis = Account.fromWIF(TestProperties.defaultAccountWIF());
+        Account recipient = Account.create();
+        GasToken gas = new GasToken(neow3j);
+
+        Transaction tx = gas.transfer(genesis.getScriptHash(), recipient.getScriptHash(), BigInteger.ONE)
+                .signers(AccountSigner.calledByEntry(genesis))
+                .signSendAndAwait();
+
+        NeoApplicationLog log = tx.getApplicationLog();
+        assertThat(log.getExecutions().get(0).getState(), is(NeoVMStateType.HALT));
+        assertTrue(log.getExecutions().get(0).getStack().get(0).getBoolean());
+    }
+
+    @Test
     public void testTransmissionOnFault() throws Throwable {
         Account a = Account.fromAddress(TestProperties.defaultAccountAddress());
         neow3j.allowTransmissionOnFault();
