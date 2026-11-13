@@ -13,7 +13,7 @@ import io.neow3j.devpack.events.Event4Args;
 import io.neow3j.protocol.ObjectMapperFactory;
 import io.neow3j.protocol.core.Role;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.core.response.Transaction;
 import io.neow3j.protocol.core.stackitem.StackItem;
@@ -88,7 +88,7 @@ public class OracleContractIntegrationTest {
 
         // Register candidate
         ECKeyPair.ECPublicKey publicKey = ct.getDefaultAccount().getECKeyPair().getPublicKey();
-        NeoSendRawTransaction response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
+        TransactionSubmission response = new NeoToken(ct.getNeow3j()).registerCandidate(publicKey)
                 .signers(AccountSigner.calledByEntry(ct.getDefaultAccount()))
                 .sign().send();
         Await.waitUntilTransactionIsExecuted(response.getSendRawTransaction().getHash(),

@@ -15,6 +15,7 @@ import org.hamcrest.Matchers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
@@ -81,6 +82,20 @@ public class Await {
      */
     public static void waitUntilTransactionIsExecuted(Hash256 txHash, Neow3j neow3j) {
         waitUntil(callableGetTxHash(txHash, neow3j), notNullValue());
+    }
+
+    /**
+     * Checks and waits until the transaction with the given hash is seen on the blockchain.
+     *
+     * @param txHash  the transaction hash.
+     * @param neow3j  the {@code Neow3j} object to use to connect to a neo-node.
+     * @param timeout the maximum time to wait.
+     */
+    public static void waitUntilTransactionIsExecuted(Hash256 txHash, Neow3j neow3j, Duration timeout) {
+        if (timeout == null || timeout.isZero() || timeout.isNegative()) {
+            throw new IllegalArgumentException("The timeout must be a positive duration.");
+        }
+        await().atMost(timeout).until(callableGetTxHash(txHash, neow3j), notNullValue());
     }
 
     /**

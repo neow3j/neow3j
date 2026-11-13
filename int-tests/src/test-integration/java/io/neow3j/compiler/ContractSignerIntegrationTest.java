@@ -4,7 +4,7 @@ import io.neow3j.devpack.Hash160;
 import io.neow3j.devpack.annotations.OnNEP17Payment;
 import io.neow3j.devpack.annotations.OnVerification;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.ContractSigner;
 import io.neow3j.transaction.Transaction;
@@ -40,7 +40,7 @@ public class ContractSignerIntegrationTest {
                 .signers(ContractSigner.calledByEntry(ct.getContract().getScriptHash()))
                 .sign();
 
-        NeoSendRawTransaction response = tx.send();
+        TransactionSubmission response = tx.send();
         assertFalse(response.hasError());
         Hash256 txHash = response.getSendRawTransaction().getHash();
         waitUntilTransactionIsExecuted(txHash, ct.getNeow3j());

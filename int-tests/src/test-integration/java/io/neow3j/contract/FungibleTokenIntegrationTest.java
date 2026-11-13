@@ -5,7 +5,7 @@ import io.neow3j.contract.types.NNSName;
 import io.neow3j.helper.NeoNameServiceTestHelper;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.RecordType;
-import io.neow3j.protocol.core.response.NeoSendRawTransaction;
+import io.neow3j.transaction.TransactionSubmission;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.test.NeoTestContainer;
 import io.neow3j.transaction.Transaction;
@@ -126,7 +126,7 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
 
         BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        NeoSendRawTransaction response = gasToken.transfer(CLIENT_1, nnsName, amount)
+        TransactionSubmission response = gasToken.transfer(CLIENT_1, nnsName, amount)
                 .sign()
                 .send();
         Hash256 txHash = response.getSendRawTransaction().getHash();
@@ -152,7 +152,7 @@ public class FungibleTokenIntegrationTest {
         BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
 
         BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
-        NeoSendRawTransaction response = gasToken.transfer(CLIENT_1.getScriptHash(), fourthLevelDomain, amount)
+        TransactionSubmission response = gasToken.transfer(CLIENT_1.getScriptHash(), fourthLevelDomain, amount)
                 .signers(calledByEntry(CLIENT_1))
                 .sign()
                 .send();
