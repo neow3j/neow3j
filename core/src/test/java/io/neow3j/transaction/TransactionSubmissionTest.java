@@ -142,7 +142,22 @@ class TransactionSubmissionTest {
         TransactionSubmission rejectedSubmission = submission(neow3j, rejected);
         assertTrue(rejectedSubmission.hasError());
         assertNotNull(rejectedSubmission.getError());
+        assertEquals(rejectedSubmission.getTransaction().getTxId(), rejectedSubmission.getTxId());
         assertThrows(RpcResponseErrorException.class, rejectedSubmission::await);
+    }
+
+    @Test
+    void missingApplicationLogReturnsNullAndIsNotHalted() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetApplicationLog response = new NeoGetApplicationLog();
+        response.setError(new Response.Error(-100, "Unknown transaction/blockhash"));
+        Request<?, NeoGetApplicationLog> request = mock(Request.class);
+        when(request.send()).thenReturn(response);
+        doReturn(request).when(neow3j).getApplicationLog(TX_ID);
+
+        assertNull(submission.getApplicationLog());
+        assertFalse(submission.hasHalted());
     }
 
     @Test

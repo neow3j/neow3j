@@ -13,7 +13,6 @@ import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.response.NeoInvokeScript;
-import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.OpCode;
 import io.neow3j.script.ScriptBuilder;
@@ -1259,7 +1258,8 @@ public class TransactionBuilderTest {
                 .sign();
         TransactionSubmission submission = tx.send();
 
-        assertThrows(RpcResponseErrorException.class, submission::getApplicationLog);
+        assertThat(submission.getApplicationLog(), nullValue());
+        assertFalse(submission.hasHalted());
     }
 
     @Test

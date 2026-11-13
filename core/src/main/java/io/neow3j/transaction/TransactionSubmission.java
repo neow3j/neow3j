@@ -4,6 +4,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
 import io.neow3j.protocol.core.response.NeoGetBlock;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.core.Response;
@@ -71,9 +72,13 @@ public class TransactionSubmission {
     }
 
     /**
-     * @return the transaction ID returned by the node, or the locally calculated ID if the response has no hash.
+     * @return the transaction ID returned by the node, or the locally calculated ID if submission was rejected or
+     * the response has no hash.
      */
     public Hash256 getTxId() {
+        if (sendResponse.hasError()) {
+            return transaction.getTxId();
+        }
         NeoSendRawTransaction.RawTransaction result = sendResponse.getSendRawTransaction();
         return result == null || result.getHash() == null ? transaction.getTxId() : result.getHash();
     }
@@ -94,8 +99,9 @@ public class TransactionSubmission {
      * @param timeout the maximum duration to wait.
      * @return this submission after the node reports it as included in a block.
      * @throws io.neow3j.protocol.exceptions.RpcResponseErrorException if the node rejected the submission.
-     * @throws org.awaitility.core.ConditionTimeoutException if the transaction is not included within {@code timeout}.
-     * @throws IllegalArgumentException if {@code timeout} is null, zero, or negative.
+     * @throws org.awaitility.core.ConditionTimeoutException           if the transaction is not included within
+     *                                                                 {@code timeout}.
+     * @throws IllegalArgumentException                                if {@code timeout} is null, zero, or negative.
      */
     public TransactionSubmission await(Duration timeout) {
         sendResponse.getSendRawTransaction();
@@ -144,7 +150,8 @@ public class TransactionSubmission {
      * @throws IOException if an error occurs while communicating with the node.
      */
     public NeoApplicationLog getApplicationLog() throws IOException {
-        return transaction.neow3j.getApplicationLog(getTxId()).send().getApplicationLog();
+        NeoGetApplicationLog response = transaction.neow3j.getApplicationLog(getTxId()).send();
+        return response.hasError() ? null : response.getApplicationLog();
     }
 
     /**
