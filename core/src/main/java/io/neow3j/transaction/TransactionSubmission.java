@@ -141,6 +141,9 @@ public class TransactionSubmission {
             return null;
         }
         NeoGetBlock response = transaction.neow3j.getBlock(height, false).send();
+        if (response.hasError()) {
+            return null;
+        }
         NeoBlock block = response.getBlock();
         return block == null ? null : block.getTime();
     }

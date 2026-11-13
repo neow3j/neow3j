@@ -104,6 +104,25 @@ class TransactionSubmissionTest {
     }
 
     @Test
+    void returnsNullBlockTimeWhenBlockRequestReturnsError() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetTransactionHeight height = new NeoGetTransactionHeight();
+        height.setResult(BigInteger.valueOf(123));
+        Request<?, NeoGetTransactionHeight> heightRequest = mock(Request.class);
+        when(heightRequest.send()).thenReturn(height);
+        doReturn(heightRequest).when(neow3j).getTransactionHeight(TX_ID);
+
+        NeoGetBlock block = new NeoGetBlock();
+        block.setError(new Response.Error(-100, "Unknown block"));
+        Request<?, NeoGetBlock> blockRequest = mock(Request.class);
+        when(blockRequest.send()).thenReturn(block);
+        doReturn(blockRequest).when(neow3j).getBlock(BigInteger.valueOf(123), false);
+
+        assertNull(submission.getBlockTime());
+    }
+
+    @Test
     void fetchesApplicationLogAndReportsHaltState() throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));

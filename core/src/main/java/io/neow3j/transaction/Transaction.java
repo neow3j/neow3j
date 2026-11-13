@@ -340,7 +340,7 @@ public class Transaction extends NeoSerializable {
     /**
      * Sends this invocation transaction to the Neo node via the `sendrawtransaction` RPC.
      *
-     * @return the Neo node's response.
+     * @return the submission, including this transaction and the Neo node's raw response.
      * @throws TransactionConfigurationException if the number of signers and witnesses on the transaction are not
      *                                           equal.
      * @throws IOException                       if a problem in communicating with the Neo node occurs.
