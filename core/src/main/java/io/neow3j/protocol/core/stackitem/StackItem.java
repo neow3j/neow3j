@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import io.neow3j.protocol.exceptions.StackItemCastException;
+import io.neow3j.types.Hash160;
 import io.neow3j.types.StackItemType;
 
 import java.math.BigInteger;
@@ -92,6 +93,15 @@ public abstract class StackItem {
     @JsonIgnore
     public BigInteger getInteger() {
         throw new StackItemCastException(format("Cannot cast stack item %s to an integer.", toString()));
+    }
+
+    /**
+     * @return this item as a script hash.
+     * @throws StackItemCastException if the stack item cannot be converted to a script hash or if its value is null.
+     */
+    @JsonIgnore
+    public Hash160 getScriptHash() {
+        throw new StackItemCastException(format("Cannot cast stack item %s to a script hash.", toString()));
     }
 
     /**

@@ -44,6 +44,24 @@ abstract class ByteArrayStackItem extends StackItem {
     }
 
     /**
+     * Gets this item's value as a script hash.
+     * <p>
+     * Treats the underlying bytes as a script hash in little-endian order.
+     *
+     * @return the script hash.
+     * @throws StackItemCastException if this stack item's value is null or is not a valid script hash.
+     */
+    @Override
+    public Hash160 getScriptHash() {
+        nullCheck();
+        try {
+            return new Hash160(reverseArray(value));
+        } catch (IllegalArgumentException e) {
+            throw new StackItemCastException(e);
+        }
+    }
+
+    /**
      * Gets this item's value as an address.
      * <p>
      * Treats the underlying bytes as a script hash in little-endian order.
@@ -53,12 +71,7 @@ abstract class ByteArrayStackItem extends StackItem {
      */
     @Override
     public String getAddress() {
-        nullCheck();
-        try {
-            return new Hash160(reverseArray(value)).toAddress();
-        } catch (IllegalArgumentException e) {
-            throw new StackItemCastException(e);
-        }
+        return getScriptHash().toAddress();
     }
 
     /**
