@@ -7,6 +7,7 @@ import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.core.response.ContractManifest;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
 import io.neow3j.protocol.core.stackitem.StackItem;
+import io.neow3j.protocol.exceptions.StackItemCastException;
 import io.neow3j.protocol.http.HttpService;
 import io.neow3j.script.ScriptBuilder;
 import io.neow3j.transaction.TransactionBuilder;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.function.Function;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.test.WireMockTestHelper.loadFile;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
 import static io.neow3j.types.ContractParameter.hash160;
@@ -36,7 +38,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -175,6 +179,26 @@ public class SmartContractTest {
     }
 
     @Test
+    public void callFunctionReturningStackItem() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
+                NEO_SCRIPT_HASH.toString(), "isValid");
+
+        StackItem result = neoContract.callFunctionReturningStackItem("isValid");
+
+        assertThat(result.getBoolean(), is(true));
+    }
+
+    @Test
+    public void callFunctionReturningByteArray() throws IOException {
+        setUpWireMockForCall("invokefunction", "invokefunction_symbol.json",
+                SOME_SCRIPT_HASH.toString(), "symbol");
+
+        byte[] result = someContract.callFunctionReturningByteArray("symbol");
+
+        assertArrayEquals(new byte[]{'a', 'n', 't'}, result);
+    }
+
+    @Test
     public void callFunctionReturningNonString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
                 NEO_SCRIPT_HASH.toString(), NEP17_NAME);
@@ -264,7 +288,7 @@ public class SmartContractTest {
 
         UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
                 () -> sc.callFunctionReturningBool("getCandidates"));
-        assertThat(thrown.getMessage(), containsString(format("but expected %s.", StackItemType.BOOLEAN.jsonValue())));
+        assertThat(thrown.getMessage(), containsString("but expected Boolean, Integer, ByteString, Buffer."));
     }
 
     @Test
@@ -273,6 +297,27 @@ public class SmartContractTest {
         Hash160 scriptHash = someContract.callFunctionReturningScriptHash("ownerOf");
 
         assertThat(scriptHash, is(new Hash160("69ecca587293047be4c59159bf8bc399985c160d")));
+    }
+
+    @Test
+    public void callFunctionReturningScriptHash_rejectsBuffer() throws IOException {
+        String response = loadFile("/responses/nft_ownerof.json").replace("\"ByteString\"", "\"Buffer\"");
+        WireMock.stubFor(WireMock.post(WireMock.urlEqualTo("/"))
+                .withRequestBody(WireMock.containing("\"ownerOf\""))
+                .willReturn(WireMock.ok(response)));
+
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> someContract.callFunctionReturningScriptHash("ownerOf"));
+        assertThat(thrown.getMessage(), is("Got stack item of type Buffer but expected ByteString."));
+    }
+
+    @Test
+    public void callFunctionReturningScriptHash_wrapsInvalidLength() throws IOException {
+        setUpWireMockForInvokeFunction("ownerOf", "response_invalid_address.json");
+
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> someContract.callFunctionReturningScriptHash("ownerOf"));
+        assertInstanceOf(StackItemCastException.class, thrown.getCause());
     }
 
     @Test
@@ -397,6 +442,15 @@ public class SmartContractTest {
         assertThat(iteratorArray, hasSize(2));
         assertThat(iteratorArray.get(0).getAddress(), Matchers.is("NSdNMyrz7Bp8MXab41nTuz1mRCnsFr5Rsv"));
         assertThat(iteratorArray.get(1).getAddress(), Matchers.is("NhxK1PEmijLVD6D4WSuPoUYJVk855L21ru"));
+    }
+
+    @Test
+    public void callFunctionAndUnwrapIterator_rejectsStruct() throws IOException {
+        setUpWireMockForCall("invokescript", "neoToken_getAccountState.json");
+
+        UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
+                () -> someContract.callFunctionAndUnwrapIterator("ownerOf", asList(), 20));
+        assertThat(thrown.getMessage(), is("Got stack item of type Struct but expected Array."));
     }
 
     @Test

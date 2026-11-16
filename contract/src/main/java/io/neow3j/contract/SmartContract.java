@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
+import static io.neow3j.types.StackItemType.ARRAY;
 import static io.neow3j.types.StackItemType.BOOLEAN;
 import static io.neow3j.types.StackItemType.BUFFER;
 import static io.neow3j.types.StackItemType.BYTE_STRING;
 import static io.neow3j.types.StackItemType.INTEGER;
 import static io.neow3j.types.StackItemType.INTEROP_INTERFACE;
-import static io.neow3j.utils.Numeric.reverseHexString;
 import static io.neow3j.utils.Numeric.toHexString;
 import static java.util.Arrays.asList;
 
@@ -40,6 +40,7 @@ import static java.util.Arrays.asList;
 public class SmartContract {
 
     protected Hash160 scriptHash;
+
     protected Neow3j neow3j;
 
     protected static final int DEFAULT_ITERATOR_COUNT = 100;
@@ -102,14 +103,8 @@ public class SmartContract {
     public String callFunctionReturningString(String function, ContractParameter... params)
             throws UnexpectedReturnTypeException, IOException {
 
-        InvocationResult invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
-        throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getFirstStackItem();
-        StackItemType type = item.getType();
-        if (type.equals(BYTE_STRING)) {
-            return item.getString();
-        }
-        throw new UnexpectedReturnTypeException(type, BYTE_STRING);
+        StackItem item = callFunctionReturningStackItem(function, params);
+        return convertReturnValue(item, StackItem::getString, BYTE_STRING);
     }
 
     /**
@@ -125,22 +120,13 @@ public class SmartContract {
     public BigInteger callFunctionReturningInt(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
 
-        InvocationResult invocationResult;
-        if (params.length == 0) {
-            invocationResult = callInvokeFunction(function).getInvocationResult();
-        } else {
-            invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
-        }
-        throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getFirstStackItem();
-        if (item.getType().equals(INTEGER)) {
-            return item.getInteger();
-        }
-        throw new UnexpectedReturnTypeException(item.getType(), INTEGER);
+        StackItem item = callFunctionReturningStackItem(function, params);
+        return convertReturnValue(item, StackItem::getInteger, INTEGER);
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a Boolean as return type.
+     * Sends an {@code invokefunction} RPC call to the given contract function and interprets the returned boolean,
+     * integer, byte string, or buffer as a boolean.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
@@ -152,40 +138,23 @@ public class SmartContract {
     public boolean callFunctionReturningBool(String function, ContractParameter... params) throws IOException,
             UnexpectedReturnTypeException {
 
-        InvocationResult invocationResult;
-        if (params.length == 0) {
-            invocationResult = callInvokeFunction(function).getInvocationResult();
-        } else {
-            invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
-        }
-        throwIfFaultState(invocationResult);
-        StackItem item = invocationResult.getFirstStackItem();
-        StackItemType type = item.getType();
-        if (type.equals(BOOLEAN) ||
-                type.equals(INTEGER) ||
-                type.equals(BYTE_STRING) ||
-                type.equals(BUFFER)) {
-            return item.getBoolean();
-        }
-        throw new UnexpectedReturnTypeException(type, BOOLEAN);
+        StackItem item = callFunctionReturningStackItem(function, params);
+        return convertReturnValue(item, StackItem::getBoolean, BOOLEAN, INTEGER, BYTE_STRING, BUFFER);
     }
 
     /**
-     * Sends an {@code invokefunction} RPC call to the given contract function expecting a script hash as the return
-     * type.
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a byte string containing a
+     * script hash.
      *
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
      * @return the script hash returned by the contract.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as script hash.
+     * @throws UnexpectedReturnTypeException if the return value is not a byte string containing a valid script hash.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public Hash160 callFunctionReturningScriptHash(String function, ContractParameter... params) throws IOException {
-        InvocationResult result = callInvokeFunction(function, asList(params)).getInvocationResult();
-        throwIfFaultState(result);
-        StackItem stackItem = result.getFirstStackItem();
-        return extractScriptHash(stackItem);
+        return extractScriptHash(callFunctionReturningStackItem(function, params));
     }
 
     private Hash160 extractScriptHash(StackItem item) {
@@ -193,9 +162,57 @@ public class SmartContract {
             throw new UnexpectedReturnTypeException(item.getType(), BYTE_STRING);
         }
         try {
-            return new Hash160(reverseHexString(item.getHexString()));
-        } catch (StackItemCastException | IllegalArgumentException e) {
+            return item.getScriptHash();
+        } catch (StackItemCastException e) {
             throw new UnexpectedReturnTypeException("Return type did not contain script hash in expected format.", e);
+        }
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function and returns its first stack item.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the first stack item returned by the invocation.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
+     */
+    public StackItem callFunctionReturningStackItem(String function, ContractParameter... params) throws IOException {
+        InvocationResult invocationResult;
+        if (params.length == 0) {
+            invocationResult = callInvokeFunction(function).getInvocationResult();
+        } else {
+            invocationResult = callInvokeFunction(function, asList(params)).getInvocationResult();
+        }
+        throwIfFaultState(invocationResult);
+        return invocationResult.getFirstStackItem();
+    }
+
+    /**
+     * Sends an {@code invokefunction} RPC call to the given contract function expecting a byte string or buffer.
+     *
+     * @param function the function to call.
+     * @param params   the contract parameters to include in the call.
+     * @return the returned bytes in their original order.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the return value is not a byte string or buffer with a byte array value.
+     * @throws InvocationFaultStateException if the invocation results in a fault VM state.
+     */
+    public byte[] callFunctionReturningByteArray(String function, ContractParameter... params) throws IOException {
+        StackItem item = callFunctionReturningStackItem(function, params);
+        return convertReturnValue(item, StackItem::getByteArray, BYTE_STRING, BUFFER);
+    }
+
+    static <T> T convertReturnValue(StackItem item, Function<StackItem, T> accessor, StackItemType... expectedTypes) {
+        StackItemType type = item.getType();
+        if (!asList(expectedTypes).contains(type)) {
+            throw new UnexpectedReturnTypeException(type, expectedTypes);
+        }
+        try {
+            return accessor.apply(item);
+        } catch (StackItemCastException e) {
+            throw new UnexpectedReturnTypeException("Could not convert returned " + type.jsonValue() + " stack item.",
+                    e);
         }
     }
 
@@ -211,7 +228,8 @@ public class SmartContract {
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
      * @return the iterator.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the returned stack item could not be interpreted as an iterator.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public Iterator<StackItem> callFunctionReturningIterator(String function, ContractParameter... params)
@@ -234,7 +252,8 @@ public class SmartContract {
      * @param params   the contract parameters to include in the call.
      * @param <T>      the type the stack items are mapped to by the mapper function when traversing the iterator.
      * @return the iterator.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
+     * @throws UnexpectedReturnTypeException if the returned stack item could not be interpreted as an iterator.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> Iterator<T> callFunctionReturningIterator(Function<StackItem, T> mapper, String function,
@@ -244,12 +263,8 @@ public class SmartContract {
         throwIfFaultState(invocationResult);
 
         StackItem stackItem = invocationResult.getFirstStackItem();
-        if (!stackItem.getType().equals(INTEROP_INTERFACE)) {
-            throw new UnexpectedReturnTypeException(stackItem.getType(), INTEROP_INTERFACE);
-        }
-
+        String iteratorId = convertReturnValue(stackItem, StackItem::getIteratorId, INTEROP_INTERFACE);
         String sessionId = invocationResult.getSessionId();
-        String iteratorId = stackItem.getIteratorId();
         return new Iterator<>(neow3j, sessionId, iteratorId, mapper);
     }
 
@@ -268,7 +283,7 @@ public class SmartContract {
      * @param params   the contract parameters to include in the call.
      * @param <T>      the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
@@ -292,7 +307,7 @@ public class SmartContract {
      * @param params                 the contract parameters to include in the call.
      * @param <T>                    the type the stack items are mapped to by the mapper function.
      * @return the mapped iterator items.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public <T> List<T> callFunctionAndTraverseIterator(Function<StackItem, T> mapper, String function,
@@ -317,7 +332,7 @@ public class SmartContract {
      * @param function the function to call.
      * @param params   the contract parameters to include in the call.
      * @return the iterator.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public List<StackItem> callFunctionAndTraverseIterator(String function, ContractParameter... params)
@@ -341,7 +356,7 @@ public class SmartContract {
      * @param signers                the list of signers for this request.
      * @return a list of stack items of the returned iterator.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
-     * @throws UnexpectedReturnTypeException if the returned type could not be interpreted as a String.
+     * @throws UnexpectedReturnTypeException if the returned stack item could not be interpreted as an array.
      * @throws InvocationFaultStateException if the invocation results in a fault VM state.
      */
     public List<StackItem> callFunctionAndUnwrapIterator(String function, List<ContractParameter> params,
@@ -353,7 +368,7 @@ public class SmartContract {
         InvocationResult invocationResult = neow3j.invokeScript(toHexString(script), signers).send()
                 .getInvocationResult();
         throwIfFaultState(invocationResult);
-        return invocationResult.getFirstStackItem().getList();
+        return convertReturnValue(invocationResult.getFirstStackItem(), StackItem::getList, ARRAY);
     }
 
     /**

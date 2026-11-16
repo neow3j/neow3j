@@ -7,7 +7,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * Is thrown when the attempt to interpret a {@link StackItem}} fails because the item was not of an expected type.
+ * Is thrown when a returned {@link StackItem} has an unexpected type or its value cannot be converted as expected.
  * If this exception occurs it means that either the called contract did not fulfill an expected standard or the
  * caller expected wrong return types.
  * <p>
