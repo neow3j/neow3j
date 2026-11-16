@@ -2,11 +2,15 @@ package io.neow3j.protocol;
 
 import io.neow3j.protocol.core.JsonRpc2_0Neow3j;
 import io.neow3j.protocol.core.Neo;
+import io.neow3j.protocol.core.response.NeoApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetApplicationLog;
 import io.neow3j.protocol.core.response.NeoGetVersion;
 import io.neow3j.protocol.core.response.NeoGetVersion.NeoVersion.Protocol;
+import io.neow3j.protocol.core.response.Notification;
 import io.neow3j.protocol.exceptions.Neow3jBuildException;
 import io.neow3j.protocol.rx.Neow3jRx;
 import io.neow3j.types.Hash160;
+import io.reactivex.Observable;
 
 import java.io.IOException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -155,6 +159,32 @@ public abstract class Neow3j implements Neo, Neow3jRx {
      */
     public void setNNSResolver(Hash160 nnsResolver) {
         config.setNNSResolver(nnsResolver);
+    }
+
+    /**
+     * Creates an observable that emits notifications from the specified contract found in transaction logs of new
+     * blocks. Each subscription uses the configured block polling interval and starts after the block observed on
+     * its first poll.
+     * <p>
+     * The connected Neo node must support {@code getapplicationlog}. The observable reads one application log per
+     * transaction and emits matching notifications as recorded by the node, regardless of the execution's VM state.
+     * RPC and communication errors are delivered to the subscriber's error handler.
+     *
+     * @param contractHash the script hash of the contract that emits the notifications.
+     * @return an observable of matching notifications.
+     * @throws IllegalArgumentException if the contract hash is null.
+     */
+    public Observable<Notification> subscribeToEvents(Hash160 contractHash) {
+        if (contractHash == null) {
+            throw new IllegalArgumentException("The contract hash must not be null.");
+        }
+        return Observable.defer(() -> subscribeToNewBlocksObservable(true))
+                .flatMapIterable(block -> block.getBlock().getTransactions())
+                .concatMap(transaction -> getApplicationLog(transaction.getHash()).observable())
+                .map(NeoGetApplicationLog::getApplicationLog)
+                .flatMapIterable(NeoApplicationLog::getExecutions)
+                .flatMapIterable(NeoApplicationLog.Execution::getNotifications)
+                .filter(notification -> contractHash.equals(notification.getContract()));
     }
 
     // region helper functions for important frequently used values
