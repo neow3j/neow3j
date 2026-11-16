@@ -3,8 +3,6 @@ package io.neow3j.devpack.gradle;
 import io.neow3j.compiler.DebugInfo;
 import io.neow3j.protocol.ObjectMapperFactory;
 import org.gradle.api.Project;
-import org.gradle.api.plugins.JavaPluginConvention;
-import org.gradle.api.plugins.JavaPluginExtension;
 import org.gradle.api.tasks.SourceSetContainer;
 
 import java.io.File;
@@ -31,18 +29,11 @@ public class Neow3jPluginUtils {
     }
 
     public static SourceSetContainer getSourceSets(Project project) {
-        try {
-            // First try with JavaPluginExtension (for Gradle 8+)
-            JavaPluginExtension pluginExt = project.getExtensions().getByType(JavaPluginExtension.class);
-            return pluginExt.getSourceSets();
-        } catch (NoSuchMethodError | UnsupportedOperationException e) {
-            // Fallback for Gradle 6 using JavaPluginConvention
-            JavaPluginConvention pluginConv = project.getConvention().findPlugin(JavaPluginConvention.class);
-            if (pluginConv != null) {
-                return pluginConv.getSourceSets();
-            }
+        SourceSetContainer sourceSets = project.getExtensions().findByType(SourceSetContainer.class);
+        if (sourceSets == null) {
+            throw new IllegalStateException("Gradle plugin 'java' missing. Make sure to apply it to your project.");
         }
-        throw new IllegalStateException("Gradle plugin 'java' missing. Make sure to apply it to your project.");
+        return sourceSets;
     }
 
     static void writeToFile(File file, byte[] content) throws IOException {

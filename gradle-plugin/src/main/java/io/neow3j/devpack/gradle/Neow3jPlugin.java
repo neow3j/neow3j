@@ -22,7 +22,8 @@ public class Neow3jPlugin implements Plugin<Project> {
     @Override
     public void apply(@NotNull Project project) {
 
-        if (GradleVersion.current().compareTo(GradleVersion.version(GRADLE_MIN_VERSION)) < 0) {
+        GradleVersion gradleVersion = GradleVersion.current();
+        if (gradleVersion.compareTo(GradleVersion.version(GRADLE_MIN_VERSION)) < 0) {
             throw new UnsupportedOperationException(PLUGIN_ID + " requires at least Gradle " + GRADLE_MIN_VERSION);
         }
 
@@ -39,7 +40,13 @@ public class Neow3jPlugin implements Plugin<Project> {
             task.getOutputDir().set(extension.getOutputDir());
             task.getProject().getPluginManager().apply(JavaLibraryPlugin.class);
             JavaCompile compileJava = (JavaCompile) project.getTasks().getByName(JavaPlugin.COMPILE_JAVA_TASK_NAME);
-            task.getBuildDirectory().set(compileJava.getDestinationDir());
+            if (gradleVersion.compareTo(GradleVersion.version("6.1")) < 0) {
+                // Gradle 6.0 exposes the compiler output directory through destinationDir.
+                task.getBuildDirectory().fileProvider(
+                        project.provider(() -> (File) compileJava.property("destinationDir")));
+            } else {
+                task.getBuildDirectory().set(compileJava.getDestinationDirectory());
+            }
             task.dependsOn(JavaPlugin.COMPILE_JAVA_TASK_NAME);
         });
     }
