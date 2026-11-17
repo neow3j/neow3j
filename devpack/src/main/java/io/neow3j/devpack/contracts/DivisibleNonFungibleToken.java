@@ -43,7 +43,7 @@ public class DivisibleNonFungibleToken extends NonFungibleToken {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a deployed
      *                contract.

@@ -48,9 +48,13 @@ public class FungibleTokenTest {
             .build();
 
     private FungibleToken neoToken;
+
     private FungibleToken gasToken;
+
     private Account account1;
+
     private Account account2;
+
     private static final Hash160 RECIPIENT_SCRIPT_HASH = new Hash160("969a77db482f74ce27105f760efa139223431394");
 
     private static final String NEP17_TRANSFER = "transfer";
@@ -89,7 +93,7 @@ public class FungibleTokenTest {
                 .contractCall(new Hash160(gasTokenHash()), NEP17_TRANSFER,
                         asList(hash160(account1.getScriptHash()),
                                 hash160(RECIPIENT_SCRIPT_HASH),
-                                integer(gasToken.toFractions(BigDecimal.ONE)),
+                                integer(gasToken.toBaseUnits(BigDecimal.ONE)),
                                 any(null)))
                 .toArray();
 

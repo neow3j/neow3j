@@ -285,7 +285,7 @@ public class Wallet {
     /**
      * Gets the balances of all NEP-17 tokens that this wallet owns.
      * <p>
-     * The token amounts are returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
+     * Token amounts are returned in base units. For example, 1 GAS is returned as 100_000_000 base units.
      * <p>
      * Requires on a Neo node with the RpcNep17Tracker plugin installed. The balances are not cached locally. Every
      * time this method is called requests are send to the neo-node for all contained accounts.

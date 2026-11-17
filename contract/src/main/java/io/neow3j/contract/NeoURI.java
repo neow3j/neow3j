@@ -23,14 +23,19 @@ public class NeoURI {
     private URI uri;
 
     private Neow3j neow3j;
+
     private Hash160 recipient;
+
     private Hash160 tokenHash;
+
     private BigDecimal amount;
 
     private static final String NEO_SCHEME = "neo";
+
     private static final int MIN_NEP9_URI_LENGTH = 38;
 
     private static final String NEO_TOKEN_STRING = "neo";
+
     private static final String GAS_TOKEN_STRING = "gas";
 
     public NeoURI() {
@@ -123,7 +128,7 @@ public class NeoURI {
                         format("The %s token does not support more than %s decimal places.", tokenHash, decimals));
             }
         }
-        return token.transfer(sender, recipient, token.toFractions(amount));
+        return token.transfer(sender, recipient, token.toBaseUnits(amount));
     }
 
     private boolean isNeoToken(Hash160 token) {
@@ -176,7 +181,7 @@ public class NeoURI {
     /**
      * Sets the amount.
      * <p>
-     * Make sure to use decimals and not token fractions. E.g. for GAS use 1.5 instead of 150_000_000.
+     * Use a decimal token amount. For example, pass 1.5 for 150_000_000 base units of GAS.
      *
      * @param amount the amount.
      * @return this NeoURI object.

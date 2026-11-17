@@ -62,37 +62,50 @@ public class TokenTest {
     }
 
     @Test
-    public void testToFractions() throws IOException {
+    public void testToBaseUnits() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
-        BigInteger fractions = someToken.toFractions(new BigDecimal("1.02"));
-        assertThat(fractions, is(new BigInteger("102")));
+        BigInteger baseUnits = someToken.toBaseUnits(new BigDecimal("1.0200"));
+        assertThat(baseUnits, is(new BigInteger("102")));
     }
 
     @Test
-    public void testToFractions_tooHighScale() throws IOException {
+    public void testToBaseUnits_tooHighScale() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
         IllegalArgumentException thrown =
-                assertThrows(IllegalArgumentException.class, () -> someToken.toFractions(new BigDecimal("1.023")));
+                assertThrows(IllegalArgumentException.class, () -> someToken.toBaseUnits(new BigDecimal("1.023")));
         assertThat(thrown.getMessage(), containsString("The provided amount has too many decimal points."));
     }
 
     @Test
-    public void testToFractionsWithSpecificDecimals() {
-        BigInteger fractions = Token.toFractions(new BigDecimal("1.014"), 6);
-        assertThat(fractions, is(new BigInteger("1014000")));
+    public void testToBaseUnitsWithSpecificDecimals() {
+        BigInteger baseUnits = Token.toBaseUnits(new BigDecimal("25.5"), 4);
+        assertThat(baseUnits, is(new BigInteger("255000")));
     }
 
     @Test
-    public void testToDecimals() throws IOException {
+    public void testFromBaseUnits() throws IOException {
         setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_gas.json");
-        BigDecimal decimals = someToken.toDecimals(new BigInteger("123456789"));
-        assertThat(decimals, is(new BigDecimal("1.23456789")));
+        BigDecimal amount = someToken.fromBaseUnits(new BigInteger("123456789"));
+        assertThat(amount, is(new BigDecimal("1.23456789")));
     }
 
     @Test
-    public void testToDecimalsWithSpecificDecimals() {
-        BigDecimal decimals = Token.toDecimals(new BigInteger("123456"), 3);
-        assertThat(decimals, is(new BigDecimal("123.456")));
+    public void testFromBaseUnitsWithSpecificDecimals() {
+        BigDecimal amount = Token.fromBaseUnits(new BigInteger("255000"), 4);
+        assertThat(amount, is(new BigDecimal("25.5000")));
+    }
+
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedConversions() throws IOException {
+        setUpWireMockForInvokeFunction("decimals", "invokefunction_decimals_nep17.json");
+        BigDecimal amount = new BigDecimal("1.02");
+        BigInteger baseUnits = BigInteger.valueOf(102);
+
+        assertThat(someToken.toFractions(amount), is(baseUnits));
+        assertThat(Token.toFractions(amount, 2), is(baseUnits));
+        assertThat(someToken.toDecimals(baseUnits), is(amount));
+        assertThat(Token.toDecimals(baseUnits, 2), is(amount));
     }
 
 }
