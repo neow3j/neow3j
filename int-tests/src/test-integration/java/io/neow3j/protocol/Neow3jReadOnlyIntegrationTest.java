@@ -805,7 +805,7 @@ public class Neow3jReadOnlyIntegrationTest {
         assertThat(protocol.getInitialGasDistribution(),
                 is(BigInteger.valueOf(5_200_000_000_000_000L)));
 
-        assertThat(protocol.getHardforks(), hasSize(7));
+        assertThat(protocol.getHardforks(), hasSize(8));
         NeoGetVersion.NeoVersion.Protocol.Hardforks aspidochelone = protocol.getHardforks().get(0);
         assertThat(aspidochelone.getName(), is("Aspidochelone"));
         assertThat(aspidochelone.getBlockHeight(), is(BigInteger.ZERO));
@@ -827,6 +827,9 @@ public class Neow3jReadOnlyIntegrationTest {
         NeoGetVersion.NeoVersion.Protocol.Hardforks gorgon = protocol.getHardforks().get(6);
         assertThat(gorgon.getName(), is("Gorgon"));
         assertThat(gorgon.getBlockHeight(), is(BigInteger.ZERO));
+        NeoGetVersion.NeoVersion.Protocol.Hardforks huyao = protocol.getHardforks().get(7);
+        assertThat(huyao.getName(), is("Huyao"));
+        assertThat(huyao.getBlockHeight(), is(BigInteger.ZERO));
 
         assertThat(protocol.getStandbyCommittee(), hasSize(1));
         assertThat(protocol.getStandbyCommittee().get(0).getEncodedCompressedHex(),

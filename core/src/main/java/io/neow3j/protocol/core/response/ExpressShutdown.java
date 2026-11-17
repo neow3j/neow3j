@@ -8,7 +8,7 @@ import java.util.Objects;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ExpressShutdown {
 
-    @JsonProperty("process-id")
+    @JsonProperty("processId")
     private Integer processId;
 
     public ExpressShutdown() {

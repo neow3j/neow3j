@@ -4158,7 +4158,7 @@ public class ResponseTest extends ResponseTester {
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
-                "        \"process-id\": 73625\n" +
+                "        \"processId\": 73625\n" +
                 "    }\n" +
                 "}");
 
