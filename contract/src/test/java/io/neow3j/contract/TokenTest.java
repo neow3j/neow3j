@@ -108,4 +108,31 @@ public class TokenTest {
         assertThat(Token.toDecimals(baseUnits, 2), is(amount));
     }
 
+    @Test
+    @SuppressWarnings("deprecation")
+    public void testDeprecatedConversionsWithSubclassHelpers() throws IOException {
+        // A subclass could have added these helpers before Token exposed them.
+        Token token = new Token(SOME_TOKEN_SCRIPT_HASH, Neow3j.build()) {
+            @Override
+            public int getDecimals() {
+                return 2;
+            }
+
+            @Override
+            public BigInteger toBaseUnits(BigDecimal amount) throws IOException {
+                return super.toFractions(amount);
+            }
+
+            @Override
+            public BigDecimal fromBaseUnits(BigInteger amount) throws IOException {
+                return super.toDecimals(amount);
+            }
+        };
+        BigDecimal amount = new BigDecimal("1.02");
+        BigInteger baseUnits = BigInteger.valueOf(102);
+
+        assertThat(token.toFractions(amount), is(baseUnits));
+        assertThat(token.toDecimals(baseUnits), is(amount));
+    }
+
 }

@@ -159,7 +159,7 @@ public class Token extends SmartContract {
      */
     @Deprecated
     public BigInteger toFractions(BigDecimal amount) throws IOException {
-        return toBaseUnits(amount);
+        return Token.toBaseUnits(amount, getDecimals());
     }
 
     /**
@@ -185,7 +185,7 @@ public class Token extends SmartContract {
      */
     @Deprecated
     public BigDecimal toDecimals(BigInteger amount) throws IOException {
-        return fromBaseUnits(amount);
+        return Token.fromBaseUnits(amount, getDecimals());
     }
 
     /**
