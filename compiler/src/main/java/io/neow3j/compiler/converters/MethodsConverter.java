@@ -78,13 +78,6 @@ public class MethodsConverter implements Converter {
     private static final String LENGTH_METHOD_NAME = "length";
     private static final String GET_CONTRACT_HASH_METHOD_NAME = "getHash";
     private static final String THROWABLE_GET_MESSAGE = "getMessage";
-    private static final String MATH_INTERNAL_NAME = "java/lang/Math";
-    private static final String INTEGER_INTERNAL_NAME = "java/lang/Integer";
-    private static final String LONG_INTERNAL_NAME = "java/lang/Long";
-    private static final String ABS_METHOD_NAME = "abs";
-    private static final String MIN_METHOD_NAME = "min";
-    private static final String MAX_METHOD_NAME = "max";
-    private static final String SIGNUM_METHOD_NAME = "signum";
 
     @Override
     public AbstractInsnNode convert(AbstractInsnNode insn, NeoMethod neoMethod, CompilationUnit compUnit)
@@ -270,34 +263,33 @@ public class MethodsConverter implements Converter {
         return methodInsn;
     }
 
-    // Returns true when the call was mapped to ABS, MIN, MAX, or SIGN. Arguments are already on the stack.
     private static boolean convertIntegerArithmeticMethod(MethodInsnNode methodInsn, NeoMethod callingNeoMethod) {
-        String descriptor = methodInsn.desc;
-        if (methodInsn.owner.equals(MATH_INTERNAL_NAME)) {
-            if (methodInsn.name.equals(ABS_METHOD_NAME) &&
-                    (descriptor.equals("(I)I") || descriptor.equals("(J)J"))) {
-                callingNeoMethod.addInstruction(new NeoInstruction(OpCode.ABS));
-                return true;
-            }
-            if (methodInsn.name.equals(MIN_METHOD_NAME) &&
-                    (descriptor.equals("(II)I") || descriptor.equals("(JJ)J"))) {
-                callingNeoMethod.addInstruction(new NeoInstruction(OpCode.MIN));
-                return true;
-            }
-            if (methodInsn.name.equals(MAX_METHOD_NAME) &&
-                    (descriptor.equals("(II)I") || descriptor.equals("(JJ)J"))) {
-                callingNeoMethod.addInstruction(new NeoInstruction(OpCode.MAX));
-                return true;
-            }
+        OpCode opcode = getIntegerArithmeticOpcode(methodInsn);
+        if (opcode == null) {
             return false;
         }
-        if (methodInsn.name.equals(SIGNUM_METHOD_NAME) &&
-                ((methodInsn.owner.equals(INTEGER_INTERNAL_NAME) && descriptor.equals("(I)I")) ||
-                        (methodInsn.owner.equals(LONG_INTERNAL_NAME) && descriptor.equals("(J)I")))) {
-            callingNeoMethod.addInstruction(new NeoInstruction(OpCode.SIGN));
-            return true;
+        // The arguments are already on the stack.
+        callingNeoMethod.addInstruction(new NeoInstruction(opcode));
+        return true;
+    }
+
+    private static OpCode getIntegerArithmeticOpcode(MethodInsnNode methodInsn) {
+        switch (methodInsn.owner + "." + methodInsn.name + methodInsn.desc) {
+            case "java/lang/Math.abs(I)I":
+            case "java/lang/Math.abs(J)J":
+                return OpCode.ABS;
+            case "java/lang/Math.min(II)I":
+            case "java/lang/Math.min(JJ)J":
+                return OpCode.MIN;
+            case "java/lang/Math.max(II)I":
+            case "java/lang/Math.max(JJ)J":
+                return OpCode.MAX;
+            case "java/lang/Integer.signum(I)I":
+            case "java/lang/Long.signum(J)I":
+                return OpCode.SIGN;
+            default:
+                return null;
         }
-        return false;
     }
 
     private static boolean isThrowableGetMessage(ClassNode owner, MethodInsnNode methodInsn) {

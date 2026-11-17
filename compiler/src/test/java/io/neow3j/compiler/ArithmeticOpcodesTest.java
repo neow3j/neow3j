@@ -18,7 +18,7 @@ public class ArithmeticOpcodesTest {
     public void integerMethodsUseArithmeticOpcodes() throws IOException {
         CompilationUnit compUnit = new Compiler().compile(IntegerArithmeticContract.class.getName());
         List<NeoMethod> methods = compUnit.getNeoModule().getSortedMethods();
-        assertThat(methods, hasSize(7));
+        assertThat(methods, hasSize(9));
 
         assertThat(opcodes(method(methods, "absInt")),
                 is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.ABS, OpCode.RET)));
@@ -26,6 +26,10 @@ public class ArithmeticOpcodesTest {
                 is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.ABS, OpCode.RET)));
         assertThat(opcodes(method(methods, "minInt")),
                 is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.LDARG1, OpCode.MIN, OpCode.RET)));
+        assertThat(opcodes(method(methods, "minLong")),
+                is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.LDARG1, OpCode.MIN, OpCode.RET)));
+        assertThat(opcodes(method(methods, "maxInt")),
+                is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.LDARG1, OpCode.MAX, OpCode.RET)));
         assertThat(opcodes(method(methods, "maxLong")),
                 is(asList(OpCode.INITSLOT, OpCode.LDARG0, OpCode.LDARG1, OpCode.MAX, OpCode.RET)));
         assertThat(opcodes(method(methods, "signInt")),
@@ -62,6 +66,14 @@ public class ArithmeticOpcodesTest {
 
         public static int minInt(int left, int right) {
             return Math.min(left, right);
+        }
+
+        public static long minLong(long left, long right) {
+            return Math.min(left, right);
+        }
+
+        public static int maxInt(int left, int right) {
+            return Math.max(left, right);
         }
 
         public static long maxLong(long left, long right) {
