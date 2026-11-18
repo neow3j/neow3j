@@ -60,15 +60,16 @@ public class Account {
     }
 
     /**
-     * Constructs a new account with the given EC key pair.
+     * Constructs a standard single-signature account with the given EC key pair. Its address is derived from
+     * its verification script.
      *
      * @param ecKeyPair the key pair of the account.
      */
     public Account(ECKeyPair ecKeyPair) {
         this.keyPair = ecKeyPair;
-        this.address = ecKeyPair.getAddress();
-        this.label = this.address;
         this.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
+        this.address = this.verificationScript.getScriptHash().toAddress();
+        this.label = this.address;
     }
 
     public String getAddress() {

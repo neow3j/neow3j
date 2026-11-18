@@ -96,6 +96,22 @@ public class AccountTest {
     }
 
     @Test
+    public void testBuildAccountFromKeyPairWithOverriddenScriptHash() {
+        ECKeyPair standardPair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
+        ECKeyPair customPair = new ECKeyPair(standardPair.getPrivateKey(), standardPair.getPublicKey()) {
+            @Override
+            public Hash160 getScriptHash() {
+                return Hash160.ZERO;
+            }
+        };
+
+        Account account = new Account(customPair);
+
+        assertThat(account.getAddress(), is(defaultAccountAddress()));
+        assertThat(account.getScriptHash(), is(account.getVerificationScript().getScriptHash()));
+    }
+
+    @Test
     public void testFromVerificationScript() {
         Account account = Account.fromVerificationScript(
                 new VerificationScript(
