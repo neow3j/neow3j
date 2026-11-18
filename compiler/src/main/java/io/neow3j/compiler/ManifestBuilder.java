@@ -207,7 +207,7 @@ public class ManifestBuilder {
             NativeContract nativeContract = NativeContract.valueOf(
                     asList((String[]) ann.values.get(nativeContractIndex + 1)).get(1));
             throwIfNotValidNativeContract(nativeContract);
-            hashOrPubKey = nativeContract.getContractHash().toString();
+            hashOrPubKey = Numeric.toHexString(nativeContract.getContractHash().toArray());
         }
         return hashOrPubKey;
     }

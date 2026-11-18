@@ -114,8 +114,11 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
         return toHexString(hash);
     }
 
+    /**
+     * @return the script hash as lowercase, big-endian hexadecimal without a prefix, as used in JSON.
+     */
     @JsonValue
-    String toUnprefixedString() {
+    public String toUnprefixedString() {
         return toHexStringNoPrefix(hash);
     }
 

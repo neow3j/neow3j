@@ -23,16 +23,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class PermissionManifestTest {
 
     private static final String CONTRACT_HASH_1 = "0x0f46dc4287b70117ce8354924b5cb3a47215ad93";
-    private static final String GROUP_PUBKEY_1 =
-            "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
+    private static final String GROUP_PUBKEY_1 = "02163946a133e3d2e0d987fb90cb01b060ed1780f1718e2da28edf13b965fd2b60";
     private static final String CONTRACT_METHOD_1 = "method1";
     private static final String CONTRACT_METHOD_2 = "method2";
     private static final String CONTRACT_HASH_2 = "0xd6c712eb53b1a130f59fd4e5864bdac27458a509";
 
     @Test
     public void withPermissionsAnnotation() throws IOException {
-        CompilationUnit unit = new Compiler()
-                .compile(PermissionManifestTestContract.class.getName());
+        CompilationUnit unit = new Compiler().compile(PermissionManifestTestContract.class.getName());
         List<ContractPermission> permissions = unit.getManifest().getPermissions();
         assertThat(permissions, hasSize(3));
         assertThat(permissions.get(0).getContract(), is(CONTRACT_HASH_1));
@@ -41,7 +39,7 @@ public class PermissionManifestTest {
         assertThat(permissions.get(1).getContract(), is(CONTRACT_HASH_2));
         assertThat(permissions.get(1).getMethods().get(0), is(CONTRACT_METHOD_1));
         assertThat(permissions.get(1).getMethods().get(1), is(CONTRACT_METHOD_2));
-        assertThat(new Hash160(permissions.get(2).getContract()), is(GasToken.SCRIPT_HASH));
+        assertThat(permissions.get(2).getContract(), is(NativeContract.GasTokenScriptHash));
         assertThat(permissions.get(2).getMethods(), hasSize(1));
         assertThat(permissions.get(2).getMethods().get(0), is("*"));
     }
@@ -172,7 +170,7 @@ public class PermissionManifestTest {
                 PermissionManifestTestContractWithWildcardContractsWithSpecifiedMethodsAndOtherPermissions.class.getName());
         List<ContractPermission> permissions = compUnit.getManifest().getPermissions();
         assertThat(permissions, hasSize(3));
-        assertThat(new Hash160(permissions.get(0).getContract()), is(NativeContract.LedgerContract.getContractHash()));
+        assertThat(permissions.get(0).getContract(), is(NativeContract.LedgerContractScriptHash));
         assertThat(permissions.get(0).getMethods(), hasSize(1));
         assertThat(permissions.get(0).getMethods().get(0), is("*"));
         assertThat(permissions.get(1).getContract(), is(CONTRACT_HASH_1));
