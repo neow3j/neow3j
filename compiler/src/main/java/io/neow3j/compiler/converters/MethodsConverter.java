@@ -136,6 +136,12 @@ public class MethodsConverter implements Converter {
             CompilationUnit compUnit) throws IOException {
 
         MethodInsnNode methodInsn = (MethodInsnNode) insn;
+        // Emit the NeoVM opcode instead of compiling the JDK method body. The JDK bodies are either longer
+        // (abs, min, max) or use an unsupported unsigned shift (signum). ABS of the most negative int or long is the
+        // positive value, because Neo integers do not overflow the way the JVM does.
+        if (convertIntegerArithmeticMethod(methodInsn, callingNeoMethod)) {
+            return insn;
+        }
         throwIfMethodReturnOrArgTypeAreSDKRelated(methodInsn.desc);
         ClassNode ownerClass = getAsmClassForInternalName(methodInsn.owner, compUnit.getClassLoader());
         Optional<MethodNode> calledAsmMethod = getMethodNode(methodInsn, ownerClass);
@@ -255,6 +261,35 @@ public class MethodsConverter implements Converter {
         // The actual address offset for the method call is set at a later point in compilation.
         callingNeoMethod.addInstruction(new NeoInstruction(OpCode.CALL_L, new byte[4]).setExtra(calledNeoMethod));
         return methodInsn;
+    }
+
+    private static boolean convertIntegerArithmeticMethod(MethodInsnNode methodInsn, NeoMethod callingNeoMethod) {
+        OpCode opcode = getIntegerArithmeticOpcode(methodInsn);
+        if (opcode == null) {
+            return false;
+        }
+        // The arguments are already on the stack.
+        callingNeoMethod.addInstruction(new NeoInstruction(opcode));
+        return true;
+    }
+
+    private static OpCode getIntegerArithmeticOpcode(MethodInsnNode methodInsn) {
+        switch (methodInsn.owner + "." + methodInsn.name + methodInsn.desc) {
+            case "java/lang/Math.abs(I)I":
+            case "java/lang/Math.abs(J)J":
+                return OpCode.ABS;
+            case "java/lang/Math.min(II)I":
+            case "java/lang/Math.min(JJ)J":
+                return OpCode.MIN;
+            case "java/lang/Math.max(II)I":
+            case "java/lang/Math.max(JJ)J":
+                return OpCode.MAX;
+            case "java/lang/Integer.signum(I)I":
+            case "java/lang/Long.signum(J)I":
+                return OpCode.SIGN;
+            default:
+                return null;
+        }
     }
 
     private static boolean isThrowableGetMessage(ClassNode owner, MethodInsnNode methodInsn) {
