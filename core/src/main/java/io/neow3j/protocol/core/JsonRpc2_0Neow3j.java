@@ -1141,7 +1141,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      * @param tokenHash the token hash of the NEP-17 contract.
      * @param from      the transferring account's script hash.
      * @param to        the recipient.
-     * @param amount    the transfer amount in token fractions.
+     * @param amount    the transfer amount in base units.
      * @return the request object.
      */
     @Override
@@ -1210,7 +1210,7 @@ public class JsonRpc2_0Neow3j extends Neow3j {
      *
      * @param tokenHash the token hash of the NEP-17 contract.
      * @param to        the recipient.
-     * @param amount    the transfer amount in token fractions.
+     * @param amount    the transfer amount in base units.
      * @return the request object.
      */
     @Override

@@ -24,6 +24,7 @@ import static io.neow3j.types.ContractParameter.integer;
 public class FungibleToken extends Token {
 
     private static final String BALANCE_OF = "balanceOf";
+
     private static final String TRANSFER = "transfer";
 
     /**
@@ -40,7 +41,7 @@ public class FungibleToken extends Token {
     /**
      * Gets the token balance for the given account.
      * <p>
-     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
+     * The token amount is returned in base units. For example, 1 GAS is returned as 100_000_000 base units.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are sent to the Neo node.
      *
@@ -57,7 +58,7 @@ public class FungibleToken extends Token {
     /**
      * Gets the token balance for the given account script hash.
      * <p>
-     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
+     * The token amount is returned in base units. For example, 1 GAS is returned as 100_000_000 base units.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are sent to the Neo node.
      *
@@ -75,7 +76,7 @@ public class FungibleToken extends Token {
     /**
      * Gets the token balance for the given wallet, i.e., all accounts in the wallet.
      * <p>
-     * The token amount is returned in token fractions. E.g., an amount of 1 GAS is returned as 1*10^8 GAS fractions.
+     * The token amount is returned in base units. For example, 1 GAS is returned as 100_000_000 base units.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are sent to the Neo node.
      *
@@ -100,7 +101,7 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender account.
      * @param to     the script hash of the recipient.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -118,7 +119,7 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender account.
      * @param to     the script hash of the recipient.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -136,7 +137,7 @@ public class FungibleToken extends Token {
      *
      * @param from   the script hash of the sender.
      * @param to     the script hash of the recipient.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
      */
@@ -152,7 +153,7 @@ public class FungibleToken extends Token {
      *
      * @param from   the script hash of the sender.
      * @param to     the script hash of the recipient.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
      * @return a transaction builder ready for signing.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -192,9 +193,9 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender account.
      * @param to     the NNS domain name to resolve.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @return a transaction builder ready for signing.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
      * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount)
@@ -215,10 +216,10 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender account.
      * @param to     the NNS domain name to resolve.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
      * @return a transaction builder ready for signing.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
      * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Account from, NNSName to, BigInteger amount, ContractParameter data)
@@ -237,9 +238,9 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender hash.
      * @param to     the NNS domain name to resolve.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @return a transaction builder.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
      * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount)
@@ -258,10 +259,10 @@ public class FungibleToken extends Token {
      *
      * @param from   the sender account.
      * @param to     the NNS domain name to resolve.
-     * @param amount the amount to transfer in token fractions.
+     * @param amount the amount to transfer in base units.
      * @param data   the data that is passed to the {@code onPayment} method if the recipient is a contract.
      * @return a transaction builder ready for signing.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @throws IOException                     if there was a problem fetching information from the Neo node.
      * @throws UnresolvableDomainNameException if the NNS text record could not be resolved.
      */
     public TransactionBuilder transfer(Hash160 from, NNSName to, BigInteger amount, ContractParameter data)

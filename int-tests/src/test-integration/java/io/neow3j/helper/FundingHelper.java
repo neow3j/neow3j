@@ -41,15 +41,15 @@ public class FundingHelper {
     public static void fundAccountsWithGas(Neow3j neow3j, BigDecimal amount, Account... accounts) throws Throwable {
         GasToken gasToken = new GasToken(neow3j);
         for (Account account : accounts) {
-            transferFromGenesisToAccount(neow3j, gasToken, gasToken.toFractions(amount), account);
+            transferFromGenesisToAccount(neow3j, gasToken, gasToken.toBaseUnits(amount), account);
         }
     }
 
     public static void fundAccountsWithGas(Neow3j neow3j, Account... accounts) throws Throwable {
         GasToken gasToken = new GasToken(neow3j);
-        BigInteger fractions = gasToken.toFractions(new BigDecimal("100000"));
+        BigInteger baseUnits = gasToken.toBaseUnits(new BigDecimal("100000"));
         for (Account account : accounts) {
-            transferFromGenesisToAccount(neow3j, gasToken, fractions, account);
+            transferFromGenesisToAccount(neow3j, gasToken, baseUnits, account);
         }
     }
 

@@ -18,13 +18,16 @@ import java.math.BigInteger;
 public class Token extends SmartContract {
 
     private static final String TOTAL_SUPPLY = "totalSupply";
+
     private static final String SYMBOL = "symbol";
+
     private static final String DECIMALS = "decimals";
 
-    // It is expected that token contracts return the total supply in fractions of their token. Therefore, an integer
-    // is used here instead of a decimal number.
+    // Token contracts return the total supply as an integer count of base units.
     private BigInteger totalSupply;
+
     private Integer decimals;
+
     private String symbol;
 
     public Token(Hash160 scriptHash, Neow3j neow3j) {
@@ -49,11 +52,11 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Gets the total supply of this token in fractions.
+     * Gets the total supply of this token in base units.
      * <p>
      * The return value is retrieved form the neo-node only once and then cached.
      *
-     * @return the total supply.
+     * @return the total supply in base units.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something interpretable as a
      *                                       number.
@@ -66,11 +69,12 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Gets the number of fractions that one unit of this token can be divided into.
+     * Gets the number of decimal places supported by this token. For example, a token with 2 decimal places has
+     * 100 base units per whole token.
      * <p>
      * The return value is retrieved form the neo-node only once and then cached.
      *
-     * @return the number of fractions.
+     * @return the number of decimal places.
      * @throws IOException                   if there was a problem fetching information from the Neo node.
      * @throws UnexpectedReturnTypeException if the contract invocation did not return something interpretable as a
      *                                       number.
@@ -83,66 +87,118 @@ public class Token extends SmartContract {
     }
 
     /**
-     * Converts the token amount from a decimal point number to the amount in token fractions according to this
-     * token's number of decimals.
+     * Converts a decimal token amount to base units using this token's number of decimal places.
      * <p>
-     * Use this method to convert e.g. 1.5 GAS to its fraction value 150_000_000.
+     * For example, 1.5 GAS is 150_000_000 base units.
      *
-     * @param amount the token amount in decimals.
-     * @return the token amount in fractions.
-     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @param amount the decimal token amount.
+     * @return the token amount in base units.
+     * @throws IllegalArgumentException if the amount requires more decimal places than the token supports.
+     * @throws IOException              if there was a problem fetching information from the Neo node.
+     * @since 3.25.0
      */
-    public BigInteger toFractions(BigDecimal amount) throws IOException {
-        return toFractions(amount, getDecimals());
+    public BigInteger toBaseUnits(BigDecimal amount) throws IOException {
+        return toBaseUnits(amount, getDecimals());
     }
 
-
     /**
-     * Converts the token amount from a decimal point number to its amount in token fractions according to the
-     * specified number of decimals.
+     * Converts a decimal token amount to base units using the specified number of decimal places.
      * <p>
-     * Use this method to convert e.g. a token amount of 25.5 for a token with 4 decimals to 255_000.
+     * For example, 25.5 tokens with 4 decimal places is 255_000 base units.
      *
-     * @param amount   the token amount.
-     * @param decimals the token decimal points.
-     * @return the token amount in fractions.
+     * @param amount   the decimal token amount.
+     * @param decimals the number of decimal places supported by the token.
+     * @return the token amount in base units.
+     * @throws IllegalArgumentException if the amount requires more decimal places than the token supports.
+     * @since 3.25.0
      */
-    public static BigInteger toFractions(BigDecimal amount, int decimals) {
+    public static BigInteger toBaseUnits(BigDecimal amount, int decimals) {
         if (amount.stripTrailingZeros().scale() > decimals) {
             throw new IllegalArgumentException("The provided amount has too many decimal points. Make sure the " +
                     "decimals of the provided amount do not exceed the supported token decimals.");
         }
         BigInteger factor = BigInteger.TEN.pow(decimals);
-        BigDecimal fractions = amount.multiply(new BigDecimal(factor));
-        return fractions.toBigInteger();
+        return amount.multiply(new BigDecimal(factor)).toBigInteger();
     }
 
     /**
-     * Converts the token amount from token fractions to its decimal point value according to this token's number of
-     * decimals.
+     * Converts a token amount in base units to a decimal amount using this token's number of decimal places.
      * <p>
-     * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
+     * For example, 600_000 base units of GAS is 0.006 GAS.
      *
-     * @param amount the token amount in fractions.
-     * @return the token amount in decimals.
+     * @param amount the token amount in base units.
+     * @return the decimal token amount.
      * @throws IOException if there was a problem fetching information from the Neo node.
+     * @since 3.25.0
      */
-    public BigDecimal toDecimals(BigInteger amount) throws IOException {
-        return toDecimals(amount, getDecimals());
+    public BigDecimal fromBaseUnits(BigInteger amount) throws IOException {
+        return fromBaseUnits(amount, getDecimals());
     }
 
     /**
-     * Converts the token amount from token fractions to its decimal point value according to the specified number of
-     * decimals.
+     * Converts a token amount in base units to a decimal amount using the specified number of decimal places.
      * <p>
-     * Use this method to convert e.g. 600_000 GAS to its decimal value 0.006.
+     * For example, 255_000 base units with 4 decimal places is 25.5000 tokens.
      *
-     * @param amount   the token amount in fractions.
-     * @param decimals the token decimal points.
-     * @return the token amount in decimals.
+     * @param amount   the token amount in base units.
+     * @param decimals the number of decimal places supported by the token.
+     * @return the decimal token amount.
+     * @since 3.25.0
      */
-    public static BigDecimal toDecimals(BigInteger amount, int decimals) {
+    public static BigDecimal fromBaseUnits(BigInteger amount, int decimals) {
         return new BigDecimal(amount, decimals);
+    }
+
+    /**
+     * Converts a decimal token amount to base units using this token's number of decimal places.
+     *
+     * @param amount the decimal token amount.
+     * @return the token amount in base units.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @deprecated Since 3.25.0, use {@link #toBaseUnits(BigDecimal)}. Scheduled for removal in 3.26.0.
+     */
+    @Deprecated
+    public BigInteger toFractions(BigDecimal amount) throws IOException {
+        return Token.toBaseUnits(amount, getDecimals());
+    }
+
+    /**
+     * Converts a decimal token amount to base units using the specified number of decimal places.
+     *
+     * @param amount   the decimal token amount.
+     * @param decimals the number of decimal places supported by the token.
+     * @return the token amount in base units.
+     * @deprecated Since 3.25.0, use {@link #toBaseUnits(BigDecimal, int)}. Scheduled for removal in 3.26.0.
+     */
+    @Deprecated
+    public static BigInteger toFractions(BigDecimal amount, int decimals) {
+        return toBaseUnits(amount, decimals);
+    }
+
+    /**
+     * Converts a token amount in base units to a decimal amount using this token's number of decimal places.
+     *
+     * @param amount the token amount in base units.
+     * @return the decimal token amount.
+     * @throws IOException if there was a problem fetching information from the Neo node.
+     * @deprecated Since 3.25.0, use {@link #fromBaseUnits(BigInteger)}. Scheduled for removal in 3.26.0.
+     */
+    @Deprecated
+    public BigDecimal toDecimals(BigInteger amount) throws IOException {
+        return Token.fromBaseUnits(amount, getDecimals());
+    }
+
+    /**
+     * Converts a token amount in base units to a decimal amount using the specified number of decimal places.
+     *
+     * @param amount   the token amount in base units.
+     * @param decimals the number of decimal places supported by the token.
+     * @return the decimal token amount.
+     * @deprecated Since 3.25.0, use {@link #fromBaseUnits(BigInteger, int)}. Scheduled for removal in 3.26.0.
+     */
+    @Deprecated
+    public static BigDecimal toDecimals(BigInteger amount, int decimals) {
+        return fromBaseUnits(amount, decimals);
     }
 
     // Resolves the text record of a NNS domain name and returns its script hash.

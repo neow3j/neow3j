@@ -125,7 +125,7 @@ public class FungibleTokenIntegrationTest {
         GasToken gasToken = new GasToken(getNeow3j());
         BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
 
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
+        BigInteger amount = gasToken.toBaseUnits(BigDecimal.valueOf(5));
         TransactionSubmission response = gasToken.transfer(CLIENT_1, nnsName, amount)
                 .sign()
                 .send();
@@ -151,7 +151,7 @@ public class FungibleTokenIntegrationTest {
         GasToken gasToken = new GasToken(getNeow3j());
         BigInteger balanceBefore = gasToken.getBalanceOf(CLIENT_2);
 
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
+        BigInteger amount = gasToken.toBaseUnits(BigDecimal.valueOf(5));
         TransactionSubmission response = gasToken.transfer(CLIENT_1.getScriptHash(), fourthLevelDomain, amount)
                 .signers(calledByEntry(CLIENT_1))
                 .sign()
@@ -170,7 +170,7 @@ public class FungibleTokenIntegrationTest {
         NeoNameServiceTestHelper.setRecord(getNeow3j(), nnsName, RecordType.TXT, "my name is jeff", CLIENT_2);
 
         GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
+        BigInteger amount = gasToken.toBaseUnits(BigDecimal.valueOf(5));
         IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
                 () -> gasToken.transfer(CLIENT_1, nnsName, amount));
         assertThat(thrown.getMessage(), is("Not a valid NEO address."));
@@ -182,7 +182,7 @@ public class FungibleTokenIntegrationTest {
         NeoNameServiceTestHelper.register(getNeow3j(), nnsName, CLIENT_2);
 
         GasToken gasToken = new GasToken(getNeow3j());
-        BigInteger amount = gasToken.toFractions(BigDecimal.valueOf(5));
+        BigInteger amount = gasToken.toBaseUnits(BigDecimal.valueOf(5));
         UnresolvableDomainNameException thrown = assertThrows(UnresolvableDomainNameException.class,
                 () -> gasToken.transfer(CLIENT_1, nnsName, amount));
         assertThat(thrown.getMessage(),

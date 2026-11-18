@@ -32,10 +32,15 @@ import static java.util.Arrays.asList;
 public class NonFungibleToken extends Token {
 
     private static final String OWNER_OF = "ownerOf";
+
     private static final String TOKENS_OF = "tokensOf";
+
     private static final String BALANCE_OF = "balanceOf";
+
     private static final String TRANSFER = "transfer";
+
     private static final String TOKENS = "tokens";
+
     private static final String PROPERTIES = "properties";
 
     /**
@@ -316,7 +321,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -336,7 +341,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
@@ -358,7 +363,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException if there was a problem fetching information from the Neo node.
@@ -378,7 +383,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
@@ -400,7 +405,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException                     if there was a problem fetching information from the Neo node.
@@ -422,7 +427,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
@@ -445,7 +450,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenID the token ID.
      * @return a transaction builder.
      * @throws IOException                     if there was a problem fetching information from the Neo node.
@@ -467,7 +472,7 @@ public class NonFungibleToken extends Token {
      *
      * @param from    the sender of the token amount.
      * @param to      the receiver of the token amount.
-     * @param amount  the fraction amount to transfer.
+     * @param amount  the amount to transfer in base units.
      * @param tokenId the token id.
      * @param data    the data that is passed to the {@code onNEP11Payment} method if the receiver is a smart contract.
      * @return a transaction builder.
@@ -527,8 +532,8 @@ public class NonFungibleToken extends Token {
     /**
      * Gets the balance of the token with {@code tokenId} for the given account.
      * <p>
-     * The balance is returned in token fractions. E.g., a balance of 0.5 of a token with 2 decimals is returned as
-     * 50 (= 0.5 * 10^2) token fractions.
+     * The balance is returned in base units. For example, 0.5 tokens with 2 decimal places is returned as 50 base
+     * units.
      * <p>
      * The balance is not cached locally. Every time this method is called requests are sent to the Neo node.
      * <p>

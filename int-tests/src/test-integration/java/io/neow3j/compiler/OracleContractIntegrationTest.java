@@ -40,7 +40,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
-import static io.neow3j.contract.Token.toFractions;
+import static io.neow3j.contract.Token.toBaseUnits;
 import static io.neow3j.crypto.Sign.signMessage;
 import static io.neow3j.protocol.core.response.OracleResponseCode.TIMEOUT;
 import static io.neow3j.test.TestProperties.oracleContractHash;
@@ -80,7 +80,7 @@ public class OracleContractIntegrationTest {
     public void performRequest() throws Throwable {
         // GAS and NEO needed to register a candidate.
         Hash256 gasTxHash = ct.transferGas(ct.getDefaultAccount().getScriptHash(),
-                toFractions(new BigDecimal("10000"), GasToken.DECIMALS));
+                toBaseUnits(new BigDecimal("10000"), GasToken.DECIMALS));
         Hash256 neoTxHash = ct.transferNeo(ct.getDefaultAccount().getScriptHash(),
                 new BigInteger("10000"));
         Await.waitUntilTransactionIsExecuted(gasTxHash, ct.getNeow3j());
