@@ -13,12 +13,15 @@ import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.util.Collections;
 
+import static io.neow3j.protocol.ObjectMapperFactory.getObjectMapper;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -89,12 +92,13 @@ class TransactionSubmissionTest {
         assertEquals(987654321L, submission.getBlockTime());
     }
 
-    @Test
-    void returnsNullHeightWhenTransactionIsNotIncluded() throws IOException {
+    @ParameterizedTest
+    @ValueSource(ints = {-103, -100})
+    void returnsNullHeightWhenTransactionIsNotIncluded(int errorCode) throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
         NeoGetTransactionHeight response = new NeoGetTransactionHeight();
-        response.setError(new Response.Error(-100, "Unknown transaction"));
+        response.setError(new Response.Error(errorCode, "Unknown transaction"));
         Request<?, NeoGetTransactionHeight> request = mock(Request.class);
         when(request.send()).thenReturn(response);
         doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
@@ -104,7 +108,22 @@ class TransactionSubmissionTest {
     }
 
     @Test
-    void returnsNullBlockTimeWhenBlockRequestReturnsError() throws IOException {
+    void propagatesUnexpectedHeightLookupError() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetTransactionHeight response = new NeoGetTransactionHeight();
+        response.setError(new Response.Error(-32601, "Method not found"));
+        Request<?, NeoGetTransactionHeight> request = mock(Request.class);
+        when(request.send()).thenReturn(response);
+        doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
+
+        assertThrows(RpcResponseErrorException.class, submission::getBlockHeight);
+        assertThrows(RpcResponseErrorException.class, submission::getBlockTime);
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {-101, -100})
+    void returnsNullBlockTimeWhenBlockIsMissing(int errorCode) throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
         NeoGetTransactionHeight height = new NeoGetTransactionHeight();
@@ -114,12 +133,31 @@ class TransactionSubmissionTest {
         doReturn(heightRequest).when(neow3j).getTransactionHeight(TX_ID);
 
         NeoGetBlock block = new NeoGetBlock();
-        block.setError(new Response.Error(-100, "Unknown block"));
+        block.setError(new Response.Error(errorCode, "Unknown block"));
         Request<?, NeoGetBlock> blockRequest = mock(Request.class);
         when(blockRequest.send()).thenReturn(block);
         doReturn(blockRequest).when(neow3j).getBlock(BigInteger.valueOf(123), false);
 
         assertNull(submission.getBlockTime());
+    }
+
+    @Test
+    void propagatesUnexpectedBlockLookupError() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetTransactionHeight height = new NeoGetTransactionHeight();
+        height.setResult(BigInteger.valueOf(123));
+        Request<?, NeoGetTransactionHeight> heightRequest = mock(Request.class);
+        when(heightRequest.send()).thenReturn(height);
+        doReturn(heightRequest).when(neow3j).getTransactionHeight(TX_ID);
+
+        NeoGetBlock block = new NeoGetBlock();
+        block.setError(new Response.Error(-32603, "Internal error"));
+        Request<?, NeoGetBlock> blockRequest = mock(Request.class);
+        when(blockRequest.send()).thenReturn(block);
+        doReturn(blockRequest).when(neow3j).getBlock(BigInteger.valueOf(123), false);
+
+        assertThrows(RpcResponseErrorException.class, submission::getBlockTime);
     }
 
     @Test
@@ -165,18 +203,45 @@ class TransactionSubmissionTest {
         assertThrows(RpcResponseErrorException.class, rejectedSubmission::await);
     }
 
-    @Test
-    void missingApplicationLogReturnsNullAndIsNotHalted() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"code\":-100,\"message\":\"Unknown transaction/blockhash\"}",
+            "{\"code\":-103,\"message\":\"Unknown transaction\"}",
+            "{\"code\":-32602,\"message\":\"Invalid params - Unknown transaction/blockhash\","
+                    + "\"data\":\"Unknown transaction/blockhash\"}"
+    })
+    void missingApplicationLogReturnsNullAndIsNotHalted(String rpcError) throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
-        NeoGetApplicationLog response = new NeoGetApplicationLog();
-        response.setError(new Response.Error(-100, "Unknown transaction/blockhash"));
+        NeoGetApplicationLog response = getObjectMapper().readValue("{\"error\":" + rpcError + "}",
+                NeoGetApplicationLog.class);
         Request<?, NeoGetApplicationLog> request = mock(Request.class);
         when(request.send()).thenReturn(response);
         doReturn(request).when(neow3j).getApplicationLog(TX_ID);
 
         assertNull(submission.getApplicationLog());
         assertFalse(submission.hasHalted());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "{\"code\":-32601,\"message\":\"Method not found\"}",
+            "{\"code\":-32602,\"message\":\"Invalid params\",\"data\":\"Invalid hash\"}",
+            "{\"code\":-100,\"message\":\"Unrelated legacy error\"}"
+    })
+    void propagatesUnexpectedApplicationLogLookupError(String rpcError) throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetApplicationLog response = getObjectMapper().readValue("{\"error\":" + rpcError + "}",
+                NeoGetApplicationLog.class);
+        Request<?, NeoGetApplicationLog> request = mock(Request.class);
+        when(request.send()).thenReturn(response);
+        doReturn(request).when(neow3j).getApplicationLog(TX_ID);
+
+        RpcResponseErrorException thrown = assertThrows(RpcResponseErrorException.class,
+                submission::getApplicationLog);
+        assertTrue(thrown.getMessage().contains(response.getError().getMessage()));
+        assertThrows(RpcResponseErrorException.class, submission::hasHalted);
     }
 
     @Test

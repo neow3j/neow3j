@@ -1,13 +1,14 @@
 package io.neow3j.transaction;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.protocol.core.Response;
 import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoBlock;
-import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetApplicationLog;
+import io.neow3j.protocol.core.response.NeoGetBlock;
 import io.neow3j.protocol.core.response.NeoGetTransactionHeight;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.core.Response;
+import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
 import io.reactivex.Observable;
@@ -23,6 +24,16 @@ import static io.neow3j.utils.Await.waitUntilTransactionIsExecuted;
  * The result of submitting a transaction to a Neo node.
  */
 public class TransactionSubmission {
+
+    private static final int LEGACY_NOT_FOUND = -100;
+
+    private static final int UNKNOWN_BLOCK = -101;
+
+    private static final int UNKNOWN_TRANSACTION = -103;
+
+    private static final int INVALID_PARAMS = -32602;
+
+    private static final String UNKNOWN_TRANSACTION_OR_BLOCK_HASH = "Unknown transaction/blockhash";
 
     private final Transaction transaction;
 
@@ -123,17 +134,22 @@ public class TransactionSubmission {
 
     /**
      * @return the containing block height, or {@code null} if the node does not report the transaction as included.
-     * @throws IOException if an error occurs while communicating with the node.
+     * @throws IOException               if an error occurs while communicating with the node.
+     * @throws RpcResponseErrorException if the lookup returns an unexpected RPC error.
      */
     public BigInteger getBlockHeight() throws IOException {
         NeoGetTransactionHeight response = transaction.neow3j.getTransactionHeight(getTxId()).send();
-        return response.hasError() ? null : response.getHeight();
+        if (isNotFoundRpcError(response.getError(), UNKNOWN_TRANSACTION, "Unknown transaction")) {
+            return null;
+        }
+        return response.getHeight();
     }
 
     /**
      * @return the block timestamp in milliseconds, or {@code null} if the transaction is not included or the block
      * is unavailable.
-     * @throws IOException if an error occurs while communicating with the node.
+     * @throws IOException               if an error occurs while communicating with the node.
+     * @throws RpcResponseErrorException if the height or block lookup returns an unexpected RPC error.
      */
     public Long getBlockTime() throws IOException {
         BigInteger height = getBlockHeight();
@@ -141,7 +157,7 @@ public class TransactionSubmission {
             return null;
         }
         NeoGetBlock response = transaction.neow3j.getBlock(height, false).send();
-        if (response.hasError()) {
+        if (isNotFoundRpcError(response.getError(), UNKNOWN_BLOCK, "Unknown block")) {
             return null;
         }
         NeoBlock block = response.getBlock();
@@ -150,21 +166,45 @@ public class TransactionSubmission {
 
     /**
      * @return the application log, or {@code null} if it is not available.
-     * @throws IOException if an error occurs while communicating with the node.
+     * @throws IOException               if an error occurs while communicating with the node.
+     * @throws RpcResponseErrorException if the lookup returns an unexpected RPC error.
      */
     public NeoApplicationLog getApplicationLog() throws IOException {
         NeoGetApplicationLog response = transaction.neow3j.getApplicationLog(getTxId()).send();
-        return response.hasError() ? null : response.getApplicationLog();
+        Response.Error error = response.getError();
+        // Neo's ApplicationLogs plugin reports missing logs via Invalid params with a specific JSON data string.
+        if (isNotFoundRpcError(error, UNKNOWN_TRANSACTION, UNKNOWN_TRANSACTION_OR_BLOCK_HASH)
+                || (error != null && error.getCode() == INVALID_PARAMS
+                && ("\"" + UNKNOWN_TRANSACTION_OR_BLOCK_HASH + "\"").equals(error.getData()))) {
+            return null;
+        }
+        return response.getApplicationLog();
     }
 
     /**
      * @return {@code true} if the first execution halted; {@code false} if the log is unavailable, has no executions,
      * or the first execution did not halt.
-     * @throws IOException if an error occurs while communicating with the node.
+     * @throws IOException               if an error occurs while communicating with the node.
+     * @throws RpcResponseErrorException if the application log lookup returns an unexpected RPC error.
      */
     public boolean hasHalted() throws IOException {
         NeoApplicationLog log = getApplicationLog();
         return log != null && !log.getExecutions().isEmpty() &&
                 log.getFirstExecution().getState() == NeoVMStateType.HALT;
+    }
+
+    /**
+     * Checks whether an RPC error reports that the requested resource was not found. Older Neo nodes use the
+     * same error code ({@code -100}) for multiple resources, so a legacy response must also match the expected
+     * message.
+     *
+     * @param error                 the RPC error, or {@code null} for a successful response.
+     * @param notFoundCode          the current Neo RPC error code for the missing resource.
+     * @param legacyNotFoundMessage the expected message for the missing resource on older nodes.
+     * @return true if the error matches the current code or the legacy code and message.
+     */
+    private static boolean isNotFoundRpcError(Response.Error error, int notFoundCode, String legacyNotFoundMessage) {
+        return error != null && (error.getCode() == notFoundCode
+                || (error.getCode() == LEGACY_NOT_FOUND && legacyNotFoundMessage.equals(error.getMessage())));
     }
 }
