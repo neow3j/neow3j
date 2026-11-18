@@ -70,14 +70,14 @@ public class ECKeyPair {
     }
 
     /**
-     * Constructs the NEO address from this key pair's public key.
+     * Constructs the NEO address from this key pair's {@link #getScriptHash() script hash}.
      * <p>
      * The address is constructed ad hoc each time this method is called.
      *
-     * @return the NEO address of the public key.
+     * @return the NEO address of this key pair.
      */
     public String getAddress() {
-        return publicKey.getAddress();
+        return getScriptHash().toAddress();
     }
 
     /**

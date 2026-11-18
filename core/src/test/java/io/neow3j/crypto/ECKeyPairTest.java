@@ -116,6 +116,19 @@ public class ECKeyPairTest {
     }
 
     @Test
+    public void getAddressUsesOverriddenScriptHash() {
+        ECKeyPair standardPair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
+        ECKeyPair pairWithCustomScriptHash = new ECKeyPair(standardPair.getPrivateKey(), standardPair.getPublicKey()) {
+            @Override
+            public Hash160 getScriptHash() {
+                return Hash160.ZERO;
+            }
+        };
+
+        assertThat(pairWithCustomScriptHash.getAddress(), is(Hash160.ZERO.toAddress()));
+    }
+
+    @Test
     public void getScriptHash() {
         ECKeyPair pair = ECKeyPair.create(hexStringToByteArray(defaultAccountPrivateKey()));
         assertThat(pair.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
