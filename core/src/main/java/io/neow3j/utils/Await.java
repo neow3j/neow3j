@@ -95,7 +95,7 @@ public class Await {
         if (timeout == null || timeout.isZero() || timeout.isNegative()) {
             throw new IllegalArgumentException("The timeout must be a positive duration.");
         }
-        await().atMost(timeout).until(callableGetTxHash(txHash, neow3j), notNullValue());
+        await().pollDelay(Duration.ZERO).atMost(timeout).until(callableGetTxHash(txHash, neow3j), notNullValue());
     }
 
     /**

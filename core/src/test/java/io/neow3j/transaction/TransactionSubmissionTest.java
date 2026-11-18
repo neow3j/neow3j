@@ -244,8 +244,9 @@ class TransactionSubmissionTest {
         assertThrows(RpcResponseErrorException.class, submission::hasHalted);
     }
 
-    @Test
-    void awaitAcceptsCustomDuration() throws IOException {
+    @ParameterizedTest
+    @ValueSource(longs = {100, 2000})
+    void awaitAcceptsCustomDuration(long timeoutMillis) throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
         NeoGetTransactionHeight height = new NeoGetTransactionHeight();
@@ -254,7 +255,7 @@ class TransactionSubmissionTest {
         when(request.send()).thenReturn(height);
         doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
 
-        assertSame(submission, submission.await(Duration.ofSeconds(2)));
+        assertSame(submission, submission.await(Duration.ofMillis(timeoutMillis)));
     }
 
     private static TransactionSubmission submission(Neow3j neow3j, NeoSendRawTransaction response) {
