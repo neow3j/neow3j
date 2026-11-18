@@ -6,9 +6,14 @@ import static io.neow3j.devpack.constants.InteropService.SYSTEM_CONTRACT_CREATEM
 import static io.neow3j.devpack.constants.InteropService.SYSTEM_CONTRACT_CREATESTANDARDACCOUNT;
 
 /**
- * Offers several account-related methods for use in smart contracts.
+ * Derives account script hashes for use in smart contracts.
+ *
+ * @deprecated Use {@link AccountUtils}.
  */
+@Deprecated
 public class Account {
+
+    // Keep these annotations so existing callers still compile directly to the same syscalls.
 
     /**
      * Constructs the script hash for the given public key.
@@ -17,7 +22,9 @@ public class Account {
      *
      * @param pubKey the public key to get the script hash for.
      * @return the script hash.
+     * @deprecated Use {@link AccountUtils#deriveStandardAccountScriptHash(ECPoint)}.
      */
+    @Deprecated
     @Instruction(interopService = SYSTEM_CONTRACT_CREATESTANDARDACCOUNT)
     public static native Hash160 createStandardAccount(ECPoint pubKey);
 
@@ -29,9 +36,11 @@ public class Account {
      * of that script is returned.
      *
      * @param m       the signing threshold.
-     * @param pubKeys the public key to get the script hash for.
+     * @param pubKeys the public keys to get the script hash for.
      * @return the script hash.
+     * @deprecated Use {@link AccountUtils#deriveMultiSigAccountScriptHash(int, ECPoint[])}.
      */
+    @Deprecated
     @Instruction(interopService = SYSTEM_CONTRACT_CREATEMULTISIGACCOUNT)
     public static native Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys);
 

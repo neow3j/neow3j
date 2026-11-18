@@ -1,6 +1,6 @@
 package io.neow3j.compiler;
 
-import io.neow3j.devpack.Account;
+import io.neow3j.devpack.AccountUtils;
 import io.neow3j.devpack.ECPoint;
 import io.neow3j.devpack.Hash160;
 import io.neow3j.protocol.core.response.NeoInvokeFunction;
@@ -33,13 +33,13 @@ public class AccountIntegrationTest {
     }
 
     @Test
-    public void createStandardAccount() throws IOException {
+    public void deriveStandardAccountScriptHash() throws IOException {
         NeoInvokeFunction res = ct.callInvokeFunction(testName, publicKey(defaultAccountPublicKey()));
         assertThat(res.getInvocationResult().getStack().get(0).getAddress(), is(defaultAccountAddress()));
     }
 
     @Test
-    public void createMultiSigAccount() throws IOException {
+    public void deriveMultiSigAccountScriptHash() throws IOException {
         NeoInvokeFunction res = ct.callInvokeFunction(testName, integer(1),
                 array(publicKey(defaultAccountPublicKey())));
         assertThat(res.getInvocationResult().getStack().get(0).getAddress(), is(committeeAccountAddress()));
@@ -47,12 +47,12 @@ public class AccountIntegrationTest {
 
     static class AccountIntegrationTestContract {
 
-        public static Hash160 createStandardAccount(ECPoint pubKey) {
-            return Account.createStandardAccount(pubKey);
+        public static Hash160 deriveStandardAccountScriptHash(ECPoint pubKey) {
+            return AccountUtils.deriveStandardAccountScriptHash(pubKey);
         }
 
-        public static Hash160 createMultiSigAccount(int m, ECPoint[] pubKeys) {
-            return Account.createMultiSigAccount(m, pubKeys);
+        public static Hash160 deriveMultiSigAccountScriptHash(int m, ECPoint[] pubKeys) {
+            return AccountUtils.deriveMultiSigAccountScriptHash(m, pubKeys);
         }
 
     }
