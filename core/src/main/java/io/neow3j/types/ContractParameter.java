@@ -523,11 +523,16 @@ public class ContractParameter {
                     // Convert to true or false without quotes
                     gen.writeBooleanField("value", (boolean) p.getValue());
                     break;
+                case HASH160:
+                    gen.writeStringField("value", p.getValue() instanceof Hash160
+                            ? ((Hash160) p.getValue()).toUnprefixedString() : p.getValue().toString());
+                    break;
+                case HASH256:
+                    gen.writeStringField("value", p.getValue() instanceof Hash256
+                            ? ((Hash256) p.getValue()).toUnprefixedString() : p.getValue().toString());
+                    break;
                 case INTEGER:
                     // Convert to a string, i.e. in the final json the number has quotes around it.
-                case HASH256:
-                case HASH160:
-                    // In case of a hash, the toString() method returns a big-endian hex string.
                 case INTEROP_INTERFACE:
                     // We assume that the interop interface parameter holds a plain string.
                 case STRING:

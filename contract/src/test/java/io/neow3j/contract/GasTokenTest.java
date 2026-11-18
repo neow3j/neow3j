@@ -4,6 +4,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import io.neow3j.protocol.Neow3j;
+import io.neow3j.types.Hash160;
 import org.junit.jupiter.api.Test;
 
 public class GasTokenTest {
@@ -28,7 +29,7 @@ public class GasTokenTest {
 
     @Test
     public void scriptHash() {
-        assertThat(new GasToken(neow).getScriptHash().toString(), is(GASTOKEN_SCRIPTHASH));
+        assertThat(new GasToken(neow).getScriptHash(), is(new Hash160(GASTOKEN_SCRIPTHASH)));
     }
 
 }

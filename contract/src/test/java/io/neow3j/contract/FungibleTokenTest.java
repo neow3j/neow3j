@@ -34,6 +34,7 @@ import static io.neow3j.types.ContractParameter.any;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -114,7 +115,7 @@ public class FungibleTokenTest {
 
     @Test
     public void testGetBalanceOfAccount() throws Exception {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
                 "invokefunction_balanceOf_300000000.json");
 
         assertThat(gasToken.getBalanceOf(account1.getScriptHash()),
@@ -123,7 +124,7 @@ public class FungibleTokenTest {
 
     @Test
     public void testGetBalanceOfAccount_address() throws Exception {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
                 "invokefunction_balanceOf_300000000.json");
 
         assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
@@ -131,7 +132,7 @@ public class FungibleTokenTest {
 
     @Test
     public void testGetBalanceOfAccount_account() throws Exception {
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
                 "invokefunction_balanceOf_300000000.json");
 
         assertThat(gasToken.getBalanceOf(account1), is(new BigInteger("300000000")));
@@ -140,9 +141,9 @@ public class FungibleTokenTest {
     @Test
     public void testGetBalanceOfWallet() throws Exception {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_300000000.json",
-                "balanceOf", account1.getScriptHash().toString());
+                "balanceOf", toHexStringNoPrefix(account1.getScriptHash().toArray()));
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_300000000.json",
-                "balanceOf", account2.getScriptHash().toString());
+                "balanceOf", toHexStringNoPrefix(account2.getScriptHash().toArray()));
 
         assertThat(gasToken.getBalanceOf(Wallet.withAccounts(account1, account2)),
                 is(new BigInteger("600000000")));

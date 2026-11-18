@@ -24,6 +24,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
@@ -263,7 +264,7 @@ public class StdLibTest {
         WireMock.verify(postRequestedFor(urlEqualTo("/"))
                 .withRequestBody(containing("\"method\":\"invokefunction\""))
                 .withRequestBody(containing("\"" + function + "\""))
-                .withRequestBody(containing(StdLib.SCRIPT_HASH.toString())));
+                .withRequestBody(containing(toHexStringNoPrefix(StdLib.SCRIPT_HASH.toArray()))));
     }
 
 }

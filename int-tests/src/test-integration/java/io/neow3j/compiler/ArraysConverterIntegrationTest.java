@@ -102,13 +102,11 @@ public class ArraysConverterIntegrationTest {
         NeoInvokeFunction response = ct.callInvokeFunction(testName);
         List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
         List<StackItem> hash160Array = arrayStackItem.get(0).getList();
-        assertThat(hash160Array.get(0).getHexString(),
-                is(Hash160.ZERO.toString()));
+        assertThat(hash160Array.get(0).getScriptHash(), is(Hash160.ZERO));
         assertThat(hash160Array.get(1).getHexString(),
                 is(Numeric.reverseHexString("0f46dc4287b70117ce8354924b5cb3a47215ad93")));
         hash160Array = arrayStackItem.get(1).getList();
-        assertThat(hash160Array.get(0).getHexString(),
-                is(Hash160.ZERO.toString()));
+        assertThat(hash160Array.get(0).getScriptHash(), is(Hash160.ZERO));
     }
 
     @Test
@@ -117,7 +115,7 @@ public class ArraysConverterIntegrationTest {
         List<StackItem> arrayStackItem = response.getInvocationResult().getStack().get(0).getList();
         assertThat(arrayStackItem.get(0).getInteger().intValue(), is(1));
         assertThat(arrayStackItem.get(1).getString(), is("hello, world!"));
-        assertThat(arrayStackItem.get(2).getHexString(), is(Hash160.ZERO.toString()));
+        assertThat(arrayStackItem.get(2).getScriptHash(), is(Hash160.ZERO));
     }
 
     @Test

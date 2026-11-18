@@ -30,6 +30,7 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static io.neow3j.test.WireMockTestHelper.loadFile;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForInvokeFunction;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static java.lang.String.format;
@@ -50,6 +51,8 @@ public class SmartContractTest {
 
     private static final Hash160 NEO_SCRIPT_HASH = NeoToken.SCRIPT_HASH;
     private static final Hash160 SOME_SCRIPT_HASH = new Hash160("969a77db482f74ce27105f760efa139223431394");
+    private static final String NEO_SCRIPT_HASH_HEX = toHexStringNoPrefix(NEO_SCRIPT_HASH.toArray());
+    private static final String SOME_SCRIPT_HASH_HEX = toHexStringNoPrefix(SOME_SCRIPT_HASH.toArray());
 
     private SmartContract someContract;
     private SmartContract neoContract;
@@ -171,7 +174,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_symbol.json",
-                SOME_SCRIPT_HASH.toString(), "symbol");
+                SOME_SCRIPT_HASH_HEX, "symbol");
         SmartContract sc = someContract;
         String name = sc.callFunctionReturningString("symbol");
 
@@ -181,7 +184,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningStackItem() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
-                NEO_SCRIPT_HASH.toString(), "isValid");
+                NEO_SCRIPT_HASH_HEX, "isValid");
 
         StackItem result = neoContract.callFunctionReturningStackItem("isValid");
 
@@ -191,7 +194,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningByteArray() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_symbol.json",
-                SOME_SCRIPT_HASH.toString(), "symbol");
+                SOME_SCRIPT_HASH_HEX, "symbol");
 
         byte[] result = someContract.callFunctionReturningByteArray("symbol");
 
@@ -201,7 +204,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningNonString() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_NAME);
+                NEO_SCRIPT_HASH_HEX, NEP17_NAME);
         SmartContract sc = neoContract;
 
         assertThrows(UnexpectedReturnTypeException.class, () -> sc.callFunctionReturningString(NEP17_NAME));
@@ -210,7 +213,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningInt() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_totalSupply.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TOTALSUPPLY);
+                NEO_SCRIPT_HASH_HEX, NEP17_TOTALSUPPLY);
         SmartContract sc = neoContract;
         BigInteger supply = sc.callFunctionReturningInt(NEP17_TOTALSUPPLY);
 
@@ -220,7 +223,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningInt_withParameter() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_BALANCEOF);
+                NEO_SCRIPT_HASH_HEX, NEP17_BALANCEOF);
         SmartContract sc = neoContract;
         BigInteger balance = sc.callFunctionReturningInt(NEP17_BALANCEOF,
                 hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
@@ -231,7 +234,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningNonInt() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+                NEO_SCRIPT_HASH_HEX, NEP17_TRANSFER);
         SmartContract sc = neoContract;
 
         UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
@@ -241,7 +244,7 @@ public class SmartContractTest {
 
     @Test
     public void callFunctionReturningBool() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json", NEO_SCRIPT_HASH.toString(),
+        setUpWireMockForCall("invokefunction", "invokefunction_returnFalse.json", NEO_SCRIPT_HASH_HEX,
                 NEP17_TRANSFER);
         SmartContract sc = neoContract;
         boolean transferSuccessful = sc.callFunctionReturningBool(NEP17_TRANSFER);
@@ -252,7 +255,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningBool_withParameter() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_returnTrue.json",
-                NEO_SCRIPT_HASH.toString(), NEP17_TRANSFER);
+                NEO_SCRIPT_HASH_HEX, NEP17_TRANSFER);
         SmartContract sc = neoContract;
         boolean transferSuccessful = sc.callFunctionReturningBool(NEP17_TRANSFER,
                 hash160(new Hash160("ec2b32ed87e3747e826a0abd7229cb553220fd7a")));
@@ -263,7 +266,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningBool_asInteger_zero() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_returnIntZero.json",
-                NEO_SCRIPT_HASH.toString(), "getZero");
+                NEO_SCRIPT_HASH_HEX, "getZero");
         SmartContract sc = neoContract;
         boolean b = sc.callFunctionReturningBool("getZero");
 
@@ -273,7 +276,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningBool_asInteger_one() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_returnIntOne.json",
-                NEO_SCRIPT_HASH.toString(), "getOne");
+                NEO_SCRIPT_HASH_HEX, "getOne");
         SmartContract sc = neoContract;
         boolean b = sc.callFunctionReturningBool("getOne");
 
@@ -283,7 +286,7 @@ public class SmartContractTest {
     @Test
     public void callFunctionReturningNonBool() throws IOException {
         setUpWireMockForCall("invokefunction", "invokefunction_getcandidates.json",
-                NEO_SCRIPT_HASH.toString(), "getCandidates");
+                NEO_SCRIPT_HASH_HEX, "getCandidates");
         SmartContract sc = neoContract;
 
         UnexpectedReturnTypeException thrown = assertThrows(UnexpectedReturnTypeException.class,
@@ -412,8 +415,8 @@ public class SmartContractTest {
 
     @Test
     public void invokingFunctionPerformsCorrectCall() throws IOException {
-        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json", NEO_SCRIPT_HASH.toString(),
-                NEP17_BALANCEOF, account1.getScriptHash().toString());
+        setUpWireMockForCall("invokefunction", "invokefunction_balanceOf_3.json", NEO_SCRIPT_HASH_HEX,
+                NEP17_BALANCEOF, toHexStringNoPrefix(account1.getScriptHash().toArray()));
 
         SmartContract sc = neoContract;
         NeoInvokeFunction response = sc.callInvokeFunction(NEP17_BALANCEOF,
@@ -427,7 +430,7 @@ public class SmartContractTest {
     public void invokingFunctionPerformsCorrectCall_WithoutParameters() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_symbol_neo.json",
-                NEO_SCRIPT_HASH.toString(),
+                NEO_SCRIPT_HASH_HEX,
                 "symbol");
         NeoInvokeFunction i = neoContract.callInvokeFunction("symbol");
 

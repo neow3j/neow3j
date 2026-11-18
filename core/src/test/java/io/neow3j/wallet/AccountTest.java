@@ -293,7 +293,7 @@ public class AccountTest {
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getLabel(), is(defaultAccountAddress()));
         assertThat(a.getEncryptedPrivateKey(), is(nullValue()));
-        assertThat(a.getScriptHash().toString(), is(defaultAccountScriptHash()));
+        assertThat(a.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
         assertThat(a.getVerificationScript().getScript(),
@@ -306,7 +306,7 @@ public class AccountTest {
 
         assertThat(a.getAddress(), is(defaultAccountAddress()));
         assertThat(a.getLabel(), is(defaultAccountAddress()));
-        assertThat(a.getScriptHash().toString(), is(defaultAccountScriptHash()));
+        assertThat(a.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
         assertThat(a.isDefault(), is(false));
         assertThat(a.isLocked(), is(false));
         assertThat(a.getVerificationScript(), is(nullValue()));

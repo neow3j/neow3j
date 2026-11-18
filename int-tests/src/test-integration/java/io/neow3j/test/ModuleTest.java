@@ -22,7 +22,6 @@ import static io.neow3j.types.ContractParameter.array;
 import static io.neow3j.types.ContractParameter.hash160;
 import static io.neow3j.types.ContractParameter.integer;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
-import static io.neow3j.utils.Numeric.reverseHexString;
 import static java.lang.String.format;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
@@ -90,7 +89,7 @@ public class ModuleTest {
         assertThat(result.getStack().get(0).getInteger().intValue(), is(5));
 
         result = sc1.callInvokeFunction("getParentContract").getInvocationResult();
-        assertThat(reverseHexString(result.getStack().get(0).getHexString()), is(sc2.getScriptHash().toString()));
+        assertThat(result.getStack().get(0).getScriptHash(), is(sc2.getScriptHash()));
 
         result = sc2.callInvokeFunction("getChildContract").getInvocationResult();
         assertThat(result.getStack().get(0).getAddress(), is(sc1.getScriptHash().toAddress()));

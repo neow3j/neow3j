@@ -25,11 +25,11 @@ public class Hash256Test {
         Hash256 hash =
                 new Hash256("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
         assertThat(hash.toString(),
-                is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+                is("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
 
         hash = new Hash256("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a");
         assertThat(hash.toString(),
-                is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+                is("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class Hash256Test {
         Hash256 hash = new Hash256(b);
 
         assertThat(hash.toString(),
-                is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+                is("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
     }
 
     @Test
@@ -100,7 +100,7 @@ public class Hash256Test {
         Hash256 hash = NeoSerializableInterface.from(data, Hash256.class);
 
         assertThat(hash.toString(),
-                is("b804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
+                is("0xb804a98220c69ab4674e97142beeeb00909113d417b9d6a67c12b71a3974a21a"));
     }
 
     @Test

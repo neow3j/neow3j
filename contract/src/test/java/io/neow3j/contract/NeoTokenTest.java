@@ -386,7 +386,7 @@ public class NeoTokenTest {
 
     @Test
     public void scriptHash() {
-        assertThat(new NeoToken(neow).getScriptHash().toString(), is(NEOTOKEN_SCRIPTHASH));
+        assertThat(new NeoToken(neow).getScriptHash(), is(new Hash160(NEOTOKEN_SCRIPTHASH)));
     }
 
     @Test

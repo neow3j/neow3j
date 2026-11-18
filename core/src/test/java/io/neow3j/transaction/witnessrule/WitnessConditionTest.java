@@ -185,7 +185,7 @@ public class WitnessConditionTest {
                 + "28"
                 + reverseHexString(defaultAccountScriptHash()));
         CalledByContractCondition c = NeoSerializableInterface.from(data, CalledByContractCondition.class);
-        assertThat(c.getScriptHash().toString(), is(defaultAccountScriptHash()));
+        assertThat(c.getScriptHash(), is(new Hash160(defaultAccountScriptHash())));
         assertThat(c.getType(), is(WitnessConditionType.CALLED_BY_CONTRACT));
     }
 
