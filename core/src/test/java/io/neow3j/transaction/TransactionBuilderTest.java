@@ -618,8 +618,8 @@ public class TransactionBuilderTest {
         TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
                 () -> builder.sign(0));
         assertThat(thrown.getMessage(),
-                is(format("Cannot create transaction signature because account %s is hash-only and has no " +
-                        "verification script.", account1.getAddress())));
+                is(format("Cannot create transaction signature because account %s has no verification script.",
+                        account1.getAddress())));
     }
 
     @Test
