@@ -588,13 +588,13 @@ public class TransactionBuilder {
                 throw new IllegalStateException("Transactions with multi-sig signers cannot be signed " +
                         "automatically.");
             }
-            if (account.getEncryptedPrivateKey() != null) {
+            if (account.getECKeyPair() == null && account.getEncryptedPrivateKey() != null) {
                 throw new TransactionConfigurationException(format("Cannot create transaction signature because the " +
                         "private key of account %s is encrypted. Decrypt it before signing.", account.getAddress()));
             }
             if (!accountSigner.hasVerificationScript()) {
                 throw new TransactionConfigurationException(format("Cannot create transaction signature because " +
-                        "account %s is hash-only and has no verification script.", account.getAddress()));
+                        "account %s has no verification script.", account.getAddress()));
             }
             if (!account.getVerificationScript().isSingleSigScript()) {
                 throw new IllegalStateException(format("Cannot sign transaction because account %s has a " +

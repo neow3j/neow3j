@@ -23,6 +23,7 @@ import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
 import io.neow3j.utils.ArrayUtils;
 import io.neow3j.wallet.Account;
+import io.neow3j.wallet.nep6.NEP6Account;
 import io.reactivex.Observable;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMockConfig;
+import static io.neow3j.test.TestProperties.committeeAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountAddress;
+import static io.neow3j.test.TestProperties.defaultAccountEncryptedPrivateKey;
+import static io.neow3j.test.TestProperties.defaultAccountPassword;
 import static io.neow3j.test.TestProperties.neoTokenHash;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForBalanceOf;
 import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
@@ -71,6 +76,8 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -677,6 +684,47 @@ public class TransactionBuilderTest {
                         .signers(none(encrypted))
                         .sign(0));
         assertThat(thrown.getMessage(), containsString("is encrypted"));
+    }
+
+    @Test
+    public void signWithDecryptedAccountImportedWithoutVerificationScript() throws Throwable {
+        NEP6Account walletAccount = new NEP6Account(defaultAccountAddress(), null, false, false,
+                defaultAccountEncryptedPrivateKey(), null, null);
+        Account account = Account.fromNEP6Account(walletAccount);
+        assertNull(account.getVerificationScript());
+        account.decryptPrivateKey(defaultAccountPassword());
+
+        setUpWireMockForCall("invokescript", "invokescript_symbol_neo.json");
+        setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
+        Transaction tx = new TransactionBuilder(neow)
+                .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                .signers(none(account))
+                .validUntilBlock(1000)
+                .sign(0);
+
+        assertEquals(account.getScriptHash(), account.getVerificationScript().getScriptHash());
+        assertThat(tx.getWitnesses(), hasSize(1));
+        Witness witness = tx.getWitnesses().get(0);
+        assertEquals(account.getScriptHash(), witness.getVerificationScript().getScriptHash());
+        assertThat(witness.getInvocationScript().getSignatures(), hasSize(1));
+    }
+
+    @Test
+    public void failSigningWhenDecryptedKeyDoesNotMatchImportedAddress() throws Exception {
+        NEP6Account walletAccount = new NEP6Account(committeeAccountAddress(), null, false, false,
+                defaultAccountEncryptedPrivateKey(), null, null);
+        Account account = Account.fromNEP6Account(walletAccount);
+        account.decryptPrivateKey(defaultAccountPassword());
+
+        assertNotNull(account.getECKeyPair());
+        assertEquals(committeeAccountAddress(), account.getAddress());
+        assertNull(account.getVerificationScript());
+        TransactionConfigurationException thrown = assertThrows(TransactionConfigurationException.class,
+                () -> new TransactionBuilder(neow)
+                        .script(SCRIPT_INVOKEFUNCTION_NEO_SYMBOL_BYTEARRAY)
+                        .signers(none(account))
+                        .sign(0));
+        assertThat(thrown.getMessage(), containsString("has no verification script"));
     }
 
     @Test
