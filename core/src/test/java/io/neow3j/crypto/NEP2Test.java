@@ -3,6 +3,7 @@ package io.neow3j.crypto;
 import io.neow3j.crypto.exceptions.CipherException;
 import io.neow3j.crypto.exceptions.NEP2InvalidFormat;
 import io.neow3j.crypto.exceptions.NEP2InvalidPassphrase;
+import io.neow3j.types.Hash160;
 import io.neow3j.utils.Numeric;
 import org.junit.jupiter.api.Test;
 
@@ -52,6 +53,25 @@ public class NEP2Test {
                 ECKeyPair.create(Numeric.hexStringToByteArray(defaultAccountPrivateKey()));
         assertThat(NEP2.encrypt(defaultAccountPassword(), keyPair, nonDefaultScryptParams),
                 is(expected));
+    }
+
+    @Test
+    public void encryptAndDecryptWithOverriddenScriptHash() throws NEP2InvalidFormat, CipherException,
+            NEP2InvalidPassphrase {
+        byte[] privateKey = Numeric.hexStringToByteArray(defaultAccountPrivateKey());
+        ECKeyPair standardPair = ECKeyPair.create(privateKey);
+        ECKeyPair customPair = new ECKeyPair(standardPair.getPrivateKey(), standardPair.getPublicKey()) {
+            @Override
+            public Hash160 getScriptHash() {
+                return Hash160.ZERO;
+            }
+        };
+
+        String encryptedKey = NEP2.encrypt(defaultAccountPassword(), customPair);
+        ECKeyPair decryptedPair = NEP2.decrypt(defaultAccountPassword(), encryptedKey);
+
+        assertThat(decryptedPair.getPrivateKey().getBytes(), is(privateKey));
+        assertThat(encryptedKey, is(defaultAccountEncryptedPrivateKey()));
     }
 
 }
