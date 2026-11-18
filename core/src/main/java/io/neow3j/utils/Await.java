@@ -34,6 +34,8 @@ public class Await {
 
     private final static int MAX_WAIT_TIME = 60;
 
+    private static final Duration TRANSACTION_POLL_INTERVAL = Duration.ofMillis(100);
+
     /**
      * Checks and waits until the token balance of the given script hash is greater than zero.
      *
@@ -95,7 +97,15 @@ public class Await {
         if (timeout == null || timeout.isZero() || timeout.isNegative()) {
             throw new IllegalArgumentException("The timeout must be a positive duration.");
         }
-        await().pollDelay(Duration.ZERO).atMost(timeout).until(callableGetTxHash(txHash, neow3j), notNullValue());
+        long startNanos = System.nanoTime();
+        await().pollDelay(Duration.ZERO).pollInterval((pollCount, previousInterval) -> {
+            // Awaitility sleeps for the full interval before checking the timeout again.
+            Duration remaining = timeout.minusNanos(System.nanoTime() - startNanos);
+            if (remaining.isNegative()) {
+                return Duration.ZERO;
+            }
+            return remaining.compareTo(TRANSACTION_POLL_INTERVAL) < 0 ? remaining : TRANSACTION_POLL_INTERVAL;
+        }).atMost(timeout).until(callableGetTxHash(txHash, neow3j), notNullValue());
     }
 
     /**

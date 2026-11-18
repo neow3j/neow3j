@@ -12,6 +12,7 @@ import io.neow3j.protocol.core.response.NeoSendRawTransaction;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash256;
 import io.neow3j.types.NeoVMStateType;
+import org.awaitility.core.ConditionTimeoutException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -28,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTimeout;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.doReturn;
@@ -256,6 +258,20 @@ class TransactionSubmissionTest {
         doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
 
         assertSame(submission, submission.await(Duration.ofMillis(timeoutMillis)));
+    }
+
+    @Test
+    void awaitWithShortTimeoutDoesNotSleepForFullPollInterval() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetTransactionHeight pending = new NeoGetTransactionHeight();
+        pending.setError(new Response.Error(-103, "Unknown transaction"));
+        Request<?, NeoGetTransactionHeight> request = mock(Request.class);
+        when(request.send()).thenReturn(pending);
+        doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
+
+        assertTimeout(Duration.ofMillis(100), () ->
+                assertThrows(ConditionTimeoutException.class, () -> submission.await(Duration.ofMillis(25))));
     }
 
     private static TransactionSubmission submission(Neow3j neow3j, NeoSendRawTransaction response) {
