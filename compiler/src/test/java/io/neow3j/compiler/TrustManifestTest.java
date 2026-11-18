@@ -43,6 +43,14 @@ public class TrustManifestTest {
     }
 
     @Test
+    public void withNativeContractTrust() throws IOException {
+        CompilationUnit unit = new Compiler().compile(TrustManifestTestWithNativeContract.class.getName());
+        List<String> trusts = unit.getManifest().getTrusts();
+        assertThat(trusts, hasSize(1));
+        assertThat(trusts.get(0), is(NativeContract.GasTokenScriptHash));
+    }
+
+    @Test
     public void withTrustsAnnotationWrapper() throws IOException {
         CompilationUnit unit = new Compiler()
                 .compile(TrustManifestTestContractWithTrustsAnnotation.class.getName());
@@ -194,6 +202,14 @@ public class TrustManifestTest {
     @Trust(nativeContract = NativeContract.GasToken)
     @Trust(contract = CONTRACT_HASH_1)
     static class TrustManifestTestWithRedundantTrusts {
+
+        public static void main() {
+        }
+
+    }
+
+    @Trust(nativeContract = NativeContract.GasToken)
+    static class TrustManifestTestWithNativeContract {
 
         public static void main() {
         }

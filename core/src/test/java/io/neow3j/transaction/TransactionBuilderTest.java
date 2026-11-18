@@ -849,8 +849,8 @@ public class TransactionBuilderTest {
     public void invokingWithParamsShouldProduceTheCorrectRequest() throws IOException {
         setUpWireMockForCall("invokefunction",
                 "invokefunction_transfer_neo.json",
-                NEO_TOKEN_SCRIPT_HASH.toString(), NEP17_TRANSFER,
-                account1.getScriptHash().toString(), recipient.toString(), "5"); // the params
+                toHexStringNoPrefix(NEO_TOKEN_SCRIPT_HASH.toArray()), NEP17_TRANSFER,
+                toHexStringNoPrefix(account1.getScriptHash().toArray()), toHexStringNoPrefix(recipient.toArray()), "5");
 
         NeoInvokeFunction i = neow.invokeFunction(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER, asList(
                         hash160(account1.getScriptHash()), hash160(recipient), integer(5),
@@ -868,7 +868,7 @@ public class TransactionBuilderTest {
     public void doIfSenderCannotCoverFees() throws Throwable {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(),
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
                 "invokefunction_balanceOf_1000000.json");
 
         long netFee = 1230610;
@@ -913,9 +913,9 @@ public class TransactionBuilderTest {
         setUpWireMockForCall("invokescript", "invokescript_transfer_with_fixed_sysfee.json");
         setUpWireMockForCall("invokefunction",
                 "invokefunction_balanceOf_1000000.json",
-                GAS_TOKEN_SCRIPT_HASH.toString(),
+                toHexStringNoPrefix(GAS_TOKEN_SCRIPT_HASH.toArray()),
                 "balanceOf",
-                account1.getScriptHash().toString());
+                toHexStringNoPrefix(account1.getScriptHash().toArray()));
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
 
         byte[] script = new ScriptBuilder().contractCall(NEO_TOKEN_SCRIPT_HASH, NEP17_TRANSFER,
@@ -1212,7 +1212,8 @@ public class TransactionBuilderTest {
     @Test
     public void getApplicationLog() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
+                "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
@@ -1239,7 +1240,8 @@ public class TransactionBuilderTest {
     @Test
     public void getApplicationLog_notExisting() throws Throwable {
         setUpWireMockForCall("getversion", "getversion.json");
-        setUpWireMockForBalanceOf(account1.getScriptHash().toString(), "invokefunction_balanceOf_1000000.json");
+        setUpWireMockForBalanceOf(toHexStringNoPrefix(account1.getScriptHash().toArray()),
+                "invokefunction_balanceOf_1000000.json");
         setUpWireMockForCall("getblockcount", "getblockcount_1000.json");
         setUpWireMockForCall("invokescript", "invokescript_transfer.json");
         setUpWireMockForCall("calculatenetworkfee", "calculatenetworkfee.json");

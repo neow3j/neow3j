@@ -1,6 +1,9 @@
 package io.neow3j.contract;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.ObjectMapperFactory;
@@ -17,6 +20,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -307,7 +311,7 @@ public class ContractParameterTest {
         ContractParameter p = hash160(hash);
 
         assertEquals(ContractParameterType.HASH160, p.getType());
-        assertEquals(hashString, p.getValue().toString());
+        assertEquals(hash, p.getValue());
     }
 
     @Test
@@ -316,7 +320,7 @@ public class ContractParameterTest {
         ContractParameter p = hash160(new Hash160(hashValue));
 
         assertEquals(ContractParameterType.HASH160, p.getType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(new Hash160(hashValue), p.getValue());
     }
 
     @Test
@@ -343,12 +347,44 @@ public class ContractParameterTest {
     }
 
     @Test
+    public void serializeHashesWithoutPrefix() throws JsonProcessingException {
+        String scriptHashHex = "0f2dc86970b191fd8a55aeab983a04889682e433";
+        String txHashHex = "03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63";
+        Hash160 scriptHash = new Hash160("0x" + scriptHashHex);
+        Hash256 txHash = new Hash256("0x" + txHashHex);
+        ObjectMapper mapper = ObjectMapperFactory.getObjectMapper();
+
+        assertEquals("\"" + scriptHashHex + "\"", mapper.writeValueAsString(scriptHash));
+        assertEquals("\"" + txHashHex + "\"", mapper.writeValueAsString(txHash));
+        assertEquals("{\"type\":\"Hash160\",\"value\":\"" + scriptHashHex + "\"}",
+                mapper.writeValueAsString(hash160(scriptHash)));
+        assertEquals("{\"type\":\"Hash256\",\"value\":\"" + txHashHex + "\"}",
+                mapper.writeValueAsString(hash256(txHash)));
+    }
+
+    @Test
+    public void serializeHashValuesAndKeysWithoutOverridingAccessModifiers() throws JsonProcessingException {
+        ObjectMapper mapper = JsonMapper.builder().disable(MapperFeature.CAN_OVERRIDE_ACCESS_MODIFIERS).build();
+        String scriptHashHex = "0f2dc86970b191fd8a55aeab983a04889682e433";
+        String txHashHex = "03b4af8d061b6b320cce6c63bc4ec7894dce107b03b4af8d061b6b320cce6c63";
+        Hash160 scriptHash = new Hash160(scriptHashHex);
+        Hash256 txHash = new Hash256(txHashHex);
+
+        assertEquals("\"" + scriptHashHex + "\"", mapper.writeValueAsString(scriptHash));
+        assertEquals("\"" + txHashHex + "\"", mapper.writeValueAsString(txHash));
+        assertEquals("{\"" + scriptHashHex + "\":1}",
+                mapper.writeValueAsString(Collections.singletonMap(scriptHash, 1)));
+        assertEquals("{\"" + txHashHex + "\":1}",
+                mapper.writeValueAsString(Collections.singletonMap(txHash, 1)));
+    }
+
+    @Test
     public void testHash256ParameterCreationFromValidString() {
         String hashValue = "576f6f6c6f576f6f6c6f576f6f6c6f576f6f6c6ff6c6f576f6f6c6f576f6f6cf";
         ContractParameter p = hash256(hashValue);
 
         assertEquals(ContractParameterType.HASH256, p.getType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(new Hash256(hashValue), p.getValue());
     }
 
     @Test
@@ -357,7 +393,7 @@ public class ContractParameterTest {
         ContractParameter p = hash256(hexStringToByteArray(hashValue));
 
         assertEquals(ContractParameterType.HASH256, p.getType());
-        assertEquals(hashValue, p.getValue().toString());
+        assertEquals(new Hash256(hashValue), p.getValue());
     }
 
     @Test

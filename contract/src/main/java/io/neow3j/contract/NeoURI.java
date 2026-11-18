@@ -210,7 +210,7 @@ public class NeoURI {
             } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
                 query.add("asset=gas");
             } else {
-                query.add("asset=" + tokenHash);
+                query.add("asset=" + tokenHash.toUnprefixedString());
             }
         }
         if (amount != null) {
@@ -286,7 +286,7 @@ public class NeoURI {
         } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
             return GAS_TOKEN_STRING;
         }
-        return tokenHash.toString();
+        return tokenHash.toUnprefixedString();
     }
 
     /**

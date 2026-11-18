@@ -42,6 +42,7 @@ import static io.neow3j.test.WireMockTestHelper.setUpWireMockForCall;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.Numeric.convertNetworkMagicNumberToLittleEndian;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
+import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.util.Arrays.asList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -580,12 +581,12 @@ public class TransactionTest {
         assertThat(ctx.getType(), is("Neo.Network.P2P.Payloads.Transaction"));
         assertThat(ctx.getNetwork(), is(7L));
         assertThat(ctx.getData(), is(Base64.encode(tx.toArrayWithoutWitnesses())));
-        assertThat(ctx.getHash(), is(tx.getTxId().toString()));
+        assertThat(ctx.getHash(), is(toHexStringNoPrefix(tx.getTxId().toArray())));
         assertThat(ctx.getItems().size(), is(3));
 
         // item 1
         ContractParametersContext.ContextItem item =
-                ctx.getItems().get("0x" + singleSigAccount1.getScriptHash().toString());
+                ctx.getItems().get(singleSigAccount1.getScriptHash().toString());
         assertThat(item.getScript(), is(Base64.encode(singleSigAccount1.getVerificationScript().getScript())));
         assertThat(item.getParameters().size(), is(1));
         assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
@@ -596,7 +597,7 @@ public class TransactionTest {
                 is(Base64.encode(acc1witness.getInvocationScript().getSignatures().get(0).getConcatenated())));
 
         // item 2
-        item = ctx.getItems().get("0x" + singleSigAccount2.getScriptHash().toString());
+        item = ctx.getItems().get(singleSigAccount2.getScriptHash().toString());
         assertThat(item.getScript(), is(Base64.encode(singleSigAccount2.getVerificationScript().getScript())));
         assertThat(item.getParameters().size(), is(1));
         assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));
@@ -604,7 +605,7 @@ public class TransactionTest {
         assertThat(item.getSignatures().size(), is(0));
 
         // item 3
-        item = ctx.getItems().get("0x" + multiSigAccount.getScriptHash().toString());
+        item = ctx.getItems().get(multiSigAccount.getScriptHash().toString());
         assertThat(item.getScript(), is(Base64.encode(multiSigAccount.getVerificationScript().getScript())));
         assertThat(item.getParameters().size(), is(2));
         assertThat(item.getParameters().get(0).getType(), is(ContractParameterType.SIGNATURE));

@@ -125,7 +125,7 @@ public class Transaction {
         size = tx.getSize();
         version = tx.getVersion();
         nonce = tx.getNonce();
-        sender = tx.getSender().toString();
+        sender = tx.getSender().toUnprefixedString();
         sysFee = Long.toString(tx.getSystemFee());
         netFee = Long.toString(tx.getNetworkFee());
         validUntilBlock = tx.getValidUntilBlock();

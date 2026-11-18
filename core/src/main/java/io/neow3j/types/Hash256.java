@@ -3,6 +3,7 @@ package io.neow3j.types;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.hexStringToByteArray;
 import static io.neow3j.utils.Numeric.isValidHexString;
+import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
@@ -52,7 +53,7 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
 
     /**
      * Constructs a new hash from the given hexadecimal string. The string must be in big-endian order and 256 bits
-     * long.
+     * long. The '0x' prefix is optional.
      *
      * @param hash the hash in big-endian order.
      */
@@ -100,10 +101,22 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
-     * @return the hash as hexadecimal string in big-endian order without the '0x' prefix.
+     * @return the hash as a lowercase hexadecimal string in big-endian order with the '0x' prefix.
+     */
+    @Override
+    public String toString() {
+        return toHexString(hash);
+    }
+
+    /**
+     * Jackson uses this method as the JSON value. If a subclass previously customized JSON through
+     * {@link #toString()}, move its unprefixed hex representation to an override of this method and remove
+     * any {@link JsonValue} annotation from the subclass's {@code toString()}.
+     *
+     * @return the hash as lowercase, big-endian hexadecimal without a prefix, as used in JSON.
      */
     @JsonValue
-    public String toString() {
+    public String toUnprefixedString() {
         return toHexStringNoPrefix(hash);
     }
 

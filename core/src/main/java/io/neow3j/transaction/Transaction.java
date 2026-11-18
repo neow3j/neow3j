@@ -7,9 +7,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
@@ -43,6 +41,7 @@ import static io.neow3j.types.ContractParameterType.SIGNATURE;
 import static io.neow3j.utils.ArrayUtils.concatenate;
 import static io.neow3j.utils.ArrayUtils.reverseArray;
 import static io.neow3j.utils.Numeric.convertNetworkMagicNumberToLittleEndian;
+import static io.neow3j.utils.Numeric.toHexString;
 import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
@@ -520,7 +519,7 @@ public class Transaction extends NeoSerializable {
      * @return neo-cli compatible JSON of this transaction.
      */
     public ContractParametersContext toContractParametersContext(long networkMagicNumber) {
-        String hash = getTxId().toString();
+        String hash = getTxId().toUnprefixedString();
         String data = Base64.encode(toArrayWithoutWitnesses());
 
         Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
@@ -567,7 +566,8 @@ public class Transaction extends NeoSerializable {
             }
             String script = Base64.encode(verificationScript.getScript());
             return new ContractParametersContext.ContextItem(script, params, pubKeyToSignature);
-        }).collect(Collectors.toMap(i -> "0x" + Hash160.fromScript(Base64.decode(i.getScript())), Function.identity()));
+        }).collect(Collectors.toMap(i -> toHexString(Hash160.fromScript(Base64.decode(i.getScript())).toArray()),
+                Function.identity()));
 
         return new ContractParametersContext(hash, data, items, networkMagicNumber);
     }

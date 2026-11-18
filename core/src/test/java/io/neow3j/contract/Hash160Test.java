@@ -32,10 +32,10 @@ public class Hash160Test {
     @Test
     public void createFromValidHash() {
         Hash160 hash = new Hash160("0x23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(hash.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
+        assertThat(hash.toString(), is("0x23ba2703c53263e8d6e522dc32203339dcd8eee9"));
 
         hash = new Hash160("23ba2703c53263e8d6e522dc32203339dcd8eee9");
-        assertThat(hash.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
+        assertThat(hash.toString(), is("0x23ba2703c53263e8d6e522dc32203339dcd8eee9"));
     }
 
     @Test
@@ -93,7 +93,7 @@ public class Hash160Test {
                 "23ba2703c53263e8d6e522dc32203339dcd8eee9"));
         Hash160 hash = NeoSerializableInterface.from(data, Hash160.class);
 
-        assertThat(hash.toString(), is("23ba2703c53263e8d6e522dc32203339dcd8eee9"));
+        assertThat(hash.toString(), is("0x23ba2703c53263e8d6e522dc32203339dcd8eee9"));
     }
 
     @Test
@@ -144,7 +144,7 @@ public class Hash160Test {
         ECKeyPair.ECPublicKey pubKey = new ECKeyPair.ECPublicKey(defaultAccountPublicKey());
         Hash160 hash = Hash160.fromPublicKeys(asList(pubKey), 1);
 
-        assertThat(hash.toString(), is(committeeAccountScriptHash()));
+        assertThat(hash.toString(), is("0x" + committeeAccountScriptHash()));
     }
 
     @Test
@@ -154,7 +154,7 @@ public class Hash160Test {
         Hash160 hash = Hash160.fromScript(verificationScript);
 
         String bigEndian = hash.toString();
-        assertThat(bigEndian, is("afaed076854454449770763a628f379721ea9808"));
+        assertThat(bigEndian, is("0xafaed076854454449770763a628f379721ea9808"));
         String littleEndian = toHexStringNoPrefix(hash.toLittleEndianArray());
         assertThat(littleEndian, is("0898ea2197378f623a7670974454448576d0aeaf"));
     }
