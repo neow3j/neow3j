@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.IllegalFormatException;
 import java.util.List;
 
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
 /**
@@ -211,7 +210,7 @@ public class NeoURI {
             } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
                 query.add("asset=gas");
             } else {
-                query.add("asset=" + toHexStringNoPrefix(tokenHash.toArray()));
+                query.add("asset=" + tokenHash.toUnprefixedString());
             }
         }
         if (amount != null) {
@@ -287,7 +286,7 @@ public class NeoURI {
         } else if (tokenHash.equals(GasToken.SCRIPT_HASH)) {
             return GAS_TOKEN_STRING;
         }
-        return toHexStringNoPrefix(tokenHash.toArray());
+        return tokenHash.toUnprefixedString();
     }
 
     /**

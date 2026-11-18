@@ -109,6 +109,10 @@ public class Hash256 extends NeoSerializable implements Comparable<Hash256> {
     }
 
     /**
+     * Jackson uses this method as the JSON value. If a subclass previously customized JSON through
+     * {@link #toString()}, move its unprefixed hex representation to an override of this method and remove
+     * any {@link JsonValue} annotation from the subclass's {@code toString()}.
+     *
      * @return the hash as lowercase, big-endian hexadecimal without a prefix, as used in JSON.
      */
     @JsonValue

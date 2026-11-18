@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 import static java.lang.String.format;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -126,7 +125,7 @@ public class Transaction {
         size = tx.getSize();
         version = tx.getVersion();
         nonce = tx.getNonce();
-        sender = toHexStringNoPrefix(tx.getSender().toArray());
+        sender = tx.getSender().toUnprefixedString();
         sysFee = Long.toString(tx.getSystemFee());
         netFee = Long.toString(tx.getNetworkFee());
         validUntilBlock = tx.getValidUntilBlock();

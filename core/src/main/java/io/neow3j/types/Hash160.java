@@ -115,6 +115,10 @@ public class Hash160 extends NeoSerializable implements Comparable<Hash160> {
     }
 
     /**
+     * Jackson uses this method as the JSON value. If a subclass previously customized JSON through
+     * {@link #toString()}, move its unprefixed hex representation to an override of this method and remove
+     * any {@link JsonValue} annotation from the subclass's {@code toString()}.
+     *
      * @return the script hash as lowercase, big-endian hexadecimal without a prefix, as used in JSON.
      */
     @JsonValue

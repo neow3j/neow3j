@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static io.neow3j.compiler.Compiler.mapTypeToParameterType;
-import static io.neow3j.utils.Numeric.toHexStringNoPrefix;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DebugInfo {
@@ -47,9 +46,9 @@ public class DebugInfo {
     public DebugInfo() {
     }
 
-    public DebugInfo(Hash160 hash, List<String> documents,
-            List<Method> methods, List<Event> events, List<String> staticVariables) {
-        this.hash = toHexStringNoPrefix(hash.toArray());
+    public DebugInfo(Hash160 hash, List<String> documents, List<Method> methods, List<Event> events,
+            List<String> staticVariables) {
+        this.hash = hash.toUnprefixedString();
         this.documents = documents;
         this.methods = methods;
         this.events = events;

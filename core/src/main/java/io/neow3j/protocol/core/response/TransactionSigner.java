@@ -63,7 +63,7 @@ public class TransactionSigner {
         this.account = signer.getScriptHash();
         this.scopes = signer.getScopes();
         this.allowedContracts = signer.getAllowedContracts().stream()
-                .map(hash -> toHexStringNoPrefix(hash.toArray()))
+                .map(Hash160::toUnprefixedString)
                 .collect(Collectors.toList());
         this.allowedGroups = signer.getAllowedGroups().stream()
                 .map(s -> toHexStringNoPrefix(s.getEncoded(true)))

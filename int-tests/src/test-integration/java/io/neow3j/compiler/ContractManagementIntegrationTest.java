@@ -75,7 +75,7 @@ public class ContractManagementIntegrationTest {
         List<StackItem> array = response.getInvocationResult().getStack().get(0).getList();
         assertThat(array.get(0).getInteger().intValue(), is(-5)); // ID
         assertThat(array.get(1).getInteger().intValue(), is(0)); // updateCounter
-        assertThat(reverseHexString(array.get(2).getHexString()), is(NeoToken.SCRIPT_HASH.toString())); // contract hash
+        assertThat(array.get(2).getScriptHash(), is(NeoToken.SCRIPT_HASH)); // contract hash
         assertThat(array.get(3).getHexString(), not(isEmptyString())); // nef
         assertThat(array.get(4).getList(), notNullValue()); // manifest
     }

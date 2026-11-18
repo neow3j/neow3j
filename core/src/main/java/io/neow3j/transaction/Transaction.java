@@ -7,9 +7,7 @@ import io.neow3j.crypto.ECKeyPair;
 import io.neow3j.crypto.Sign;
 import io.neow3j.protocol.Neow3j;
 import io.neow3j.protocol.ObjectMapperFactory;
-import io.neow3j.protocol.core.response.NeoApplicationLog;
 import io.neow3j.protocol.core.response.NeoSendRawTransaction;
-import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.script.VerificationScript;
 import io.neow3j.serialization.BinaryReader;
 import io.neow3j.serialization.BinaryWriter;
@@ -521,7 +519,7 @@ public class Transaction extends NeoSerializable {
      * @return neo-cli compatible JSON of this transaction.
      */
     public ContractParametersContext toContractParametersContext(long networkMagicNumber) {
-        String hash = toHexStringNoPrefix(getTxId().toArray());
+        String hash = getTxId().toUnprefixedString();
         String data = Base64.encode(toArrayWithoutWitnesses());
 
         Map<String, ContractParametersContext.ContextItem> items = signers.stream().map(signer -> {
