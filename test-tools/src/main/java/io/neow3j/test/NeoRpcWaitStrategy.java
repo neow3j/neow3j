@@ -71,15 +71,27 @@ final class NeoRpcWaitStrategy extends AbstractWaitStrategy {
             }
             remaining = startupTimeout.minusNanos(System.nanoTime() - startNanos);
         }
-        // Preserve the last response or connection failure as the cause. An expiring request must not hide an
-        // earlier RPC error; keep its timeout as additional diagnostic information.
+        throw startupTimeoutException(url, lastFailure, lastTimeout);
+    }
+
+    /**
+     * Builds the startup timeout while preserving the last response or connection failure as its cause. A subsequent
+     * socket timeout is included as additional diagnostic information so it does not hide an earlier RPC error.
+     *
+     * @param url         the node's RPC URL.
+     * @param lastFailure the last failure other than a socket timeout, or null if there was none.
+     * @param lastTimeout the last socket timeout, or null if there was none.
+     * @return the startup timeout with the available diagnostic information.
+     */
+    private static ContainerLaunchException startupTimeoutException(URL url, IOException lastFailure,
+            SocketTimeoutException lastTimeout) {
         ContainerLaunchException failure = new ContainerLaunchException(
                 "Timed out waiting for Neo RPC at " + url + " to return a positive block count",
                 lastFailure != null ? lastFailure : lastTimeout);
         if (lastFailure != null && lastTimeout != null) {
             failure.addSuppressed(lastTimeout);
         }
-        throw failure;
+        return failure;
     }
 
     /**
