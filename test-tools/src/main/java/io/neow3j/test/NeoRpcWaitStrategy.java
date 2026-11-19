@@ -46,11 +46,14 @@ final class NeoRpcWaitStrategy extends AbstractWaitStrategy {
 
         long startNanos = System.nanoTime();
         IOException lastFailure = null;
+        SocketTimeoutException lastTimeout = null;
         Duration remaining = startupTimeout;
         while (!remaining.isNegative() && !remaining.isZero()) {
             try {
                 checkBlockCount(url, remaining);
                 return;
+            } catch (SocketTimeoutException e) {
+                lastTimeout = e;
             } catch (IOException e) {
                 lastFailure = e;
             }
@@ -68,8 +71,15 @@ final class NeoRpcWaitStrategy extends AbstractWaitStrategy {
             }
             remaining = startupTimeout.minusNanos(System.nanoTime() - startNanos);
         }
-        throw new ContainerLaunchException(
-                "Timed out waiting for Neo RPC at " + url + " to return a positive block count", lastFailure);
+        // Preserve the last response or connection failure as the cause. An expiring request must not hide an
+        // earlier RPC error; keep its timeout as additional diagnostic information.
+        ContainerLaunchException failure = new ContainerLaunchException(
+                "Timed out waiting for Neo RPC at " + url + " to return a positive block count",
+                lastFailure != null ? lastFailure : lastTimeout);
+        if (lastFailure != null && lastTimeout != null) {
+            failure.addSuppressed(lastTimeout);
+        }
+        throw failure;
     }
 
     /**
@@ -115,13 +125,13 @@ final class NeoRpcWaitStrategy extends AbstractWaitStrategy {
                 }
             }) {
                 JsonNode response = OBJECT_MAPPER.readTree(input);
-                requestTimeoutMillis(remaining, requestStartNanos);
                 JsonNode result = response == null ? null : response.get("result");
                 JsonNode error = response == null ? null : response.get("error");
                 if ((error != null && !error.isNull()) || result == null || !result.isIntegralNumber()
                         || result.bigIntegerValue().signum() <= 0) {
                     throw new IOException("Neo RPC does not report an initialized blockchain: " + response);
                 }
+                requestTimeoutMillis(remaining, requestStartNanos);
             }
         } finally {
             connection.disconnect();

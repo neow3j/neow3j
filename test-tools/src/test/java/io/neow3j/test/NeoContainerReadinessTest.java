@@ -9,6 +9,7 @@ import org.testcontainers.containers.ContainerLaunchException;
 import org.testcontainers.containers.wait.strategy.WaitStrategy;
 import org.testcontainers.containers.wait.strategy.WaitStrategyTarget;
 
+import java.net.SocketTimeoutException;
 import java.time.Duration;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
@@ -21,8 +22,10 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static com.github.tomakehurst.wiremock.stubbing.Scenario.STARTED;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.lessThan;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -72,7 +75,7 @@ class NeoContainerReadinessTest {
         rpc.stubFor(post(urlEqualTo("/")).inScenario("startup").whenScenarioStateIs("initialized")
                 .willReturn(aResponse().withBody(GENESIS_BLOCK_COUNT)));
 
-        containerStrategy(express, Duration.ofSeconds(2)).waitUntilReady(rpcTarget());
+        assertDoesNotThrow(() -> containerStrategy(express, Duration.ofSeconds(2)).waitUntilReady(rpcTarget()));
 
         rpc.verify(2, postRequestedFor(urlEqualTo("/"))
                 .withHeader("Content-Type", equalTo("application/json"))
@@ -90,7 +93,7 @@ class NeoContainerReadinessTest {
         rpc.stubFor(post(urlEqualTo("/")).inScenario("startup").whenScenarioStateIs("initialized")
                 .willReturn(aResponse().withBody(GENESIS_BLOCK_COUNT)));
 
-        containerStrategy(false, Duration.ofSeconds(2)).waitUntilReady(rpcTarget());
+        assertDoesNotThrow(() -> containerStrategy(false, Duration.ofSeconds(2)).waitUntilReady(rpcTarget()));
 
         rpc.verify(2, postRequestedFor(urlEqualTo("/")));
     }
@@ -99,7 +102,7 @@ class NeoContainerReadinessTest {
     void acceptsExistingCheckpointWithoutWaitingForAnotherBlock() {
         rpc.stubFor(post(urlEqualTo("/")).willReturn(aResponse().withBody("{\"result\":12345}")));
 
-        containerStrategy(true, Duration.ofSeconds(2)).waitUntilReady(rpcTarget());
+        assertDoesNotThrow(() -> containerStrategy(true, Duration.ofSeconds(2)).waitUntilReady(rpcTarget()));
 
         rpc.verify(1, postRequestedFor(urlEqualTo("/")));
     }
@@ -118,6 +121,25 @@ class NeoContainerReadinessTest {
         assertThat(e.getMessage(), containsString("positive block count"));
         assertThat(e.getCause().getMessage(), containsString("-2146232969"));
         assertThat(e.getCause().getMessage(), containsString("The given key was not present in the dictionary."));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void retainsRpcErrorWhenTheLastRequestTimesOut(boolean chunkedResponse) {
+        rpc.stubFor(post(urlEqualTo("/")).inScenario("startup").whenScenarioStateIs(STARTED)
+                .willReturn(aResponse().withBody(RPC_ERROR)).willSetStateTo("unresponsive"));
+        rpc.stubFor(post(urlEqualTo("/")).inScenario("startup").whenScenarioStateIs("unresponsive")
+                .willReturn(chunkedResponse
+                        ? aResponse().withBody(GENESIS_BLOCK_COUNT).withChunkedDribbleDelay(20, 2000)
+                        : aResponse().withBody(GENESIS_BLOCK_COUNT).withFixedDelay(2000)));
+        WaitStrategy strategy = containerStrategy(false, Duration.ofMillis(500));
+
+        ContainerLaunchException e = assertThrows(ContainerLaunchException.class,
+                () -> strategy.waitUntilReady(rpcTarget()));
+
+        assertThat(e.getCause().getMessage(), containsString("-2146232969"));
+        assertThat(e.getSuppressed().length, is(1));
+        assertThat(e.getSuppressed()[0], instanceOf(SocketTimeoutException.class));
     }
 
     @Test
@@ -151,7 +173,7 @@ class NeoContainerReadinessTest {
         rpc.stubFor(post(urlEqualTo("/")).inScenario("startup").whenScenarioStateIs("initialized")
                 .willReturn(aResponse().withBody(GENESIS_BLOCK_COUNT)));
 
-        containerStrategy(false, Duration.ofSeconds(2)).waitUntilReady(rpcTarget());
+        assertDoesNotThrow(() -> containerStrategy(false, Duration.ofSeconds(2)).waitUntilReady(rpcTarget()));
 
         rpc.verify(2, postRequestedFor(urlEqualTo("/")));
     }
