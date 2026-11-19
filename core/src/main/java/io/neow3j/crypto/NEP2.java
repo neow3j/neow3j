@@ -140,7 +140,9 @@ public class NEP2 {
      * @throws CipherException if the AES/ECB/NoPadding cipher operation fails.
      */
     public static String encrypt(String password, ECKeyPair ecKeyPair, int n, int p, int r) throws CipherException {
-        byte[] addressHash = getAddressHash(ecKeyPair);
+        // Decryption derives the address from the recovered private key.
+        ECKeyPair standardPair = ECKeyPair.create(ecKeyPair.getPrivateKey());
+        byte[] addressHash = getAddressHash(standardPair);
 
         byte[] derivedKey = generateDerivedScryptKey(password.getBytes(UTF_8), addressHash, n, r, p, DKLEN);
 
@@ -149,12 +151,12 @@ public class NEP2 {
 
         byte[] encryptedHalf1 = performCipherOperation(
                 Cipher.ENCRYPT_MODE,
-                xorPrivateKeyAndDerivedHalf(ecKeyPair, derivedHalf1, 0, 16),
+                xorPrivateKeyAndDerivedHalf(standardPair, derivedHalf1, 0, 16),
                 derivedHalf2);
 
         byte[] encryptedHalf2 = performCipherOperation(
                 Cipher.ENCRYPT_MODE,
-                xorPrivateKeyAndDerivedHalf(ecKeyPair, derivedHalf1, 16, 32),
+                xorPrivateKeyAndDerivedHalf(standardPair, derivedHalf1, 16, 32),
                 derivedHalf2);
 
         byte[] prefixes = new byte[3];

@@ -60,15 +60,16 @@ public class Account {
     }
 
     /**
-     * Constructs a new account with the given EC key pair.
+     * Constructs a standard single-signature account with the given EC key pair. Its address is derived from
+     * its verification script.
      *
      * @param ecKeyPair the key pair of the account.
      */
     public Account(ECKeyPair ecKeyPair) {
         this.keyPair = ecKeyPair;
-        this.address = ecKeyPair.getAddress();
-        this.label = this.address;
         this.verificationScript = new VerificationScript(ecKeyPair.getPublicKey());
+        this.address = this.verificationScript.getScriptHash().toAddress();
+        this.label = this.address;
     }
 
     public String getAddress() {
@@ -142,39 +143,29 @@ public class Account {
 
     /**
      * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted. Uses the
-     * default Scrypt parameters.
+     * default Scrypt parameters. A missing verification script is restored if the decrypted key derives this
+     * account's address.
      *
      * @param password the passphrase used to decrypt this account's private key.
      * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws CipherException       if decryption fails.
      * @throws NEP2InvalidPassphrase if the passphrase is not valid.
-     * @throws AccountStateException if
-     *                               <ul>
-     *                               <li>the account doesn't hold an encrypted private key.
-     *                               <li>the account does already hold a decrypted private key.
-     *                               <li>the public key derived from the decrypted private key is not equal to the
-     *                               already set public key.
-     *                               </ul>
+     * @throws AccountStateException if the account has neither a decrypted nor an encrypted private key.
      */
     public void decryptPrivateKey(String password) throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
         decryptPrivateKey(password, NEP2.DEFAULT_SCRYPT_PARAMS);
     }
 
     /**
-     * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted.
+     * Decrypts this account's private key, according to the NEP-2 standard, if not already decrypted. A missing
+     * verification script is restored if the decrypted key derives this account's address.
      *
      * @param password     the passphrase used to decrypt this account's private key.
      * @param scryptParams the Scrypt parameters used for decryption.
      * @throws NEP2InvalidFormat     if the encrypted NEP2 has an invalid format.
-     * @throws CipherException       if failed encrypt the created wallet.
+     * @throws CipherException       if decryption fails.
      * @throws NEP2InvalidPassphrase if the passphrase is not valid.
-     * @throws AccountStateException if
-     *                               <ul>
-     *                               <li>the account doesn't hold an encrypted private key.
-     *                               <li>the account does already hold a decrypted private key.
-     *                               <li>the public key derived from the decrypted private key is not equal to the
-     *                               already set public key.
-     *                               </ul>
+     * @throws AccountStateException if the account has neither a decrypted nor an encrypted private key.
      */
     public void decryptPrivateKey(String password, ScryptParams scryptParams)
             throws NEP2InvalidFormat, CipherException, NEP2InvalidPassphrase {
@@ -186,6 +177,13 @@ public class Account {
             throw new AccountStateException("The account does not hold an encrypted private key.");
         }
         this.keyPair = NEP2.decrypt(password, this.encryptedPrivateKey, scryptParams);
+        // An imported wallet can omit the script. Restore it only if the decrypted key matches the stored address.
+        if (this.verificationScript == null) {
+            VerificationScript standardScript = this.keyPair.getPublicKey().getVerificationScript();
+            if (standardScript.getScriptHash().toAddress().equals(this.address)) {
+                this.verificationScript = standardScript;
+            }
+        }
     }
 
     /**

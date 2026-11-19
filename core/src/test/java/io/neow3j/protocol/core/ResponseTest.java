@@ -113,6 +113,8 @@ import io.neow3j.types.NeoVMStateType;
 import io.neow3j.types.NodePluginType;
 import io.neow3j.types.StackItemType;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.math.BigInteger;
 import java.util.HashMap;
@@ -4152,13 +4154,14 @@ public class ResponseTest extends ResponseTester {
                   "/nxLkv5BYn1bUgIAAAAqEQwhAmB6OLgBCo9AHCXdAd8bdK8YJ90WuCH8B0UfLvfwLaYPEUGe0Nw6"));
     }
 
-    @Test
-    public void testExpressShutdown() {
+    @ParameterizedTest
+    @ValueSource(strings = {"processId", "process-id"})
+    public void testExpressShutdown(String processIdField) {
         buildResponse("{\n" +
                 "    \"jsonrpc\": \"2.0\",\n" +
                 "    \"id\": 1,\n" +
                 "    \"result\": {\n" +
-                "        \"processId\": 73625\n" +
+                "        \"" + processIdField + "\": 73625\n" +
                 "    }\n" +
                 "}");
 
