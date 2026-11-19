@@ -14,9 +14,12 @@ import io.neow3j.protocol.core.response.NeoGetWalletBalance;
 import io.neow3j.protocol.exceptions.RpcResponseErrorException;
 import io.neow3j.types.Hash160;
 import io.neow3j.types.Hash256;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.function.Executable;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -40,6 +43,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@Isolated
 class AwaitTest {
 
     private final Neow3jService service = mock(Neow3jService.class);
@@ -74,6 +78,48 @@ class AwaitTest {
         for (Executable poll : polls) {
             IOException thrown = assertThrows(IOException.class, poll);
             assertSame(failure, thrown);
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    @Timeout(5)
+    void rpcWaitsPropagateFailuresDespiteGlobalIgnoreSettings(boolean rpcError) throws IOException {
+        Exception failure = rpcError
+                ? new RpcResponseErrorException(new Error(-32601, "Method not found"))
+                : new IOException("Connection closed");
+        when(service.send(any(), any())).thenThrow(failure);
+        List<Executable> polls = asList(
+                () -> Await.waitUntilBalancesIsGreaterThanZero(Hash160.ZERO, Hash160.ZERO, neow3j),
+                () -> Await.waitUntilBlockCountIsGreaterThanZero(neow3j),
+                () -> Await.waitUntilContractIsDeployed(Hash160.ZERO, neow3j),
+                () -> Await.waitUntilTransactionIsExecuted(Hash256.ZERO, neow3j),
+                () -> Await.waitUntilTransactionIsExecuted(Hash256.ZERO, neow3j, Duration.ofSeconds(2)),
+                () -> Await.waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo("1", Hash160.ZERO, neow3j));
+
+        Awaitility.ignoreExceptionByDefault(failure.getClass());
+        try {
+            for (Executable poll : polls) {
+                assertSame(failure, assertThrows(failure.getClass(), poll));
+            }
+        } finally {
+            Awaitility.ignoreExceptionsByDefaultMatching(e -> false);
+        }
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void genericWaitsRespectGlobalExceptionHandling() throws Exception {
+        SQLException failure = new SQLException("Query failed");
+        Callable<Boolean> query = mock(Callable.class);
+        when(query.call()).thenThrow(failure).thenReturn(true);
+        Awaitility.ignoreExceptionByDefault(SQLException.class);
+        try {
+            Await.waitUntil(query, is(true), 2, SECONDS);
+
+            verify(query, times(2)).call();
+        } finally {
+            Awaitility.ignoreExceptionsByDefaultMatching(e -> false);
         }
     }
 

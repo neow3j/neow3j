@@ -53,7 +53,7 @@ public class Await {
      */
     public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token, Neow3j neow3j)
             throws IOException {
-        waitUntil(callableGetBalance(scriptHash, token, neow3j), Matchers.greaterThan(0L));
+        waitForRpcCondition(callableGetBalance(scriptHash, token, neow3j), Matchers.greaterThan(0L));
     }
 
     /**
@@ -65,7 +65,7 @@ public class Await {
      * @throws RpcResponseErrorException if the node returns an unexpected RPC error.
      */
     public static void waitUntilBlockCountIsGreaterThan(Neow3j neow3j, BigInteger blockCount) throws IOException {
-        waitUntil(callableGetBlockCount(neow3j), greaterThan(blockCount));
+        waitForRpcCondition(callableGetBlockCount(neow3j), greaterThan(blockCount));
     }
 
     /**
@@ -88,7 +88,7 @@ public class Await {
      * @throws RpcResponseErrorException if the node returns an unexpected RPC error.
      */
     public static void waitUntilContractIsDeployed(Hash160 contract, Neow3j neow3j) throws IOException {
-        waitUntil(callableGetContractState(contract, neow3j), Matchers.is(true));
+        waitForRpcCondition(callableGetContractState(contract, neow3j), Matchers.is(true));
     }
 
     /**
@@ -100,7 +100,7 @@ public class Await {
      * @throws RpcResponseErrorException if the node returns an unexpected RPC error.
      */
     public static void waitUntilTransactionIsExecuted(Hash256 txHash, Neow3j neow3j) throws IOException {
-        waitUntil(callableGetTransactionHeight(txHash, neow3j), notNullValue());
+        waitForRpcCondition(callableGetTransactionHeight(txHash, neow3j), notNullValue());
     }
 
     /**
@@ -118,7 +118,7 @@ public class Await {
             throw new IllegalArgumentException("The timeout must be a positive duration.");
         }
         long startNanos = System.nanoTime();
-        await().pollDelay(Duration.ZERO).pollInterval((pollCount, previousInterval) -> {
+        await().ignoreNoExceptions().pollDelay(Duration.ZERO).pollInterval((pollCount, previousInterval) -> {
             // Awaitility sleeps for the full interval before checking the timeout again.
             Duration remaining = timeout.minusNanos(System.nanoTime() - startNanos);
             if (remaining.isNegative()) {
@@ -140,13 +140,13 @@ public class Await {
      */
     public static void waitUntilOpenWalletHasBalanceGreaterThanOrEqualTo(String amount, Hash160 token, Neow3j neow3j)
             throws IOException {
-        waitUntil(callableGetBalance(token, neow3j), greaterThanOrEqualTo(new BigDecimal(amount)));
+        waitForRpcCondition(callableGetBalance(token, neow3j), greaterThanOrEqualTo(new BigDecimal(amount)));
     }
 
     /**
      * Waits until the {@code callable} function returns a condition that is satisfied by the {@code matcher}. Uses
      * the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
-     * Exceptions from the callable propagate through Awaitility, including checked exceptions.
+     * Exceptions from the callable follow Awaitility's configured exception handling, including checked exceptions.
      *
      * @param callable the function to be called.
      * @param matcher  the condition to be evaluated.
@@ -158,7 +158,7 @@ public class Await {
 
     /**
      * Waits until the {@code callable} function returns a condition that is satisfied by the {@code matcher}.
-     * Exceptions from the callable propagate through Awaitility, including checked exceptions.
+     * Exceptions from the callable follow Awaitility's configured exception handling, including checked exceptions.
      *
      * @param callable    the function to be called.
      * @param matcher     the condition to be evaluated.
@@ -168,6 +168,19 @@ public class Await {
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher, int maxWaitTime, TimeUnit unit) {
         await().timeout(maxWaitTime, unit).until(callable, matcher);
+    }
+
+    /**
+     * Waits for an RPC result while propagating failures even if global Awaitility settings ignore exceptions.
+     * Expected missing-resource responses are handled by the callable as an unsatisfied condition.
+     *
+     * @param callable the RPC lookup.
+     * @param matcher  the condition to be evaluated.
+     * @param <T>      the type of the RPC result.
+     * @throws IOException if communication with the node fails.
+     */
+    private static <T> void waitForRpcCondition(Callable<T> callable, Matcher<? super T> matcher) throws IOException {
+        await().ignoreNoExceptions().timeout(MAX_WAIT_TIME, TimeUnit.SECONDS).until(callable, matcher);
     }
 
     private static Callable<Boolean> callableGetContractState(Hash160 contractHash160, Neow3j neow3j) {
