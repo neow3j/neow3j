@@ -28,13 +28,13 @@ import static org.hamcrest.Matchers.notNullValue;
 /**
  * Utility class used to wait for blockchain related events like the inclusion of a transaction in a block or the
  * deployment of a contract. The maximum time that these utility methods will wait for a specific event is set in
- * {@link Await#MAX_WAIT_TIME}. After that time, the methods will timeout and throw an exception. Communication
+ * {@link Await#MAX_WAIT_TIME_SECONDS}. After that time, the methods will timeout and throw an exception. Communication
  * failures and unexpected RPC errors end the wait and are passed to the caller. Recognized unknown transaction and
  * unknown contract responses are retried while waiting for inclusion or deployment.
  */
 public class Await {
 
-    private final static int MAX_WAIT_TIME = 60;
+    private final static int MAX_WAIT_TIME_SECONDS = 60;
 
     private static final int LEGACY_NOT_FOUND = -100;
 
@@ -145,7 +145,7 @@ public class Await {
 
     /**
      * Waits until the {@code callable} function returns a condition that is satisfied by the {@code matcher}. Uses
-     * the default {@link Await#MAX_WAIT_TIME} and {@link TimeUnit#SECONDS}.
+     * the default {@link Await#MAX_WAIT_TIME_SECONDS} in seconds.
      * Exceptions from the callable follow Awaitility's configured exception handling, including checked exceptions.
      *
      * @param callable the function to be called.
@@ -153,7 +153,7 @@ public class Await {
      * @param <T>      the type that the callable function and condition should be compatible with.
      */
     public static <T> void waitUntil(Callable<T> callable, Matcher<? super T> matcher) {
-        waitUntil(callable, matcher, MAX_WAIT_TIME, TimeUnit.SECONDS);
+        waitUntil(callable, matcher, MAX_WAIT_TIME_SECONDS, TimeUnit.SECONDS);
     }
 
     /**
@@ -180,19 +180,19 @@ public class Await {
      * @throws IOException if communication with the node fails.
      */
     private static <T> void waitForRpcCondition(Callable<T> callable, Matcher<? super T> matcher) throws IOException {
-        await().ignoreNoExceptions().timeout(MAX_WAIT_TIME, TimeUnit.SECONDS).until(callable, matcher);
+        await().ignoreNoExceptions().timeout(MAX_WAIT_TIME_SECONDS, TimeUnit.SECONDS).until(callable, matcher);
     }
 
-    private static Callable<Boolean> callableGetContractState(Hash160 contractHash160, Neow3j neow3j) {
+    private static Callable<Boolean> callableGetContractState(Hash160 contractHash, Neow3j neow3j) {
         return () -> {
-            NeoGetContractState response = neow3j.getContractState(contractHash160).send();
+            NeoGetContractState response = neow3j.getContractState(contractHash).send();
             Error error = response.getError();
             if (error != null && (error.getCode() == UNKNOWN_CONTRACT
                     || (error.getCode() == LEGACY_NOT_FOUND && "Unknown contract".equals(error.getMessage())))) {
                 return false;
             }
             ContractState contract = response.getContractState();
-            return contract != null && contractHash160.equals(contract.getHash());
+            return contract != null && contractHash.equals(contract.getHash());
         };
     }
 
@@ -200,11 +200,11 @@ public class Await {
         return () -> neow3j.getBlockCount().send().getBlockCount();
     }
 
-    private static Callable<Long> callableGetBalance(Hash160 scriptHash, Hash160 tokenHash160, Neow3j neow3j) {
+    private static Callable<Long> callableGetBalance(Hash160 scriptHash, Hash160 tokenHash, Neow3j neow3j) {
         return () -> {
             List<Nep17Balance> balances = neow3j.getNep17Balances(scriptHash).send().getBalances().getBalances();
             return balances.stream()
-                    .filter(b -> b.getAssetHash().equals(tokenHash160))
+                    .filter(b -> b.getAssetHash().equals(tokenHash))
                     .findFirst()
                     .map(b -> Long.valueOf(b.getAmount()))
                     .orElse(0L);
@@ -218,9 +218,8 @@ public class Await {
         };
     }
 
-    private static Callable<BigDecimal> callableGetBalance(Hash160 token, Neow3j neow3j) {
-        return () -> new BigDecimal(
-                neow3j.getWalletBalance(token).send().getWalletBalance().getBalance());
+    private static Callable<BigDecimal> callableGetBalance(Hash160 tokenHash, Neow3j neow3j) {
+        return () -> new BigDecimal(neow3j.getWalletBalance(tokenHash).send().getWalletBalance().getBalance());
     }
 
 }
