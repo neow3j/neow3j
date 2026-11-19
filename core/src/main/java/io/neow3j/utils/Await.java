@@ -53,7 +53,7 @@ public class Await {
      */
     public static void waitUntilBalancesIsGreaterThanZero(Hash160 scriptHash, Hash160 token, Neow3j neow3j)
             throws IOException {
-        waitForRpcCondition(callableGetBalance(scriptHash, token, neow3j), Matchers.greaterThan(0L));
+        waitForRpcCondition(callableGetBalance(scriptHash, token, neow3j), greaterThan(0L));
     }
 
     /**
