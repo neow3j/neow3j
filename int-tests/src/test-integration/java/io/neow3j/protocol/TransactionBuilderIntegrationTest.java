@@ -32,6 +32,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
@@ -66,7 +67,7 @@ public class TransactionBuilderIntegrationTest {
     public static NeoTestContainer container = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(container.getNodeUrl()));
         Await.waitUntilBlockCountIsGreaterThanZero(neow3j);
     }

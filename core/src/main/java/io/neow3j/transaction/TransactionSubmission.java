@@ -96,11 +96,12 @@ public class TransactionSubmission {
 
     /**
      * @return this submission after the node reports it as included in a block.
-     * @throws io.neow3j.protocol.exceptions.RpcResponseErrorException if the node rejected the submission.
+     * @throws IOException if communication with the node fails while polling.
+     * @throws RpcResponseErrorException if the node rejected the submission or the lookup returns an unexpected error.
      * @throws org.awaitility.core.ConditionTimeoutException           if the transaction is not included before the
      *                                                                 default wait timeout.
      */
-    public TransactionSubmission await() {
+    public TransactionSubmission await() throws IOException {
         sendResponse.getSendRawTransaction();
         waitUntilTransactionIsExecuted(getTxId(), transaction.neow3j);
         return this;
@@ -109,12 +110,13 @@ public class TransactionSubmission {
     /**
      * @param timeout the maximum duration to wait.
      * @return this submission after the node reports it as included in a block.
-     * @throws io.neow3j.protocol.exceptions.RpcResponseErrorException if the node rejected the submission.
+     * @throws IOException if communication with the node fails while polling.
+     * @throws RpcResponseErrorException if the node rejected the submission or the lookup returns an unexpected error.
      * @throws org.awaitility.core.ConditionTimeoutException           if the transaction is not included within
      *                                                                 {@code timeout}.
      * @throws IllegalArgumentException                                if {@code timeout} is null, zero, or negative.
      */
-    public TransactionSubmission await(Duration timeout) {
+    public TransactionSubmission await(Duration timeout) throws IOException {
         sendResponse.getSendRawTransaction();
         waitUntilTransactionIsExecuted(getTxId(), transaction.neow3j, timeout);
         return this;
@@ -139,7 +141,7 @@ public class TransactionSubmission {
      */
     public BigInteger getBlockHeight() throws IOException {
         NeoGetTransactionHeight response = transaction.neow3j.getTransactionHeight(getTxId()).send();
-        if (isNotFoundRpcError(response.getError(), UNKNOWN_TRANSACTION, "Unknown transaction")) {
+        if (response.reportsUnknownTransaction()) {
             return null;
         }
         return response.getHeight();

@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.util.List;
 
@@ -40,7 +41,7 @@ public class RoleManagementIntegrationTest {
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         roleManagement = new RoleManagement(neow3j);

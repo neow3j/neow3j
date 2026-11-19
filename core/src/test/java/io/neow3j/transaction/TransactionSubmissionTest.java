@@ -261,6 +261,33 @@ class TransactionSubmissionTest {
     }
 
     @Test
+    void awaitPropagatesOriginalCommunicationFailure() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        IOException failure = new IOException("Connection closed");
+        Request<?, NeoGetTransactionHeight> request = mock(Request.class);
+        when(request.send()).thenThrow(failure);
+        doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
+
+        assertSame(failure, assertThrows(IOException.class, submission::await));
+        assertSame(failure, assertThrows(IOException.class, () -> submission.await(Duration.ofSeconds(2))));
+    }
+
+    @Test
+    void awaitPropagatesUnexpectedLookupError() throws IOException {
+        Neow3j neow3j = mock(Neow3j.class);
+        TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
+        NeoGetTransactionHeight response = new NeoGetTransactionHeight();
+        response.setError(new Response.Error(-32601, "Method not found"));
+        Request<?, NeoGetTransactionHeight> request = mock(Request.class);
+        when(request.send()).thenReturn(response);
+        doReturn(request).when(neow3j).getTransactionHeight(TX_ID);
+
+        assertThrows(RpcResponseErrorException.class, submission::await);
+        assertThrows(RpcResponseErrorException.class, () -> submission.await(Duration.ofSeconds(2)));
+    }
+
+    @Test
     void awaitWithShortTimeoutDoesNotSleepForFullPollInterval() throws IOException {
         Neow3j neow3j = mock(Neow3j.class);
         TransactionSubmission submission = submission(neow3j, sendResponse(TX_ID));
