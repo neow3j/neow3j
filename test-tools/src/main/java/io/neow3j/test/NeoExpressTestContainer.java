@@ -3,7 +3,6 @@ package io.neow3j.test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -19,6 +18,11 @@ import java.util.stream.Stream;
 import static java.lang.String.format;
 import static java.util.Arrays.asList;
 
+/**
+ * A Neo Express test container. The default wait strategy requires a successful RPC block count greater than zero
+ * before startup or resuming completes. It uses the configured container startup timeout and can be replaced with
+ * {@code waitingFor()}.
+ */
 public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestContainer> implements TestBlockchain {
 
     public static final String NEOXP_COMMAND = "neoxp";
@@ -52,7 +56,7 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     public NeoExpressTestContainer(String... resources) {
         super(DockerImageName.parse(TestProperties.neoExpressDockerImage()));
         withExposedPorts(EXPOSED_JSONRPC_PORT);
-        waitingFor(Wait.forListeningPort());
+        waitingFor(new NeoRpcWaitStrategy(EXPOSED_JSONRPC_PORT));
 
         int i = 0;
         while (resources != null && i + 1 < resources.length) {
@@ -183,10 +187,10 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
     }
 
     /**
-     * Runs neo-express if it was stopped before.
+     * Runs neo-express if it was stopped before and waits for the configured container wait strategy to succeed.
      *
      * @return the message emitted by neo-express on startup.
-     * @throws Exception if an error occurs while trying to start neo-express.
+     * @throws Exception if starting neo-express or waiting for readiness fails.
      */
     @Override
     public String resume() throws Exception {
@@ -197,7 +201,9 @@ public class NeoExpressTestContainer extends GenericContainer<NeoExpressTestCont
         } else {
             cmds.add(NEOXP_RUN_SCRIPT);
         }
-        return execCommand(cmds.toArray(new String[0]));
+        String output = execCommand(cmds.toArray(new String[0]));
+        waitUntilContainerStarted();
+        return output;
     }
 
     /**

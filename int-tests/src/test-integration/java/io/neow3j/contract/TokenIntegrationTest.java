@@ -26,7 +26,7 @@ public class TokenIntegrationTest {
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         Neow3j neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         token = new Token(GAS_HASH, neow3j);

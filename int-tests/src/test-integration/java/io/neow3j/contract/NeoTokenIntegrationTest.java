@@ -54,7 +54,7 @@ public class NeoTokenIntegrationTest {
     public static NeoTestContainer neoTestContainer = new NeoTestContainer();
 
     @BeforeAll
-    public static void setUp() {
+    public static void setUp() throws IOException {
         neow3j = Neow3j.build(new HttpService(neoTestContainer.getNodeUrl()));
         waitUntilBlockCountIsGreaterThanZero(neow3j);
         neoToken = new NeoToken(neow3j);

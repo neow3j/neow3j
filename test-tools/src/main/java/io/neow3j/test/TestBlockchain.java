@@ -50,7 +50,7 @@ public interface TestBlockchain {
     String getNodeUrl();
 
     /**
-     * Resumes the blockchain if it was stopped before.
+     * Resumes the blockchain if it was stopped before and waits for its readiness checks to succeed.
      *
      * @return the message emitted by the chain on startup or null if no message is emitted.
      * @throws Exception if an error occurred when trying to resume the blockchain.
@@ -120,7 +120,8 @@ public interface TestBlockchain {
     String execNeoxpCommandWithDefaultConfig(String... commandParts) throws Exception;
 
     /**
-     * Starts the blockchain, i.e., the process that includes the blockchain.
+     * Starts the blockchain, i.e., the process that includes the blockchain, and waits for its readiness checks to
+     * succeed. The provided test containers check RPC readiness by default; callers can configure another wait strategy.
      */
     void start();
 

@@ -5,12 +5,12 @@ import static io.neow3j.utils.ClassUtils.getClassName;
 import static io.neow3j.utils.ClassUtils.getClassNameForInternalName;
 import static io.neow3j.utils.ClassUtils.getFullyQualifiedNameForInternalName;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNull.notNullValue;
 
 import java.io.IOException;
 import java.io.InputStream;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 public class ClassUtilsTest {
@@ -69,6 +69,6 @@ public class ClassUtilsTest {
         InputStream result = getClassInputStreamForClassName("io.neow3j.utils.ClassUtilsTest",
                 this.getClass().getClassLoader());
         assertThat(result, notNullValue());
-        assertThat(result.available(), Matchers.greaterThan(0));
+        assertThat(result.available(), greaterThan(0));
     }
 }

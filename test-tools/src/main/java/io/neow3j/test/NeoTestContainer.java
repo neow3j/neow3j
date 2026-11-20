@@ -2,10 +2,13 @@ package io.neow3j.test;
 
 import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
+/**
+ * A Neo node test container. The default wait strategy requires a successful RPC block count greater than zero before
+ * startup completes. It uses the configured container startup timeout and can be replaced with {@code waitingFor()}.
+ */
 public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
 
     public static final String CONFIG_BASE_DIR = "neo-cli-config/";
@@ -51,7 +54,7 @@ public class NeoTestContainer extends GenericContainer<NeoTestContainer> {
         withClasspathResourceMapping(STATE_SERVICE_FILE_SOURCE, STATE_SERVICE_FILE_DESTINATION, BindMode.READ_ONLY);
         withClasspathResourceMapping(DEFERRED_RELAY_FILE_SOURCE, DEFERRED_RELAY_FILE_DESTINATION, BindMode.READ_ONLY);
         withExposedPorts(EXPOSED_JSONRPC_PORT);
-        waitingFor(Wait.forListeningPort());
+        waitingFor(new NeoRpcWaitStrategy(EXPOSED_JSONRPC_PORT));
         try {
             withClasspathResourceMapping(ORACLECONFIG_FILE_SOURCE, ORACLECONFIG_FILE_DESTINATION, BindMode.READ_ONLY);
         } catch (IllegalArgumentException e) {
