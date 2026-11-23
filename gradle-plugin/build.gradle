@@ -46,3 +46,23 @@ dependencies {
 
     testRuntimeOnly files(createClasspathManifest)
 }
+
+// pluginMaven and OSSRH sign the same jars. Give the pluginMaven signatures
+// separate output files so neither signing task overwrites the other's output.
+tasks.withType(org.gradle.plugins.signing.Sign).configureEach {
+    if (name == 'signPluginMavenPublication') {
+        def signatureDirectory = file("${buildDir}/signatures/pluginMaven")
+        signatureType = new org.gradle.plugins.signing.type.AbstractSignatureType() {
+            String getExtension() { 'asc' }
+
+            File fileFor(File toSign) {
+                new File(signatureDirectory, "${toSign.name}.asc")
+            }
+
+            File sign(org.gradle.plugins.signing.signatory.Signatory signatory, File toSign) {
+                signatureDirectory.mkdirs()
+                super.sign(signatory, toSign)
+            }
+        }
+    }
+}

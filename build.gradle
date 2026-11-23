@@ -200,7 +200,20 @@ subprojects { subproject ->
             // `signingKey` and `signingPassword` have to be either in ~/.gradle/gradle.properties or in
             // environment variables ORG_GRADLE_PROJECT_signingKey and ORG_GRADLE_PROJECT_signingPassword.
             // The signing key has to be the ASCII-armored, encrypted PGP private key for neow3j.
-            useInMemoryPgpKeys(project.findProperty("signingKey"), project.findProperty("signingPassword"))
+            def signingKey = project.findProperty("signingKey")
+            def signingPassword = project.findProperty("signingPassword")
+            if (signingKey && signingPassword) {
+                useInMemoryPgpKeys(signingKey, signingPassword)
+            }
+            // Maven Local does not require signatures. Publishing to a repository (including the local staging
+            // repository for Maven Central) still requires signing keys.
+            def requestedTasks = gradle.startParameter.taskNames.collect { it.tokenize(':').last() }
+            def localPublish = requestedTasks.any { it.endsWith('ToMavenLocal') }
+            def releasePublish = requestedTasks.any {
+                (it.startsWith('publish') && !it.endsWith('ToMavenLocal')) ||
+                        it.endsWith('MavenCentralPortalPublication') || it == 'bundleJar'
+            }
+            required = !localPublish || releasePublish
             sign publishing.publications
         }
 
